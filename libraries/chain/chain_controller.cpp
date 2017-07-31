@@ -792,6 +792,7 @@ uint32_t chain_controller::last_irreversible_block_num() const {
 
 void chain_controller::initialize_indexes() {
    _db.add_index<account_index>();
+   _db.add_index<auth_cache_index>();
    _db.add_index<permission_index>();
    _db.add_index<action_permission_index>();
    _db.add_index<key_value_index>();

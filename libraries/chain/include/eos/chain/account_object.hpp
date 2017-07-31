@@ -58,9 +58,38 @@ namespace eos { namespace chain {
       >
    >;
 
+
+   class auth_cache_object : public chainbase::object<auth_cache_object_type, auth_cache_object> {
+      OBJECT_CTOR(auth_cache_object)
+
+      id_type id;
+      AccountName    scope;
+      AccountName    code;
+      AccountName    auth;
+      PermissionName permission;
+   };
+
+   struct by_scope_code_auth_permission;
+   using auth_cache_index = chainbase::shared_multi_index_container<
+      auth_cache_object,
+      indexed_by<
+         ordered_unique<tag<by_id>, member<auth_cache_object, auth_cache_object::id_type, &auth_cache_object::id>>,
+         ordered_unique<tag<by_scope_code_auth_permission>, 
+            composite_key< auth_cache_object,
+                member<auth_cache_object, AccountName, &auth_cache_object::scope>,
+                member<auth_cache_object, AccountName, &auth_cache_object::code>,
+                member<auth_cache_object, AccountName, &auth_cache_object::auth>,
+                member<auth_cache_object, PermissionName, &auth_cache_object::permission>
+            >
+         >
+       >
+    >;
+
+
 } } // eos::chain
 
 CHAINBASE_SET_INDEX_TYPE(eos::chain::account_object, eos::chain::account_index)
+CHAINBASE_SET_INDEX_TYPE(eos::chain::auth_cache_object, eos::chain::auth_cache_index)
 
 FC_REFLECT(chainbase::oid<eos::chain::account_object>, (_id))
 

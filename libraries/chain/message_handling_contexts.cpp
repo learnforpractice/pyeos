@@ -9,11 +9,48 @@
 
 namespace eos { namespace chain {
 
-void message_validate_context::require_authorization(const types::AccountName& account) {
+using types::AccountName;
+using types::PermissionName;
+
+void apply_context::require_authorization(AccountName account) {
 #warning TODO: Look up the permission_object that account has specified to use for this message type
    if (authChecker)
       EOS_ASSERT(authChecker->requirePermission({account, "active"}), tx_missing_auth,
                  "Transaction does not declare required authority '${auth}'", ("auth", account));
+}
+
+void apply_context::require_authorization( AccountName account, PermissionName level ) {
+   require_authorization(account);
+
+#warning TODO: assert that account/level is on the current message auths list which 
+}
+
+void apply_context::load_auth( AccountName scope, types::AccountName account, types::PermissionName level ) {
+    require_scope( scope );
+    db.get<auth_cache_object,by_scope_code_auth_permission>( boost::make_tuple( scope, code, account, level ) );
+}
+
+void apply_context::cache_auth( AccountName scope, types::AccountName account, types::PermissionName level ) {
+    require_scope( scope );
+    require_authorization( account, level );
+
+    auto existing = mutable_db.find<auth_cache_object,by_scope_code_auth_permission>( boost::make_tuple( scope, code, account, level ) );
+    if( !existing ) {
+       mutable_db.create<auth_cache_object>( [&]( auto& ac ) {
+           ac.scope      = scope;  
+           ac.code       = code;
+           ac.auth       = account;
+           ac.permission = level;
+       });
+    }
+}
+
+void apply_context::clear_auth( AccountName scope, AccountName account, PermissionName level ) {
+    require_scope( scope );
+    auto existing = db.find<auth_cache_object,by_scope_code_auth_permission>( boost::make_tuple( scope, code, account, level ) );
+    if( existing ) {
+       mutable_db.remove( *existing );
+    }
 }
 
 void message_validate_context::require_scope(const types::AccountName& account)const {

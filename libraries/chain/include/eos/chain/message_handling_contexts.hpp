@@ -19,16 +19,6 @@ public:
                                      TransactionAuthorizationChecker* authChecker)
       :controller(control),db(d),trx(t),msg(m),code(c),authChecker(authChecker){}
 
-   /**
-    * @brief Require @ref account to have approved of this message
-    * @param account The account whose approval is required
-    *
-    * This method will check that @ref account is listed in the message's declared authorizations, and marks the
-    * authorization as used. Note that all authorizations on a message must be used, or the message is invalid.
-    *
-    * @throws tx_missing_auth If no sufficient permission was found
-    */
-   void require_authorization(const types::AccountName& account);
    void require_scope(const types::AccountName& account)const;
 
    const chain_controller&      controller;
@@ -90,6 +80,22 @@ class apply_context : public precondition_validate_context {
 
       bool has_recipient( const types::AccountName& account )const;
       void require_recipient(const types::AccountName& account);
+
+
+      /**
+       * @brief Require @ref account to have approved of this message
+       * @param account The account whose approval is required
+       *
+       * This method will check that @ref account is listed in the message's declared authorizations, and marks the
+       * authorization as used. Note that all authorizations on a message must be used, or the message is invalid.
+       *
+       * @throws tx_missing_auth If no sufficient permission was found
+       */
+      void require_authorization( AccountName account);
+      void require_authorization( AccountName account, PermissionName level );
+      void cache_auth( AccountName scope, AccountName account, PermissionName level );
+      void load_auth( AccountName scope, AccountName account, PermissionName level );
+      void clear_auth( AccountName scope, AccountName account, PermissionName level );
 
       std::deque<AccountName>          notified;
       std::deque<ProcessedTransaction> sync_transactions; ///< sync calls made 

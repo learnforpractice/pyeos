@@ -35,6 +35,7 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
 }
 
    int32_t load_i128i128_object( uint64_t scope, uint64_t code, uint64_t table, int32_t valueptr, int32_t valuelen, load_i128i128_fnc function ) {
+      /// TODO: this should be updated to use a template lambda rather than a function pointer
       
       static const uint32_t keylen = 2*sizeof(uint128_t);
       
@@ -50,6 +51,7 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
       valuelen -= keylen;
       value    += keylen;
 
+      /// we should just call a lambda here
       auto res = (wasm.current_validate_context->*function)( 
          Name(scope), Name(code), Name(table),
          primary, secondary, value, valuelen
@@ -58,6 +60,21 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
       if(res > 0) res += keylen;
       return res;
    }
+
+DEFINE_INTRINSIC_FUNCTION3(env,cache_auth,cache_auth,none,i64,scope,i64,account,i64,level) {
+    auto& wasm  = wasm_interface::get();
+    wasm.current_apply_context->cache_auth(scope,account,level);
+}
+
+DEFINE_INTRINSIC_FUNCTION3(env,load_auth,cache_auth,none,i64,scope,i64,account,i64,level) {
+    auto& wasm  = wasm_interface::get();
+    wasm.current_apply_context->load_auth(scope,account,level);
+}
+DEFINE_INTRINSIC_FUNCTION3(env,clear_auth,cache_auth,none,i64,scope,i64,account,i64,level) {
+    auto& wasm  = wasm_interface::get();
+    wasm.current_apply_context->clear_auth(scope,account,level);
+}
+
 DEFINE_INTRINSIC_FUNCTION3(env, assert_sha256,assert_sha256,none,i32,dataptr,i32,datalen,i32,hash) {
    FC_ASSERT( datalen > 0 );
 
@@ -168,7 +185,7 @@ DEFINE_INTRINSIC_FUNCTION0(env,currentCode,currentCode,i64) {
 }
 
 DEFINE_INTRINSIC_FUNCTION1(env,requireAuth,requireAuth,none,i64,account) {
-   wasm_interface::get().current_validate_context->require_authorization( Name(account) );
+   wasm_interface::get().current_apply_context->require_authorization( Name(account) );
 }
 
 DEFINE_INTRINSIC_FUNCTION1(env,requireNotice,requireNotice,none,i64,account) {
