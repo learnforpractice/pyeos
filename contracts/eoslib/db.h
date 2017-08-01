@@ -82,6 +82,12 @@ extern "C" {
  */
 int32_t store_i64( AccountName scope, TableName table, const void* data, uint32_t datalen );
 
+/** 
+ * This method only updates the first datalen bytes of the record and will fail if the record
+ * does not exist. It will grow the data but not shrink it.
+ */
+int32_t update_i64( AccountName scope, TableName table, const void* data, uint32_t datalen );
+
 /**
  *  @param scope - the account scope that will be read, must exist in the transaction scopes list
  *  @param code  - identifies the code that controls write-access to the data
@@ -173,6 +179,11 @@ bool remove_i128i128( AccountName scope, TableName table, const void* data );
  * Creates or updates a record and returns true if successful
  */
 bool store_i128i128( AccountName scope, TableName table, const void* data, uint32_t len );
+
+/**
+ * This method only updates the first datalen bytes, if the record was longer the tail is unmodified 
+ */
+int32_t update_i128i128( AccountName scope, TableName table, const void* data, uint32_t datalen );
 
 ///@}  dbi128i128
 }
