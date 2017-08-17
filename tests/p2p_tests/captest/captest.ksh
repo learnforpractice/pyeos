@@ -7,7 +7,7 @@ if [[ $# != 3 ]]; then
   echo
   echo NumberOfAccounts
   echo There only needs to be enough accounts so that the same account isn\'t used in a 3 second time period
-  echo So if trasfer transaction can do 3000 per second per eosc instance, then set this number to 4000 to be safe
+  echo So if trasfer transaction can do 3000 per 3 seconds per eosc instance, then set this number to 4000 to be safe
   echo If this number is 0 then captest.ksh will skip creating accounts
   echo
   echo DurationSeconds
