@@ -40,6 +40,9 @@ const string get_account_func = chain_func_base + "/get_account";
 const string account_history_func_base = "/v1/account_history";
 const string get_transaction_func = account_history_func_base + "/get_transaction";
 
+const string wallet_func_base = "/v1/wallet";
+const string sign_transaction_func = wallet_func_base + "/sign_transaction";
+
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
    std::sort( names.begin(), names.end() );
@@ -364,6 +367,22 @@ int send_command (const vector<string> &cmd_line)
   } else if( command == "lock" ) {
 
   } else if( command == "do" ) {
+
+  } else if (command == "wallet") {
+
+    Name sender("sender");
+    Name recipient("recipient");
+    uint64_t amount = 10;
+
+    SignedTransaction trx;
+    trx.scope = sort_names({sender,recipient});
+    trx.emplaceMessage(config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
+                       types::transfer{sender, recipient, amount});
+    //auto info = get_info();
+    //trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+    //trx.set_reference_block(info.head_block_id);
+
+    std::cout << fc::json::to_pretty_string( call( sign_transaction_func, trx )) << std::endl;
 
   } else if( command == "transaction" ) {
      FC_ASSERT( cmd_line.size() == 2 );
