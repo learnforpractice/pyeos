@@ -33,6 +33,16 @@ echo NumberOfAccounts = $NumberOfAccounts
 echo DurationSeconds = $DurationSeconds
 echo Concurrency = $Concurrency
 
+if [[ $(pgrep eosd | wc -l) == 0 ]]; then
+  echo Error: Please start eosd
+  exit
+fi
+
+if [[ $(which eosc | wc -l) == 0 ]]; then
+  echo Error: Cannot find eosc in \$PATH
+  exit
+fi
+
 # kill previous captest if it is still running
 if [[ $(pgrep captest.ksh | wc -l) > 1 ]]; then
   for p in $(pgrep captest.ksh)
