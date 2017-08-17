@@ -19,7 +19,7 @@ if [[ $# != 3 ]]; then
   echo example:
   echo   nohup eosd \&
   echo   captest.ksh 10 6 1
-  echo
+  echo 
   exit
 fi
 
