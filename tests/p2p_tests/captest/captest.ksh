@@ -19,13 +19,13 @@ if [[ $# != 3 ]]; then
   echo example:
   echo   nohup eosd \&
   echo   captest.ksh 10 6 1
-  echo 
+  echo
   exit
 fi
 
 echo If this process gets stuck, press Ctrl + C as eosd may have had an issue
 NumberOfAccounts=$1
-[[ $1 == 0 ]] && NumberOfAccounts=$(wc -l trans_accounts_1.txt)
+[[ $1 == 0 ]] && NumberOfAccounts=$(cat trans_accounts_1.txt | wc -l)
 DurationSeconds=$2
 Concurrency=$3
 
@@ -109,7 +109,7 @@ function RunOneCapTest
   do
     ((TrxAttempted += NumberOfAccounts))
     eosc - < $1 >> captest.log 2>&1
-    [[ $(date +%s) == $TestStop ]] && break
+    (( $(date +%s) >= TestStop )) && break
   done
   echo $TrxAttempted > ${1}.attempt_count
 }
@@ -129,11 +129,10 @@ rm captest.log 2>/dev/null
 echo Stating Capacity Test $(date "+%Y%m%d_%H%M%S")
 TestStop=$(date +%s)
 ((TestStop=TestStop+DurationSeconds))
-for Inst in $(seq $((Concurrency-1)))
+for Inst in $(seq $Concurrency)
 do
   RunOneCapTest trans_accounts_${Inst}.txt &
 done
-RunOneCapTest trans_accounts_${Concurrency}.txt
 
 # Wait for completion
 sleep 1
