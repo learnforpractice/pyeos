@@ -491,6 +491,7 @@ void chain_controller::_apply_block(const signed_block& next_block)
 } FC_CAPTURE_AND_RETHROW( (next_block.block_num()) )  }
 
 void chain_controller::check_transaction_authorization(const SignedTransaction& trx, bool allow_unused_signatures)const {
+   return; //MP - they are still working on this
    if ((_skip_flags & skip_transaction_signatures) && (_skip_flags & skip_authority_check)) {
       ilog("Skipping auth and sigs checks");
       return;
