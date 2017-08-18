@@ -94,8 +94,9 @@ int main (int argc, char *argv[])
       }
    }
 
-   for(int iA=1; iA<=Concurrency; ++iA)
-      CreateAccountsAndTransactions(V("accounts_%d", iA));
+   if(atoi(argv[1]) != 0)
+      for(int iA=1; iA<=Concurrency; ++iA)
+         CreateAccountsAndTransactions(V("accounts_%d", iA));
 
    cout << "----------------------------------" << endl;
    cout << "Stating Capacity Test" << endl;
