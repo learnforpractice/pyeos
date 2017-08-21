@@ -368,6 +368,32 @@ int send_command (const vector<string> &cmd_line)
 
   } else if( command == "do" ) {
 
+  } else if (command == "wallet-create") {
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/create", cmd_line[1] )) << std::endl;
+
+  } else if (command == "wallet-open") {
+    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/open", cmd_line[1] )) << std::endl;
+
+  } else if (command == "wallet-list") {
+    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/list_wallets" )) << std::endl;
+
+  } else if (command == "wallet-list-keys") {
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/list_keys" )) << std::endl;
+
+  } else if (command == "wallet-lock") {
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/lock", cmd_line[1] )) << std::endl;
+
+  } else if (command == "wallet-unlock") {
+     fc::variants vs = {fc::variant(cmd_line[1]), fc::variant(cmd_line[2])};
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/unlock", vs )) << std::endl;
+
+  } else if (command == "wallet-import-key") {
+     fc::variants vs = {fc::variant(cmd_line[1]), fc::variant(cmd_line[2])};
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/import_key", vs )) << std::endl;
+
+  } else if (command == "wallet-lock-all") {
+     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/lock_all" )) << std::endl;
+
   } else if (command == "wallet") {
 
     Name sender("sender");
