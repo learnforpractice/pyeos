@@ -394,7 +394,7 @@ int send_command (const vector<string> &cmd_line)
   } else if (command == "wallet-lock-all") {
      std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/lock_all" )) << std::endl;
 
-  } else if (command == "wallet") {
+  } else if (command == "wallet-sign-test") {
 
     Name sender("sender");
     Name recipient("recipient");
@@ -408,7 +408,8 @@ int send_command (const vector<string> &cmd_line)
     //trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
     //trx.set_reference_block(info.head_block_id);
 
-    std::cout << fc::json::to_pretty_string( call( sign_transaction_func, trx )) << std::endl;
+    fc::variants vs = {fc::variant(trx), fc::variant(chain_id_type{})};
+    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/sign_transaction", vs )) << std::endl;
 
   } else if( command == "transaction" ) {
      FC_ASSERT( cmd_line.size() == 2 );
