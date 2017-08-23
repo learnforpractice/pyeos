@@ -30,6 +30,9 @@ string program = "eosc";
 string host = "localhost";
 uint32_t port = 8888;
 
+// TODO: when merging with eosc re-write, add this as an option
+constexpr uint32_t wallet_port = 8899;
+
 const string chain_func_base = "/v1/chain";
 const string get_info_func = chain_func_base + "/get_info";
 const string push_txn_func = chain_func_base + "/push_transaction";
@@ -41,7 +44,6 @@ const string account_history_func_base = "/v1/account_history";
 const string get_transaction_func = account_history_func_base + "/get_transaction";
 
 const string wallet_func_base = "/v1/wallet";
-const string sign_transaction_func = wallet_func_base + "/sign_transaction";
 
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
@@ -102,17 +104,23 @@ eos::chain_apis::read_only::get_info_results get_info() {
   return call(host, port, get_info_func ).as<eos::chain_apis::read_only::get_info_results>();
 }
 
-fc::variant push_transaction( SignedTransaction& trx ) {
+fc::variant push_transaction( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
     trx.set_reference_block(info.head_block_id);
     boost::sort( trx.scope );
+   
+    if (sign) {
+       fc::variants vs = {fc::variant(trx), fc::variant(chain_id_type{})};
+       const variant& v = call(host, wallet_port, wallet_func_base + "/sign_transaction", vs );
+       trx = v.as<SignedTransaction>();
+    }
 
     return call( push_txn_func, trx );
 }
 
 
-void create_account( const vector<string>& cmd_line ) {
+void create_account( const vector<string>& cmd_line) {
 
       Name creator(cmd_line[2]);
       Name newaccount(cmd_line[3]);
@@ -121,6 +129,7 @@ void create_account( const vector<string>& cmd_line ) {
 
       public_key_type owner_key(cmd_line[4]);
       public_key_type active_key(cmd_line[5]);
+      bool sign = cmd_line.size() == 7 && cmd_line[6] == "sign";
 
       auto owner_auth   = eos::chain::Authority{1, {{owner_key, 1}}, {}};
       auto active_auth  = eos::chain::Authority{1, {{active_key, 1}}, {}};
@@ -134,7 +143,7 @@ void create_account( const vector<string>& cmd_line ) {
                          types::newaccount{creator, newaccount, owner_auth,
                                            active_auth, recovery_auth, deposit});
 
-      std::cout << fc::json::to_pretty_string( push_transaction(trx) ) << std::endl;
+      std::cout << fc::json::to_pretty_string( push_transaction(trx, sign) ) << std::endl;
 
 
 }
@@ -273,8 +282,9 @@ int send_command (const vector<string> &cmd_line)
     msg.authorization = fc::json::from_string( cmd_line[5] ).as<vector<types::AccountPermission>>();
     msg.data = result.get_object()["binargs"].as<Bytes>();
     trx.scope = fc::json::from_string( cmd_line[4] ).as<vector<Name>>();
+    bool sign = cmd_line.size() == 7 && cmd_line[6] == "sign";
 
-    auto trx_result = push_transaction( trx );
+    auto trx_result = push_transaction( trx , sign);
     std::cout << fc::json::to_pretty_string( trx_result ) << std::endl;
 
   } else if( command == "account" ) {
@@ -287,7 +297,7 @@ int send_command (const vector<string> &cmd_line)
     std::cout << fc::json::to_pretty_string(trx_result) << std::endl;
   } else if ( command == "setcode" ) {
     if( cmd_line.size() == 1 ) {
-      std::cout << "usage: "<< program << " " << command <<" ACCOUNT FILE.WAST FILE.ABI" << std::endl;
+      std::cout << "usage: "<< program << " " << command <<" ACCOUNT FILE.WAST FILE.ABI [sign]" << std::endl;
       return -1;
     }
     Name account(cmd_line[1]);
@@ -305,23 +315,30 @@ int send_command (const vector<string> &cmd_line)
     handler.code.resize(wasm.size());
     memcpy( handler.code.data(), wasm.data(), wasm.size() );
 
-    if( cmd_line.size() == 4 ) {
+    if( cmd_line.size() >= 4 ) {
       handler.abi = fc::json::from_file( cmd_line[3] ).as<types::Abi>();
     }
+    bool sign = cmd_line.size() == 5 && cmd_line[4] == "sign";
 
     SignedTransaction trx;
     trx.scope = { config::EosContractName, account };
     trx.emplaceMessage( config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
                         "setcode", handler );
 
-    std::cout << fc::json::to_pretty_string( push_transaction(trx)  ) << std::endl;
+    if (sign) {
+       fc::variants vs = {fc::variant(trx), fc::variant(chain_id_type{})};
+       const variant& v = call(host, wallet_port, wallet_func_base + "/sign_transaction", vs );
+       trx = v.as<SignedTransaction>();
+    }
+    std::cout << fc::json::to_pretty_string( push_transaction(trx, sign)  ) << std::endl;
 
   } else if( command == "transfer" ) {
-    FC_ASSERT( cmd_line.size() == 4 );
+    FC_ASSERT( cmd_line.size() >= 4 );
 
     Name sender(cmd_line[1]);
     Name recipient(cmd_line[2]);
     uint64_t amount = fc::variant(cmd_line[3]).as_uint64();
+    bool sign = cmd_line.size() == 5 && cmd_line[4] == "sign";
 
     SignedTransaction trx;
     trx.scope = sort_names({sender,recipient});
@@ -331,12 +348,18 @@ int send_command (const vector<string> &cmd_line)
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
     trx.set_reference_block(info.head_block_id);
 
+     if (sign) {
+        fc::variants vs = {fc::variant(trx), fc::variant(chain_id_type{})};
+        const variant& v = call(host, wallet_port, wallet_func_base + "/sign_transaction", vs );
+        trx = v.as<SignedTransaction>();
+     }
+
     std::cout << fc::json::to_pretty_string( call( push_txn_func, trx )) << std::endl;
   }
   else if (command == "create" ) {
     if( cmd_line[1] == "account" ) {
       if( cmd_line.size() < 6 ) {
-        std::cerr << "usage: " << program << " create account CREATOR NEWACCOUNT OWNERKEY ACTIVEKEY\n";
+        std::cerr << "usage: " << program << " create account CREATOR NEWACCOUNT OWNERKEY ACTIVEKEY [sign]\n";
         return -1;
       }
       create_account( cmd_line );
@@ -368,48 +391,43 @@ int send_command (const vector<string> &cmd_line)
 
   } else if( command == "do" ) {
 
-  } else if (command == "wallet-create") {
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/create", cmd_line[1] )) << std::endl;
-
-  } else if (command == "wallet-open") {
-    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/open", cmd_line[1] )) << std::endl;
-
-  } else if (command == "wallet-list") {
-    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/list_wallets" )) << std::endl;
-
-  } else if (command == "wallet-list-keys") {
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/list_keys" )) << std::endl;
-
-  } else if (command == "wallet-lock") {
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/lock", cmd_line[1] )) << std::endl;
-
-  } else if (command == "wallet-unlock") {
-     fc::variants vs = {fc::variant(cmd_line[1]), fc::variant(cmd_line[2])};
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/unlock", vs )) << std::endl;
-
-  } else if (command == "wallet-import-key") {
-     fc::variants vs = {fc::variant(cmd_line[1]), fc::variant(cmd_line[2])};
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/import_key", vs )) << std::endl;
-
-  } else if (command == "wallet-lock-all") {
-     std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/lock_all" )) << std::endl;
-
-  } else if (command == "wallet-sign-test") {
-
-    Name sender("sender");
-    Name recipient("recipient");
-    uint64_t amount = 10;
-
-    SignedTransaction trx;
-    trx.scope = sort_names({sender,recipient});
-    trx.emplaceMessage(config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
-                       types::transfer{sender, recipient, amount});
-    //auto info = get_info();
-    //trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
-    //trx.set_reference_block(info.head_block_id);
-
-    fc::variants vs = {fc::variant(trx), fc::variant(chain_id_type{})};
-    std::cout << fc::json::to_pretty_string( call( host, port, wallet_func_base + "/sign_transaction", vs )) << std::endl;
+  } else if (command == "wallet") {
+     FC_ASSERT(cmd_line.size() >= 2);
+     // TODO: temporary implementation until eosc rewrite complete
+     auto wallet_command = cmd_line[1];
+     if (wallet_command == "create") {
+        FC_ASSERT(cmd_line.size() == 3, "usage: eosc wallet create wallet-name");
+        const auto& v = call(host, wallet_port, wallet_func_base + "/create", cmd_line[2]);
+        std::cout << "Save password to use in the future to unlock this wallet." << std::endl;
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "open") {
+        FC_ASSERT(cmd_line.size() == 3, "usage: eosc wallet open password");
+        const auto& v = call(host, wallet_port, wallet_func_base + "/open", cmd_line[2]);
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "list") {
+        const auto& v = call(host, wallet_port, wallet_func_base + "/list_wallets");
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "list-keys") {
+        const auto& v = call(host, wallet_port, wallet_func_base + "/list_keys");
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "lock") {
+        FC_ASSERT(cmd_line.size() == 3, "usage: eosc wallet lock wallet-name");
+        const auto& v = call(host, wallet_port, wallet_func_base + "/lock", cmd_line[2]);
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "lock-all") {
+        const auto& v = call(host, wallet_port, wallet_func_base + "/lock_all");
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "unlock") {
+        FC_ASSERT(cmd_line.size() == 4, "usage: eosc wallet unlock wallet-name password");
+        fc::variants vs = {fc::variant(cmd_line[2]), fc::variant(cmd_line[3])};
+        const auto& v = call(host, wallet_port, wallet_func_base + "/unlock", vs);
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     } else if (wallet_command == "import-key") {
+        FC_ASSERT(cmd_line.size() == 4, "usage: eosc wallet import-key wallet-name wif-key");
+        fc::variants vs = {fc::variant(cmd_line[2]), fc::variant(cmd_line[3])};
+        const auto& v = call(host, wallet_port, wallet_func_base + "/import_key", vs);
+        std::cout << fc::json::to_pretty_string(v) << std::endl;
+     }
 
   } else if( command == "transaction" ) {
      FC_ASSERT( cmd_line.size() == 2 );
