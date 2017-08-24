@@ -112,6 +112,10 @@ namespace eos { namespace chain {
       void emplaceMessage(Args&&... a) {
          messages.emplace_back(Message(std::forward<Args>(a)...));
       }
+      template <typename... Args>
+      void emplaceSerializedMessage(Args&&... a) {
+         messages.emplace_back(types::Message(std::forward<Args>(a)...));
+      }
 
       /**
        * Removes all messages, signatures, and authorizations
