@@ -17,7 +17,7 @@ if [[ $# != 3 ]]; then
   echo How many concurrent eosc instances would you like running at the same time
   echo
   echo example:
-  echo   nohup eosd \&
+  echo   '#get eosd running, using a fresh chain every time'
   echo   captest.ksh 10 6 1
   echo
   exit
@@ -25,7 +25,7 @@ fi
 
 echo If this process gets stuck, press Ctrl + C as eosd may have had an issue
 NumberOfAccounts=$1
-[[ $1 == 0 ]] && NumberOfAccounts=$(cat trans_accounts_1.txt | wc -l)
+[[ $1 == 0 ]] && NumberOfAccounts=$(cat accounts_1_names.txt | wc -l)
 DurationSeconds=$2
 Concurrency=$3
 
@@ -53,29 +53,29 @@ if [[ $(pgrep captest.ksh | wc -l) > 1 ]]; then
 fi
 pkill -9 eosc
 
-count_start=1
 function CreateAccountsAndTransactions
 {
+  count_start=$2
   # saw a few of these: might just be me
   # tr: write error
   # tr: write error: Connection reset by peer
 
-  echo Creating $1
+  echo Working on $1
 
-  echo Creating Keys
-  rm $1 2>/dev/null
-  touch $1
-  rm keys.txt 2>/dev/null
-  touch keys.txt
-  rm run.txt 2>/dev/null
-  touch run.txt
+  echo Creating Keys for $1
+  rm ${1}_names.txt 2>/dev/null
+  touch ${1}_names.txt
+  rm ${1}_keys.txt 2>/dev/null
+  touch ${1}_keys.txt
+  rm ${1}_run.txt 2>/dev/null
+  touch ${1}_run.txt
   for Unused in $(seq $NumberOfAccounts)
   do
-    echo create key >> run.txt
+    echo create key >> ${1}_run.txt
   done
-  eosc - < run.txt | grep public | sed 's/^.* //' >> keys.txt
+  eosc - < ${1}_run.txt | grep public | sed 's/^.* //' >> ${1}_keys.txt
 
-  echo Creating Accounts
+  echo Creating Accounts for $1
   echo $(printf "%s " {a..z}) | awk -v "c=$NumberOfAccounts" -v "cstart=$count_start" '{
     countup=1
     for (v1 = 1; v1 <= NF; v1++)
@@ -94,82 +94,148 @@ function CreateAccountsAndTransactions
 		    }
 		    countup += 1
                   }
-  }' > $1
+  }' > ${1}_names.txt
   ((count_start += NumberOfAccounts))
 
-  rm run.txt 2>/dev/null
-  touch run.txt
-  for Row in $(paste -d',' $1 keys.txt)
+  rm ${1}_run.txt 2>/dev/null
+  touch ${1}_run.txt
+  for Row in $(paste -d',' ${1}_names.txt ${1}_keys.txt)
   do
     Name=$(echo $Row | awk -F',' '{print $1}')
     PubKey=$(echo $Row | awk -F',' '{print $2}')
-    echo create account inita $Name $PubKey EOS6KdkmwhPyc2wxN9SAFwo2PU2h74nWs7urN1uRduAwkcns2uXsa >/dev/null 2>/dev/null >> run.txt
+    echo create account inita $Name $PubKey EOS6KdkmwhPyc2wxN9SAFwo2PU2h74nWs7urN1uRduAwkcns2uXsa >/dev/null 2>/dev/null >> ${1}_run.txt
   done
-  eosc - < run.txt >/dev/null
+  eosc - < ${1}_run.txt >/dev/null
 
-  echo Prepairing Transactions
-  rm trans_$1 2>/dev/null
-  for Name in $(cat $1)
-  do
-    echo transfer eos $Name 1 >> trans_$1
-  done
 
+  echo Prepairing Transactions for $1
+  rm ${1}_trx.txt 2>/dev/null
+  # for MoreTrx in {1..1000}
+  # do
+    for Name in $(cat ${1}_names.txt)
+    do
+      echo transfer eos $Name 1 >> ${1}_trx.txt
+    done
+  # done
+  touch ${1}_create_done.txt
 }
 
 function RunOneCapTest
 {
-  ((TrxAttempted=0))
+  ((CountEoscCalls=0))
+  rm ${1}_eosc_call_count.txt 2>/dev/null
   while :
   do
-    ((TrxAttempted += NumberOfAccounts))
-    eosc - < $1 >> captest.log 2>&1
+    ((CountEoscCalls+=1))
+    # Now=$(date +%s)
+    # doesnt work, my output file disapears
+    # timeout -sINT $((TestStop - Now)) ksh -c "eosc - < ${1}_trx.txt" >> ${1}_trx_results.txt 2>&1
+    # apparently we cannot send a signal to fluch its output, using stdbuf until eosc can be worked on
+    # stdbuf -i 0 -o 0 -e 0 eosc - < ${1}_trx.txt >> ${1}_trx_results.txt 2>>${1}_trx_results.txt
+    # the above did not work, any other good suggestions?
+    # okay, so we try to make it match as close as we can and tell the user the actual DurationSeconds time, it will be different from the one they want
+    eosc - < ${1}_trx.txt >> ${1}_trx_results.txt 2>&1
     (( $(date +%s) >= TestStop )) && break
   done
-  echo $TrxAttempted > ${1}.attempt_count
+  ErrorCount=$(grep "^[0-9][0-9]* assert_exception: Assert Exception" ${1}_trx_results.txt | wc -l )
+  SuccessCount=$(grep "transaction_id" ${1}_trx_results.txt | wc -l )
+  ((TrxAttempted = SuccessCount + ErrorCount))
+  echo $TrxAttempted > ${1}_trx_attempt_count.txt
+  echo $CountEoscCalls > ${1}_eosc_call_count.txt
+  touch ${1}_trx_done.txt
 }
 
-
+#
 # Create Accounts
+#
 if [[ $1 != 0 ]]; then
+  ((count_start_offset=1))
   for Inst in $(seq $Concurrency)
   do
-    CreateAccountsAndTransactions accounts_${Inst}.txt
+    rm accounts_${Inst}_create_done.txt 2>/dev/null
+  done
+  for Inst in $(seq $Concurrency)
+  do
+    CreateAccountsAndTransactions accounts_${Inst} $count_start_offset &
+    ((count_start_offset+=NumberOfAccounts))
+  done
+
+  #
+  # Wait for completion
+  #
+  for Inst in $(seq $Concurrency)
+  do
+    while [[ ! -e accounts_${Inst}_create_done.txt ]];
+    do
+      sleep 1
+    done
+    ((count_start_offset+=NumberOfAccounts))
   done
 fi
 
+
+#
 # Begin capacity test
-rm captest.log 2>/dev/null
+#
+echo ----------------------------------
 echo Stating Capacity Test $(date "+%Y%m%d_%H%M%S")
+for Inst in $(seq $Concurrency)
+do
+  rm accounts_${Inst}_trx_results.txt 2>/dev/null
+  rm accounts_${Inst}_trx_done.txt 2>/dev/null
+done
 TestStop=$(date +%s)
 ((TestStop=TestStop+DurationSeconds))
 for Inst in $(seq $Concurrency)
 do
-  RunOneCapTest trans_accounts_${Inst}.txt &
+  RunOneCapTest accounts_${Inst} &
 done
 
+#
 # Wait for completion
-sleep 1
-while [[ $(pgrep eosc | wc -l) > 0 ]];
+#
+for Inst in $(seq $Concurrency)
 do
-  sleep 1
+  while [[ ! -e accounts_${Inst}_trx_done.txt ]];
+  do
+    sleep 1
+  done
 done
 
+
+Now=$(date +%s)
+((DurationSeconds=DurationSeconds + (Now - TestStop)))
+
+echo End Capacity Test $(date "+%Y%m%d_%H%M%S") - Note: Took $DurationSeconds seconds to complete
+echo ----------------------------------
+
+#
 # Report the results
+#
 ((TrxAttempted=0))
 for Inst in $(seq $Concurrency)
 do
-  Tmp=$(awk '{ sum += $1 } END { print sum }' trans_accounts_${Inst}.txt.attempt_count)
+  Tmp=$(awk '{ sum += $1 } END { print sum }' accounts_${Inst}_trx_attempt_count.txt)
   ((TrxAttempted += Tmp))
 done
 
-echo End Capacity Test $(date "+%Y%m%d_%H%M%S")
-echo ----------------------------------
+((TrxSuccess=0))
+for Inst in $(seq $Concurrency)
+do
+  Tmp=$(grep transaction_id accounts_${Inst}_trx_results.txt | wc -l)
+  ((TrxSuccess += Tmp))
+done
+
 sleep 1
 echo Review captest.log for results of the test
-echo There were $(grep transaction_id captest.log | wc -l) successful transactions in $DurationSeconds seconds
+echo There were $TrxSuccess successful transactions in $DurationSeconds seconds
 echo There were supposed to be $TrxAttempted successful transactions
-echo That comes to $(echo "scale=2; $(grep transaction_id captest.log | wc -l) / $DurationSeconds" | bc -l) successful transactions per second
+echo That comes to $(echo "scale=2; $TrxSuccess / $DurationSeconds" | bc -l) successful transactions per second
 echo That comes to $(echo "scale=2; $TrxAttempted / $DurationSeconds" | bc -l) total transactions per second
-
-
+echo ----------------------------------
+echo The following instances ran eosc X times and had X transactons attempted
+for Inst in $(seq $Concurrency)
+do
+  echo "For accounts_${Inst}, eosc ran $(cat accounts_${Inst}_eosc_call_count.txt) times and had $(cat accounts_${Inst}_trx_attempt_count.txt) attempted transactions"
+done
 
