@@ -23,6 +23,9 @@ if [[ $# != 3 ]]; then
   exit
 fi
 
+GrepSearchForSuccess=\"transaction_id\"
+#GrepSearchForSuccess=\"eos_balance\"
+
 echo If this process gets stuck, press Ctrl + C as eosd may have had an issue
 NumberOfAccounts=$1
 [[ $1 == 0 ]] && NumberOfAccounts=$(cat accounts_1_names.txt | wc -l)
@@ -115,6 +118,7 @@ function CreateAccountsAndTransactions
     for Name in $(cat ${1}_names.txt)
     do
       echo transfer eos $Name 1 >> ${1}_trx.txt
+      #echo account $Name >> ${1}_trx.txt
     done
   # done
   touch ${1}_create_done.txt
@@ -138,7 +142,7 @@ function RunOneCapTest
     (( $(date +%s) >= TestStop )) && break
   done
   ErrorCount=$(grep "^[0-9][0-9]* assert_exception: Assert Exception" ${1}_trx_results.txt | wc -l )
-  SuccessCount=$(grep "transaction_id" ${1}_trx_results.txt | wc -l )
+  SuccessCount=$(grep $GrepSearchForSuccess ${1}_trx_results.txt | wc -l )
   ((TrxAttempted = SuccessCount + ErrorCount))
   echo $TrxAttempted > ${1}_trx_attempt_count.txt
   echo $CountEoscCalls > ${1}_eosc_call_count.txt
@@ -173,6 +177,9 @@ if [[ $1 != 0 ]]; then
   done
 fi
 
+echo ----------------------------------
+echo About to start capacity test, waiting 20 seconds for the load-average to go down.
+sleep 20
 
 #
 # Begin capacity test
@@ -222,7 +229,7 @@ done
 ((TrxSuccess=0))
 for Inst in $(seq $Concurrency)
 do
-  Tmp=$(grep transaction_id accounts_${Inst}_trx_results.txt | wc -l)
+  Tmp=$(grep $GrepSearchForSuccess accounts_${Inst}_trx_results.txt | wc -l)
   ((TrxSuccess += Tmp))
 done
 
