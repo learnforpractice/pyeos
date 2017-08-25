@@ -102,16 +102,18 @@ function CreateAccountsAndTransactions
 
   rm ${1}_run.txt 2>/dev/null
   touch ${1}_run.txt
+  rm ${1}_create_results.txt 2>/dev/null
+  touch ${1}_create_results.txt
   for Row in $(paste -d',' ${1}_names.txt ${1}_keys.txt)
   do
     Name=$(echo $Row | awk -F',' '{print $1}')
     PubKey=$(echo $Row | awk -F',' '{print $2}')
     echo create account inita $Name $PubKey EOS6KdkmwhPyc2wxN9SAFwo2PU2h74nWs7urN1uRduAwkcns2uXsa >/dev/null 2>/dev/null >> ${1}_run.txt
   done
-  eosc - < ${1}_run.txt >/dev/null
+  eosc - < ${1}_run.txt >${1}_create_results.txt
 
 
-  echo Prepairing Transactions for $1
+  echo Preparing Transactions for $1
   rm ${1}_trx.txt 2>/dev/null
   # for MoreTrx in {1..1000}
   # do
@@ -185,7 +187,7 @@ sleep 20
 # Begin capacity test
 #
 echo ----------------------------------
-echo Stating Capacity Test $(date "+%Y%m%d_%H%M%S")
+echo Starting Capacity Test $(date "+%Y%m%d_%H%M%S")
 for Inst in $(seq $Concurrency)
 do
   rm accounts_${Inst}_trx_results.txt 2>/dev/null
@@ -234,7 +236,8 @@ do
 done
 
 sleep 1
-echo Review captest.log for results of the test
+echo Review \*_trx_results.txt for results of each transaction
+echo Review \*_create_results.txt for results of each account creation transaction
 echo There were $TrxSuccess successful transactions in $DurationSeconds seconds
 echo There were supposed to be $TrxAttempted successful transactions
 echo That comes to $(echo "scale=2; $TrxSuccess / $DurationSeconds" | bc -l) successful transactions per second
