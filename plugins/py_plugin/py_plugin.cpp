@@ -196,9 +196,9 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *result,
       chain_apis::read_only::get_info_params params;
       auto info = ro_api.get_info(params);
 
-
       trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
       transaction_helpers::set_reference_block(trx, info.head_block_id);
+      ilog(trx.id());
       rw_api.push_transaction(trx);       
       string str_result = fc::json::to_pretty_string( rw_api.push_transaction(trx));
       std::cout <<str_result<< std::endl;
@@ -216,6 +216,7 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *result,
 
 extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char *authorization ){
     try{
+      #if 0
         auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
         auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
@@ -237,6 +238,7 @@ extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char 
 
         auto trx_result = push_transaction( trx );
         std::cout << fc::json::to_pretty_string( trx_result ) << std::endl;
+        #endif
         return 0;
     }
     catch ( const fc::exception& e ) {
@@ -275,7 +277,9 @@ void py_thread() {
    Py_Initialize();
    PyRun_SimpleString("import readline");
    PyInit_eosapi();
-   PyRun_SimpleString("import eosapi");
+   PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
+   PyRun_SimpleString("from initeos import *");
+
    ilog("++++++++++++++py_plugin::plugin_startup");
    c_printf("hello,world");
    //    get_info();
