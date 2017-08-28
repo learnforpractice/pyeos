@@ -14,7 +14,7 @@ cdef extern from "eosapi.h":
     int get_info_ (char *result,int len)
     int get_block_(int id,char *result,int length)
     int get_account_(char* name,char *result,int length)
-    void create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_ )
+    int create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_,char *ts_result,int length)
     int create_key_(char *pub_,int pub_length,char *priv_,int priv_length)
     int get_transaction_(char *id,char* result,int length)
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
@@ -43,12 +43,16 @@ def get_account(name):
     return toobject(info)
 
 def create_account(creator_,newaccount_,owner_key_,active_key_ ):
+    cdef char result[2048]
+    cdef int ret
     creator_ = creator_.encode('utf8')
     newaccount_ = newaccount_.encode('utf8')
     owner_key_ = owner_key_.encode('utf8')
     active_key_ = active_key_.encode('utf8')
-
-    create_account_(creator_,newaccount_,owner_key_,active_key_ )
+    ret = create_account_(creator_,newaccount_,owner_key_,active_key_,result,sizeof(result))
+    if ret == -1:
+        return False
+    return True
 
 def create_key():
     cdef char priv[128]
@@ -79,7 +83,7 @@ def get_transaction(id):
 
 def transfer(sender_,recipient_,int amount):
     cdef int ret
-    cdef char result[1024]
+    cdef char result[2048]
     sender = sender_.encode('utf8')
     recipient = recipient_.encode('utf8')
     ret = transfer_(sender,recipient,amount,result,sizeof(result))
