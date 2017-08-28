@@ -17,6 +17,7 @@ cdef extern from "eosapi.h":
     void create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_ )
     int create_key_(char *pub_,int pub_length,char *priv_,int priv_length)
     int get_transaction_(char *id,char* result,int length)
+    int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
 
 def toobject(bstr):
     bstr = json.loads(bstr.decode('utf8'))
@@ -71,6 +72,17 @@ def get_transaction(id):
     cdef int ret
     cdef char result[2048]
     ret = get_transaction_(id.encode('utf8'),result,sizeof(result))
+    if ret == -1:
+        return None
+    ts = json.loads((<bytes>result).decode('utf8'))
+    return Struct(**ts['transaction'])
+
+def transfer(sender_,recipient_,int amount):
+    cdef int ret
+    cdef char result[1024]
+    sender = sender_.encode('utf8')
+    recipient = recipient_.encode('utf8')
+    ret = transfer_(sender,recipient,amount,result,sizeof(result))
     if ret == -1:
         return None
     return toobject(result)

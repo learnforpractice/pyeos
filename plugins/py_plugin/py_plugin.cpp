@@ -79,17 +79,21 @@ extern "C" int get_account_(char* name,char *result,int length) {
    if (name == NULL || result == NULL){
       return -1;
    }
-   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-   chain_apis::read_only::get_account_params params = {name};
-   auto info = ro_api.get_account(params);
-   auto json_str = fc::json::to_string(info);
-   if (json_str.size()>length){
-      return -1;
+   try{
+      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+      chain_apis::read_only::get_account_params params = {name};
+      auto info = ro_api.get_account(params);
+      auto json_str = fc::json::to_string(info);
+      if (json_str.size()>length){
+         return -1;
+      }
+      strcpy(result,json_str.data());
+      return 0;
+   }catch ( const fc::exception& e ) {
+      elog((e.to_detail_string()));
    }
-   strcpy(result,json_str.data());
-   return 0;
+   return -1;
 }
-
 
 extern "C" void create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_ ) {
    auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
@@ -158,9 +162,9 @@ extern "C" int get_transaction_(char *id,char* result,int length){
    }
    auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
    auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
-   ilog(id);
+
    account_history_apis::read_only::get_transaction_params params = {chain::transaction_id_type(id)};
-   ilog("before get_transaction.");
+
    //    auto arg= fc::mutable_variant_object( "transaction_id", id);
    string str_ts = fc::json::to_pretty_string(ro_api.get_transaction(params));
 //   ilog(str_ts);
@@ -169,6 +173,76 @@ extern "C" int get_transaction_(char *id,char* result,int length){
    }
    strcpy(result,str_ts.data());
    return 0;
+}
+
+
+extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *result,int length){
+   if (sender_ == NULL || recipient_ == NULL || result == NULL) {
+      return -1;
+   }
+   try {
+      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+
+      Name sender(sender_);
+      Name recipient(recipient_);
+   //   uint64_t amount = fc::variant().as_uint64();
+      
+      SignedTransaction trx;
+      trx.scope = sort_names({sender,recipient});
+      transaction_helpers::emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
+                         types::transfer{sender, recipient, amount});
+
+      chain_apis::read_only::get_info_params params;
+      auto info = ro_api.get_info(params);
+
+
+      trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+      transaction_helpers::set_reference_block(trx, info.head_block_id);
+      rw_api.push_transaction(trx);       
+      string str_result = fc::json::to_pretty_string( rw_api.push_transaction(trx));
+      std::cout <<str_result<< std::endl;
+      if (str_result.size() > length -1){
+         return -1;
+      }
+      strncpy(result,str_result.data(),length);
+      return 0;
+   }
+   catch ( const fc::exception& e ) {
+      elog((e.to_detail_string()));
+   }
+   return -1;
+}
+
+extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char *authorization ){
+    try{
+        auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+        auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+
+        Name code(code_);
+        Name action(action_);
+        auto& json   = json_;
+        auto arg= fc::mutable_variant_object( "code", code )("action",action)("args", fc::json::from_string(json));
+
+//        auto result = call( json_to_bin_func, arg);
+
+        SignedTransaction trx;
+        trx.messages.resize(1);
+        auto& msg = trx.messages.back();
+        msg.code = code;
+        msg.type = action;
+        msg.authorization = fc::json::from_string( authorization ).as<vector<types::AccountPermission>>();
+        msg.data = result.get_object()["binargs"].as<Bytes>();
+        trx.scope = fc::json::from_string(scope).as<vector<Name>>();
+
+        auto trx_result = push_transaction( trx );
+        std::cout << fc::json::to_pretty_string( trx_result ) << std::endl;
+        return 0;
+    }
+    catch ( const fc::exception& e ) {
+        elog((e.to_detail_string()));
+    }
+    return -1;
 }
 
 

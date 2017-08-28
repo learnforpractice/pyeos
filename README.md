@@ -10,9 +10,8 @@ Have fun!
 {'head_block_num': 2110, 'last_irreversible_block_num': 2092, 'head_block_id': '0000083ef40927dffaee69ff02a80beb7b21a2238e91300ac25d259179d7830d', 'head_block_time': '2017-08-27T09:22:00', 'head_block_producer': 'initp', 'recent_slots': '1111111111111111111111111111111111111111111111111111111111111111', 'participation_rate': '1.00000000000000000'}
 
 ### >>> key = eosapi.create_key()
-public: EOS5XnfJ2ahqxhmZz47mc1nceJdsumB4Mtpwu3tDDnnj9Pqobzn6o
-private: 5Ka18FuiqDTGHi6hRqqYRHeC8iabMzjLSbNegpvL9rosmRfC8qV
-### >>> print(key)
+
+### >>> key
 (b'EOS5XnfJ2ahqxhmZz47mc1nceJdsumB4Mtpwu3tDDnnj9Pqobzn6o', b'5Ka18FuiqDTGHi6hRqqYRHeC8iabMzjLSbNegpvL9rosmRfC8qV')
 ### >>> key1 = 'EOS4toFS3YXEQCkuuw1aqDLrtHim86Gz9u3hBdcBw5KNPZcursVHq'
 ### >>> key2 = 'EOS6KdkmwhPyc2wxN9SAFwo2PU2h74nWs7urN1uRduAwkcns2uXsa'
