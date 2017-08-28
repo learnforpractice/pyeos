@@ -44,6 +44,39 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
    return names;
 }
 
+vector<uint8_t> assemble_wast( const std::string& wast ) {
+   IR::Module module;
+   std::vector<WAST::Error> parseErrors;
+   WAST::parseModule(wast.c_str(),wast.size(),module,parseErrors);
+   if(parseErrors.size())
+   {
+      // Print any parse errors;
+      std::cerr << "Error parsing WebAssembly text file:" << std::endl;
+      for(auto& error : parseErrors)
+      {
+         std::cerr << ":" << error.locus.describe() << ": " << error.message.c_str() << std::endl;
+         std::cerr << error.locus.sourceLine << std::endl;
+         std::cerr << std::setw(error.locus.column(8)) << "^" << std::endl;
+      }
+      FC_ASSERT( !"error parsing wast" );
+   }
+
+   try
+   {
+      // Serialize the WebAssembly module.
+      Serialization::ArrayOutputStream stream;
+      WASM::serialize(stream,module);
+      return stream.getBytes();
+   }
+   catch(Serialization::FatalSerializationException exception)
+   {
+      std::cerr << "Error serializing WebAssembly binary file:" << std::endl;
+      std::cerr << exception.message << std::endl;
+      throw;
+   }
+}
+
+
 int to_c_string(string s,char* buffer,int length) {
     if (s.size()>length-1) {
         return -1;
@@ -126,7 +159,6 @@ extern "C" int get_account_(char* name,char *result,int length) {
 }
 
 extern "C" int create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_,char *ts_result,int length) {
-    auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
     auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
     Name creator(creator_);
@@ -186,7 +218,6 @@ extern "C" int get_transaction_(char *id,char* result,int length){
       return -1;
    }
    auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-   auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
 
    account_history_apis::read_only::get_transaction_params params = {chain::transaction_id_type(id)};
 
@@ -206,7 +237,6 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
       return -1;
    }
    try {
-      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
       Name sender(sender_);
@@ -232,9 +262,34 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
    return -1;
 }
 
+extern "C" int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) {
+    Name account(account_);
+//    const auto& wast_file = string(file_wast);
+    std::string wast;
+
+    FC_ASSERT( fc::exists(wast_file) );
+    fc::read_file_contents( wast_file, wast );
+    auto wasm = assemble_wast( wast );
+
+
+    types::setcode handler;
+    handler.account = account;
+    handler.code.resize(wasm.size());
+    memcpy( handler.code.data(), wasm.data(), wasm.size() );
+
+    handler.abi = fc::json::from_file( abi_file ).as<types::Abi>();
+
+    SignedTransaction trx;
+    trx.scope = { config::EosContractName, account };
+    transaction_helpers::emplace_message(trx,  config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
+                        "setcode", handler );
+    return push_transaction( trx,ts_buffer,length );
+//    std::cout << fc::json::to_pretty_string( push_transaction(trx)  ) << std::endl;
+
+}
+
 extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length){
     try{
-        auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
         auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
         Name code(code_);

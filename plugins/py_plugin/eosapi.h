@@ -7,6 +7,7 @@
 	int create_key_(char *pub_,int pub_length,char *priv_,int priv_length);
     int get_transaction_(char *id,char* result,int length);
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length);
+    int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length);
 #endif
 
 
