@@ -12,6 +12,7 @@
 
 #include <eos/utilities/key_conversion.hpp>
 #include <boost/range/algorithm/sort.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 #include <Inline/BasicTypes.h>
@@ -24,11 +25,11 @@
 #include <fc/io/fstream.hpp>
 
 
-#include <eos/py_plugin/py_plugin.hpp>
 #include <fc/log/logger_config.hpp>
 #include <boost/thread.hpp>
-
+#include <eos/py_plugin/py_plugin.hpp>
 #include <python.h>
+
 
 
 using namespace std;
@@ -95,10 +96,13 @@ int push_transaction( SignedTransaction& trx ,char *ts_result,int length) {
     auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
-    transaction_helpers::set_reference_block(trx, info.head_block_id);
+    transaction_set_reference_block(trx, info.head_block_id);
     boost::sort( trx.scope );
     try {
-        auto str_result = fc::json::to_pretty_string( rw_api.push_transaction(trx) );
+        auto params = fc::variant(trx).get_object();
+//        auto parms = fc::json::from_string(fc::json::to_string( js )).as<chain_apis::read_write::push_transaction_params>();
+//todo
+        auto str_result = fc::json::to_pretty_string(rw_api.push_transaction(params));
         return to_c_string(str_result,ts_result,length);
     }
     catch ( const fc::exception& e ) {
@@ -177,17 +181,24 @@ extern "C" int create_account_( char* creator_,char* newaccount_,char* owner_key
 
     SignedTransaction trx;
     trx.scope = sort_names({creator,eosaccnt});
-    transaction_helpers::emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
-                    types::newaccount{creator, newaccount, owner_auth,
-                                      active_auth, recovery_auth, deposit});
 
-    chain_apis::read_only::get_info_params params;
-    auto info = ro_api.get_info(params);
-    trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
-    transaction_helpers::set_reference_block(trx, info.head_block_id);
-    boost::sort( trx.scope );
+    transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
+                                       types::newaccount{creator, newaccount, owner_auth,
+                                                         active_auth, recovery_auth, deposit});
+    if (creator == "inita")
+    {
+        fc::optional<fc::ecc::private_key> private_key = eos::utilities::wif_to_key("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3");
+        if (private_key)
+        {
+            wlog("public key ${k}",("k", private_key->get_public_key()));
+            trx.sign(*private_key, eos::chain::chain_id_type{});
+        }
+    }
+
     return push_transaction(trx,ts_result,length);
 }
+
+
 
 extern "C" int create_key_(char *pub_,int pub_length,char *priv_,int priv_length){
    if (pub_ == NULL || priv_ == NULL) {
@@ -242,17 +253,30 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
       Name sender(sender_);
       Name recipient(recipient_);
    //   uint64_t amount = fc::variant().as_uint64();
+#if 0
       
       SignedTransaction trx;
       trx.scope = sort_names({sender,recipient});
-      transaction_helpers::emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
+      transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
                          types::transfer{sender, recipient, amount});
 
       chain_apis::read_only::get_info_params params;
       auto info = ro_api.get_info(params);
 
       trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
-      transaction_helpers::set_reference_block(trx, info.head_block_id);
+      transaction_set_reference_block(trx, info.head_block_id);
+      ilog(trx.id());
+      return push_transaction(trx,ts_result,length);
+#endif
+      string memo;
+      SignedTransaction trx;
+      trx.scope = sort_names({sender,recipient});
+      transaction_emplace_message(trx, config::EosContractName,
+                                           vector<types::AccountPermission>{{sender,"active"}},
+                                           "transfer", types::transfer{sender, recipient, amount, memo});
+      auto info = get_info();
+      trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+      transaction_set_reference_block(trx, info.head_block_id);
       ilog(trx.id());
       return push_transaction(trx,ts_result,length);
    }
@@ -281,14 +305,14 @@ extern "C" int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_b
 
     SignedTransaction trx;
     trx.scope = { config::EosContractName, account };
-    transaction_helpers::emplace_message(trx,  config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
+    transaction_emplace_message(trx,  config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
                         "setcode", handler );
     return push_transaction( trx,ts_buffer,length );
 //    std::cout << fc::json::to_pretty_string( push_transaction(trx)  ) << std::endl;
 
 }
 
-extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length){
+extern "C" int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length){
     try{
         auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
@@ -296,11 +320,22 @@ extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char 
         Name action(action_);
 //        auto& json   = json_;
 //        auto arg= fc::mutable_variant_object( "code", code )("action",action)("args", fc::json::from_string(json));
+#if 1
+      auto arg= fc::mutable_variant_object
+                ("code", code)
+                ("action", action)
+                ("args", fc::json::from_string(json_));
 
-        chain_apis::read_only::abi_json_to_bin_params params = {code,action,fc::variant(json_)};
+        auto params = fc::json::from_string(fc::json::to_string(arg)).as<chain_apis::read_only::abi_json_to_bin_params>();
+        ilog(params.args.as_string());
+//        chain_apis::read_only::abi_json_to_bin_params params = {code,action,fc::variant(json_)};
+//        chain_apis::read_only::abi_json_to_bin_params params = {code,action,fc::json::from_string(json_)};
+
         //        auto result = call( json_to_bin_func, arg);
-        auto result = ro_api.abi_json_to_bin(params);
+//        auto result = ro_api.abi_json_to_bin(params);
+#endif
 
+#if 0
         SignedTransaction trx;
         trx.messages.resize(1);
         auto& msg = trx.messages.back();
@@ -310,8 +345,18 @@ extern "C" int exec_func(char *code_,char *action_,char *json_,char *scope,char 
 //        msg.data = result.get_object()["binargs"].as<Bytes>();
         msg.data = result.binargs;
         trx.scope = fc::json::from_string(scope).as<vector<Name>>();
+#endif
+      SignedTransaction trx;
+#if 0
+      transaction_emplace_serialized_message(trx, code, action,
+                                                      vector<types::AccountPermission>{{"currency","active"}},
+                                                      fc::variant(result.binargs).as<Bytes>());
+#endif
 
+#if 0
+        trx.scope = fc::json::from_string(scope).as<vector<Name>>();
         return push_transaction(trx,ts_result,length);
+#endif
     }
     catch ( const fc::exception& e ) {
         elog((e.to_detail_string()));

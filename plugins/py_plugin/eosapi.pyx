@@ -19,6 +19,8 @@ cdef extern from "eosapi.h":
     int get_transaction_(char *id,char* result,int length)
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
+    int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
+
 
 def toobject(bstr):
     bstr = json.loads(bstr.decode('utf8'))
@@ -103,6 +105,20 @@ def setcode(account,wast_file,abi_file):
     if ret == -1:
         return None
     return toobject(ts_buffer)
+
+def exec_func(code_,action_,json_,scope_,authorization_):
+    cdef int ret
+    cdef char ts_result[2048]
+    code = code_.encode('utf8')
+    action = action_.encode('utf8')
+    json = json_.encode('utf8')
+    scope = scope_.encode('utf8')
+    authorization = authorization_.encode('utf8')
+    ret = exec_func_(code,action,json,scope,authorization,ts_result,sizeof(ts_result))
+    if ret == -1:
+        return None
+    return toobject(ts_result)
+
 
 def test():
     exec(open('test.py').read())
