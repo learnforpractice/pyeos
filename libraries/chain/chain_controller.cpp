@@ -54,10 +54,9 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <chrono>
 
-//#include <Wren++.h>
 namespace eos { namespace chain {
-
 
 bool chain_controller::is_known_block(const block_id_type& id)const
 {
@@ -216,7 +215,25 @@ bool chain_controller::_push_block(const signed_block& new_block)
 
    try {
       auto session = _db.start_undo_session(true);
+      auto exec_start = std::chrono::high_resolution_clock::now();
       apply_block(new_block, skip);
+      if( (fc::time_point::now() - new_block.timestamp) < fc::seconds(60) )
+      {
+         auto exec_stop = std::chrono::high_resolution_clock::now();
+         auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exec_stop - exec_start);      
+         size_t trxcount = 0;
+         for (const auto& cycle : new_block.cycles)
+            for (const auto& thread : cycle)
+               trxcount += thread.user_input.size();
+         ilog( "${producer} #${num} @${time}  | ${trxcount} trx, ${pending} pending, exectime_ms=${extm}", 
+            ("producer", new_block.producer) 
+            ("time", new_block.timestamp)
+            ("num", new_block.block_num())
+            ("trxcount", trxcount)
+            ("pending", _pending_transactions.size())
+            ("extm", exec_ms.count())
+         );
+      }
       session.push();
    } catch ( const fc::exception& e ) {
       elog("Failed to push new block:\n${e}", ("e", e.to_detail_string()));
@@ -262,7 +279,7 @@ ProcessedTransaction chain_controller::_push_transaction(const SignedTransaction
    temp_session.squash();
 
    // notify anyone listening to pending transactions
-   on_pending_transaction(trx); /// TODO move this to apply...
+   on_pending_transaction(trx); /// TODO move this to apply... ??? why... 
 
    return pt;
 }
@@ -703,7 +720,7 @@ void chain_controller::_apply_block(const signed_block& next_block)
 
 void chain_controller::check_transaction_authorization(const SignedTransaction& trx, bool allow_unused_signatures)const {
    if ((_skip_flags & skip_transaction_signatures) && (_skip_flags & skip_authority_check)) {
-      ilog("Skipping auth and sigs checks");
+      //ilog("Skipping auth and sigs checks");
       return;
    }
 
@@ -1025,6 +1042,9 @@ block_id_type chain_controller::head_block_id()const {
 }
 
 types::AccountName chain_controller::head_block_producer() const {
+   auto b = _fork_db.fetch_block(head_block_id());
+   if( b ) return b->data.producer;
+
    if (auto head_block = fetch_block_by_id(head_block_id()))
       return head_block->producer;
    return {};
@@ -1127,7 +1147,7 @@ void chain_controller::replay() {
 
    const auto last_block_num = last_block->block_num();
 
-   ilog("Replaying blocks...");
+   ilog("Replaying ${n} blocks...", ("n", last_block_num) );
    for (uint32_t i = 1; i <= last_block_num; ++i) {
       if (i % 5000 == 0)
          std::cerr << "   " << double(i*100)/last_block_num << "%   "<<i << " of " <<last_block_num<<"   \n";

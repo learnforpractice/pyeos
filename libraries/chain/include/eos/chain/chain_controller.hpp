@@ -164,7 +164,7 @@ namespace eos { namespace chain {
             fc::time_point_sec when,
             const AccountName& producer,
             const fc::ecc::private_key& block_signing_private_key,
-            block_schedule::factory scheduler = block_schedule::by_threading_conflicts,
+            block_schedule::factory scheduler = block_schedule::in_single_thread,
             uint32_t skip = skip_nothing
             );
          signed_block _generate_block(
@@ -257,6 +257,9 @@ namespace eos { namespace chain {
          chainbase::database& get_mutable_database() { return _db; }
          
          bool should_check_scope()const                      { return !(_skip_flags&skip_scope_check);            }
+
+
+         const deque<SignedTransaction>&  pending()const { return _pending_transactions; }
    private:
 
          /// Reset the object graph in-memory
