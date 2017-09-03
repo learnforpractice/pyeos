@@ -225,6 +225,7 @@ bool chain_controller::_push_block(const signed_block& new_block)
          for (const auto& cycle : new_block.cycles)
             for (const auto& thread : cycle)
                trxcount += thread.user_input.size();
+#if 0
          ilog( "${producer} #${num} @${time}  | ${trxcount} trx, ${pending} pending, exectime_ms=${extm}", 
             ("producer", new_block.producer) 
             ("time", new_block.timestamp)
@@ -233,6 +234,7 @@ bool chain_controller::_push_block(const signed_block& new_block)
             ("pending", _pending_transactions.size())
             ("extm", exec_ms.count())
          );
+#endif
       }
       session.push();
    } catch ( const fc::exception& e ) {

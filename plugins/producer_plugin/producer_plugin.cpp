@@ -203,9 +203,10 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       const auto& db = app().get_plugin<chain_plugin>().chain();
       auto producer  = db.head_block_producer();
       auto pending   = db.pending().size();
-
+#if 0
       wlog("${p} generated block #${n} @ ${t} with ${count} trxs  ${pending} pending", ("p", producer)(capture)("pending",pending) );
-      break;
+#endif  
+    break;
    }
    case block_production_condition::not_synced:
       ilog("Not producing block because production is disabled until we receive a recent block (see: --enable-stale-production)");
