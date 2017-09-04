@@ -17,4 +17,50 @@ extern "C" {
 #endif
 #endif
 
+#include <string>
+#include <vector>
+#include <boost/asio.hpp>
+#include <iostream>
+#include <fc/variant.hpp>
+#include <fc/io/json.hpp>
+#include <fc/exception/exception.hpp>
+
+#include <eos/chain/config.hpp>
+#include <eos/chain_plugin/chain_plugin.hpp>
+#include <eos/account_history_api_plugin/account_history_api_plugin.hpp>
+
+#include <eos/utilities/key_conversion.hpp>
+#include <boost/range/algorithm/sort.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+#include <boost/algorithm/string/split.hpp>
+
+#include <Inline/BasicTypes.h>
+#include <IR/Module.h>
+#include <IR/Validate.h>
+#include <WAST/WAST.h>
+#include <WASM/WASM.h>
+#include <Runtime/Runtime.h>
+
+#include <fc/io/fstream.hpp>
+
+
+#include <fc/log/logger_config.hpp>
+#include <boost/thread.hpp>
+#include <eos/py_plugin/py_plugin.hpp>
+#include <python.h>
+
+
+#include <eos/chain_api_plugin/chain_api_plugin.hpp>
+#include <eos/chain/exceptions.hpp>
+#include <fc/io/json.hpp>
+
+using namespace std;
+using namespace eos;
+using namespace eos::chain;
+using namespace eos::utilities;
+
+chain_controller& db();
+string to_bitset(uint64_t val);
+
+
 
