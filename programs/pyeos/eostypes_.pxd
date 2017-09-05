@@ -20,6 +20,28 @@ cdef extern from "<vector>" namespace "std":
         iterator begin()
         iterator end()
 
+cdef extern from "" namespace "boost::filesystem":
+    cdef cppclass path:
+        path()
+        operator=(string& s)
+
+cdef extern from "" namespace "boost::container":
+    cdef cppclass flat_set[T]:
+        cppclass iterator:
+            T operator*()
+            iterator operator++()
+            bint operator==(iterator)
+            bint operator!=(iterator)
+        flat_set()
+        void push_back(T&)
+        T& operator[](int)
+        T& at(int)
+        iterator begin()
+        iterator end()
+
+
+
+
 cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
     cdef cppclass variant:
         variant()

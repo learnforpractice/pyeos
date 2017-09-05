@@ -11,18 +11,26 @@ cdef extern from *:
 cdef extern from "<eos/wallet_plugin/wallet_manager.hpp>" namespace "eos::wallet":
 
     cdef cppclass wallet_manager:
-#        void set_dir(const boost::filesystem::path& p) { dir = p; }
+        void set_dir(const path& p)
         void set_timeout(int64_t secs)
 #        chain::SignedTransaction sign_transaction(const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,\
 #                                                 const chain::chain_id_type& id);
         string create(const string& name);
+ 
         void open(const string& name);
+ 
         vector[string] list_wallets();
+ 
         map[public_key_type,string] list_keys();
-#        flat_set<public_key_type> get_public_keys();
+ 
+        flat_set[public_key_type] get_public_keys();
+ 
         void lock_all();
+ 
         void lock(const string& name);
+ 
         void unlock(const string& name, const string& password);
+ 
         void import_key(const string& name, const string& wif_key);
 
 cdef extern from "eosapi.h":
@@ -32,9 +40,16 @@ def create(name):
     name = bytes(name,'utf8')
     return get_wm().create(name)
 
+def set_dir(path_name):
+    path_name = bytes(path_name,'utf8')
+    set_dir(path_name)
 #        void set_dir(const boost::filesystem::path& p) { dir = p; }
+
 def set_timeout(secs):
     get_wm().set_timeout(secs)
+
+def sign_transaction(txn,keys,id):
+    pass
 #        chain::SignedTransaction sign_transaction(const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,\
 #                                                 const chain::chain_id_type& id);
 def open(name):
@@ -58,17 +73,21 @@ def list_keys():
 #        print(key_value.second)
         inc(it)
     return result
-'''
-    o = {}
-    cdef const map[X,Y].value_type *key_value
-    cdef map[X,Y].const_iterator iter = .begin()
-    while iter != s.end():
-        key_value = &cython.operator.dereference(iter)
-        o[key_value.first] = key_value.second
-        cython.operator.preincrement(iter)
-'''
 
 #        flat_set<public_key_type> get_public_keys();
+
+def get_public_keys():
+    cdef flat_set[public_key_type] keys = get_wm().get_public_keys()
+    cdef flat_set[public_key_type].iterator it = keys.begin()
+    cdef variant v
+    result = []
+    while it != keys.end():
+        value = deref(it)
+        inc(it)
+        to_variant(value,v)
+        result.append(v.as_string())
+    return result
+
 def lock_all():
     get_wm().lock_all()
 
