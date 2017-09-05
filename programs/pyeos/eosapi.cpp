@@ -1,11 +1,19 @@
 #include "eosapi.h"
-#include <eos/native_contract/balance_object.hpp>
-#include <eos/native_contract/staked_balance_objects.hpp>
-#include <eos/chain_plugin/chain_plugin.hpp>
 
 chain_controller& get_db(){
     return app().get_plugin<chain_plugin>().chain();
 }
+
+wallet_manager& get_wm(){
+   return app().get_plugin<wallet_plugin>().get_wallet_manager();
+}
+
+PyObject *array_create();
+void array_append_string(PyObject *array_object,std::string& s);
+void array_append_int(PyObject *array_object,int n);
+void array_append_double(PyObject *array_object,double n);
+void array_append_uint64(PyObject *arr,unsigned long long n);
+
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
    std::sort( names.begin(), names.end() );
@@ -46,11 +54,50 @@ vector<uint8_t> assemble_wast( const std::string& wast ) {
    }
 }
 
-PyObject *array_create();
-void array_append_string(PyObject *array_object,std::string& s);
-void array_append_int(PyObject *array_object,int n);
-void array_append_double(PyObject *array_object,double n);
-void array_append_uint64(PyObject *arr,unsigned long long n);
+#if 0
+void sign_transaction(SignedTransaction& trx) {
+   // TODO better error checking
+   const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
+   auto get_arg = fc::mutable_variant_object
+         ("transaction", trx)
+         ("available_keys", public_keys);
+   const auto& required_keys = call(host, port, get_required_keys, get_arg);
+   // TODO determine chain id
+   fc::variants sign_args = {fc::variant(trx), required_keys["required_keys"], fc::variant(chain_id_type{})};
+   const auto& signed_trx = call(wallet_host, wallet_port, wallet_sign_trx, sign_args);
+   trx = signed_trx.as<SignedTransaction>();
+}
+
+fc::variant push_transaction( SignedTransaction& trx, bool sign ) {
+    auto info = get_info();
+    trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+    transaction_set_reference_block(trx, info.head_block_id);
+    boost::sort( trx.scope );
+
+    if (sign) {
+       sign_transaction(trx);
+    }
+
+    return call( push_txn_func, trx );
+}
+
+
+
+void create_account(Name creator, Name newaccount, public_key_type owner, public_key_type active, bool sign) {
+      auto owner_auth   = eos::chain::Authority{1, {{owner, 1}}, {}};
+      auto active_auth  = eos::chain::Authority{1, {{active, 1}}, {}};
+      auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
+
+      uint64_t deposit = 1;
+
+      SignedTransaction trx;
+      trx.scope = sort_names({creator,config::EosContractName});
+      transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
+                                           types::newaccount{creator, newaccount, owner_auth,
+                                                             active_auth, recovery_auth, deposit});
+      std::cout << fc::json::to_pretty_string(push_transaction(trx, sign)) << std::endl;
+}
+#endif
 
 class PyArray
 {
@@ -206,6 +253,7 @@ extern "C" PyObject* get_account_(char *name){
    }
    return arr.get();
 }
+
 
 
 

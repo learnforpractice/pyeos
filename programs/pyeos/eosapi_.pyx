@@ -79,4 +79,22 @@ def exec_func(code_,action_,json_,scope_,authorization_):
 
 
 
+'''
+cdef class PyMessage:
+    cdef Message* msg      # hold a C++ instance which we're wrapping
+    def __cinit__(self,code,funcName,authorization,data):
+#        cdef AccountName code_
+#        cdef FuncName funcName_
+        cdef Vector[AccountPermission] authorization_
+        cdef Bytes data_
+        for a in authorization:
+            account = bytes(a[0],'utf8')
+            permission = bytes(a[1],'utf8')
+            authorization_.push_back(AccountPermission(Name(account),Name(permission)))
+        for d in bytearray(data,'utf8'):
+            data_.push_back(<char>d)
+        self.msg = new Message(AccountName(bytes(code,'utf8')),FuncName(bytes(funcName,'utf8')),authorization_,data_)
+    def __dealloc__(self):
+        del self.msg
+'''
 

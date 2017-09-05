@@ -20,6 +20,22 @@ cdef extern from "<vector>" namespace "std":
         iterator begin()
         iterator end()
 
+cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
+    cdef cppclass variant:
+        variant()
+        string as_string()
+
+cdef extern from "<eos/types/PublicKey.hpp>" namespace "eos::types":
+    cdef struct PublicKey:
+        pass
+
+cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
+    void to_variant(const PublicKey& var,  variant& vo);
+
+
+cdef extern from "<eos/chain/Types.hpp>" namespace "eos::chain":
+    ctypedef PublicKey public_key_type
+
 cdef extern from "<eos/types/native.hpp>" namespace "eos::types":
     ctypedef vector Vector
     ctypedef string String
@@ -48,22 +64,6 @@ cdef extern from "<eos/types/generated.hpp>" namespace "eos::types":
         Vector[AccountPermission]        authorization;
         Bytes                            data;
 
-cdef class PyMessage:
-    cdef Message* msg      # hold a C++ instance which we're wrapping
-    def __cinit__(self,code,funcName,authorization,data):
-#        cdef AccountName code_
-#        cdef FuncName funcName_
-        cdef Vector[AccountPermission] authorization_
-        cdef Bytes data_
-        for a in authorization:
-            account = bytes(a[0],'utf8')
-            permission = bytes(a[1],'utf8')
-            authorization_.push_back(AccountPermission(Name(account),Name(permission)))
-        for d in bytearray(data,'utf8'):
-            data_.push_back(<char>d)
-        self.msg = new Message(AccountName(bytes(code,'utf8')),FuncName(bytes(funcName,'utf8')),authorization_,data_)
-    def __dealloc__(self):
-        del self.msg
 
 
 

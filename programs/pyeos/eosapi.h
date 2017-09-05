@@ -57,13 +57,22 @@ extern "C" {
 #include <eos/chain/exceptions.hpp>
 #include <fc/io/json.hpp>
 
+#include <eos/native_contract/balance_object.hpp>
+#include <eos/native_contract/staked_balance_objects.hpp>
+#include <eos/chain_plugin/chain_plugin.hpp>
+#include <eos/wallet_plugin/wallet_plugin.hpp>
+#include <eos/wallet_plugin/wallet_manager.hpp>
+
+
 using namespace std;
 using namespace eos;
 using namespace eos::chain;
 using namespace eos::utilities;
+using namespace eos::wallet;
 
 chain_controller& db();
 string to_bitset(uint64_t val);
+wallet_manager& get_wm();
 
 
 

@@ -66,6 +66,7 @@ void py_plugin::plugin_initialize(const variables_map& options) {
 extern "C" void c_printf(const char *s);
 extern "C" void PyInit_eosapi_();
 extern "C" PyObject* PyInit_eostypes_();
+extern "C" PyObject* PyInit_wallet_();
 extern "C" PyObject* PyInit_hello();
 
 void py_thread() {
@@ -75,6 +76,7 @@ void py_thread() {
     PyRun_SimpleString("import readline");
     PyInit_eosapi_();
     PyInit_eostypes_();
+    PyInit_wallet_();
     PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
     PyRun_SimpleString("from initeos import *");
 
