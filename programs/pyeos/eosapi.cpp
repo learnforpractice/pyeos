@@ -54,21 +54,45 @@ vector<uint8_t> assemble_wast( const std::string& wast ) {
    }
 }
 
-#if 0
-void sign_transaction(SignedTransaction& trx) {
-   // TODO better error checking
-   const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
-   auto get_arg = fc::mutable_variant_object
-         ("transaction", trx)
-         ("available_keys", public_keys);
-   const auto& required_keys = call(host, port, get_required_keys, get_arg);
-   // TODO determine chain id
-   fc::variants sign_args = {fc::variant(trx), required_keys["required_keys"], fc::variant(chain_id_type{})};
-   const auto& signed_trx = call(wallet_host, wallet_port, wallet_sign_trx, sign_args);
-   trx = signed_trx.as<SignedTransaction>();
+read_only::get_info_results get_info() {
+	auto& db = get_db();
+	return {
+		db.head_block_num(),
+		db.last_irreversible_block_num(),
+		db.head_block_id(),
+		db.head_block_time(),
+		db.head_block_producer(),
+		std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string(),
+		__builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0
+	};
 }
 
-fc::variant push_transaction( SignedTransaction& trx, bool sign ) {
+void sign_transaction(SignedTransaction& trx) {
+   // TODO better error checking
+
+//	const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
+	const auto& public_keys = get_wm().get_public_keys();
+	auto get_arg = fc::mutable_variant_object
+		 ("transaction", trx)
+		 ("available_keys", public_keys);
+
+	auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+	auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+
+//	const auto& required_keys = call(host, port, get_required_keys, get_arg);
+	eos::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx),public_keys};
+	eos::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
+	// TODO determine chain id
+//	fc::variants sign_args = {fc::variant(trx), required_keys["required_keys"], fc::variant(chain_id_type{})};
+
+//	const auto& signed_trx = call(wallet_host, wallet_port, wallet_sign_trx, sign_args);
+//	trx = signed_trx.as<SignedTransaction>();
+	auto signed_trx = get_wm().sign_transaction(trx,required_keys.required_keys,chain_id_type{});
+	trx = signed_trx;
+}
+
+
+string push_transaction( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
     transaction_set_reference_block(trx, info.head_block_id);
@@ -78,26 +102,51 @@ fc::variant push_transaction( SignedTransaction& trx, bool sign ) {
        sign_transaction(trx);
     }
 
-    return call( push_txn_func, trx );
+    auto v = fc::variant(trx);
+	ilog(fc::json::to_string( trx ));
+
+	auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+	auto result = fc::json::to_string(rw.push_transaction(v.get_object()));
+	ilog(result);
+	return result;
+
+
+    ProcessedTransaction pts = get_db().push_transaction(trx,sign);
+    return get_db().transaction_to_variant(pts).get_string();
 }
 
-
-
-void create_account(Name creator, Name newaccount, public_key_type owner, public_key_type active, bool sign) {
-      auto owner_auth   = eos::chain::Authority{1, {{owner, 1}}, {}};
-      auto active_auth  = eos::chain::Authority{1, {{active, 1}}, {}};
-      auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
-
-      uint64_t deposit = 1;
-
-      SignedTransaction trx;
-      trx.scope = sort_names({creator,config::EosContractName});
-      transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
-                                           types::newaccount{creator, newaccount, owner_auth,
-                                                             active_auth, recovery_auth, deposit});
-      std::cout << fc::json::to_pretty_string(push_transaction(trx, sign)) << std::endl;
+void create_key_(string& pub,string& priv){
+	auto priv_ = fc::ecc::private_key::generate();
+	auto pub_ = public_key_type( priv_.get_public_key() );
+	pub = string(pub_);
+	priv = string(key_to_wif(priv_.get_secret()));
 }
-#endif
+
+string create_account__(Name creator, Name newaccount, public_key_type owner, public_key_type active, bool sign) {
+	try {
+		auto owner_auth   = eos::chain::Authority{1, {{owner, 1}}, {}};
+		auto active_auth  = eos::chain::Authority{1, {{active, 1}}, {}};
+		auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
+		printf("%d\n",sign);
+
+		uint64_t deposit = 1;
+		SignedTransaction trx;
+		trx.scope = sort_names({creator,config::EosContractName});
+		transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
+										   types::newaccount{creator, newaccount, owner_auth,
+															 active_auth, recovery_auth, deposit});
+		return fc::json::to_pretty_string(push_transaction(trx, sign));
+	}catch(fc::assert_exception& e){
+		elog(e.to_detail_string());
+	}catch(fc::exception& e){
+		elog(e.to_detail_string());
+	}
+	return "";
+}
+
+string create_account_(string creator, string newaccount, string owner, string active, int sign) {
+	return create_account__(creator,newaccount,public_key_type(owner),public_key_type(active),sign);
+}
 
 class PyArray
 {
@@ -128,7 +177,7 @@ private:
 };
 
 
-extern "C" PyObject* get_info_(){
+PyObject* get_info_(){
     PyArray arr;
     const chain_controller& db=get_db();
 
@@ -160,7 +209,7 @@ extern "C" PyObject* get_info_(){
 }
 */
 
-extern "C" PyObject *get_block_(char *num_or_id){
+PyObject *get_block_(char *num_or_id){
    PyArray arr;
    auto& db = get_db();
 
@@ -222,7 +271,7 @@ extern "C" PyObject *get_block_(char *num_or_id){
       optional<types::Abi>       abi;
    };
 */
-extern "C" PyObject* get_account_(char *name){
+PyObject* get_account_(char *name){
    using namespace native::eos;
    PyArray arr;
    arr.append(name);
@@ -253,6 +302,60 @@ extern "C" PyObject* get_account_(char *name){
    }
    return arr.get();
 }
+
+PyObject* get_accounts_(char *public_key){
+	PyArray arr;
+	if (public_key == NULL){
+		return arr.get();
+	}
+	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+	auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
+	eos::account_history_apis::read_only::get_key_accounts_params params = {chain::public_key_type{}};
+	eos::account_history_apis::read_only::get_key_accounts_results results= ro_api.get_key_accounts(params);
+
+	for(auto it = results.account_names.begin();it!=results.account_names.end();++it){
+		arr.append(string(*it));
+	}
+	return arr.get();
+}
+
+PyObject* get_controlled_accounts_(char *account_name){
+	PyArray arr;
+	if (account_name == NULL){
+		return arr.get();
+	}
+	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+	eos::account_history_apis::read_only::get_controlled_accounts_params params = {Name(account_name)};
+	eos::account_history_apis::read_only::get_controlled_accounts_results results = ro_api.get_controlled_accounts(params);
+	for(auto it = results.controlled_accounts.begin();it!=results.controlled_accounts.end();it++){
+		arr.append(string(*it));
+	}
+	return arr.get();
+}
+
+string get_transaction_(string id){
+	eos::account_history_apis::read_only::get_transaction_params params = {chain::transaction_id_type(id)};
+
+	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+	eos::account_history_apis::read_only::get_transaction_results results = ro_api.get_transaction(params);
+	return fc::json::to_string(results);
+}
+
+string get_transactions_(string account_name,int skip_seq,int num_seq){
+	const eos::account_history_apis::read_only::get_transactions_params params = {
+			chain::AccountName(account_name),
+			skip_seq,
+			num_seq
+	};
+	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+	eos::account_history_apis::read_only::get_transactions_results results = ro_api.get_transactions(params);
+	return fc::json::to_string(results);
+}
+
+
+
+
+
 
 
 

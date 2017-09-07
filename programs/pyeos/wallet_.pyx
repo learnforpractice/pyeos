@@ -50,8 +50,11 @@ def set_timeout(secs):
 
 def sign_transaction(txn,keys,id):
     pass
-#        chain::SignedTransaction sign_transaction(const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,\
-#                                                 const chain::chain_id_type& id);
+
+def sign_transaction(txn,keys,id):
+#    const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,const chain::chain_id_type& id
+    pass
+
 def open(name):
     name = bytes(name,'utf8')
     return get_wm().open(name)

@@ -70,3 +70,9 @@ build/*
 build-debug/*
 
 tn_data_*
+nbproject
+.cproject
+.project
+.pydevproject
+.settings
+

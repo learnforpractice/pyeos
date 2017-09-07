@@ -77,7 +77,8 @@ void py_thread() {
     PyInit_eosapi_();
     PyInit_eostypes_();
     PyInit_wallet_();
-    PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
+    PyRun_SimpleString("import wallet_ as wallet;");
+    PyRun_SimpleString("import eosapi_ as eosapi;import sys;sys.path.append('./eosd')");
     PyRun_SimpleString("from initeos import *");
 
     ilog("++++++++++++++py_plugin::plugin_startup");

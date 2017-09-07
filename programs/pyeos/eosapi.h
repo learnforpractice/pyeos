@@ -6,10 +6,6 @@
 
 extern "C" {
 #endif
-    PyObject* get_info_();
-	PyObject *get_block_(char *num_or_id);
-    PyObject* get_account_(char *name);
-    int create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_,char *ts_result,int length);
 	int create_key_(char *pub_,int pub_length,char *priv_,int priv_length);
     int get_transaction_(char *id,char* result,int length);
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length);
@@ -50,7 +46,7 @@ extern "C" {
 #include <fc/log/logger_config.hpp>
 #include <boost/thread.hpp>
 #include <eos/py_plugin/py_plugin.hpp>
-#include <python.h>
+#include <Python.h>
 
 
 #include <eos/chain_api_plugin/chain_api_plugin.hpp>
@@ -69,10 +65,29 @@ using namespace eos;
 using namespace eos::chain;
 using namespace eos::utilities;
 using namespace eos::wallet;
+using namespace eos::chain_apis;
 
 chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
+string push_transaction( SignedTransaction& trx, bool sign );
+
+#define INT_65 65
+
+PyObject* get_info_();
+PyObject* get_block_(char *num_or_id);
+PyObject* get_account_(char *name);
+PyObject* get_accounts_(char *public_key);
+PyObject* get_controlled_accounts_(char *account_name);
+
+string create_account_(string creator, string newaccount, string owner, string active, int sign);
+void create_key_(string& pub,string& priv);
+
+string get_transaction_(string id);
+string get_transactions_(string account_name,int skip_seq,int num_seq);
+
+
+
 
 
 

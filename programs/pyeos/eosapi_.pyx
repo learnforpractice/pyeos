@@ -1,6 +1,8 @@
 import json
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from eostypes_ cimport *
+#import eostypes_
 
 class JsonStruct:
     def __init__(self, **entries):
@@ -11,11 +13,20 @@ class JsonStruct:
         return str(self.__dict__)
 
 cdef extern from "eosapi.h":
+    ctypedef int bool
     object get_info_ ()
     object get_block_(char *num_or_id)
     object get_account_(char *name)
-    int create_account_( char* creator_,char* newaccount_,char* owner_key_,char* active_key_,char *ts_result,int length)
-    int create_key_(char *pub_,int pub_length,char *priv_,int priv_length)
+    object get_accounts_(char *public_key)
+    string create_account_(string creator, string newaccount, string owner, string active, int sign)
+    object get_controlled_accounts_(char *account_name);
+    void create_key_(string& pub,string& priv)
+
+    string get_transaction_(string id);
+    string get_transactions_(string account_name,int skip_seq,int num_seq);
+
+
+    string push_transaction( SignedTransaction& trx, bool sign )
     int get_transaction_(char *id,char* result,int length)
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
@@ -46,26 +57,68 @@ def get_info():
 
 def get_block(id):
     if type(id) == int:
-        id = str(id)
-    return get_block_(id.encode('utf8'))
+        id = bytes(id)
+    if type(id) == str:
+        id = bytes(id,'utf8')
+    return get_block_(id)
 
 def get_account(name):
-    return get_account_(name.encode('utf8'))
+    if type(name) == str:
+        name = bytes(name,'utf8')
+    return get_account_(name)
 
-def create_account(creator_,newaccount_,owner_key_,active_key_ ):
-    pass
+def get_accounts(public_key):
+    if type(public_key) == str:
+        public_key = bytes(public_key,'utf8')
+    return get_accounts_(public_key)
+
+def get_controlled_accounts(account_name):
+    if type(account_name) == str:
+        account_name = bytes(account_name,'utf8')
+
+    return get_controlled_accounts_(account_name);
+
+def create_account(creator,newaccount,owner_key,active_key,sign ):
+    if type(creator) == str:
+        creator = bytes(creator,'utf8')
+    
+    if type(newaccount) == str:
+        newaccount = bytes(newaccount,'utf8')
+    
+    if type(owner_key) == str:
+        owner_key = bytes(owner_key,'utf8')
+    
+    if type(active_key) == str:
+        active_key = bytes(active_key,'utf8')
+
+    if sign:
+        return create_account_(creator,newaccount,owner_key,active_key, 1)
+    else:
+        return create_account_(creator,newaccount,owner_key,active_key, 0)
 
 def create_key():
-    pass
+    cdef string pub
+    cdef string priv
+    create_key_(pub,priv)
+    return(pub,priv)
+
+def get_transaction(id):
+    if type(id) == int:
+        id = str(id)
+    if type(id) == str:
+        id = bytes(id,'utf8')
+    return get_transaction_(id)
+
+def get_transactions(account_name,skip_seq,num_seq):
+    if type(account_name) == str:
+        account_name = bytes(account_name,'utf8')
+    return get_transactions_(account_name,skip_seq,num_seq)
 
 def unlock():
     raise 'unimplement'
 
 def lock():
     raise 'unimplement'
-
-def get_transaction(id):
-    pass
 
 def transfer(sender_,recipient_,int amount):
     pass
