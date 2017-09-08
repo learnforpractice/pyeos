@@ -85,8 +85,9 @@ void create_key_(string& pub,string& priv);
 
 string get_transaction_(string id);
 string get_transactions_(string account_name,int skip_seq,int num_seq);
-
-
+string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
+string push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign);
+string set_contract_(string& account,string& wastPath,string& abiPath,bool sign);
 
 
 

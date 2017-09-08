@@ -1,6 +1,7 @@
 import json
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libcpp.map cimport map
 from eostypes_ cimport *
 #import eostypes_
 from typing import Dict, Tuple, List
@@ -28,7 +29,11 @@ cdef extern from "eosapi.h":
 
     string push_transaction( SignedTransaction& trx, bool sign )
     int get_transaction_(char *id,char* result,int length)
-    int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
+    
+    string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
+    string push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign);
+    string set_contract_(string& account,string& wastPath,string& abiPath,bool sign);
+
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
 
@@ -78,33 +83,38 @@ def toobject(bstr):
     bstr = json.loads(bstr.decode('utf8'))
     return JsonStruct(**bstr)
 
+def tobytes(ustr:str):
+    if type(ustr) == str:
+        ustr = bytes(ustr,'utf8')
+    return ustr
+
 def get_info()->str:
     return get_info_()
 
-def get_block(id)->str:
+def get_block(id:str)->str:
     if type(id) == int:
         id = bytes(id)
     if type(id) == str:
         id = bytes(id,'utf8')
     return get_block_(id)
 
-def get_account(name)->str:
+def get_account(name:str)->str:
     if type(name) == str:
         name = bytes(name,'utf8')
     return get_account_(name)
 
-def get_accounts(public_key)->List[str]:
+def get_accounts(public_key:str)->List[str]:
     if type(public_key) == str:
         public_key = bytes(public_key,'utf8')
     return get_accounts_(public_key)
 
-def get_controlled_accounts(account_name)->List[str]:
+def get_controlled_accounts(account_name:str)->List[str]:
     if type(account_name) == str:
         account_name = bytes(account_name,'utf8')
 
     return get_controlled_accounts_(account_name);
 
-def create_account(creator,newaccount,owner_key,active_key,sign )->str:
+def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign)->str:
     if type(creator) == str:
         creator = bytes(creator,'utf8')
     
@@ -128,25 +138,62 @@ def create_key()->Tuple[bytes]:
     create_key_(pub,priv)
     return(pub,priv)
 
-def get_transaction(id)->str:
+def get_transaction(id:str)->str:
     if type(id) == int:
         id = str(id)
     if type(id) == str:
         id = bytes(id,'utf8')
     return get_transaction_(id)
 
-def get_transactions(account_name,skip_seq,num_seq)->str:
+def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
     if type(account_name) == str:
         account_name = bytes(account_name,'utf8')
     return get_transactions_(account_name,skip_seq,num_seq)
 
-def transfer(sender_,recipient_,int amount)->str:
-    pass
+def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
+    if type(sender) == str:
+        sender = bytes(sender,"utf8");
+    if type(recipient) == str:
+        recipient = bytes(recipient,"utf8");
+    if type(memo) == str:
+        memo = bytes(memo,"utf8");
 
-def setcode(account,wast_file,abi_file)->str:
-    pass
+    if sign:
+        return transfer_(sender,recipient,amount,memo,1)
+    else:
+        return transfer_(sender,recipient,amount,memo,0)
+def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign):
+    if type(contract) == str:
+        contract = bytes(contract,"utf8");
+    if type(action) == str:
+        action = bytes(contract,"utf8");
+    if type(args) == str:
+        args = bytes(args,"utf8")
 
-def exec_func(code_,action_,json_,scope_,authorization_)->str:
+    cdef vector[string] scopes_;
+    cdef map[string,string] permissions_;
+
+    for scope in scopes:
+        scopes_.push_back(scope)
+    for per in permissions:
+        permissions_[per] = permissions[per]
+    if sign:
+        return push_message(contract,action,args,scopes,permissions,1)
+    else:
+        return push_message(contract,action,args,scopes,permissions,0)
+
+def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
+    account = tobytes(account)
+    wast_file = tobytes(wast_file)
+    abi_file = tobytes(abi_file)
+    if sign:
+        sign = 1
+    else:
+        sign = 0
+
+    return set_contract_(account,wast_file,abi_file,sign)
+
+def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->str:
     pass
 
 

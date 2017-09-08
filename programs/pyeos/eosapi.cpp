@@ -195,7 +195,7 @@ PyObject *get_block_(char *num_or_id){
          arr.append(results.block_num);
          arr.append(results.refBlockPrefix);
       }
-   } catch (fc::bad_cast_exception) {/* do nothing */}
+   } catch (fc::bad_cast_exception& ex) {/* do nothing */}
    catch ( const fc::exception& e ) {
      elog((e.to_detail_string()));
    }
@@ -306,6 +306,71 @@ string get_transactions_(string account_name,int skip_seq,int num_seq){
 		auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
 		eos::account_history_apis::read_only::get_transactions_results results = ro_api.get_transactions(params);
 		return fc::json::to_string(results);
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return "";
+}
+
+string transfer_(string& sender,string&recipient,int amount,string memo,bool sign){
+	try{
+		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+		SignedTransaction trx;
+		trx.scope = sort_names({sender,recipient});
+		transaction_emplace_message(trx, config::EosContractName,
+											vector<types::AccountPermission>{{sender,"active"}},
+											"transfer", types::transfer{sender, recipient, amount, memo});
+		return push_transaction(trx,sign);
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return "";
+}
+
+string push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign){
+	try{
+		ilog("Converting argument to binary...");
+		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+
+		eos::chain_apis::read_only::abi_json_to_bin_params params = {contract,action,fc::json::from_string(args)};
+		auto result = ro_api.abi_json_to_bin(params);
+
+		SignedTransaction trx;
+		vector<types::AccountPermission> accountPermissions;
+		for (auto it=permissions.begin();it!=permissions.end();it++){
+				accountPermissions.push_back(types::AccountPermission(Name(it->first),it->second));
+		}
+		transaction_emplace_serialized_message(trx, contract, action, accountPermissions,result.binargs);
+		for( const auto& s : scopes ) {
+		   trx.scope.emplace_back(s);
+		}
+		return push_transaction(trx,sign);
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return "";
+}
+
+string set_contract_(string& account,string& wastPath,string& abiPath,bool sign){
+	try{
+		std::string wast;
+		std::cout << "Reading WAST..." << std::endl;
+		fc::read_file_contents(wastPath, wast);
+		std::cout << "Assembling WASM..." << std::endl;
+		auto wasm = assemble_wast(wast);
+
+		types::setcode handler;
+		handler.account = account;
+		handler.code.assign(wasm.begin(), wasm.end());
+		handler.abi = fc::json::from_file(abiPath).as<types::Abi>();
+
+		SignedTransaction trx;
+		trx.scope = sort_names({config::EosContractName, account});
+		transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
+											 "setcode", handler);
+		std::cout << "Publishing contract..." << std::endl;
+		return fc::json::to_string(push_transaction(trx,sign));
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}

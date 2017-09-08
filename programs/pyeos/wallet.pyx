@@ -58,12 +58,12 @@ def get_public_keys():
 def lock_all():
     return wallet_lock_all_()
 
-def lock(name)->bool:
+def lock(name:str)->bool:
     if type(name) == str:
         name = bytes(name,'utf8')
     return wallet_lock_(name)
 
-def unlock(name, password)->bool:
+def unlock(name:str, password:str)->bool:
     if type(name) == str:
         name = bytes(name,'utf8')
 
@@ -72,7 +72,7 @@ def unlock(name, password)->bool:
     
     return wallet_unlock_(name,password)
 
-def import_key(name,wif_key)->bool:
+def import_key(name:str,wif_key:str)->bool:
     if type(name) == str:
         name = bytes(name,'utf8')
     if type(wif_key) == str:
