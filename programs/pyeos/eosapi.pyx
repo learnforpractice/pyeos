@@ -36,6 +36,9 @@ cdef extern object py_new_bool(int b):
         return True
     return False
 
+cdef extern object py_new_none():
+    return None
+
 cdef extern object py_new_string(string& s):
     return s
 

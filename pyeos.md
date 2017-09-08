@@ -35,3 +35,29 @@ key = eosapi.create_key() public: EOS5XnfJ2ahqxhmZz47mc1nceJdsumB4Mtpwu3tDDnnj9P
 
 r = eosapi.get_transaction('687d06e777bd8deedca0a7a92938b6fd44e85599d7ab8d351f4e98b42e8be082') print(r) {'transaction': {'refBlockNum': 2033, 'refBlockPrefix': 2586037830, 'expiration': '2017-08-27T09:19:49', 'scope': ['eos', 'inita'], 'signatures': [], 'messages': [{'code': 'eos', 'type': 'newaccount', 'authorization': [{'account': 'inita', 'permission': 'active'}], 'data': '000000008040934b000000e0cb4267a101000000010200b35ad060d629717bd3dbec82731094dae9cd7e9980c39625ad58fa7f9b654b010000010000000102bcca6347d828d4e1868b7dfa91692a16d5b20d0ee3d16a7ca2ddcc7f6dd03344010000010000000001000000008040934b00000000149be8080100010000000000000008454f5300000000'}], 'output': [{'notify': [], 'sync_transactions': [], 'async_transactions': []}]}}
 {'transaction': {'refBlockNum': 2033, 'refBlockPrefix': 2586037830, 'expiration': '2017-08-27T09:19:49', 'scope': ['eos', 'inita'], 'signatures': [], 'messages': [{'code': 'eos', 'type': 'newaccount', 'authorization': [{'account': 'inita', 'permission': 'active'}], 'data': '000000008040934b000000e0cb4267a101000000010200b35ad060d629717bd3dbec82731094dae9cd7e9980c39625ad58fa7f9b654b010000010000000102bcca6347d828d4e1868b7dfa91692a16d5b20d0ee3d16a7ca2ddcc7f6dd03344010000010000000001000000008040934b00000000149be8080100010000000000000008454f5300000000'}], 'output': [{'notify': [], 'sync_transactions': [], 'async_transactions': []}]}}
+
+
+#wallet test
+
+### >>> import wallet
+### >>> wallet_name = 'mywallet'
+### >>> password = wallet.create(wallet_name) 
+2439175ms thread-1   wallet.cpp:182                save_wallet_file     ] saving wallet to file /Users/newworld/dev/eos/build/programs/data-dir/./mywallet.wallet
+### >>> print(password)
+b'PW5JGYdyzzZYTQpPNFU3bb83fQW3P8LUUQ5w2D8GL8zaB93riScSE'
+### >>> wallet.open(wallet_name) 
+True
+### >>> wallet.unlock(wallet_name,password)
+True
+### >>> wallet.import_key(wallet_name,'5JaXKGt2J4kK4EabnPZ2DSS6UJFe8vZ9mgEBXDQ5j3G2m7HE5nQ')
+2439178ms thread-1   wallet.cpp:182                save_wallet_file     ] saving wallet to file /Users/newworld/dev/eos/build/programs/data-dir/./mywallet.wallet
+True
+### >>> wallet.list_keys()
+{b'EOS6V8Ho3VBuxNrGsqHWVXHfRPThPhqFDs9aPp1s9hJqAKZJ7NTJJ': b'5JaXKGt2J4kK4EabnPZ2DSS6UJFe8vZ9mgEBXDQ5j3G2m7HE5nQ'}
+### >>> wallet.list_wallets()
+[b'mywallet *']
+
+
+
+
+

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <Python.h>
-
+PyObject* py_new_none();
 PyObject* py_new_bool(int b);
 PyObject* py_new_string(std::string& s);
 PyObject* py_new_int(int n);
