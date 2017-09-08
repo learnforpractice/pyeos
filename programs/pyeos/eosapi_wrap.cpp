@@ -441,8 +441,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__eosapi_
-#define __PYX_HAVE_API__eosapi_
+#define __PYX_HAVE__eosapi
+#define __PYX_HAVE_API__eosapi
 #include <string.h>
 #include <string>
 #include "ios"
@@ -654,7 +654,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "eosapi_.pyx",
+  "eosapi.pyx",
   "stringsource",
 };
 
@@ -967,17 +967,17 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'eostypes_' */
 
-/* Module declarations from 'eosapi_' */
+/* Module declarations from 'eosapi' */
 static CYTHON_INLINE PyObject *__pyx_convert_PyObject_string_to_py_std__in_string(std::string const &); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyUnicode_string_to_py_std__in_string(std::string const &); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyStr_string_to_py_std__in_string(std::string const &); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyBytes_string_to_py_std__in_string(std::string const &); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyByteArray_string_to_py_std__in_string(std::string const &); /*proto*/
 static std::string __pyx_convert_string_from_py_std__in_string(PyObject *); /*proto*/
-#define __Pyx_MODULE_NAME "eosapi_"
-int __pyx_module_is_main_eosapi_ = 0;
+#define __Pyx_MODULE_NAME "eosapi"
+int __pyx_module_is_main_eosapi = 0;
 
-/* Implementation of 'eosapi_' */
+/* Implementation of 'eosapi' */
 static const char __pyx_k_id[] = "id";
 static const char __pyx_k_doc[] = "__doc__";
 static const char __pyx_k_pub[] = "pub";
@@ -1002,7 +1002,7 @@ static const char __pyx_k_action[] = "action_";
 static const char __pyx_k_amount[] = "amount";
 static const char __pyx_k_append[] = "append";
 static const char __pyx_k_decode[] = "decode";
-static const char __pyx_k_eosapi[] = "eosapi_";
+static const char __pyx_k_eosapi[] = "eosapi";
 static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_json_2[] = "json_";
 static const char __pyx_k_module[] = "__module__";
@@ -1044,7 +1044,7 @@ static const char __pyx_k_get_transactions[] = "get_transactions";
 static const char __pyx_k_JsonStruct___init[] = "JsonStruct.__init__";
 static const char __pyx_k_JsonStruct___repr[] = "JsonStruct.__repr__";
 static const char __pyx_k_get_controlled_accounts[] = "get_controlled_accounts";
-static const char __pyx_k_Users_newworld_dev_eos_programs[] = "/Users/newworld/dev/eos/programs/pyeos/eosapi_.pyx";
+static const char __pyx_k_Users_newworld_dev_eos_programs[] = "/Users/newworld/dev/eos/programs/pyeos/eosapi.pyx";
 static PyObject *__pyx_n_s_JsonStruct;
 static PyObject *__pyx_n_s_JsonStruct___init;
 static PyObject *__pyx_n_s_JsonStruct___repr;
@@ -1112,24 +1112,24 @@ static PyObject *__pyx_n_s_unlock;
 static PyObject *__pyx_n_s_update;
 static PyObject *__pyx_n_s_utf8;
 static PyObject *__pyx_n_s_wast_file;
-static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entries); /* proto */
-static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__10JsonStruct_4__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_bstr); /* proto */
-static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id); /* proto */
-static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
-static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_public_key); /* proto */
-static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name); /* proto */
-static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_creator, PyObject *__pyx_v_newaccount, PyObject *__pyx_v_owner_key, PyObject *__pyx_v_active_key, PyObject *__pyx_v_sign); /* proto */
-static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id); /* proto */
-static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name, PyObject *__pyx_v_skip_seq, PyObject *__pyx_v_num_seq); /* proto */
-static PyObject *__pyx_pf_7eosapi__20unlock(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__22lock(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7eosapi__24transfer(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_sender_, CYTHON_UNUSED PyObject *__pyx_v_recipient_, CYTHON_UNUSED int __pyx_v_amount); /* proto */
-static PyObject *__pyx_pf_7eosapi__26setcode(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_account, CYTHON_UNUSED PyObject *__pyx_v_wast_file, CYTHON_UNUSED PyObject *__pyx_v_abi_file); /* proto */
-static PyObject *__pyx_pf_7eosapi__28exec_func(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_code_, CYTHON_UNUSED PyObject *__pyx_v_action_, CYTHON_UNUSED PyObject *__pyx_v_json_, CYTHON_UNUSED PyObject *__pyx_v_scope_, CYTHON_UNUSED PyObject *__pyx_v_authorization_); /* proto */
+static PyObject *__pyx_pf_6eosapi_10JsonStruct___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entries); /* proto */
+static PyObject *__pyx_pf_6eosapi_10JsonStruct_2__str__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_10JsonStruct_4__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_toobject(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_bstr); /* proto */
+static PyObject *__pyx_pf_6eosapi_2get_info(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_4get_block(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id); /* proto */
+static PyObject *__pyx_pf_6eosapi_6get_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
+static PyObject *__pyx_pf_6eosapi_8get_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_public_key); /* proto */
+static PyObject *__pyx_pf_6eosapi_10get_controlled_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name); /* proto */
+static PyObject *__pyx_pf_6eosapi_12create_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_creator, PyObject *__pyx_v_newaccount, PyObject *__pyx_v_owner_key, PyObject *__pyx_v_active_key, PyObject *__pyx_v_sign); /* proto */
+static PyObject *__pyx_pf_6eosapi_14create_key(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_16get_transaction(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id); /* proto */
+static PyObject *__pyx_pf_6eosapi_18get_transactions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name, PyObject *__pyx_v_skip_seq, PyObject *__pyx_v_num_seq); /* proto */
+static PyObject *__pyx_pf_6eosapi_20unlock(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_22lock(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6eosapi_24transfer(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_sender_, CYTHON_UNUSED PyObject *__pyx_v_recipient_, CYTHON_UNUSED int __pyx_v_amount); /* proto */
+static PyObject *__pyx_pf_6eosapi_26setcode(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_account, CYTHON_UNUSED PyObject *__pyx_v_wast_file, CYTHON_UNUSED PyObject *__pyx_v_abi_file); /* proto */
+static PyObject *__pyx_pf_6eosapi_28exec_func(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_code_, CYTHON_UNUSED PyObject *__pyx_v_action_, CYTHON_UNUSED PyObject *__pyx_v_json_, CYTHON_UNUSED PyObject *__pyx_v_scope_, CYTHON_UNUSED PyObject *__pyx_v_authorization_); /* proto */
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__4;
@@ -1165,7 +1165,7 @@ static PyObject *__pyx_codeobj__30;
 static PyObject *__pyx_codeobj__32;
 static PyObject *__pyx_codeobj__34;
 
-/* "eosapi_.pyx":8
+/* "eosapi.pyx":8
  * 
  * class JsonStruct:
  *     def __init__(self, **entries):             # <<<<<<<<<<<<<<
@@ -1174,9 +1174,9 @@ static PyObject *__pyx_codeobj__34;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__10JsonStruct_1__init__ = {"__init__", (PyCFunction)__pyx_pw_7eosapi__10JsonStruct_1__init__, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_10JsonStruct_1__init__ = {"__init__", (PyCFunction)__pyx_pw_6eosapi_10JsonStruct_1__init__, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_entries = 0;
   PyObject *__pyx_r = 0;
@@ -1216,11 +1216,11 @@ static PyObject *__pyx_pw_7eosapi__10JsonStruct_1__init__(PyObject *__pyx_self, 
   __Pyx_RaiseArgtupleInvalid("__init__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 8, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_DECREF(__pyx_v_entries); __pyx_v_entries = 0;
-  __Pyx_AddTraceback("eosapi_.JsonStruct.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.JsonStruct.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__10JsonStruct___init__(__pyx_self, __pyx_v_self, __pyx_v_entries);
+  __pyx_r = __pyx_pf_6eosapi_10JsonStruct___init__(__pyx_self, __pyx_v_self, __pyx_v_entries);
 
   /* function exit code */
   __Pyx_XDECREF(__pyx_v_entries);
@@ -1228,7 +1228,7 @@ static PyObject *__pyx_pw_7eosapi__10JsonStruct_1__init__(PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entries) {
+static PyObject *__pyx_pf_6eosapi_10JsonStruct___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entries) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1237,7 +1237,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject 
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "eosapi_.pyx":9
+  /* "eosapi.pyx":9
  * class JsonStruct:
  *     def __init__(self, **entries):
  *         self.__dict__.update(entries)             # <<<<<<<<<<<<<<
@@ -1294,7 +1294,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":8
+  /* "eosapi.pyx":8
  * 
  * class JsonStruct:
  *     def __init__(self, **entries):             # <<<<<<<<<<<<<<
@@ -1310,7 +1310,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject 
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("eosapi_.JsonStruct.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.JsonStruct.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1318,7 +1318,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject 
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":10
+/* "eosapi.pyx":10
  *     def __init__(self, **entries):
  *         self.__dict__.update(entries)
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -1327,27 +1327,27 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct___init__(CYTHON_UNUSED PyObject 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_3__str__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__10JsonStruct_3__str__ = {"__str__", (PyCFunction)__pyx_pw_7eosapi__10JsonStruct_3__str__, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_3__str__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_3__str__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_10JsonStruct_3__str__ = {"__str__", (PyCFunction)__pyx_pw_6eosapi_10JsonStruct_3__str__, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_3__str__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__str__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__10JsonStruct_2__str__(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_6eosapi_10JsonStruct_2__str__(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_6eosapi_10JsonStruct_2__str__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("__str__", 0);
 
-  /* "eosapi_.pyx":11
+  /* "eosapi.pyx":11
  *         self.__dict__.update(entries)
  *     def __str__(self):
  *         return str(self.__dict__)             # <<<<<<<<<<<<<<
@@ -1369,7 +1369,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject 
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":10
+  /* "eosapi.pyx":10
  *     def __init__(self, **entries):
  *         self.__dict__.update(entries)
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -1381,7 +1381,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject 
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("eosapi_.JsonStruct.__str__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.JsonStruct.__str__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1389,7 +1389,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject 
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":12
+/* "eosapi.pyx":12
  *     def __str__(self):
  *         return str(self.__dict__)
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -1398,27 +1398,27 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_2__str__(CYTHON_UNUSED PyObject 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_5__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__10JsonStruct_5__repr__ = {"__repr__", (PyCFunction)__pyx_pw_7eosapi__10JsonStruct_5__repr__, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__10JsonStruct_5__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_5__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_10JsonStruct_5__repr__ = {"__repr__", (PyCFunction)__pyx_pw_6eosapi_10JsonStruct_5__repr__, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_10JsonStruct_5__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__repr__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__10JsonStruct_4__repr__(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_6eosapi_10JsonStruct_4__repr__(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__10JsonStruct_4__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_6eosapi_10JsonStruct_4__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "eosapi_.pyx":13
+  /* "eosapi.pyx":13
  *         return str(self.__dict__)
  *     def __repr__(self):
  *         return str(self.__dict__)             # <<<<<<<<<<<<<<
@@ -1440,7 +1440,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_4__repr__(CYTHON_UNUSED PyObject
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":12
+  /* "eosapi.pyx":12
  *     def __str__(self):
  *         return str(self.__dict__)
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -1452,7 +1452,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_4__repr__(CYTHON_UNUSED PyObject
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("eosapi_.JsonStruct.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.JsonStruct.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1460,7 +1460,7 @@ static PyObject *__pyx_pf_7eosapi__10JsonStruct_4__repr__(CYTHON_UNUSED PyObject
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":34
+/* "eosapi.pyx":34
  *     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
  * 
  * cdef extern object py_new_bool(int b):             # <<<<<<<<<<<<<<
@@ -1474,7 +1474,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("py_new_bool", 0);
 
-  /* "eosapi_.pyx":35
+  /* "eosapi.pyx":35
  * 
  * cdef extern object py_new_bool(int b):
  *     if b:             # <<<<<<<<<<<<<<
@@ -1484,7 +1484,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
   __pyx_t_1 = (__pyx_v_b != 0);
   if (__pyx_t_1) {
 
-    /* "eosapi_.pyx":36
+    /* "eosapi.pyx":36
  * cdef extern object py_new_bool(int b):
  *     if b:
  *         return True             # <<<<<<<<<<<<<<
@@ -1496,7 +1496,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
     __pyx_r = Py_True;
     goto __pyx_L0;
 
-    /* "eosapi_.pyx":35
+    /* "eosapi.pyx":35
  * 
  * cdef extern object py_new_bool(int b):
  *     if b:             # <<<<<<<<<<<<<<
@@ -1505,7 +1505,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
  */
   }
 
-  /* "eosapi_.pyx":37
+  /* "eosapi.pyx":37
  *     if b:
  *         return True
  *     return False             # <<<<<<<<<<<<<<
@@ -1517,7 +1517,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
   __pyx_r = Py_False;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":34
+  /* "eosapi.pyx":34
  *     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
  * 
  * cdef extern object py_new_bool(int b):             # <<<<<<<<<<<<<<
@@ -1532,7 +1532,7 @@ PyObject *py_new_bool(int __pyx_v_b) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":39
+/* "eosapi.pyx":39
  *     return False
  * 
  * cdef extern object py_new_string(string& s):             # <<<<<<<<<<<<<<
@@ -1546,7 +1546,7 @@ PyObject *py_new_string(std::string &__pyx_v_s) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("py_new_string", 0);
 
-  /* "eosapi_.pyx":40
+  /* "eosapi.pyx":40
  * 
  * cdef extern object py_new_string(string& s):
  *     return s             # <<<<<<<<<<<<<<
@@ -1560,7 +1560,7 @@ PyObject *py_new_string(std::string &__pyx_v_s) {
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":39
+  /* "eosapi.pyx":39
  *     return False
  * 
  * cdef extern object py_new_string(string& s):             # <<<<<<<<<<<<<<
@@ -1571,7 +1571,7 @@ PyObject *py_new_string(std::string &__pyx_v_s) {
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.py_new_string", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.py_new_string", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1579,7 +1579,7 @@ PyObject *py_new_string(std::string &__pyx_v_s) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":42
+/* "eosapi.pyx":42
  *     return s
  * 
  * cdef extern object py_new_int(int n):             # <<<<<<<<<<<<<<
@@ -1593,7 +1593,7 @@ PyObject *py_new_int(int __pyx_v_n) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("py_new_int", 0);
 
-  /* "eosapi_.pyx":43
+  /* "eosapi.pyx":43
  * 
  * cdef extern object py_new_int(int n):
  *     return n             # <<<<<<<<<<<<<<
@@ -1607,7 +1607,7 @@ PyObject *py_new_int(int __pyx_v_n) {
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":42
+  /* "eosapi.pyx":42
  *     return s
  * 
  * cdef extern object py_new_int(int n):             # <<<<<<<<<<<<<<
@@ -1618,7 +1618,7 @@ PyObject *py_new_int(int __pyx_v_n) {
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.py_new_int", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.py_new_int", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1626,7 +1626,7 @@ PyObject *py_new_int(int __pyx_v_n) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":45
+/* "eosapi.pyx":45
  *     return n
  * 
  * cdef extern object py_new_int64(long long n):             # <<<<<<<<<<<<<<
@@ -1640,7 +1640,7 @@ PyObject *py_new_int64(PY_LONG_LONG __pyx_v_n) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("py_new_int64", 0);
 
-  /* "eosapi_.pyx":46
+  /* "eosapi.pyx":46
  * 
  * cdef extern object py_new_int64(long long n):
  *     return n             # <<<<<<<<<<<<<<
@@ -1654,7 +1654,7 @@ PyObject *py_new_int64(PY_LONG_LONG __pyx_v_n) {
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":45
+  /* "eosapi.pyx":45
  *     return n
  * 
  * cdef extern object py_new_int64(long long n):             # <<<<<<<<<<<<<<
@@ -1665,7 +1665,7 @@ PyObject *py_new_int64(PY_LONG_LONG __pyx_v_n) {
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.py_new_int64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.py_new_int64", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1673,7 +1673,7 @@ PyObject *py_new_int64(PY_LONG_LONG __pyx_v_n) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":48
+/* "eosapi.pyx":48
  *     return n
  * 
  * cdef extern object array_create():             # <<<<<<<<<<<<<<
@@ -1687,7 +1687,7 @@ PyObject *array_create(void) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("array_create", 0);
 
-  /* "eosapi_.pyx":49
+  /* "eosapi.pyx":49
  * 
  * cdef extern object array_create():
  *     return []             # <<<<<<<<<<<<<<
@@ -1701,7 +1701,7 @@ PyObject *array_create(void) {
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":48
+  /* "eosapi.pyx":48
  *     return n
  * 
  * cdef extern object array_create():             # <<<<<<<<<<<<<<
@@ -1712,7 +1712,7 @@ PyObject *array_create(void) {
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.array_create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.array_create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1720,7 +1720,7 @@ PyObject *array_create(void) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":51
+/* "eosapi.pyx":51
  *     return []
  * 
  * cdef extern void array_append(object arr,object v):             # <<<<<<<<<<<<<<
@@ -1733,7 +1733,7 @@ void array_append(PyObject *__pyx_v_arr, PyObject *__pyx_v_v) {
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("array_append", 0);
 
-  /* "eosapi_.pyx":52
+  /* "eosapi.pyx":52
  * 
  * cdef extern void array_append(object arr,object v):
  *     arr.append(v)             # <<<<<<<<<<<<<<
@@ -1742,7 +1742,7 @@ void array_append(PyObject *__pyx_v_arr, PyObject *__pyx_v_v) {
  */
   __pyx_t_1 = __Pyx_PyObject_Append(__pyx_v_arr, __pyx_v_v); if (unlikely(__pyx_t_1 == -1)) __PYX_ERR(0, 52, __pyx_L1_error)
 
-  /* "eosapi_.pyx":51
+  /* "eosapi.pyx":51
  *     return []
  * 
  * cdef extern void array_append(object arr,object v):             # <<<<<<<<<<<<<<
@@ -1753,12 +1753,12 @@ void array_append(PyObject *__pyx_v_arr, PyObject *__pyx_v_v) {
   /* function exit code */
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("eosapi_.array_append", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.array_append", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":54
+/* "eosapi.pyx":54
  *     arr.append(v)
  * 
  * cdef extern void array_append_string(object arr,string& s):             # <<<<<<<<<<<<<<
@@ -1772,7 +1772,7 @@ void array_append_string(PyObject *__pyx_v_arr, std::string &__pyx_v_s) {
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("array_append_string", 0);
 
-  /* "eosapi_.pyx":55
+  /* "eosapi.pyx":55
  * 
  * cdef extern void array_append_string(object arr,string& s):
  *     arr.append(s)             # <<<<<<<<<<<<<<
@@ -1784,7 +1784,7 @@ void array_append_string(PyObject *__pyx_v_arr, std::string &__pyx_v_s) {
   __pyx_t_2 = __Pyx_PyObject_Append(__pyx_v_arr, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":54
+  /* "eosapi.pyx":54
  *     arr.append(v)
  * 
  * cdef extern void array_append_string(object arr,string& s):             # <<<<<<<<<<<<<<
@@ -1796,12 +1796,12 @@ void array_append_string(PyObject *__pyx_v_arr, std::string &__pyx_v_s) {
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_WriteUnraisable("eosapi_.array_append_string", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.array_append_string", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":57
+/* "eosapi.pyx":57
  *     arr.append(s)
  * 
  * cdef extern void array_append_int(object arr,int n):             # <<<<<<<<<<<<<<
@@ -1815,7 +1815,7 @@ void array_append_int(PyObject *__pyx_v_arr, int __pyx_v_n) {
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("array_append_int", 0);
 
-  /* "eosapi_.pyx":58
+  /* "eosapi.pyx":58
  * 
  * cdef extern void array_append_int(object arr,int n):
  *     arr.append(n)             # <<<<<<<<<<<<<<
@@ -1827,7 +1827,7 @@ void array_append_int(PyObject *__pyx_v_arr, int __pyx_v_n) {
   __pyx_t_2 = __Pyx_PyObject_Append(__pyx_v_arr, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":57
+  /* "eosapi.pyx":57
  *     arr.append(s)
  * 
  * cdef extern void array_append_int(object arr,int n):             # <<<<<<<<<<<<<<
@@ -1839,12 +1839,12 @@ void array_append_int(PyObject *__pyx_v_arr, int __pyx_v_n) {
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_WriteUnraisable("eosapi_.array_append_int", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.array_append_int", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":60
+/* "eosapi.pyx":60
  *     arr.append(n)
  * 
  * cdef extern void array_append_double(object arr,double n):             # <<<<<<<<<<<<<<
@@ -1858,7 +1858,7 @@ void array_append_double(PyObject *__pyx_v_arr, double __pyx_v_n) {
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("array_append_double", 0);
 
-  /* "eosapi_.pyx":61
+  /* "eosapi.pyx":61
  * 
  * cdef extern void array_append_double(object arr,double n):
  *     arr.append(n)             # <<<<<<<<<<<<<<
@@ -1870,7 +1870,7 @@ void array_append_double(PyObject *__pyx_v_arr, double __pyx_v_n) {
   __pyx_t_2 = __Pyx_PyObject_Append(__pyx_v_arr, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":60
+  /* "eosapi.pyx":60
  *     arr.append(n)
  * 
  * cdef extern void array_append_double(object arr,double n):             # <<<<<<<<<<<<<<
@@ -1882,12 +1882,12 @@ void array_append_double(PyObject *__pyx_v_arr, double __pyx_v_n) {
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_WriteUnraisable("eosapi_.array_append_double", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.array_append_double", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":63
+/* "eosapi.pyx":63
  *     arr.append(n)
  * 
  * cdef extern void array_append_uint64(object arr,unsigned long long n):             # <<<<<<<<<<<<<<
@@ -1901,7 +1901,7 @@ void array_append_uint64(PyObject *__pyx_v_arr, unsigned PY_LONG_LONG __pyx_v_n)
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("array_append_uint64", 0);
 
-  /* "eosapi_.pyx":64
+  /* "eosapi.pyx":64
  * 
  * cdef extern void array_append_uint64(object arr,unsigned long long n):
  *     arr.append(n)             # <<<<<<<<<<<<<<
@@ -1913,7 +1913,7 @@ void array_append_uint64(PyObject *__pyx_v_arr, unsigned PY_LONG_LONG __pyx_v_n)
   __pyx_t_2 = __Pyx_PyObject_Append(__pyx_v_arr, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":63
+  /* "eosapi.pyx":63
  *     arr.append(n)
  * 
  * cdef extern void array_append_uint64(object arr,unsigned long long n):             # <<<<<<<<<<<<<<
@@ -1925,12 +1925,12 @@ void array_append_uint64(PyObject *__pyx_v_arr, unsigned PY_LONG_LONG __pyx_v_n)
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_WriteUnraisable("eosapi_.array_append_uint64", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.array_append_uint64", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":66
+/* "eosapi.pyx":66
  *     arr.append(n)
  * 
  * cdef extern object dict_create():             # <<<<<<<<<<<<<<
@@ -1944,7 +1944,7 @@ PyObject *dict_create(void) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("dict_create", 0);
 
-  /* "eosapi_.pyx":67
+  /* "eosapi.pyx":67
  * 
  * cdef extern object dict_create():
  *     return {}             # <<<<<<<<<<<<<<
@@ -1958,7 +1958,7 @@ PyObject *dict_create(void) {
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":66
+  /* "eosapi.pyx":66
  *     arr.append(n)
  * 
  * cdef extern object dict_create():             # <<<<<<<<<<<<<<
@@ -1969,7 +1969,7 @@ PyObject *dict_create(void) {
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.dict_create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.dict_create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1977,7 +1977,7 @@ PyObject *dict_create(void) {
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":69
+/* "eosapi.pyx":69
  *     return {}
  * 
  * cdef extern void dict_add(object d,object key,object value):             # <<<<<<<<<<<<<<
@@ -1989,7 +1989,7 @@ void dict_add(PyObject *__pyx_v_d, PyObject *__pyx_v_key, PyObject *__pyx_v_valu
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("dict_add", 0);
 
-  /* "eosapi_.pyx":70
+  /* "eosapi.pyx":70
  * 
  * cdef extern void dict_add(object d,object key,object value):
  *     d[key] = value             # <<<<<<<<<<<<<<
@@ -1998,7 +1998,7 @@ void dict_add(PyObject *__pyx_v_d, PyObject *__pyx_v_key, PyObject *__pyx_v_valu
  */
   if (unlikely(PyObject_SetItem(__pyx_v_d, __pyx_v_key, __pyx_v_value) < 0)) __PYX_ERR(0, 70, __pyx_L1_error)
 
-  /* "eosapi_.pyx":69
+  /* "eosapi.pyx":69
  *     return {}
  * 
  * cdef extern void dict_add(object d,object key,object value):             # <<<<<<<<<<<<<<
@@ -2009,12 +2009,12 @@ void dict_add(PyObject *__pyx_v_d, PyObject *__pyx_v_key, PyObject *__pyx_v_valu
   /* function exit code */
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("eosapi_.dict_add", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("eosapi.dict_add", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
 
-/* "eosapi_.pyx":73
+/* "eosapi.pyx":73
  * 
  * 
  * def toobject(bstr):             # <<<<<<<<<<<<<<
@@ -2023,20 +2023,20 @@ void dict_add(PyObject *__pyx_v_d, PyObject *__pyx_v_key, PyObject *__pyx_v_valu
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__1toobject(PyObject *__pyx_self, PyObject *__pyx_v_bstr); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__1toobject = {"toobject", (PyCFunction)__pyx_pw_7eosapi__1toobject, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__1toobject(PyObject *__pyx_self, PyObject *__pyx_v_bstr) {
+static PyObject *__pyx_pw_6eosapi_1toobject(PyObject *__pyx_self, PyObject *__pyx_v_bstr); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_1toobject = {"toobject", (PyCFunction)__pyx_pw_6eosapi_1toobject, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_1toobject(PyObject *__pyx_self, PyObject *__pyx_v_bstr) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("toobject (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__toobject(__pyx_self, ((PyObject *)__pyx_v_bstr));
+  __pyx_r = __pyx_pf_6eosapi_toobject(__pyx_self, ((PyObject *)__pyx_v_bstr));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_bstr) {
+static PyObject *__pyx_pf_6eosapi_toobject(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_bstr) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2047,7 +2047,7 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_RefNannySetupContext("toobject", 0);
   __Pyx_INCREF(__pyx_v_bstr);
 
-  /* "eosapi_.pyx":74
+  /* "eosapi.pyx":74
  * 
  * def toobject(bstr):
  *     bstr = json.loads(bstr.decode('utf8'))             # <<<<<<<<<<<<<<
@@ -2113,7 +2113,7 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_DECREF_SET(__pyx_v_bstr, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":75
+  /* "eosapi.pyx":75
  * def toobject(bstr):
  *     bstr = json.loads(bstr.decode('utf8'))
  *     return JsonStruct(**bstr)             # <<<<<<<<<<<<<<
@@ -2142,7 +2142,7 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":73
+  /* "eosapi.pyx":73
  * 
  * 
  * def toobject(bstr):             # <<<<<<<<<<<<<<
@@ -2157,7 +2157,7 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("eosapi_.toobject", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.toobject", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_bstr);
@@ -2166,7 +2166,7 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":77
+/* "eosapi.pyx":77
  *     return JsonStruct(**bstr)
  * 
  * def get_info():             # <<<<<<<<<<<<<<
@@ -2175,26 +2175,26 @@ static PyObject *__pyx_pf_7eosapi__toobject(CYTHON_UNUSED PyObject *__pyx_self, 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__3get_info(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__3get_info = {"get_info", (PyCFunction)__pyx_pw_7eosapi__3get_info, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7eosapi__3get_info(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6eosapi_3get_info(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_3get_info = {"get_info", (PyCFunction)__pyx_pw_6eosapi_3get_info, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6eosapi_3get_info(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_info (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__2get_info(__pyx_self);
+  __pyx_r = __pyx_pf_6eosapi_2get_info(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6eosapi_2get_info(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_info", 0);
 
-  /* "eosapi_.pyx":78
+  /* "eosapi.pyx":78
  * 
  * def get_info():
  *     return get_info_()             # <<<<<<<<<<<<<<
@@ -2208,7 +2208,7 @@ static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self)
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":77
+  /* "eosapi.pyx":77
  *     return JsonStruct(**bstr)
  * 
  * def get_info():             # <<<<<<<<<<<<<<
@@ -2219,7 +2219,7 @@ static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self)
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("eosapi_.get_info", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_info", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2227,7 +2227,7 @@ static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self)
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":80
+/* "eosapi.pyx":80
  *     return get_info_()
  * 
  * def get_block(id):             # <<<<<<<<<<<<<<
@@ -2236,20 +2236,20 @@ static PyObject *__pyx_pf_7eosapi__2get_info(CYTHON_UNUSED PyObject *__pyx_self)
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__5get_block(PyObject *__pyx_self, PyObject *__pyx_v_id); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__5get_block = {"get_block", (PyCFunction)__pyx_pw_7eosapi__5get_block, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__5get_block(PyObject *__pyx_self, PyObject *__pyx_v_id) {
+static PyObject *__pyx_pw_6eosapi_5get_block(PyObject *__pyx_self, PyObject *__pyx_v_id); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_5get_block = {"get_block", (PyCFunction)__pyx_pw_6eosapi_5get_block, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_5get_block(PyObject *__pyx_self, PyObject *__pyx_v_id) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_block (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__4get_block(__pyx_self, ((PyObject *)__pyx_v_id));
+  __pyx_r = __pyx_pf_6eosapi_4get_block(__pyx_self, ((PyObject *)__pyx_v_id));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id) {
+static PyObject *__pyx_pf_6eosapi_4get_block(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2259,7 +2259,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   __Pyx_RefNannySetupContext("get_block", 0);
   __Pyx_INCREF(__pyx_v_id);
 
-  /* "eosapi_.pyx":81
+  /* "eosapi.pyx":81
  * 
  * def get_block(id):
  *     if type(id) == int:             # <<<<<<<<<<<<<<
@@ -2271,7 +2271,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":82
+    /* "eosapi.pyx":82
  * def get_block(id):
  *     if type(id) == int:
  *         id = bytes(id)             # <<<<<<<<<<<<<<
@@ -2289,7 +2289,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
     __Pyx_DECREF_SET(__pyx_v_id, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":81
+    /* "eosapi.pyx":81
  * 
  * def get_block(id):
  *     if type(id) == int:             # <<<<<<<<<<<<<<
@@ -2298,7 +2298,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
  */
   }
 
-  /* "eosapi_.pyx":83
+  /* "eosapi.pyx":83
  *     if type(id) == int:
  *         id = bytes(id)
  *     if type(id) == str:             # <<<<<<<<<<<<<<
@@ -2310,7 +2310,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":84
+    /* "eosapi.pyx":84
  *         id = bytes(id)
  *     if type(id) == str:
  *         id = bytes(id,'utf8')             # <<<<<<<<<<<<<<
@@ -2331,7 +2331,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
     __Pyx_DECREF_SET(__pyx_v_id, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "eosapi_.pyx":83
+    /* "eosapi.pyx":83
  *     if type(id) == int:
  *         id = bytes(id)
  *     if type(id) == str:             # <<<<<<<<<<<<<<
@@ -2340,7 +2340,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
  */
   }
 
-  /* "eosapi_.pyx":85
+  /* "eosapi.pyx":85
  *     if type(id) == str:
  *         id = bytes(id,'utf8')
  *     return get_block_(id)             # <<<<<<<<<<<<<<
@@ -2355,7 +2355,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":80
+  /* "eosapi.pyx":80
  *     return get_info_()
  * 
  * def get_block(id):             # <<<<<<<<<<<<<<
@@ -2367,7 +2367,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_block", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_block", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_id);
@@ -2376,7 +2376,7 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":87
+/* "eosapi.pyx":87
  *     return get_block_(id)
  * 
  * def get_account(name):             # <<<<<<<<<<<<<<
@@ -2385,20 +2385,20 @@ static PyObject *__pyx_pf_7eosapi__4get_block(CYTHON_UNUSED PyObject *__pyx_self
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__7get_account(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__7get_account = {"get_account", (PyCFunction)__pyx_pw_7eosapi__7get_account, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__7get_account(PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pw_6eosapi_7get_account(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_7get_account = {"get_account", (PyCFunction)__pyx_pw_6eosapi_7get_account, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_7get_account(PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_account (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__6get_account(__pyx_self, ((PyObject *)__pyx_v_name));
+  __pyx_r = __pyx_pf_6eosapi_6get_account(__pyx_self, ((PyObject *)__pyx_v_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pf_6eosapi_6get_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2408,7 +2408,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_RefNannySetupContext("get_account", 0);
   __Pyx_INCREF(__pyx_v_name);
 
-  /* "eosapi_.pyx":88
+  /* "eosapi.pyx":88
  * 
  * def get_account(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -2420,7 +2420,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":89
+    /* "eosapi.pyx":89
  * def get_account(name):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -2441,7 +2441,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":88
+    /* "eosapi.pyx":88
  * 
  * def get_account(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -2450,7 +2450,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
  */
   }
 
-  /* "eosapi_.pyx":90
+  /* "eosapi.pyx":90
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     return get_account_(name)             # <<<<<<<<<<<<<<
@@ -2465,7 +2465,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":87
+  /* "eosapi.pyx":87
  *     return get_block_(id)
  * 
  * def get_account(name):             # <<<<<<<<<<<<<<
@@ -2477,7 +2477,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -2486,7 +2486,7 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":92
+/* "eosapi.pyx":92
  *     return get_account_(name)
  * 
  * def get_accounts(public_key):             # <<<<<<<<<<<<<<
@@ -2495,20 +2495,20 @@ static PyObject *__pyx_pf_7eosapi__6get_account(CYTHON_UNUSED PyObject *__pyx_se
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__9get_accounts(PyObject *__pyx_self, PyObject *__pyx_v_public_key); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__9get_accounts = {"get_accounts", (PyCFunction)__pyx_pw_7eosapi__9get_accounts, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__9get_accounts(PyObject *__pyx_self, PyObject *__pyx_v_public_key) {
+static PyObject *__pyx_pw_6eosapi_9get_accounts(PyObject *__pyx_self, PyObject *__pyx_v_public_key); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_9get_accounts = {"get_accounts", (PyCFunction)__pyx_pw_6eosapi_9get_accounts, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_9get_accounts(PyObject *__pyx_self, PyObject *__pyx_v_public_key) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_accounts (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__8get_accounts(__pyx_self, ((PyObject *)__pyx_v_public_key));
+  __pyx_r = __pyx_pf_6eosapi_8get_accounts(__pyx_self, ((PyObject *)__pyx_v_public_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_public_key) {
+static PyObject *__pyx_pf_6eosapi_8get_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_public_key) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2518,7 +2518,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
   __Pyx_RefNannySetupContext("get_accounts", 0);
   __Pyx_INCREF(__pyx_v_public_key);
 
-  /* "eosapi_.pyx":93
+  /* "eosapi.pyx":93
  * 
  * def get_accounts(public_key):
  *     if type(public_key) == str:             # <<<<<<<<<<<<<<
@@ -2530,7 +2530,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":94
+    /* "eosapi.pyx":94
  * def get_accounts(public_key):
  *     if type(public_key) == str:
  *         public_key = bytes(public_key,'utf8')             # <<<<<<<<<<<<<<
@@ -2551,7 +2551,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
     __Pyx_DECREF_SET(__pyx_v_public_key, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":93
+    /* "eosapi.pyx":93
  * 
  * def get_accounts(public_key):
  *     if type(public_key) == str:             # <<<<<<<<<<<<<<
@@ -2560,7 +2560,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
  */
   }
 
-  /* "eosapi_.pyx":95
+  /* "eosapi.pyx":95
  *     if type(public_key) == str:
  *         public_key = bytes(public_key,'utf8')
  *     return get_accounts_(public_key)             # <<<<<<<<<<<<<<
@@ -2575,7 +2575,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":92
+  /* "eosapi.pyx":92
  *     return get_account_(name)
  * 
  * def get_accounts(public_key):             # <<<<<<<<<<<<<<
@@ -2587,7 +2587,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_accounts", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_accounts", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_public_key);
@@ -2596,7 +2596,7 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":97
+/* "eosapi.pyx":97
  *     return get_accounts_(public_key)
  * 
  * def get_controlled_accounts(account_name):             # <<<<<<<<<<<<<<
@@ -2605,20 +2605,20 @@ static PyObject *__pyx_pf_7eosapi__8get_accounts(CYTHON_UNUSED PyObject *__pyx_s
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__11get_controlled_accounts(PyObject *__pyx_self, PyObject *__pyx_v_account_name); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__11get_controlled_accounts = {"get_controlled_accounts", (PyCFunction)__pyx_pw_7eosapi__11get_controlled_accounts, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__11get_controlled_accounts(PyObject *__pyx_self, PyObject *__pyx_v_account_name) {
+static PyObject *__pyx_pw_6eosapi_11get_controlled_accounts(PyObject *__pyx_self, PyObject *__pyx_v_account_name); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_11get_controlled_accounts = {"get_controlled_accounts", (PyCFunction)__pyx_pw_6eosapi_11get_controlled_accounts, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_11get_controlled_accounts(PyObject *__pyx_self, PyObject *__pyx_v_account_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_controlled_accounts (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__10get_controlled_accounts(__pyx_self, ((PyObject *)__pyx_v_account_name));
+  __pyx_r = __pyx_pf_6eosapi_10get_controlled_accounts(__pyx_self, ((PyObject *)__pyx_v_account_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name) {
+static PyObject *__pyx_pf_6eosapi_10get_controlled_accounts(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2628,7 +2628,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
   __Pyx_RefNannySetupContext("get_controlled_accounts", 0);
   __Pyx_INCREF(__pyx_v_account_name);
 
-  /* "eosapi_.pyx":98
+  /* "eosapi.pyx":98
  * 
  * def get_controlled_accounts(account_name):
  *     if type(account_name) == str:             # <<<<<<<<<<<<<<
@@ -2640,7 +2640,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":99
+    /* "eosapi.pyx":99
  * def get_controlled_accounts(account_name):
  *     if type(account_name) == str:
  *         account_name = bytes(account_name,'utf8')             # <<<<<<<<<<<<<<
@@ -2661,7 +2661,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
     __Pyx_DECREF_SET(__pyx_v_account_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":98
+    /* "eosapi.pyx":98
  * 
  * def get_controlled_accounts(account_name):
  *     if type(account_name) == str:             # <<<<<<<<<<<<<<
@@ -2670,7 +2670,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
  */
   }
 
-  /* "eosapi_.pyx":101
+  /* "eosapi.pyx":101
  *         account_name = bytes(account_name,'utf8')
  * 
  *     return get_controlled_accounts_(account_name);             # <<<<<<<<<<<<<<
@@ -2685,7 +2685,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":97
+  /* "eosapi.pyx":97
  *     return get_accounts_(public_key)
  * 
  * def get_controlled_accounts(account_name):             # <<<<<<<<<<<<<<
@@ -2697,7 +2697,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_controlled_accounts", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_controlled_accounts", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_account_name);
@@ -2706,7 +2706,7 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":103
+/* "eosapi.pyx":103
  *     return get_controlled_accounts_(account_name);
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):             # <<<<<<<<<<<<<<
@@ -2715,9 +2715,9 @@ static PyObject *__pyx_pf_7eosapi__10get_controlled_accounts(CYTHON_UNUSED PyObj
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__13create_account(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__13create_account = {"create_account", (PyCFunction)__pyx_pw_7eosapi__13create_account, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__13create_account(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_13create_account(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_13create_account = {"create_account", (PyCFunction)__pyx_pw_6eosapi_13create_account, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_13create_account(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_creator = 0;
   PyObject *__pyx_v_newaccount = 0;
   PyObject *__pyx_v_owner_key = 0;
@@ -2789,18 +2789,18 @@ static PyObject *__pyx_pw_7eosapi__13create_account(PyObject *__pyx_self, PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("create_account", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 103, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("eosapi_.create_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.create_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__12create_account(__pyx_self, __pyx_v_creator, __pyx_v_newaccount, __pyx_v_owner_key, __pyx_v_active_key, __pyx_v_sign);
+  __pyx_r = __pyx_pf_6eosapi_12create_account(__pyx_self, __pyx_v_creator, __pyx_v_newaccount, __pyx_v_owner_key, __pyx_v_active_key, __pyx_v_sign);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_creator, PyObject *__pyx_v_newaccount, PyObject *__pyx_v_owner_key, PyObject *__pyx_v_active_key, PyObject *__pyx_v_sign) {
+static PyObject *__pyx_pf_6eosapi_12create_account(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_creator, PyObject *__pyx_v_newaccount, PyObject *__pyx_v_owner_key, PyObject *__pyx_v_active_key, PyObject *__pyx_v_sign) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2816,7 +2816,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __Pyx_INCREF(__pyx_v_owner_key);
   __Pyx_INCREF(__pyx_v_active_key);
 
-  /* "eosapi_.pyx":104
+  /* "eosapi.pyx":104
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):
  *     if type(creator) == str:             # <<<<<<<<<<<<<<
@@ -2828,7 +2828,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":105
+    /* "eosapi.pyx":105
  * def create_account(creator,newaccount,owner_key,active_key,sign ):
  *     if type(creator) == str:
  *         creator = bytes(creator,'utf8')             # <<<<<<<<<<<<<<
@@ -2849,7 +2849,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     __Pyx_DECREF_SET(__pyx_v_creator, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":104
+    /* "eosapi.pyx":104
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):
  *     if type(creator) == str:             # <<<<<<<<<<<<<<
@@ -2858,7 +2858,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "eosapi_.pyx":107
+  /* "eosapi.pyx":107
  *         creator = bytes(creator,'utf8')
  * 
  *     if type(newaccount) == str:             # <<<<<<<<<<<<<<
@@ -2870,7 +2870,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":108
+    /* "eosapi.pyx":108
  * 
  *     if type(newaccount) == str:
  *         newaccount = bytes(newaccount,'utf8')             # <<<<<<<<<<<<<<
@@ -2891,7 +2891,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     __Pyx_DECREF_SET(__pyx_v_newaccount, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "eosapi_.pyx":107
+    /* "eosapi.pyx":107
  *         creator = bytes(creator,'utf8')
  * 
  *     if type(newaccount) == str:             # <<<<<<<<<<<<<<
@@ -2900,7 +2900,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "eosapi_.pyx":110
+  /* "eosapi.pyx":110
  *         newaccount = bytes(newaccount,'utf8')
  * 
  *     if type(owner_key) == str:             # <<<<<<<<<<<<<<
@@ -2912,7 +2912,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":111
+    /* "eosapi.pyx":111
  * 
  *     if type(owner_key) == str:
  *         owner_key = bytes(owner_key,'utf8')             # <<<<<<<<<<<<<<
@@ -2933,7 +2933,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     __Pyx_DECREF_SET(__pyx_v_owner_key, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":110
+    /* "eosapi.pyx":110
  *         newaccount = bytes(newaccount,'utf8')
  * 
  *     if type(owner_key) == str:             # <<<<<<<<<<<<<<
@@ -2942,7 +2942,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "eosapi_.pyx":113
+  /* "eosapi.pyx":113
  *         owner_key = bytes(owner_key,'utf8')
  * 
  *     if type(active_key) == str:             # <<<<<<<<<<<<<<
@@ -2954,7 +2954,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":114
+    /* "eosapi.pyx":114
  * 
  *     if type(active_key) == str:
  *         active_key = bytes(active_key,'utf8')             # <<<<<<<<<<<<<<
@@ -2975,7 +2975,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     __Pyx_DECREF_SET(__pyx_v_active_key, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "eosapi_.pyx":113
+    /* "eosapi.pyx":113
  *         owner_key = bytes(owner_key,'utf8')
  * 
  *     if type(active_key) == str:             # <<<<<<<<<<<<<<
@@ -2984,7 +2984,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "eosapi_.pyx":116
+  /* "eosapi.pyx":116
  *         active_key = bytes(active_key,'utf8')
  * 
  *     if sign:             # <<<<<<<<<<<<<<
@@ -2994,7 +2994,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_sign); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 116, __pyx_L1_error)
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":117
+    /* "eosapi.pyx":117
  * 
  *     if sign:
  *         return create_account_(creator,newaccount,owner_key,active_key, 1)             # <<<<<<<<<<<<<<
@@ -3012,7 +3012,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     __pyx_t_1 = 0;
     goto __pyx_L0;
 
-    /* "eosapi_.pyx":116
+    /* "eosapi.pyx":116
  *         active_key = bytes(active_key,'utf8')
  * 
  *     if sign:             # <<<<<<<<<<<<<<
@@ -3021,7 +3021,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "eosapi_.pyx":119
+  /* "eosapi.pyx":119
  *         return create_account_(creator,newaccount,owner_key,active_key, 1)
  *     else:
  *         return create_account_(creator,newaccount,owner_key,active_key, 0)             # <<<<<<<<<<<<<<
@@ -3041,7 +3041,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
     goto __pyx_L0;
   }
 
-  /* "eosapi_.pyx":103
+  /* "eosapi.pyx":103
  *     return get_controlled_accounts_(account_name);
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):             # <<<<<<<<<<<<<<
@@ -3053,7 +3053,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.create_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.create_account", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_creator);
@@ -3065,7 +3065,7 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":121
+/* "eosapi.pyx":121
  *         return create_account_(creator,newaccount,owner_key,active_key, 0)
  * 
  * def create_key():             # <<<<<<<<<<<<<<
@@ -3074,20 +3074,20 @@ static PyObject *__pyx_pf_7eosapi__12create_account(CYTHON_UNUSED PyObject *__py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__15create_key(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__15create_key = {"create_key", (PyCFunction)__pyx_pw_7eosapi__15create_key, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7eosapi__15create_key(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6eosapi_15create_key(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_15create_key = {"create_key", (PyCFunction)__pyx_pw_6eosapi_15create_key, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6eosapi_15create_key(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("create_key (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__14create_key(__pyx_self);
+  __pyx_r = __pyx_pf_6eosapi_14create_key(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6eosapi_14create_key(CYTHON_UNUSED PyObject *__pyx_self) {
   std::string __pyx_v_pub;
   std::string __pyx_v_priv;
   PyObject *__pyx_r = NULL;
@@ -3097,7 +3097,7 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
   PyObject *__pyx_t_3 = NULL;
   __Pyx_RefNannySetupContext("create_key", 0);
 
-  /* "eosapi_.pyx":124
+  /* "eosapi.pyx":124
  *     cdef string pub
  *     cdef string priv
  *     create_key_(pub,priv)             # <<<<<<<<<<<<<<
@@ -3106,7 +3106,7 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
  */
   create_key_(__pyx_v_pub, __pyx_v_priv);
 
-  /* "eosapi_.pyx":125
+  /* "eosapi.pyx":125
  *     cdef string priv
  *     create_key_(pub,priv)
  *     return(pub,priv)             # <<<<<<<<<<<<<<
@@ -3130,7 +3130,7 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":121
+  /* "eosapi.pyx":121
  *         return create_account_(creator,newaccount,owner_key,active_key, 0)
  * 
  * def create_key():             # <<<<<<<<<<<<<<
@@ -3143,7 +3143,7 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.create_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.create_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -3151,7 +3151,7 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":127
+/* "eosapi.pyx":127
  *     return(pub,priv)
  * 
  * def get_transaction(id):             # <<<<<<<<<<<<<<
@@ -3160,20 +3160,20 @@ static PyObject *__pyx_pf_7eosapi__14create_key(CYTHON_UNUSED PyObject *__pyx_se
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__17get_transaction(PyObject *__pyx_self, PyObject *__pyx_v_id); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__17get_transaction = {"get_transaction", (PyCFunction)__pyx_pw_7eosapi__17get_transaction, METH_O, 0};
-static PyObject *__pyx_pw_7eosapi__17get_transaction(PyObject *__pyx_self, PyObject *__pyx_v_id) {
+static PyObject *__pyx_pw_6eosapi_17get_transaction(PyObject *__pyx_self, PyObject *__pyx_v_id); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_17get_transaction = {"get_transaction", (PyCFunction)__pyx_pw_6eosapi_17get_transaction, METH_O, 0};
+static PyObject *__pyx_pw_6eosapi_17get_transaction(PyObject *__pyx_self, PyObject *__pyx_v_id) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_transaction (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__16get_transaction(__pyx_self, ((PyObject *)__pyx_v_id));
+  __pyx_r = __pyx_pf_6eosapi_16get_transaction(__pyx_self, ((PyObject *)__pyx_v_id));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id) {
+static PyObject *__pyx_pf_6eosapi_16get_transaction(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_id) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3183,7 +3183,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   __Pyx_RefNannySetupContext("get_transaction", 0);
   __Pyx_INCREF(__pyx_v_id);
 
-  /* "eosapi_.pyx":128
+  /* "eosapi.pyx":128
  * 
  * def get_transaction(id):
  *     if type(id) == int:             # <<<<<<<<<<<<<<
@@ -3195,7 +3195,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":129
+    /* "eosapi.pyx":129
  * def get_transaction(id):
  *     if type(id) == int:
  *         id = str(id)             # <<<<<<<<<<<<<<
@@ -3213,7 +3213,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF_SET(__pyx_v_id, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":128
+    /* "eosapi.pyx":128
  * 
  * def get_transaction(id):
  *     if type(id) == int:             # <<<<<<<<<<<<<<
@@ -3222,7 +3222,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "eosapi_.pyx":130
+  /* "eosapi.pyx":130
  *     if type(id) == int:
  *         id = str(id)
  *     if type(id) == str:             # <<<<<<<<<<<<<<
@@ -3234,7 +3234,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":131
+    /* "eosapi.pyx":131
  *         id = str(id)
  *     if type(id) == str:
  *         id = bytes(id,'utf8')             # <<<<<<<<<<<<<<
@@ -3255,7 +3255,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF_SET(__pyx_v_id, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "eosapi_.pyx":130
+    /* "eosapi.pyx":130
  *     if type(id) == int:
  *         id = str(id)
  *     if type(id) == str:             # <<<<<<<<<<<<<<
@@ -3264,7 +3264,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "eosapi_.pyx":132
+  /* "eosapi.pyx":132
  *     if type(id) == str:
  *         id = bytes(id,'utf8')
  *     return get_transaction_(id)             # <<<<<<<<<<<<<<
@@ -3279,7 +3279,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":127
+  /* "eosapi.pyx":127
  *     return(pub,priv)
  * 
  * def get_transaction(id):             # <<<<<<<<<<<<<<
@@ -3291,7 +3291,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_transaction", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_transaction", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_id);
@@ -3300,7 +3300,7 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":134
+/* "eosapi.pyx":134
  *     return get_transaction_(id)
  * 
  * def get_transactions(account_name,skip_seq,num_seq):             # <<<<<<<<<<<<<<
@@ -3309,9 +3309,9 @@ static PyObject *__pyx_pf_7eosapi__16get_transaction(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__19get_transactions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__19get_transactions = {"get_transactions", (PyCFunction)__pyx_pw_7eosapi__19get_transactions, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__19get_transactions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_19get_transactions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_19get_transactions = {"get_transactions", (PyCFunction)__pyx_pw_6eosapi_19get_transactions, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_19get_transactions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_account_name = 0;
   PyObject *__pyx_v_skip_seq = 0;
   PyObject *__pyx_v_num_seq = 0;
@@ -3365,18 +3365,18 @@ static PyObject *__pyx_pw_7eosapi__19get_transactions(PyObject *__pyx_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("get_transactions", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 134, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("eosapi_.get_transactions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_transactions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__18get_transactions(__pyx_self, __pyx_v_account_name, __pyx_v_skip_seq, __pyx_v_num_seq);
+  __pyx_r = __pyx_pf_6eosapi_18get_transactions(__pyx_self, __pyx_v_account_name, __pyx_v_skip_seq, __pyx_v_num_seq);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name, PyObject *__pyx_v_skip_seq, PyObject *__pyx_v_num_seq) {
+static PyObject *__pyx_pf_6eosapi_18get_transactions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_account_name, PyObject *__pyx_v_skip_seq, PyObject *__pyx_v_num_seq) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3388,7 +3388,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
   __Pyx_RefNannySetupContext("get_transactions", 0);
   __Pyx_INCREF(__pyx_v_account_name);
 
-  /* "eosapi_.pyx":135
+  /* "eosapi.pyx":135
  * 
  * def get_transactions(account_name,skip_seq,num_seq):
  *     if type(account_name) == str:             # <<<<<<<<<<<<<<
@@ -3400,7 +3400,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "eosapi_.pyx":136
+    /* "eosapi.pyx":136
  * def get_transactions(account_name,skip_seq,num_seq):
  *     if type(account_name) == str:
  *         account_name = bytes(account_name,'utf8')             # <<<<<<<<<<<<<<
@@ -3421,7 +3421,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
     __Pyx_DECREF_SET(__pyx_v_account_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "eosapi_.pyx":135
+    /* "eosapi.pyx":135
  * 
  * def get_transactions(account_name,skip_seq,num_seq):
  *     if type(account_name) == str:             # <<<<<<<<<<<<<<
@@ -3430,7 +3430,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
  */
   }
 
-  /* "eosapi_.pyx":137
+  /* "eosapi.pyx":137
  *     if type(account_name) == str:
  *         account_name = bytes(account_name,'utf8')
  *     return get_transactions_(account_name,skip_seq,num_seq)             # <<<<<<<<<<<<<<
@@ -3447,7 +3447,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "eosapi_.pyx":134
+  /* "eosapi.pyx":134
  *     return get_transaction_(id)
  * 
  * def get_transactions(account_name,skip_seq,num_seq):             # <<<<<<<<<<<<<<
@@ -3459,7 +3459,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("eosapi_.get_transactions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.get_transactions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_account_name);
@@ -3468,7 +3468,7 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":139
+/* "eosapi.pyx":139
  *     return get_transactions_(account_name,skip_seq,num_seq)
  * 
  * def unlock():             # <<<<<<<<<<<<<<
@@ -3477,25 +3477,25 @@ static PyObject *__pyx_pf_7eosapi__18get_transactions(CYTHON_UNUSED PyObject *__
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__21unlock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__21unlock = {"unlock", (PyCFunction)__pyx_pw_7eosapi__21unlock, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7eosapi__21unlock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6eosapi_21unlock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_21unlock = {"unlock", (PyCFunction)__pyx_pw_6eosapi_21unlock, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6eosapi_21unlock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("unlock (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__20unlock(__pyx_self);
+  __pyx_r = __pyx_pf_6eosapi_20unlock(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__20unlock(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6eosapi_20unlock(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("unlock", 0);
 
-  /* "eosapi_.pyx":140
+  /* "eosapi.pyx":140
  * 
  * def unlock():
  *     raise 'unimplement'             # <<<<<<<<<<<<<<
@@ -3505,7 +3505,7 @@ static PyObject *__pyx_pf_7eosapi__20unlock(CYTHON_UNUSED PyObject *__pyx_self) 
   __Pyx_Raise(__pyx_n_s_unimplement, 0, 0, 0);
   __PYX_ERR(0, 140, __pyx_L1_error)
 
-  /* "eosapi_.pyx":139
+  /* "eosapi.pyx":139
  *     return get_transactions_(account_name,skip_seq,num_seq)
  * 
  * def unlock():             # <<<<<<<<<<<<<<
@@ -3515,14 +3515,14 @@ static PyObject *__pyx_pf_7eosapi__20unlock(CYTHON_UNUSED PyObject *__pyx_self) 
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_AddTraceback("eosapi_.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":142
+/* "eosapi.pyx":142
  *     raise 'unimplement'
  * 
  * def lock():             # <<<<<<<<<<<<<<
@@ -3531,25 +3531,25 @@ static PyObject *__pyx_pf_7eosapi__20unlock(CYTHON_UNUSED PyObject *__pyx_self) 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__23lock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__23lock = {"lock", (PyCFunction)__pyx_pw_7eosapi__23lock, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7eosapi__23lock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6eosapi_23lock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_23lock = {"lock", (PyCFunction)__pyx_pw_6eosapi_23lock, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6eosapi_23lock(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("lock (wrapper)", 0);
-  __pyx_r = __pyx_pf_7eosapi__22lock(__pyx_self);
+  __pyx_r = __pyx_pf_6eosapi_22lock(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__22lock(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6eosapi_22lock(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("lock", 0);
 
-  /* "eosapi_.pyx":143
+  /* "eosapi.pyx":143
  * 
  * def lock():
  *     raise 'unimplement'             # <<<<<<<<<<<<<<
@@ -3559,7 +3559,7 @@ static PyObject *__pyx_pf_7eosapi__22lock(CYTHON_UNUSED PyObject *__pyx_self) {
   __Pyx_Raise(__pyx_n_s_unimplement, 0, 0, 0);
   __PYX_ERR(0, 143, __pyx_L1_error)
 
-  /* "eosapi_.pyx":142
+  /* "eosapi.pyx":142
  *     raise 'unimplement'
  * 
  * def lock():             # <<<<<<<<<<<<<<
@@ -3569,14 +3569,14 @@ static PyObject *__pyx_pf_7eosapi__22lock(CYTHON_UNUSED PyObject *__pyx_self) {
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_AddTraceback("eosapi_.lock", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.lock", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":145
+/* "eosapi.pyx":145
  *     raise 'unimplement'
  * 
  * def transfer(sender_,recipient_,int amount):             # <<<<<<<<<<<<<<
@@ -3585,9 +3585,9 @@ static PyObject *__pyx_pf_7eosapi__22lock(CYTHON_UNUSED PyObject *__pyx_self) {
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__25transfer(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__25transfer = {"transfer", (PyCFunction)__pyx_pw_7eosapi__25transfer, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__25transfer(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_25transfer(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_25transfer = {"transfer", (PyCFunction)__pyx_pw_6eosapi_25transfer, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_25transfer(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   CYTHON_UNUSED PyObject *__pyx_v_sender_ = 0;
   CYTHON_UNUSED PyObject *__pyx_v_recipient_ = 0;
   CYTHON_UNUSED int __pyx_v_amount;
@@ -3641,18 +3641,18 @@ static PyObject *__pyx_pw_7eosapi__25transfer(PyObject *__pyx_self, PyObject *__
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("transfer", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 145, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("eosapi_.transfer", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.transfer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__24transfer(__pyx_self, __pyx_v_sender_, __pyx_v_recipient_, __pyx_v_amount);
+  __pyx_r = __pyx_pf_6eosapi_24transfer(__pyx_self, __pyx_v_sender_, __pyx_v_recipient_, __pyx_v_amount);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__24transfer(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_sender_, CYTHON_UNUSED PyObject *__pyx_v_recipient_, CYTHON_UNUSED int __pyx_v_amount) {
+static PyObject *__pyx_pf_6eosapi_24transfer(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_sender_, CYTHON_UNUSED PyObject *__pyx_v_recipient_, CYTHON_UNUSED int __pyx_v_amount) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("transfer", 0);
@@ -3664,7 +3664,7 @@ static PyObject *__pyx_pf_7eosapi__24transfer(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":148
+/* "eosapi.pyx":148
  *     pass
  * 
  * def setcode(account,wast_file,abi_file):             # <<<<<<<<<<<<<<
@@ -3673,9 +3673,9 @@ static PyObject *__pyx_pf_7eosapi__24transfer(CYTHON_UNUSED PyObject *__pyx_self
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__27setcode(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__27setcode = {"setcode", (PyCFunction)__pyx_pw_7eosapi__27setcode, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__27setcode(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_27setcode(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_27setcode = {"setcode", (PyCFunction)__pyx_pw_6eosapi_27setcode, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_27setcode(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   CYTHON_UNUSED PyObject *__pyx_v_account = 0;
   CYTHON_UNUSED PyObject *__pyx_v_wast_file = 0;
   CYTHON_UNUSED PyObject *__pyx_v_abi_file = 0;
@@ -3729,18 +3729,18 @@ static PyObject *__pyx_pw_7eosapi__27setcode(PyObject *__pyx_self, PyObject *__p
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("setcode", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 148, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("eosapi_.setcode", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.setcode", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__26setcode(__pyx_self, __pyx_v_account, __pyx_v_wast_file, __pyx_v_abi_file);
+  __pyx_r = __pyx_pf_6eosapi_26setcode(__pyx_self, __pyx_v_account, __pyx_v_wast_file, __pyx_v_abi_file);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__26setcode(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_account, CYTHON_UNUSED PyObject *__pyx_v_wast_file, CYTHON_UNUSED PyObject *__pyx_v_abi_file) {
+static PyObject *__pyx_pf_6eosapi_26setcode(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_account, CYTHON_UNUSED PyObject *__pyx_v_wast_file, CYTHON_UNUSED PyObject *__pyx_v_abi_file) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("setcode", 0);
@@ -3752,7 +3752,7 @@ static PyObject *__pyx_pf_7eosapi__26setcode(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "eosapi_.pyx":151
+/* "eosapi.pyx":151
  *     pass
  * 
  * def exec_func(code_,action_,json_,scope_,authorization_):             # <<<<<<<<<<<<<<
@@ -3761,9 +3761,9 @@ static PyObject *__pyx_pf_7eosapi__26setcode(CYTHON_UNUSED PyObject *__pyx_self,
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7eosapi__29exec_func(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7eosapi__29exec_func = {"exec_func", (PyCFunction)__pyx_pw_7eosapi__29exec_func, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7eosapi__29exec_func(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6eosapi_29exec_func(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6eosapi_29exec_func = {"exec_func", (PyCFunction)__pyx_pw_6eosapi_29exec_func, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6eosapi_29exec_func(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   CYTHON_UNUSED PyObject *__pyx_v_code_ = 0;
   CYTHON_UNUSED PyObject *__pyx_v_action_ = 0;
   CYTHON_UNUSED PyObject *__pyx_v_json_ = 0;
@@ -3835,18 +3835,18 @@ static PyObject *__pyx_pw_7eosapi__29exec_func(PyObject *__pyx_self, PyObject *_
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("exec_func", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 151, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("eosapi_.exec_func", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("eosapi.exec_func", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7eosapi__28exec_func(__pyx_self, __pyx_v_code_, __pyx_v_action_, __pyx_v_json_, __pyx_v_scope_, __pyx_v_authorization_);
+  __pyx_r = __pyx_pf_6eosapi_28exec_func(__pyx_self, __pyx_v_code_, __pyx_v_action_, __pyx_v_json_, __pyx_v_scope_, __pyx_v_authorization_);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7eosapi__28exec_func(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_code_, CYTHON_UNUSED PyObject *__pyx_v_action_, CYTHON_UNUSED PyObject *__pyx_v_json_, CYTHON_UNUSED PyObject *__pyx_v_scope_, CYTHON_UNUSED PyObject *__pyx_v_authorization_) {
+static PyObject *__pyx_pf_6eosapi_28exec_func(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_code_, CYTHON_UNUSED PyObject *__pyx_v_action_, CYTHON_UNUSED PyObject *__pyx_v_json_, CYTHON_UNUSED PyObject *__pyx_v_scope_, CYTHON_UNUSED PyObject *__pyx_v_authorization_) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("exec_func", 0);
@@ -4155,7 +4155,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    "eosapi_",
+    "eosapi",
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -4244,7 +4244,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "eosapi_.pyx":74
+  /* "eosapi.pyx":74
  * 
  * def toobject(bstr):
  *     bstr = json.loads(bstr.decode('utf8'))             # <<<<<<<<<<<<<<
@@ -4255,7 +4255,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "eosapi_.pyx":8
+  /* "eosapi.pyx":8
  * 
  * class JsonStruct:
  *     def __init__(self, **entries):             # <<<<<<<<<<<<<<
@@ -4267,7 +4267,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__2);
   __pyx_codeobj__3 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__2, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_init, 8, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__3)) __PYX_ERR(0, 8, __pyx_L1_error)
 
-  /* "eosapi_.pyx":10
+  /* "eosapi.pyx":10
  *     def __init__(self, **entries):
  *         self.__dict__.update(entries)
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -4279,7 +4279,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__4);
   __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_str, 10, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 10, __pyx_L1_error)
 
-  /* "eosapi_.pyx":12
+  /* "eosapi.pyx":12
  *     def __str__(self):
  *         return str(self.__dict__)
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -4291,7 +4291,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__6);
   __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_repr, 12, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 12, __pyx_L1_error)
 
-  /* "eosapi_.pyx":73
+  /* "eosapi.pyx":73
  * 
  * 
  * def toobject(bstr):             # <<<<<<<<<<<<<<
@@ -4303,7 +4303,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__8);
   __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_toobject, 73, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 73, __pyx_L1_error)
 
-  /* "eosapi_.pyx":77
+  /* "eosapi.pyx":77
  *     return JsonStruct(**bstr)
  * 
  * def get_info():             # <<<<<<<<<<<<<<
@@ -4312,7 +4312,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_info, 77, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 77, __pyx_L1_error)
 
-  /* "eosapi_.pyx":80
+  /* "eosapi.pyx":80
  *     return get_info_()
  * 
  * def get_block(id):             # <<<<<<<<<<<<<<
@@ -4324,7 +4324,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__11);
   __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_block, 80, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 80, __pyx_L1_error)
 
-  /* "eosapi_.pyx":87
+  /* "eosapi.pyx":87
  *     return get_block_(id)
  * 
  * def get_account(name):             # <<<<<<<<<<<<<<
@@ -4336,7 +4336,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__13);
   __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_account, 87, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 87, __pyx_L1_error)
 
-  /* "eosapi_.pyx":92
+  /* "eosapi.pyx":92
  *     return get_account_(name)
  * 
  * def get_accounts(public_key):             # <<<<<<<<<<<<<<
@@ -4348,7 +4348,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__15);
   __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_accounts, 92, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 92, __pyx_L1_error)
 
-  /* "eosapi_.pyx":97
+  /* "eosapi.pyx":97
  *     return get_accounts_(public_key)
  * 
  * def get_controlled_accounts(account_name):             # <<<<<<<<<<<<<<
@@ -4360,7 +4360,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__17);
   __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_controlled_accounts, 97, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 97, __pyx_L1_error)
 
-  /* "eosapi_.pyx":103
+  /* "eosapi.pyx":103
  *     return get_controlled_accounts_(account_name);
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):             # <<<<<<<<<<<<<<
@@ -4372,7 +4372,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__19);
   __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(5, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_create_account, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 103, __pyx_L1_error)
 
-  /* "eosapi_.pyx":121
+  /* "eosapi.pyx":121
  *         return create_account_(creator,newaccount,owner_key,active_key, 0)
  * 
  * def create_key():             # <<<<<<<<<<<<<<
@@ -4384,7 +4384,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__21);
   __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(0, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_create_key, 121, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 121, __pyx_L1_error)
 
-  /* "eosapi_.pyx":127
+  /* "eosapi.pyx":127
  *     return(pub,priv)
  * 
  * def get_transaction(id):             # <<<<<<<<<<<<<<
@@ -4396,7 +4396,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__23);
   __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_transaction, 127, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 127, __pyx_L1_error)
 
-  /* "eosapi_.pyx":134
+  /* "eosapi.pyx":134
  *     return get_transaction_(id)
  * 
  * def get_transactions(account_name,skip_seq,num_seq):             # <<<<<<<<<<<<<<
@@ -4408,7 +4408,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__25);
   __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_transactions, 134, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 134, __pyx_L1_error)
 
-  /* "eosapi_.pyx":139
+  /* "eosapi.pyx":139
  *     return get_transactions_(account_name,skip_seq,num_seq)
  * 
  * def unlock():             # <<<<<<<<<<<<<<
@@ -4417,7 +4417,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_unlock, 139, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 139, __pyx_L1_error)
 
-  /* "eosapi_.pyx":142
+  /* "eosapi.pyx":142
  *     raise 'unimplement'
  * 
  * def lock():             # <<<<<<<<<<<<<<
@@ -4426,7 +4426,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_lock, 142, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 142, __pyx_L1_error)
 
-  /* "eosapi_.pyx":145
+  /* "eosapi.pyx":145
  *     raise 'unimplement'
  * 
  * def transfer(sender_,recipient_,int amount):             # <<<<<<<<<<<<<<
@@ -4438,7 +4438,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__29);
   __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_transfer, 145, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 145, __pyx_L1_error)
 
-  /* "eosapi_.pyx":148
+  /* "eosapi.pyx":148
  *     pass
  * 
  * def setcode(account,wast_file,abi_file):             # <<<<<<<<<<<<<<
@@ -4450,7 +4450,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__31);
   __pyx_codeobj__32 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__31, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_setcode, 148, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__32)) __PYX_ERR(0, 148, __pyx_L1_error)
 
-  /* "eosapi_.pyx":151
+  /* "eosapi.pyx":151
  *     pass
  * 
  * def exec_func(code_,action_,json_,scope_,authorization_):             # <<<<<<<<<<<<<<
@@ -4476,11 +4476,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC initeosapi_(void); /*proto*/
-PyMODINIT_FUNC initeosapi_(void)
+PyMODINIT_FUNC initeosapi(void); /*proto*/
+PyMODINIT_FUNC initeosapi(void)
 #else
-PyMODINIT_FUNC PyInit_eosapi_(void); /*proto*/
-PyMODINIT_FUNC PyInit_eosapi_(void)
+PyMODINIT_FUNC PyInit_eosapi(void); /*proto*/
+PyMODINIT_FUNC PyInit_eosapi(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -4495,7 +4495,7 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_eosapi_(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_eosapi(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -4524,7 +4524,7 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("eosapi_", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("eosapi", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -4541,14 +4541,14 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_eosapi_) {
+  if (__pyx_module_is_main_eosapi) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "eosapi_")) {
-      if (unlikely(PyDict_SetItemString(modules, "eosapi_", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "eosapi")) {
+      if (unlikely(PyDict_SetItemString(modules, "eosapi", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -4568,7 +4568,7 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "eosapi_.pyx":1
+  /* "eosapi.pyx":1
  * import json             # <<<<<<<<<<<<<<
  * from libcpp.string cimport string
  * from libcpp.vector cimport vector
@@ -4578,7 +4578,7 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_json, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":7
+  /* "eosapi.pyx":7
  * #import eostypes_
  * 
  * class JsonStruct:             # <<<<<<<<<<<<<<
@@ -4588,43 +4588,43 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   __pyx_t_1 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_JsonStruct, __pyx_n_s_JsonStruct, (PyObject *) NULL, __pyx_n_s_eosapi, (PyObject *) NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
 
-  /* "eosapi_.pyx":8
+  /* "eosapi.pyx":8
  * 
  * class JsonStruct:
  *     def __init__(self, **entries):             # <<<<<<<<<<<<<<
  *         self.__dict__.update(entries)
  *     def __str__(self):
  */
-  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_7eosapi__10JsonStruct_1__init__, 0, __pyx_n_s_JsonStruct___init, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__3)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6eosapi_10JsonStruct_1__init__, 0, __pyx_n_s_JsonStruct___init, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__3)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyObject_SetItem(__pyx_t_1, __pyx_n_s_init, __pyx_t_2) < 0) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "eosapi_.pyx":10
+  /* "eosapi.pyx":10
  *     def __init__(self, **entries):
  *         self.__dict__.update(entries)
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return str(self.__dict__)
  *     def __repr__(self):
  */
-  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_7eosapi__10JsonStruct_3__str__, 0, __pyx_n_s_JsonStruct___str, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__5)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6eosapi_10JsonStruct_3__str__, 0, __pyx_n_s_JsonStruct___str, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__5)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 10, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyObject_SetItem(__pyx_t_1, __pyx_n_s_str, __pyx_t_2) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "eosapi_.pyx":12
+  /* "eosapi.pyx":12
  *     def __str__(self):
  *         return str(self.__dict__)
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return str(self.__dict__)
  * 
  */
-  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_7eosapi__10JsonStruct_5__repr__, 0, __pyx_n_s_JsonStruct___repr, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__7)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 12, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6eosapi_10JsonStruct_5__repr__, 0, __pyx_n_s_JsonStruct___repr, NULL, __pyx_n_s_eosapi, __pyx_d, ((PyObject *)__pyx_codeobj__7)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyObject_SetItem(__pyx_t_1, __pyx_n_s_repr, __pyx_t_2) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "eosapi_.pyx":7
+  /* "eosapi.pyx":7
  * #import eostypes_
  * 
  * class JsonStruct:             # <<<<<<<<<<<<<<
@@ -4637,187 +4637,187 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":73
+  /* "eosapi.pyx":73
  * 
  * 
  * def toobject(bstr):             # <<<<<<<<<<<<<<
  *     bstr = json.loads(bstr.decode('utf8'))
  *     return JsonStruct(**bstr)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__1toobject, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_1toobject, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_toobject, __pyx_t_1) < 0) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":77
+  /* "eosapi.pyx":77
  *     return JsonStruct(**bstr)
  * 
  * def get_info():             # <<<<<<<<<<<<<<
  *     return get_info_()
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__3get_info, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_3get_info, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_info, __pyx_t_1) < 0) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":80
+  /* "eosapi.pyx":80
  *     return get_info_()
  * 
  * def get_block(id):             # <<<<<<<<<<<<<<
  *     if type(id) == int:
  *         id = bytes(id)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__5get_block, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_5get_block, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_block, __pyx_t_1) < 0) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":87
+  /* "eosapi.pyx":87
  *     return get_block_(id)
  * 
  * def get_account(name):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__7get_account, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_7get_account, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_account, __pyx_t_1) < 0) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":92
+  /* "eosapi.pyx":92
  *     return get_account_(name)
  * 
  * def get_accounts(public_key):             # <<<<<<<<<<<<<<
  *     if type(public_key) == str:
  *         public_key = bytes(public_key,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__9get_accounts, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_9get_accounts, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_accounts, __pyx_t_1) < 0) __PYX_ERR(0, 92, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":97
+  /* "eosapi.pyx":97
  *     return get_accounts_(public_key)
  * 
  * def get_controlled_accounts(account_name):             # <<<<<<<<<<<<<<
  *     if type(account_name) == str:
  *         account_name = bytes(account_name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__11get_controlled_accounts, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 97, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_11get_controlled_accounts, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 97, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_controlled_accounts, __pyx_t_1) < 0) __PYX_ERR(0, 97, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":103
+  /* "eosapi.pyx":103
  *     return get_controlled_accounts_(account_name);
  * 
  * def create_account(creator,newaccount,owner_key,active_key,sign ):             # <<<<<<<<<<<<<<
  *     if type(creator) == str:
  *         creator = bytes(creator,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__13create_account, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_13create_account, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_create_account, __pyx_t_1) < 0) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":121
+  /* "eosapi.pyx":121
  *         return create_account_(creator,newaccount,owner_key,active_key, 0)
  * 
  * def create_key():             # <<<<<<<<<<<<<<
  *     cdef string pub
  *     cdef string priv
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__15create_key, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 121, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_15create_key, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_create_key, __pyx_t_1) < 0) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":127
+  /* "eosapi.pyx":127
  *     return(pub,priv)
  * 
  * def get_transaction(id):             # <<<<<<<<<<<<<<
  *     if type(id) == int:
  *         id = str(id)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__17get_transaction, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_17get_transaction, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_transaction, __pyx_t_1) < 0) __PYX_ERR(0, 127, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":134
+  /* "eosapi.pyx":134
  *     return get_transaction_(id)
  * 
  * def get_transactions(account_name,skip_seq,num_seq):             # <<<<<<<<<<<<<<
  *     if type(account_name) == str:
  *         account_name = bytes(account_name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__19get_transactions, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 134, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_19get_transactions, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 134, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_transactions, __pyx_t_1) < 0) __PYX_ERR(0, 134, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":139
+  /* "eosapi.pyx":139
  *     return get_transactions_(account_name,skip_seq,num_seq)
  * 
  * def unlock():             # <<<<<<<<<<<<<<
  *     raise 'unimplement'
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__21unlock, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 139, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_21unlock, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 139, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_unlock, __pyx_t_1) < 0) __PYX_ERR(0, 139, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":142
+  /* "eosapi.pyx":142
  *     raise 'unimplement'
  * 
  * def lock():             # <<<<<<<<<<<<<<
  *     raise 'unimplement'
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__23lock, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_23lock, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_lock, __pyx_t_1) < 0) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":145
+  /* "eosapi.pyx":145
  *     raise 'unimplement'
  * 
  * def transfer(sender_,recipient_,int amount):             # <<<<<<<<<<<<<<
  *     pass
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__25transfer, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 145, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_25transfer, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 145, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_transfer, __pyx_t_1) < 0) __PYX_ERR(0, 145, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":148
+  /* "eosapi.pyx":148
  *     pass
  * 
  * def setcode(account,wast_file,abi_file):             # <<<<<<<<<<<<<<
  *     pass
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__27setcode, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 148, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_27setcode, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_setcode, __pyx_t_1) < 0) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":151
+  /* "eosapi.pyx":151
  *     pass
  * 
  * def exec_func(code_,action_,json_,scope_,authorization_):             # <<<<<<<<<<<<<<
  *     pass
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7eosapi__29exec_func, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 151, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6eosapi_29exec_func, NULL, __pyx_n_s_eosapi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 151, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_exec_func, __pyx_t_1) < 0) __PYX_ERR(0, 151, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "eosapi_.pyx":1
+  /* "eosapi.pyx":1
  * import json             # <<<<<<<<<<<<<<
  * from libcpp.string cimport string
  * from libcpp.vector cimport vector
@@ -4843,11 +4843,11 @@ PyMODINIT_FUNC PyInit_eosapi_(void)
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init eosapi_", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init eosapi", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init eosapi_");
+    PyErr_SetString(PyExc_ImportError, "init eosapi");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

@@ -64,9 +64,9 @@ void py_plugin::plugin_initialize(const variables_map& options) {
 }
 
 extern "C" void c_printf(const char *s);
-extern "C" void PyInit_eosapi_();
+extern "C" void PyInit_eosapi();
 extern "C" PyObject* PyInit_eostypes_();
-extern "C" PyObject* PyInit_wallet_();
+extern "C" PyObject* PyInit_wallet();
 extern "C" PyObject* PyInit_hello();
 
 void py_thread() {
@@ -74,11 +74,11 @@ void py_thread() {
 
     Py_Initialize();
     PyRun_SimpleString("import readline");
-    PyInit_eosapi_();
+    PyInit_eosapi();
     PyInit_eostypes_();
-    PyInit_wallet_();
-    PyRun_SimpleString("import wallet_ as wallet;");
-    PyRun_SimpleString("import eosapi_ as eosapi;import sys;sys.path.append('./eosd')");
+    PyInit_wallet();
+    PyRun_SimpleString("import wallet;");
+    PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
     PyRun_SimpleString("from initeos import *");
 
     ilog("++++++++++++++py_plugin::plugin_startup");

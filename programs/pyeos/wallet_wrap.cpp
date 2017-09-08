@@ -441,8 +441,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__wallet_
-#define __PYX_HAVE_API__wallet_
+#define __PYX_HAVE__wallet
+#define __PYX_HAVE_API__wallet
 #include <string.h>
 #include <string>
 #include "ios"
@@ -656,7 +656,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "wallet_.pyx",
+  "wallet.pyx",
   "stringsource",
 };
 
@@ -792,12 +792,12 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'eostypes_' */
 
-/* Module declarations from 'wallet_' */
+/* Module declarations from 'wallet' */
 static std::string __pyx_convert_string_from_py_std__in_string(PyObject *); /*proto*/
-#define __Pyx_MODULE_NAME "wallet_"
-int __pyx_module_is_main_wallet_ = 0;
+#define __Pyx_MODULE_NAME "wallet"
+int __pyx_module_is_main_wallet = 0;
 
-/* Implementation of 'wallet_' */
+/* Implementation of 'wallet' */
 static const char __pyx_k_id[] = "id";
 static const char __pyx_k_txn[] = "txn";
 static const char __pyx_k_keys[] = "keys";
@@ -810,7 +810,7 @@ static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_utf8[] = "utf8";
 static const char __pyx_k_create[] = "create";
 static const char __pyx_k_unlock[] = "unlock";
-static const char __pyx_k_wallet[] = "wallet_";
+static const char __pyx_k_wallet[] = "wallet";
 static const char __pyx_k_set_dir[] = "set_dir";
 static const char __pyx_k_wif_key[] = "wif_key";
 static const char __pyx_k_lock_all[] = "lock_all";
@@ -822,7 +822,7 @@ static const char __pyx_k_set_timeout[] = "set_timeout";
 static const char __pyx_k_list_wallets[] = "list_wallets";
 static const char __pyx_k_get_public_keys[] = "get_public_keys";
 static const char __pyx_k_sign_transaction[] = "sign_transaction";
-static const char __pyx_k_Users_newworld_dev_eos_programs[] = "/Users/newworld/dev/eos/programs/pyeos/wallet_.pyx";
+static const char __pyx_k_Users_newworld_dev_eos_programs[] = "/Users/newworld/dev/eos/programs/pyeos/wallet.pyx";
 static PyObject *__pyx_kp_s_Users_newworld_dev_eos_programs;
 static PyObject *__pyx_n_s_create;
 static PyObject *__pyx_n_s_get_public_keys;
@@ -848,18 +848,18 @@ static PyObject *__pyx_n_s_unlock;
 static PyObject *__pyx_n_s_utf8;
 static PyObject *__pyx_n_s_wallet;
 static PyObject *__pyx_n_s_wif_key;
-static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
-static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
-static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_path_name); /* proto */
-static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_secs); /* proto */
-static PyObject *__pyx_pf_7wallet__8sign_transaction(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_txn, CYTHON_UNUSED PyObject *__pyx_v_keys, CYTHON_UNUSED PyObject *__pyx_v_id); /* proto */
-static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
-static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_password); /* proto */
-static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_wif_key); /* proto */
+static PyObject *__pyx_pf_6wallet_create(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
+static PyObject *__pyx_pf_6wallet_2open(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
+static PyObject *__pyx_pf_6wallet_4set_dir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_path_name); /* proto */
+static PyObject *__pyx_pf_6wallet_6set_timeout(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_secs); /* proto */
+static PyObject *__pyx_pf_6wallet_8sign_transaction(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_txn, CYTHON_UNUSED PyObject *__pyx_v_keys, CYTHON_UNUSED PyObject *__pyx_v_id); /* proto */
+static PyObject *__pyx_pf_6wallet_10list_wallets(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6wallet_12list_keys(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6wallet_14get_public_keys(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6wallet_16lock_all(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6wallet_18lock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name); /* proto */
+static PyObject *__pyx_pf_6wallet_20unlock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_password); /* proto */
+static PyObject *__pyx_pf_6wallet_22import_key(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_wif_key); /* proto */
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__5;
@@ -881,7 +881,7 @@ static PyObject *__pyx_codeobj__16;
 static PyObject *__pyx_codeobj__18;
 static PyObject *__pyx_codeobj__20;
 
-/* "wallet_.pyx":24
+/* "wallet.pyx":24
  *     object wallet_import_key_(string& name,string& wif_key);
  * 
  * def create(name):             # <<<<<<<<<<<<<<
@@ -890,20 +890,20 @@ static PyObject *__pyx_codeobj__20;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__1create(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__1create = {"create", (PyCFunction)__pyx_pw_7wallet__1create, METH_O, 0};
-static PyObject *__pyx_pw_7wallet__1create(PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pw_6wallet_1create(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_1create = {"create", (PyCFunction)__pyx_pw_6wallet_1create, METH_O, 0};
+static PyObject *__pyx_pw_6wallet_1create(PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("create (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__create(__pyx_self, ((PyObject *)__pyx_v_name));
+  __pyx_r = __pyx_pf_6wallet_create(__pyx_self, ((PyObject *)__pyx_v_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pf_6wallet_create(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -913,7 +913,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
   __Pyx_RefNannySetupContext("create", 0);
   __Pyx_INCREF(__pyx_v_name);
 
-  /* "wallet_.pyx":25
+  /* "wallet.pyx":25
  * 
  * def create(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -925,7 +925,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":26
+    /* "wallet.pyx":26
  * def create(name):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -946,7 +946,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":25
+    /* "wallet.pyx":25
  * 
  * def create(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -955,7 +955,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
  */
   }
 
-  /* "wallet_.pyx":27
+  /* "wallet.pyx":27
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     return wallet_create_(name)             # <<<<<<<<<<<<<<
@@ -970,7 +970,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":24
+  /* "wallet.pyx":24
  *     object wallet_import_key_(string& name,string& wif_key);
  * 
  * def create(name):             # <<<<<<<<<<<<<<
@@ -982,7 +982,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -991,7 +991,7 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-/* "wallet_.pyx":29
+/* "wallet.pyx":29
  *     return wallet_create_(name)
  * 
  * def open(name):             # <<<<<<<<<<<<<<
@@ -1000,20 +1000,20 @@ static PyObject *__pyx_pf_7wallet__create(CYTHON_UNUSED PyObject *__pyx_self, Py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__3open(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__3open = {"open", (PyCFunction)__pyx_pw_7wallet__3open, METH_O, 0};
-static PyObject *__pyx_pw_7wallet__3open(PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pw_6wallet_3open(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_3open = {"open", (PyCFunction)__pyx_pw_6wallet_3open, METH_O, 0};
+static PyObject *__pyx_pw_6wallet_3open(PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("open (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__2open(__pyx_self, ((PyObject *)__pyx_v_name));
+  __pyx_r = __pyx_pf_6wallet_2open(__pyx_self, ((PyObject *)__pyx_v_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pf_6wallet_2open(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1023,7 +1023,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __Pyx_RefNannySetupContext("open", 0);
   __Pyx_INCREF(__pyx_v_name);
 
-  /* "wallet_.pyx":30
+  /* "wallet.pyx":30
  * 
  * def open(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1035,7 +1035,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":31
+    /* "wallet.pyx":31
  * def open(name):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -1056,7 +1056,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":30
+    /* "wallet.pyx":30
  * 
  * def open(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1065,7 +1065,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
  */
   }
 
-  /* "wallet_.pyx":32
+  /* "wallet.pyx":32
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     return wallet_open_(name)             # <<<<<<<<<<<<<<
@@ -1080,7 +1080,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":29
+  /* "wallet.pyx":29
  *     return wallet_create_(name)
  * 
  * def open(name):             # <<<<<<<<<<<<<<
@@ -1092,7 +1092,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.open", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.open", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -1101,7 +1101,7 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
   return __pyx_r;
 }
 
-/* "wallet_.pyx":34
+/* "wallet.pyx":34
  *     return wallet_open_(name)
  * 
  * def set_dir(path_name):             # <<<<<<<<<<<<<<
@@ -1110,20 +1110,20 @@ static PyObject *__pyx_pf_7wallet__2open(CYTHON_UNUSED PyObject *__pyx_self, PyO
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__5set_dir(PyObject *__pyx_self, PyObject *__pyx_v_path_name); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__5set_dir = {"set_dir", (PyCFunction)__pyx_pw_7wallet__5set_dir, METH_O, 0};
-static PyObject *__pyx_pw_7wallet__5set_dir(PyObject *__pyx_self, PyObject *__pyx_v_path_name) {
+static PyObject *__pyx_pw_6wallet_5set_dir(PyObject *__pyx_self, PyObject *__pyx_v_path_name); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_5set_dir = {"set_dir", (PyCFunction)__pyx_pw_6wallet_5set_dir, METH_O, 0};
+static PyObject *__pyx_pw_6wallet_5set_dir(PyObject *__pyx_self, PyObject *__pyx_v_path_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_dir (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__4set_dir(__pyx_self, ((PyObject *)__pyx_v_path_name));
+  __pyx_r = __pyx_pf_6wallet_4set_dir(__pyx_self, ((PyObject *)__pyx_v_path_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_path_name) {
+static PyObject *__pyx_pf_6wallet_4set_dir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_path_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1133,7 +1133,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_RefNannySetupContext("set_dir", 0);
   __Pyx_INCREF(__pyx_v_path_name);
 
-  /* "wallet_.pyx":35
+  /* "wallet.pyx":35
  * 
  * def set_dir(path_name):
  *     if type(path_name) == str:             # <<<<<<<<<<<<<<
@@ -1145,7 +1145,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":36
+    /* "wallet.pyx":36
  * def set_dir(path_name):
  *     if type(path_name) == str:
  *         path_name = bytes(path_name,'utf8')             # <<<<<<<<<<<<<<
@@ -1166,7 +1166,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_DECREF_SET(__pyx_v_path_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":35
+    /* "wallet.pyx":35
  * 
  * def set_dir(path_name):
  *     if type(path_name) == str:             # <<<<<<<<<<<<<<
@@ -1175,7 +1175,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "wallet_.pyx":37
+  /* "wallet.pyx":37
  *     if type(path_name) == str:
  *         path_name = bytes(path_name,'utf8')
  *     return wallet_set_dir_(path_name)             # <<<<<<<<<<<<<<
@@ -1190,7 +1190,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":34
+  /* "wallet.pyx":34
  *     return wallet_open_(name)
  * 
  * def set_dir(path_name):             # <<<<<<<<<<<<<<
@@ -1202,7 +1202,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.set_dir", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.set_dir", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_path_name);
@@ -1211,7 +1211,7 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "wallet_.pyx":39
+/* "wallet.pyx":39
  *     return wallet_set_dir_(path_name)
  * 
  * def set_timeout(secs):             # <<<<<<<<<<<<<<
@@ -1220,27 +1220,27 @@ static PyObject *__pyx_pf_7wallet__4set_dir(CYTHON_UNUSED PyObject *__pyx_self, 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__7set_timeout(PyObject *__pyx_self, PyObject *__pyx_v_secs); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__7set_timeout = {"set_timeout", (PyCFunction)__pyx_pw_7wallet__7set_timeout, METH_O, 0};
-static PyObject *__pyx_pw_7wallet__7set_timeout(PyObject *__pyx_self, PyObject *__pyx_v_secs) {
+static PyObject *__pyx_pw_6wallet_7set_timeout(PyObject *__pyx_self, PyObject *__pyx_v_secs); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_7set_timeout = {"set_timeout", (PyCFunction)__pyx_pw_6wallet_7set_timeout, METH_O, 0};
+static PyObject *__pyx_pw_6wallet_7set_timeout(PyObject *__pyx_self, PyObject *__pyx_v_secs) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_timeout (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__6set_timeout(__pyx_self, ((PyObject *)__pyx_v_secs));
+  __pyx_r = __pyx_pf_6wallet_6set_timeout(__pyx_self, ((PyObject *)__pyx_v_secs));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_secs) {
+static PyObject *__pyx_pf_6wallet_6set_timeout(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_secs) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("set_timeout", 0);
 
-  /* "wallet_.pyx":40
+  /* "wallet.pyx":40
  * 
  * def set_timeout(secs):
  *     return wallet_set_timeout_(secs)             # <<<<<<<<<<<<<<
@@ -1255,7 +1255,7 @@ static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":39
+  /* "wallet.pyx":39
  *     return wallet_set_dir_(path_name)
  * 
  * def set_timeout(secs):             # <<<<<<<<<<<<<<
@@ -1266,7 +1266,7 @@ static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_se
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("wallet_.set_timeout", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.set_timeout", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1274,7 +1274,7 @@ static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_se
   return __pyx_r;
 }
 
-/* "wallet_.pyx":42
+/* "wallet.pyx":42
  *     return wallet_set_timeout_(secs)
  * 
  * def sign_transaction(txn,keys,id):             # <<<<<<<<<<<<<<
@@ -1283,9 +1283,9 @@ static PyObject *__pyx_pf_7wallet__6set_timeout(CYTHON_UNUSED PyObject *__pyx_se
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__9sign_transaction(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__9sign_transaction = {"sign_transaction", (PyCFunction)__pyx_pw_7wallet__9sign_transaction, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7wallet__9sign_transaction(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6wallet_9sign_transaction(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_9sign_transaction = {"sign_transaction", (PyCFunction)__pyx_pw_6wallet_9sign_transaction, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6wallet_9sign_transaction(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   CYTHON_UNUSED PyObject *__pyx_v_txn = 0;
   CYTHON_UNUSED PyObject *__pyx_v_keys = 0;
   CYTHON_UNUSED PyObject *__pyx_v_id = 0;
@@ -1339,18 +1339,18 @@ static PyObject *__pyx_pw_7wallet__9sign_transaction(PyObject *__pyx_self, PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("sign_transaction", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 42, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("wallet_.sign_transaction", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.sign_transaction", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7wallet__8sign_transaction(__pyx_self, __pyx_v_txn, __pyx_v_keys, __pyx_v_id);
+  __pyx_r = __pyx_pf_6wallet_8sign_transaction(__pyx_self, __pyx_v_txn, __pyx_v_keys, __pyx_v_id);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__8sign_transaction(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_txn, CYTHON_UNUSED PyObject *__pyx_v_keys, CYTHON_UNUSED PyObject *__pyx_v_id) {
+static PyObject *__pyx_pf_6wallet_8sign_transaction(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_txn, CYTHON_UNUSED PyObject *__pyx_v_keys, CYTHON_UNUSED PyObject *__pyx_v_id) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("sign_transaction", 0);
@@ -1362,7 +1362,7 @@ static PyObject *__pyx_pf_7wallet__8sign_transaction(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "wallet_.pyx":46
+/* "wallet.pyx":46
  *     pass
  * 
  * def list_wallets():             # <<<<<<<<<<<<<<
@@ -1371,26 +1371,26 @@ static PyObject *__pyx_pf_7wallet__8sign_transaction(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__11list_wallets(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__11list_wallets = {"list_wallets", (PyCFunction)__pyx_pw_7wallet__11list_wallets, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7wallet__11list_wallets(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6wallet_11list_wallets(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_11list_wallets = {"list_wallets", (PyCFunction)__pyx_pw_6wallet_11list_wallets, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6wallet_11list_wallets(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("list_wallets (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__10list_wallets(__pyx_self);
+  __pyx_r = __pyx_pf_6wallet_10list_wallets(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6wallet_10list_wallets(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("list_wallets", 0);
 
-  /* "wallet_.pyx":47
+  /* "wallet.pyx":47
  * 
  * def list_wallets():
  *     return wallet_list_wallets_();             # <<<<<<<<<<<<<<
@@ -1404,7 +1404,7 @@ static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":46
+  /* "wallet.pyx":46
  *     pass
  * 
  * def list_wallets():             # <<<<<<<<<<<<<<
@@ -1415,7 +1415,7 @@ static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("wallet_.list_wallets", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.list_wallets", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1423,7 +1423,7 @@ static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_
   return __pyx_r;
 }
 
-/* "wallet_.pyx":49
+/* "wallet.pyx":49
  *     return wallet_list_wallets_();
  * 
  * def list_keys():             # <<<<<<<<<<<<<<
@@ -1432,26 +1432,26 @@ static PyObject *__pyx_pf_7wallet__10list_wallets(CYTHON_UNUSED PyObject *__pyx_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__13list_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__13list_keys = {"list_keys", (PyCFunction)__pyx_pw_7wallet__13list_keys, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7wallet__13list_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6wallet_13list_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_13list_keys = {"list_keys", (PyCFunction)__pyx_pw_6wallet_13list_keys, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6wallet_13list_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("list_keys (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__12list_keys(__pyx_self);
+  __pyx_r = __pyx_pf_6wallet_12list_keys(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6wallet_12list_keys(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("list_keys", 0);
 
-  /* "wallet_.pyx":50
+  /* "wallet.pyx":50
  * 
  * def list_keys():
  *     return wallet_list_keys_();             # <<<<<<<<<<<<<<
@@ -1465,7 +1465,7 @@ static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_sel
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":49
+  /* "wallet.pyx":49
  *     return wallet_list_wallets_();
  * 
  * def list_keys():             # <<<<<<<<<<<<<<
@@ -1476,7 +1476,7 @@ static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_sel
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("wallet_.list_keys", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.list_keys", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1484,7 +1484,7 @@ static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_sel
   return __pyx_r;
 }
 
-/* "wallet_.pyx":52
+/* "wallet.pyx":52
  *     return wallet_list_keys_();
  * 
  * def get_public_keys():             # <<<<<<<<<<<<<<
@@ -1493,26 +1493,26 @@ static PyObject *__pyx_pf_7wallet__12list_keys(CYTHON_UNUSED PyObject *__pyx_sel
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__15get_public_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__15get_public_keys = {"get_public_keys", (PyCFunction)__pyx_pw_7wallet__15get_public_keys, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7wallet__15get_public_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6wallet_15get_public_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_15get_public_keys = {"get_public_keys", (PyCFunction)__pyx_pw_6wallet_15get_public_keys, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6wallet_15get_public_keys(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_public_keys (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__14get_public_keys(__pyx_self);
+  __pyx_r = __pyx_pf_6wallet_14get_public_keys(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6wallet_14get_public_keys(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_public_keys", 0);
 
-  /* "wallet_.pyx":53
+  /* "wallet.pyx":53
  * 
  * def get_public_keys():
  *     return wallet_get_public_keys_();             # <<<<<<<<<<<<<<
@@ -1526,7 +1526,7 @@ static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__p
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":52
+  /* "wallet.pyx":52
  *     return wallet_list_keys_();
  * 
  * def get_public_keys():             # <<<<<<<<<<<<<<
@@ -1537,7 +1537,7 @@ static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__p
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("wallet_.get_public_keys", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.get_public_keys", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1545,7 +1545,7 @@ static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "wallet_.pyx":55
+/* "wallet.pyx":55
  *     return wallet_get_public_keys_();
  * 
  * def lock_all():             # <<<<<<<<<<<<<<
@@ -1554,26 +1554,26 @@ static PyObject *__pyx_pf_7wallet__14get_public_keys(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__17lock_all(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__17lock_all = {"lock_all", (PyCFunction)__pyx_pw_7wallet__17lock_all, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7wallet__17lock_all(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6wallet_17lock_all(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_17lock_all = {"lock_all", (PyCFunction)__pyx_pw_6wallet_17lock_all, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6wallet_17lock_all(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("lock_all (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__16lock_all(__pyx_self);
+  __pyx_r = __pyx_pf_6wallet_16lock_all(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6wallet_16lock_all(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("lock_all", 0);
 
-  /* "wallet_.pyx":56
+  /* "wallet.pyx":56
  * 
  * def lock_all():
  *     return wallet_lock_all_()             # <<<<<<<<<<<<<<
@@ -1587,7 +1587,7 @@ static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":55
+  /* "wallet.pyx":55
  *     return wallet_get_public_keys_();
  * 
  * def lock_all():             # <<<<<<<<<<<<<<
@@ -1598,7 +1598,7 @@ static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("wallet_.lock_all", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.lock_all", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1606,7 +1606,7 @@ static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "wallet_.pyx":58
+/* "wallet.pyx":58
  *     return wallet_lock_all_()
  * 
  * def lock(name):             # <<<<<<<<<<<<<<
@@ -1615,20 +1615,20 @@ static PyObject *__pyx_pf_7wallet__16lock_all(CYTHON_UNUSED PyObject *__pyx_self
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__19lock(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__19lock = {"lock", (PyCFunction)__pyx_pw_7wallet__19lock, METH_O, 0};
-static PyObject *__pyx_pw_7wallet__19lock(PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pw_6wallet_19lock(PyObject *__pyx_self, PyObject *__pyx_v_name); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_19lock = {"lock", (PyCFunction)__pyx_pw_6wallet_19lock, METH_O, 0};
+static PyObject *__pyx_pw_6wallet_19lock(PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("lock (wrapper)", 0);
-  __pyx_r = __pyx_pf_7wallet__18lock(__pyx_self, ((PyObject *)__pyx_v_name));
+  __pyx_r = __pyx_pf_6wallet_18lock(__pyx_self, ((PyObject *)__pyx_v_name));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
+static PyObject *__pyx_pf_6wallet_18lock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1638,7 +1638,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
   __Pyx_RefNannySetupContext("lock", 0);
   __Pyx_INCREF(__pyx_v_name);
 
-  /* "wallet_.pyx":59
+  /* "wallet.pyx":59
  * 
  * def lock(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1650,7 +1650,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":60
+    /* "wallet.pyx":60
  * def lock(name):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -1671,7 +1671,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":59
+    /* "wallet.pyx":59
  * 
  * def lock(name):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1680,7 +1680,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
  */
   }
 
-  /* "wallet_.pyx":61
+  /* "wallet.pyx":61
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     return wallet_lock_(name)             # <<<<<<<<<<<<<<
@@ -1695,7 +1695,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":58
+  /* "wallet.pyx":58
  *     return wallet_lock_all_()
  * 
  * def lock(name):             # <<<<<<<<<<<<<<
@@ -1707,7 +1707,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.lock", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.lock", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -1716,7 +1716,7 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-/* "wallet_.pyx":63
+/* "wallet.pyx":63
  *     return wallet_lock_(name)
  * 
  * def unlock(name, password):             # <<<<<<<<<<<<<<
@@ -1725,9 +1725,9 @@ static PyObject *__pyx_pf_7wallet__18lock(CYTHON_UNUSED PyObject *__pyx_self, Py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__21unlock(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__21unlock = {"unlock", (PyCFunction)__pyx_pw_7wallet__21unlock, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7wallet__21unlock(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6wallet_21unlock(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_21unlock = {"unlock", (PyCFunction)__pyx_pw_6wallet_21unlock, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6wallet_21unlock(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_name = 0;
   PyObject *__pyx_v_password = 0;
   PyObject *__pyx_r = 0;
@@ -1772,18 +1772,18 @@ static PyObject *__pyx_pw_7wallet__21unlock(PyObject *__pyx_self, PyObject *__py
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("unlock", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 63, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("wallet_.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7wallet__20unlock(__pyx_self, __pyx_v_name, __pyx_v_password);
+  __pyx_r = __pyx_pf_6wallet_20unlock(__pyx_self, __pyx_v_name, __pyx_v_password);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_password) {
+static PyObject *__pyx_pf_6wallet_20unlock(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_password) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1795,7 +1795,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_INCREF(__pyx_v_name);
   __Pyx_INCREF(__pyx_v_password);
 
-  /* "wallet_.pyx":64
+  /* "wallet.pyx":64
  * 
  * def unlock(name, password):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1807,7 +1807,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":65
+    /* "wallet.pyx":65
  * def unlock(name, password):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -1828,7 +1828,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":64
+    /* "wallet.pyx":64
  * 
  * def unlock(name, password):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -1837,7 +1837,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "wallet_.pyx":67
+  /* "wallet.pyx":67
  *         name = bytes(name,'utf8')
  * 
  *     if type(password) == str:             # <<<<<<<<<<<<<<
@@ -1849,7 +1849,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":68
+    /* "wallet.pyx":68
  * 
  *     if type(password) == str:
  *         password = bytes(password,'utf8')             # <<<<<<<<<<<<<<
@@ -1870,7 +1870,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_DECREF_SET(__pyx_v_password, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "wallet_.pyx":67
+    /* "wallet.pyx":67
  *         name = bytes(name,'utf8')
  * 
  *     if type(password) == str:             # <<<<<<<<<<<<<<
@@ -1879,7 +1879,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "wallet_.pyx":70
+  /* "wallet.pyx":70
  *         password = bytes(password,'utf8')
  * 
  *     return wallet_unlock_(name,password)             # <<<<<<<<<<<<<<
@@ -1895,7 +1895,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":63
+  /* "wallet.pyx":63
  *     return wallet_lock_(name)
  * 
  * def unlock(name, password):             # <<<<<<<<<<<<<<
@@ -1907,7 +1907,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.unlock", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -1917,7 +1917,7 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "wallet_.pyx":72
+/* "wallet.pyx":72
  *     return wallet_unlock_(name,password)
  * 
  * def import_key(name,wif_key):             # <<<<<<<<<<<<<<
@@ -1926,9 +1926,9 @@ static PyObject *__pyx_pf_7wallet__20unlock(CYTHON_UNUSED PyObject *__pyx_self, 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7wallet__23import_key(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7wallet__23import_key = {"import_key", (PyCFunction)__pyx_pw_7wallet__23import_key, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7wallet__23import_key(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6wallet_23import_key(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6wallet_23import_key = {"import_key", (PyCFunction)__pyx_pw_6wallet_23import_key, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6wallet_23import_key(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_name = 0;
   PyObject *__pyx_v_wif_key = 0;
   PyObject *__pyx_r = 0;
@@ -1973,18 +1973,18 @@ static PyObject *__pyx_pw_7wallet__23import_key(PyObject *__pyx_self, PyObject *
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("import_key", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 72, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("wallet_.import_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.import_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7wallet__22import_key(__pyx_self, __pyx_v_name, __pyx_v_wif_key);
+  __pyx_r = __pyx_pf_6wallet_22import_key(__pyx_self, __pyx_v_name, __pyx_v_wif_key);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_wif_key) {
+static PyObject *__pyx_pf_6wallet_22import_key(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_name, PyObject *__pyx_v_wif_key) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1996,7 +1996,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_INCREF(__pyx_v_name);
   __Pyx_INCREF(__pyx_v_wif_key);
 
-  /* "wallet_.pyx":73
+  /* "wallet.pyx":73
  * 
  * def import_key(name,wif_key):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -2008,7 +2008,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":74
+    /* "wallet.pyx":74
  * def import_key(name,wif_key):
  *     if type(name) == str:
  *         name = bytes(name,'utf8')             # <<<<<<<<<<<<<<
@@ -2029,7 +2029,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
     __Pyx_DECREF_SET(__pyx_v_name, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "wallet_.pyx":73
+    /* "wallet.pyx":73
  * 
  * def import_key(name,wif_key):
  *     if type(name) == str:             # <<<<<<<<<<<<<<
@@ -2038,7 +2038,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
  */
   }
 
-  /* "wallet_.pyx":75
+  /* "wallet.pyx":75
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     if type(wif_key) == str:             # <<<<<<<<<<<<<<
@@ -2050,7 +2050,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_2) {
 
-    /* "wallet_.pyx":76
+    /* "wallet.pyx":76
  *         name = bytes(name,'utf8')
  *     if type(wif_key) == str:
  *         wif_key = bytes(wif_key,'utf8')             # <<<<<<<<<<<<<<
@@ -2071,7 +2071,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
     __Pyx_DECREF_SET(__pyx_v_wif_key, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "wallet_.pyx":75
+    /* "wallet.pyx":75
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  *     if type(wif_key) == str:             # <<<<<<<<<<<<<<
@@ -2080,7 +2080,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
  */
   }
 
-  /* "wallet_.pyx":77
+  /* "wallet.pyx":77
  *     if type(wif_key) == str:
  *         wif_key = bytes(wif_key,'utf8')
  *     return wallet_import_key_(name,wif_key)             # <<<<<<<<<<<<<<
@@ -2096,7 +2096,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "wallet_.pyx":72
+  /* "wallet.pyx":72
  *     return wallet_unlock_(name,password)
  * 
  * def import_key(name,wif_key):             # <<<<<<<<<<<<<<
@@ -2108,7 +2108,7 @@ static PyObject *__pyx_pf_7wallet__22import_key(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("wallet_.import_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("wallet.import_key", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_name);
@@ -2181,7 +2181,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    "wallet_",
+    "wallet",
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -2228,7 +2228,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "wallet_.pyx":24
+  /* "wallet.pyx":24
  *     object wallet_import_key_(string& name,string& wif_key);
  * 
  * def create(name):             # <<<<<<<<<<<<<<
@@ -2240,7 +2240,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple_);
   __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_create, 24, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 24, __pyx_L1_error)
 
-  /* "wallet_.pyx":29
+  /* "wallet.pyx":29
  *     return wallet_create_(name)
  * 
  * def open(name):             # <<<<<<<<<<<<<<
@@ -2252,7 +2252,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__3);
   __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_open, 29, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 29, __pyx_L1_error)
 
-  /* "wallet_.pyx":34
+  /* "wallet.pyx":34
  *     return wallet_open_(name)
  * 
  * def set_dir(path_name):             # <<<<<<<<<<<<<<
@@ -2264,7 +2264,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__5);
   __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__5, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_set_dir, 34, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(0, 34, __pyx_L1_error)
 
-  /* "wallet_.pyx":39
+  /* "wallet.pyx":39
  *     return wallet_set_dir_(path_name)
  * 
  * def set_timeout(secs):             # <<<<<<<<<<<<<<
@@ -2276,7 +2276,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__7);
   __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_set_timeout, 39, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 39, __pyx_L1_error)
 
-  /* "wallet_.pyx":42
+  /* "wallet.pyx":42
  *     return wallet_set_timeout_(secs)
  * 
  * def sign_transaction(txn,keys,id):             # <<<<<<<<<<<<<<
@@ -2288,7 +2288,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__9);
   __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_sign_transaction, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 42, __pyx_L1_error)
 
-  /* "wallet_.pyx":46
+  /* "wallet.pyx":46
  *     pass
  * 
  * def list_wallets():             # <<<<<<<<<<<<<<
@@ -2297,7 +2297,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_list_wallets, 46, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 46, __pyx_L1_error)
 
-  /* "wallet_.pyx":49
+  /* "wallet.pyx":49
  *     return wallet_list_wallets_();
  * 
  * def list_keys():             # <<<<<<<<<<<<<<
@@ -2306,7 +2306,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_list_keys, 49, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 49, __pyx_L1_error)
 
-  /* "wallet_.pyx":52
+  /* "wallet.pyx":52
  *     return wallet_list_keys_();
  * 
  * def get_public_keys():             # <<<<<<<<<<<<<<
@@ -2315,7 +2315,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_get_public_keys, 52, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 52, __pyx_L1_error)
 
-  /* "wallet_.pyx":55
+  /* "wallet.pyx":55
  *     return wallet_get_public_keys_();
  * 
  * def lock_all():             # <<<<<<<<<<<<<<
@@ -2324,7 +2324,7 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_lock_all, 55, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 55, __pyx_L1_error)
 
-  /* "wallet_.pyx":58
+  /* "wallet.pyx":58
  *     return wallet_lock_all_()
  * 
  * def lock(name):             # <<<<<<<<<<<<<<
@@ -2336,7 +2336,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__15);
   __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_lock, 58, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 58, __pyx_L1_error)
 
-  /* "wallet_.pyx":63
+  /* "wallet.pyx":63
  *     return wallet_lock_(name)
  * 
  * def unlock(name, password):             # <<<<<<<<<<<<<<
@@ -2348,7 +2348,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__17);
   __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_newworld_dev_eos_programs, __pyx_n_s_unlock, 63, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 63, __pyx_L1_error)
 
-  /* "wallet_.pyx":72
+  /* "wallet.pyx":72
  *     return wallet_unlock_(name,password)
  * 
  * def import_key(name,wif_key):             # <<<<<<<<<<<<<<
@@ -2374,11 +2374,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC initwallet_(void); /*proto*/
-PyMODINIT_FUNC initwallet_(void)
+PyMODINIT_FUNC initwallet(void); /*proto*/
+PyMODINIT_FUNC initwallet(void)
 #else
-PyMODINIT_FUNC PyInit_wallet_(void); /*proto*/
-PyMODINIT_FUNC PyInit_wallet_(void)
+PyMODINIT_FUNC PyInit_wallet(void); /*proto*/
+PyMODINIT_FUNC PyInit_wallet(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -2392,7 +2392,7 @@ PyMODINIT_FUNC PyInit_wallet_(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_wallet_(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_wallet(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -2421,7 +2421,7 @@ PyMODINIT_FUNC PyInit_wallet_(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("wallet_", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("wallet", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -2438,14 +2438,14 @@ PyMODINIT_FUNC PyInit_wallet_(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_wallet_) {
+  if (__pyx_module_is_main_wallet) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "wallet_")) {
-      if (unlikely(PyDict_SetItemString(modules, "wallet_", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "wallet")) {
+      if (unlikely(PyDict_SetItemString(modules, "wallet", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -2465,151 +2465,151 @@ PyMODINIT_FUNC PyInit_wallet_(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "wallet_.pyx":24
+  /* "wallet.pyx":24
  *     object wallet_import_key_(string& name,string& wif_key);
  * 
  * def create(name):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__1create, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_1create, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_create, __pyx_t_1) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":29
+  /* "wallet.pyx":29
  *     return wallet_create_(name)
  * 
  * def open(name):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__3open, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_3open, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_open, __pyx_t_1) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":34
+  /* "wallet.pyx":34
  *     return wallet_open_(name)
  * 
  * def set_dir(path_name):             # <<<<<<<<<<<<<<
  *     if type(path_name) == str:
  *         path_name = bytes(path_name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__5set_dir, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_5set_dir, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_set_dir, __pyx_t_1) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":39
+  /* "wallet.pyx":39
  *     return wallet_set_dir_(path_name)
  * 
  * def set_timeout(secs):             # <<<<<<<<<<<<<<
  *     return wallet_set_timeout_(secs)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__7set_timeout, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_7set_timeout, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_set_timeout, __pyx_t_1) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":42
+  /* "wallet.pyx":42
  *     return wallet_set_timeout_(secs)
  * 
  * def sign_transaction(txn,keys,id):             # <<<<<<<<<<<<<<
  * #    const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,const chain::chain_id_type& id
  *     pass
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__9sign_transaction, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_9sign_transaction, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sign_transaction, __pyx_t_1) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":46
+  /* "wallet.pyx":46
  *     pass
  * 
  * def list_wallets():             # <<<<<<<<<<<<<<
  *     return wallet_list_wallets_();
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__11list_wallets, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_11list_wallets, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_list_wallets, __pyx_t_1) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":49
+  /* "wallet.pyx":49
  *     return wallet_list_wallets_();
  * 
  * def list_keys():             # <<<<<<<<<<<<<<
  *     return wallet_list_keys_();
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__13list_keys, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_13list_keys, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_list_keys, __pyx_t_1) < 0) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":52
+  /* "wallet.pyx":52
  *     return wallet_list_keys_();
  * 
  * def get_public_keys():             # <<<<<<<<<<<<<<
  *     return wallet_get_public_keys_();
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__15get_public_keys, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_15get_public_keys, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_public_keys, __pyx_t_1) < 0) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":55
+  /* "wallet.pyx":55
  *     return wallet_get_public_keys_();
  * 
  * def lock_all():             # <<<<<<<<<<<<<<
  *     return wallet_lock_all_()
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__17lock_all, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_17lock_all, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_lock_all, __pyx_t_1) < 0) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":58
+  /* "wallet.pyx":58
  *     return wallet_lock_all_()
  * 
  * def lock(name):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__19lock, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_19lock, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_lock, __pyx_t_1) < 0) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":63
+  /* "wallet.pyx":63
  *     return wallet_lock_(name)
  * 
  * def unlock(name, password):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__21unlock, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_21unlock, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_unlock, __pyx_t_1) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":72
+  /* "wallet.pyx":72
  *     return wallet_unlock_(name,password)
  * 
  * def import_key(name,wif_key):             # <<<<<<<<<<<<<<
  *     if type(name) == str:
  *         name = bytes(name,'utf8')
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wallet__23import_key, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6wallet_23import_key, NULL, __pyx_n_s_wallet); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_import_key, __pyx_t_1) < 0) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "wallet_.pyx":1
+  /* "wallet.pyx":1
  * from cython.operator cimport dereference as deref, preincrement as inc             # <<<<<<<<<<<<<<
  * from libcpp.string cimport string
  * from libcpp.vector cimport vector
@@ -2634,11 +2634,11 @@ PyMODINIT_FUNC PyInit_wallet_(void)
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init wallet_", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init wallet", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init wallet_");
+    PyErr_SetString(PyExc_ImportError, "init wallet");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
