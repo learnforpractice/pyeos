@@ -1,4 +1,6 @@
 #include "eosapi.h"
+#include "pyobject.hpp"
+#include "wallet_.h"
 
 chain_controller& get_db(){
     return app().get_plugin<chain_plugin>().chain();
@@ -7,13 +9,6 @@ chain_controller& get_db(){
 wallet_manager& get_wm(){
    return app().get_plugin<wallet_plugin>().get_wallet_manager();
 }
-
-PyObject *array_create();
-void array_append_string(PyObject *array_object,std::string& s);
-void array_append_int(PyObject *array_object,int n);
-void array_append_double(PyObject *array_object,double n);
-void array_append_uint64(PyObject *arr,unsigned long long n);
-
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
    std::sort( names.begin(), names.end() );
@@ -66,31 +61,6 @@ read_only::get_info_results get_info() {
 		__builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0
 	};
 }
-
-void sign_transaction(SignedTransaction& trx) {
-   // TODO better error checking
-
-//	const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
-	const auto& public_keys = get_wm().get_public_keys();
-	auto get_arg = fc::mutable_variant_object
-		 ("transaction", trx)
-		 ("available_keys", public_keys);
-
-	auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-	auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-
-//	const auto& required_keys = call(host, port, get_required_keys, get_arg);
-	eos::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx),public_keys};
-	eos::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
-	// TODO determine chain id
-//	fc::variants sign_args = {fc::variant(trx), required_keys["required_keys"], fc::variant(chain_id_type{})};
-
-//	const auto& signed_trx = call(wallet_host, wallet_port, wallet_sign_trx, sign_args);
-//	trx = signed_trx.as<SignedTransaction>();
-	auto signed_trx = get_wm().sign_transaction(trx,required_keys.required_keys,chain_id_type{});
-	trx = signed_trx;
-}
-
 
 string push_transaction( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
@@ -147,34 +117,6 @@ string create_account__(Name creator, Name newaccount, public_key_type owner, pu
 string create_account_(string creator, string newaccount, string owner, string active, int sign) {
 	return create_account__(creator,newaccount,public_key_type(owner),public_key_type(active),sign);
 }
-
-class PyArray
-{
-public:
-    PyArray(){
-        arr = array_create();
-    }
-    void append(string s){
-        array_append_string(arr,s);
-    }
-    void append(int n){
-        array_append_int(arr,n);
-    }
-    void append(unsigned int n){
-        array_append_int(arr,n);
-    }
-    void append(uint64_t n){
-        array_append_uint64(arr,n);
-    }
-    void append(double n){
-        array_append_double(arr,n);
-    }
-    PyObject *get(){
-        return arr;
-    }
-private:
-    PyObject *arr;
-};
 
 
 PyObject* get_info_(){

@@ -25,15 +25,31 @@ cdef extern from "eosapi.h":
     string get_transaction_(string id);
     string get_transactions_(string account_name,int skip_seq,int num_seq);
 
-
     string push_transaction( SignedTransaction& trx, bool sign )
     int get_transaction_(char *id,char* result,int length)
     int transfer_(char *sender_,char* recipient_,int amount,char *result,int length)
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
 
+cdef extern object py_new_bool(int b):
+    if b:
+        return True
+    return False
+
+cdef extern object py_new_string(string& s):
+    return s
+
+cdef extern object py_new_int(int n):
+    return n
+
+cdef extern object py_new_int64(long long n):
+    return n
+
 cdef extern object array_create():
     return []
+
+cdef extern void array_append(object arr,object v):
+    arr.append(v)
 
 cdef extern void array_append_string(object arr,string& s):
     arr.append(s)
@@ -46,6 +62,12 @@ cdef extern void array_append_double(object arr,double n):
 
 cdef extern void array_append_uint64(object arr,unsigned long long n):
     arr.append(n)
+
+cdef extern object dict_create():
+    return {}
+
+cdef extern void dict_add(object d,object key,object value):
+    d[key] = value
 
 
 def toobject(bstr):
