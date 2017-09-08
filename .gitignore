@@ -5,6 +5,7 @@
 *.bc
 *.wast
 *.wast.hpp
+*.wrap.cpp
 *.wasm
 *.s
 *.dot
