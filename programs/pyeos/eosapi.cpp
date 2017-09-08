@@ -41,7 +41,7 @@ vector<uint8_t> assemble_wast( const std::string& wast ) {
       WASM::serialize(stream,module);
       return stream.getBytes();
    }
-   catch(Serialization::FatalSerializationException exception)
+   catch(Serialization::FatalSerializationException& exception)
    {
       std::cerr << "Error serializing WebAssembly binary file:" << std::endl;
       std::cerr << exception.message << std::endl;
@@ -173,7 +173,7 @@ PyObject *get_block_(char *num_or_id){
          arr.append(results.block_num);
          arr.append(results.refBlockPrefix);
       }
-   } catch (fc::bad_cast_exception) {/* do nothing */}
+   } catch (fc::bad_cast_exception& e) {/* do nothing */}
    catch ( const fc::exception& e ) {
      elog((e.to_detail_string()));
    }
@@ -247,58 +247,68 @@ PyObject* get_account_(char *name){
 
 PyObject* get_accounts_(char *public_key){
 	PyArray arr;
-	if (public_key == NULL){
-		return arr.get();
-	}
-	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-	auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
-	eos::account_history_apis::read_only::get_key_accounts_params params = {chain::public_key_type{}};
-	eos::account_history_apis::read_only::get_key_accounts_results results= ro_api.get_key_accounts(params);
+	try{
+		if (public_key == NULL){
+			return arr.get();
+		}
+		auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+		auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
+		eos::account_history_apis::read_only::get_key_accounts_params params = {chain::public_key_type{}};
+		eos::account_history_apis::read_only::get_key_accounts_results results= ro_api.get_key_accounts(params);
 
-	for(auto it = results.account_names.begin();it!=results.account_names.end();++it){
-		arr.append(string(*it));
+		for(auto it = results.account_names.begin();it!=results.account_names.end();++it){
+			arr.append(string(*it));
+		}
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
 	}
 	return arr.get();
 }
 
 PyObject* get_controlled_accounts_(char *account_name){
 	PyArray arr;
-	if (account_name == NULL){
-		return arr.get();
-	}
-	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-	eos::account_history_apis::read_only::get_controlled_accounts_params params = {Name(account_name)};
-	eos::account_history_apis::read_only::get_controlled_accounts_results results = ro_api.get_controlled_accounts(params);
-	for(auto it = results.controlled_accounts.begin();it!=results.controlled_accounts.end();it++){
-		arr.append(string(*it));
+	try{
+		if (account_name == NULL){
+			return arr.get();
+		}
+		auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+		eos::account_history_apis::read_only::get_controlled_accounts_params params = {Name(account_name)};
+		eos::account_history_apis::read_only::get_controlled_accounts_results results = ro_api.get_controlled_accounts(params);
+		for(auto it = results.controlled_accounts.begin();it!=results.controlled_accounts.end();it++){
+			arr.append(string(*it));
+		}
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
 	}
 	return arr.get();
 }
 
 string get_transaction_(string id){
+	string ret = "";
 	eos::account_history_apis::read_only::get_transaction_params params = {chain::transaction_id_type(id)};
-
-	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-	eos::account_history_apis::read_only::get_transaction_results results = ro_api.get_transaction(params);
-	return fc::json::to_string(results);
+	try{
+		auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+		eos::account_history_apis::read_only::get_transaction_results results = ro_api.get_transaction(params);
+		ret = fc::json::to_string(fc::variant(results));
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return ret;
 }
 
 string get_transactions_(string account_name,int skip_seq,int num_seq){
-	const eos::account_history_apis::read_only::get_transactions_params params = {
-			chain::AccountName(account_name),
-			skip_seq,
-			num_seq
-	};
-	auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-	eos::account_history_apis::read_only::get_transactions_results results = ro_api.get_transactions(params);
-	return fc::json::to_string(results);
+	try{
+		const eos::account_history_apis::read_only::get_transactions_params params = {
+				chain::AccountName(account_name),
+				skip_seq,
+				num_seq
+		};
+		auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
+		eos::account_history_apis::read_only::get_transactions_results results = ro_api.get_transactions(params);
+		return fc::json::to_string(results);
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return "";
 }
-
-
-
-
-
-
-
-
 

@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from eostypes_ cimport *
 #import eostypes_
+from typing import Dict, Tuple, List
 
 class JsonStruct:
     def __init__(self, **entries):
@@ -77,33 +78,33 @@ def toobject(bstr):
     bstr = json.loads(bstr.decode('utf8'))
     return JsonStruct(**bstr)
 
-def get_info():
+def get_info()->str:
     return get_info_()
 
-def get_block(id):
+def get_block(id)->str:
     if type(id) == int:
         id = bytes(id)
     if type(id) == str:
         id = bytes(id,'utf8')
     return get_block_(id)
 
-def get_account(name):
+def get_account(name)->str:
     if type(name) == str:
         name = bytes(name,'utf8')
     return get_account_(name)
 
-def get_accounts(public_key):
+def get_accounts(public_key)->List[str]:
     if type(public_key) == str:
         public_key = bytes(public_key,'utf8')
     return get_accounts_(public_key)
 
-def get_controlled_accounts(account_name):
+def get_controlled_accounts(account_name)->List[str]:
     if type(account_name) == str:
         account_name = bytes(account_name,'utf8')
 
     return get_controlled_accounts_(account_name);
 
-def create_account(creator,newaccount,owner_key,active_key,sign ):
+def create_account(creator,newaccount,owner_key,active_key,sign )->str:
     if type(creator) == str:
         creator = bytes(creator,'utf8')
     
@@ -121,37 +122,31 @@ def create_account(creator,newaccount,owner_key,active_key,sign ):
     else:
         return create_account_(creator,newaccount,owner_key,active_key, 0)
 
-def create_key():
+def create_key()->Tuple[bytes]:
     cdef string pub
     cdef string priv
     create_key_(pub,priv)
     return(pub,priv)
 
-def get_transaction(id):
+def get_transaction(id)->str:
     if type(id) == int:
         id = str(id)
     if type(id) == str:
         id = bytes(id,'utf8')
     return get_transaction_(id)
 
-def get_transactions(account_name,skip_seq,num_seq):
+def get_transactions(account_name,skip_seq,num_seq)->str:
     if type(account_name) == str:
         account_name = bytes(account_name,'utf8')
     return get_transactions_(account_name,skip_seq,num_seq)
 
-def unlock():
-    raise 'unimplement'
-
-def lock():
-    raise 'unimplement'
-
-def transfer(sender_,recipient_,int amount):
+def transfer(sender_,recipient_,int amount)->str:
     pass
 
-def setcode(account,wast_file,abi_file):
+def setcode(account,wast_file,abi_file)->str:
     pass
 
-def exec_func(code_,action_,json_,scope_,authorization_):
+def exec_func(code_,action_,json_,scope_,authorization_)->str:
     pass
 
 
