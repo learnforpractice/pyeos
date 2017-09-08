@@ -13,7 +13,7 @@ endif()
 
 
 add_library(python3.6m SHARED IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION "/Users/newworld/anaconda/lib/libpython3.6m.so")
+set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eosapi.wrap.cpp
@@ -45,7 +45,7 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
     python3.6m boost_python3-mt)
 
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
-                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "/Users/newworld/anaconda/include/python3.6m"
+                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" $ENV{PYTHON_INC_DIR}
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                                   )
