@@ -1,8 +1,12 @@
 Hack on Eos. Have fun!
 
-$ ./eosd/eosd --skip-transaction-signatures
+$ ./pyeos/pyeos --skip-transaction-signatures
 
-$ ./eosd/eosd --skip-transaction-signatures
+$ ./pyeos/pyeos --skip-transaction-signatures
+
+# 1. blockchain api test
+
+### >>> import eosapi
 
 ### >>> info = eosapi.get_info()
 
@@ -37,7 +41,7 @@ r = eosapi.get_transaction('687d06e777bd8deedca0a7a92938b6fd44e85599d7ab8d351f4e
 {'transaction': {'refBlockNum': 2033, 'refBlockPrefix': 2586037830, 'expiration': '2017-08-27T09:19:49', 'scope': ['eos', 'inita'], 'signatures': [], 'messages': [{'code': 'eos', 'type': 'newaccount', 'authorization': [{'account': 'inita', 'permission': 'active'}], 'data': '000000008040934b000000e0cb4267a101000000010200b35ad060d629717bd3dbec82731094dae9cd7e9980c39625ad58fa7f9b654b010000010000000102bcca6347d828d4e1868b7dfa91692a16d5b20d0ee3d16a7ca2ddcc7f6dd03344010000010000000001000000008040934b00000000149be8080100010000000000000008454f5300000000'}], 'output': [{'notify': [], 'sync_transactions': [], 'async_transactions': []}]}}
 
 
-#wallet test
+# 2. wallet test
 
 ### >>> import wallet
 ### >>> wallet_name = 'mywallet'
@@ -57,7 +61,12 @@ True
 ### >>> wallet.list_wallets()
 [b'mywallet *']
 
+### >>> eosapi.create_key()
+(b'EOS7VMTHQiCKzynXZHvW2Ef1zi8w92G6ayM7bdh1kV6dgewyBB8i7', b'5HpsDntjXznKoFb13QVBeAD6FUE7hwRjCdGrAs3Wq8GxqK9m8Qs')
+### >>> wallet.import_key(wallet_name,b'5HpsDntjXznKoFb13QVBeAD6FUE7hwRjCdGrAs3Wq8GxqK9m8Qs')
+3519376ms thread-1   wallet.cpp:182                save_wallet_file     ] saving wallet to file /Users/newworld/dev/eos/build/programs/data-dir/./mywallet.wallet
+True
 
-
-
+### >>> wallet.list_keys()
+{b'EOS6V8Ho3VBuxNrGsqHWVXHfRPThPhqFDs9aPp1s9hJqAKZJ7NTJJ': b'5JaXKGt2J4kK4EabnPZ2DSS6UJFe8vZ9mgEBXDQ5j3G2m7HE5nQ', b'EOS7VMTHQiCKzynXZHvW2Ef1zi8w92G6ayM7bdh1kV6dgewyBB8i7': b'5HpsDntjXznKoFb13QVBeAD6FUE7hwRjCdGrAs3Wq8GxqK9m8Qs'}
 
