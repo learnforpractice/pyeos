@@ -15,6 +15,25 @@ endif()
 add_library(python3.6m SHARED IMPORTED)
 set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION "/Users/newworld/anaconda/lib/libpython3.6m.so")
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eosapi_wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eosapi.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eosapi_wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eosapi.pyx
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wallet_wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/wallet.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wallet_wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/wallet.pyx
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eostypes_wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eostypes_.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eostypes_wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eostypes_.pyx
+)
+
+
 file(GLOB UNIT_TESTS "tests/*.cpp")
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp eosapi.cpp 
 eosapi_wrap.cpp eostypes_wrap.cpp wallet_wrap.cpp wallet_.cpp pyobject.cpp ${UNIT_TESTS} ${COMMON_SOURCES} )
