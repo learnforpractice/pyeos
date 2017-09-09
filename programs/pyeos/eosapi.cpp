@@ -73,11 +73,11 @@ string push_transaction( SignedTransaction& trx, bool sign ) {
     }
 
     auto v = fc::variant(trx);
-	ilog(fc::json::to_string( trx ));
+//	ilog(fc::json::to_string( trx ));
 
 	auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
 	auto result = fc::json::to_string(rw.push_transaction(v.get_object()));
-	ilog(result);
+//	ilog(result);
 	return result;
 
 
@@ -352,7 +352,7 @@ string push_message_(string& contract,string& action,string& args,vector<string>
 	return "";
 }
 
-string set_contract_(string& account,string& wastPath,string& abiPath,bool sign){
+int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result){
 	try{
 		std::string wast;
 		std::cout << "Reading WAST..." << std::endl;
@@ -370,10 +370,44 @@ string set_contract_(string& account,string& wastPath,string& abiPath,bool sign)
 		transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
 											 "setcode", handler);
 		std::cout << "Publishing contract..." << std::endl;
-		return fc::json::to_string(push_transaction(trx,sign));
+		result = fc::json::to_string(push_transaction(trx,sign));
+		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}
-	return "";
+	return -1;
 }
+
+int get_code_(string& name,string& wast,string& abi,string& code_hash){
+	try{
+		chain_apis::read_only::get_code_params params = {Name(name)};
+		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+		chain_apis::read_only::get_code_results results = ro_api.get_code(params);
+		wast = results.wast;
+		code_hash = results.code_hash.str();
+		abi = fc::json::to_string(fc::variant(results.abi));
+		return 0;
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return -1;
+}
+
+int get_table_(string& scope,string& code,string& table,string& result){
+	try{
+		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+		chain_apis::read_only::get_table_rows_params params;
+		params.json = true;
+		params.scope = scope;
+		params.code = code;
+		params.table = table;
+		chain_apis::read_only::get_table_rows_result results = ro_api.get_table_rows(params);
+		result = fc::json::to_string(results);
+		return 0;
+	}catch(fc::exception& ex){
+		elog(ex.to_detail_string());
+	}
+	return -1;
+}
+
 

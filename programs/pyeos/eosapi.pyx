@@ -32,7 +32,9 @@ cdef extern from "eosapi.h":
     
     string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
     string push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign);
-    string set_contract_(string& account,string& wastPath,string& abiPath,bool sign);
+    int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result);
+    int get_code_(string& name,string& wast,string& abi,string& code_hash);
+    int get_table_(string& scope,string& code,string& table,string& result);
 
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
@@ -162,6 +164,7 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
         return transfer_(sender,recipient,amount,memo,1)
     else:
         return transfer_(sender,recipient,amount,memo,0)
+
 def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign):
     if type(contract) == str:
         contract = bytes(contract,"utf8");
@@ -183,6 +186,7 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         return push_message(contract,action,args,scopes,permissions,0)
 
 def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
+    cdef string result
     account = tobytes(account)
     wast_file = tobytes(wast_file)
     abi_file = tobytes(abi_file)
@@ -191,7 +195,28 @@ def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
     else:
         sign = 0
 
-    return set_contract_(account,wast_file,abi_file,sign)
+    if 0 == set_contract_(account,wast_file,abi_file,sign,result):
+        return result
+    return None
+
+def get_contract(name:str):
+    cdef string wast
+    cdef string abi
+    cdef string code_hash
+    name = tobytes(name)
+    if 0 == get_code_(name,wast,abi,code_hash):
+        return [wast,abi,code_hash]
+    return []
+
+def get_table(scope,code,table):
+    cdef string result
+    scope = tobytes(scope)
+    code = tobytes(code)
+    table = tobytes(table)
+
+    if 0 == get_table_(scope,code,table,result):
+        return result
+    return None
 
 def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->str:
     pass
