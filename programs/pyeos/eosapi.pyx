@@ -31,7 +31,7 @@ cdef extern from "eosapi.h":
     int get_transaction_(char *id,char* result,int length)
     
     string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
-    string push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign);
+    int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret);
     int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result);
     int get_code_(string& name,string& wast,string& abi,string& code_hash);
     int get_table_(string& scope,string& code,string& table,string& result);
@@ -166,24 +166,34 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
         return transfer_(sender,recipient,amount,memo,0)
 
 def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign):
-    if type(contract) == str:
-        contract = bytes(contract,"utf8");
-    if type(action) == str:
-        action = bytes(contract,"utf8");
-    if type(args) == str:
-        args = bytes(args,"utf8")
-
+    cdef string ret
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
 
+    if type(contract) == str:
+        contract = bytes(contract,"utf8");
+    if type(action) == str:
+        action = bytes(action,"utf8");
+    if type(args) == str:
+        args = bytes(args,"utf8")
+
+
     for scope in scopes:
-        scopes_.push_back(scope)
+        scopes_.push_back(tobytes(scope))
     for per in permissions:
-        permissions_[per] = permissions[per]
+        key = permissions[per]
+        per = tobytes(per)
+        key = tobytes(key)
+        permissions_[per] = key
+
     if sign:
-        return push_message(contract,action,args,scopes,permissions,1)
+        sign = 1
     else:
-        return push_message(contract,action,args,scopes,permissions,0)
+        sign = 0
+
+    if 0 == push_message_(contract,action,args,scopes_,permissions_,sign,ret):
+        return ret
+    return None
 
 def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
     cdef string result

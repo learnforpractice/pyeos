@@ -67,6 +67,27 @@ b'"{\\"transaction_id\\":\\"19c3b23f43a90d3960a172d3195e4dd1726ce99fd95f311776bf
 [b'currency', 0, 1, 0, b'2106-02-07T06:28:15', b'{"types":[{"newTypeName":"AccountName","type":"Name"}],"structs":[{"name":"transfer","base":"","fields":{"from":"AccountName","to":"AccountName","amount":"UInt64"}},{"name":"account","base":"","fields":{"account":"Name","balance":"UInt64"}}],"actions":[{"action":"transfer","type":"transfer"}],"tables":[{"table":"account","indextype":"i64","keynames":["account"],"keytype":[],"type":"account"}]}']
 ```
 
+### >>> eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","amount":50}',['currency','inita'],
+```
+{'currency':'active'},False)
+175534ms thread-1   eosapi.cpp:327                push_message_        ] Converting argument to binary...
+b'{"transaction_id":"7ea7e68ea661da58113dbcf1ef280a3959ba2d0bf194816bbb5ba2bca21a1909","processed":{"refBlockNum":21283,"refBlockPrefix":186295305,"expiration":"2017-09-09T10:04:34","scope":["currency","inita"],"signatures":[],"messages":[{"code":"currency","type":"transfer","authorization":[{"account":"currency","permission":"active"}],"data":{"from":"currency","to":"inita","amount":50},"hex_data":"00000079b822651d000000008040934b3200000000000000"}],"output":[{"notify":[{"name":"inita","output":{"notify":[],"sync_transactions":[],"async_transactions":[]}}],"sync_transactions":[],"async_transactions":[]}]}}'
+```
+### >>> eosapi.get_account('inita')
+```
+[b'inita', 9999999696, 0, 0, b'2106-02-07T06:28:15']
+```
+>>> eosapi.get_table('inita','currency','account')
+
+```
+b'{"rows":[{"account":"account","balance":50}],"more":false}'
+```
+
+### >>> eosapi.get_table('currency','currency','account')
+```
+b'{"rows":[{"account":"account","balance":999999950}],"more":false}'
+```
+
 # 2. wallet test
 
 ### >>> import wallet

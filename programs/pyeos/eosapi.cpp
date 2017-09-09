@@ -313,21 +313,16 @@ string get_transactions_(string account_name,int skip_seq,int num_seq){
 }
 
 string transfer_(string& sender,string&recipient,int amount,string memo,bool sign){
-	try{
-		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-		SignedTransaction trx;
-		trx.scope = sort_names({sender,recipient});
-		transaction_emplace_message(trx, config::EosContractName,
-											vector<types::AccountPermission>{{sender,"active"}},
-											"transfer", types::transfer{sender, recipient, amount, memo});
-		return push_transaction(trx,sign);
-	}catch(fc::exception& ex){
-		elog(ex.to_detail_string());
-	}
-	return "";
+	auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+	SignedTransaction trx;
+	trx.scope = sort_names({sender,recipient});
+	transaction_emplace_message(trx, config::EosContractName,
+										vector<types::AccountPermission>{{sender,"active"}},
+										"transfer", types::transfer{sender, recipient, amount, memo});
+	return push_transaction(trx,sign);
 }
 
-string push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign){
+int push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,string& ret){
 	try{
 		ilog("Converting argument to binary...");
 		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
@@ -345,11 +340,12 @@ string push_message_(string& contract,string& action,string& args,vector<string>
 		for( const auto& s : scopes ) {
 		   trx.scope.emplace_back(s);
 		}
-		return push_transaction(trx,sign);
+		ret = push_transaction(trx,sign);
+		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}
-	return "";
+	return -1;
 }
 
 int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result){
