@@ -68,18 +68,23 @@ extern "C" void PyInit_eosapi();
 extern "C" PyObject* PyInit_eostypes_();
 extern "C" PyObject* PyInit_wallet();
 extern "C" PyObject* PyInit_hello();
+extern "C" PyObject* PyInit_python_contract();
+
 
 void py_thread() {
     PyImport_AppendInittab("hello", PyInit_hello);
 
     Py_Initialize();
+#if 0
     PyRun_SimpleString("import readline");
     PyInit_eosapi();
     PyInit_eostypes_();
     PyInit_wallet();
+    PyInit_python_contract();
     PyRun_SimpleString("import wallet;");
     PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
     PyRun_SimpleString("from initeos import *");
+#endif
 
     ilog("++++++++++++++py_plugin::plugin_startup");
     //    get_info();
@@ -88,7 +93,7 @@ void py_thread() {
 }
 
 void py_plugin::plugin_startup() {
-    boost::thread t{py_thread};
+//    boost::thread t{py_thread};
     chain_controller& db = app().get_plugin<chain_plugin>().chain();
 }
 

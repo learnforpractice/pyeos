@@ -6,6 +6,10 @@ from eostypes_ cimport *
 #import eostypes_
 from typing import Dict, Tuple, List
 
+cdef extern from "<fc/log/logger.hpp>":
+    void ilog(char *log)
+
+
 class JsonStruct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -24,15 +28,14 @@ cdef extern from "eosapi.h":
     object get_controlled_accounts_(char *account_name);
     void create_key_(string& pub,string& priv)
 
-    string get_transaction_(string id);
-    string get_transactions_(string account_name,int skip_seq,int num_seq);
+    int get_transaction_(string& id,string& result);
+    int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
 
-    string push_transaction( SignedTransaction& trx, bool sign )
-    int get_transaction_(char *id,char* result,int length)
+    int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
     
-    string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
+    int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
     int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret);
-    int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result);
+    int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
     int get_code_(string& name,string& wast,string& abi,string& code_hash);
     int get_table_(string& scope,string& code,string& table,string& result);
 
@@ -141,29 +144,36 @@ def create_key()->Tuple[bytes]:
     return(pub,priv)
 
 def get_transaction(id:str)->str:
+    cdef string result
     if type(id) == int:
         id = str(id)
-    if type(id) == str:
-        id = bytes(id,'utf8')
-    return get_transaction_(id)
+    id = toobject(id)
+    if 0 == get_transaction_(id,result):
+        return result
+    return None
 
 def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
-    if type(account_name) == str:
-        account_name = bytes(account_name,'utf8')
-    return get_transactions_(account_name,skip_seq,num_seq)
+    cdef string result
+    account_name = toobject(account_name)
+    if 0 == get_transactions_(account_name,skip_seq,num_seq,result):
+        return result
+    return None
 
 def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
+    cdef string result
     if type(sender) == str:
         sender = bytes(sender,"utf8");
     if type(recipient) == str:
         recipient = bytes(recipient,"utf8");
     if type(memo) == str:
         memo = bytes(memo,"utf8");
-
     if sign:
-        return transfer_(sender,recipient,amount,memo,1)
+        sign = 1
     else:
-        return transfer_(sender,recipient,amount,memo,0)
+        sign = 0
+    if 0 == transfer_(sender,recipient,amount,memo,sign,result):
+        return result
+    return None
 
 def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign):
     cdef string ret
@@ -195,8 +205,9 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         return ret
     return None
 
-def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
+def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign)->str:
     cdef string result
+    ilog("set_contract.....");
     account = tobytes(account)
     wast_file = tobytes(wast_file)
     abi_file = tobytes(abi_file)
@@ -205,7 +216,7 @@ def set_contract(account:str,wast_file:str,abi_file:str,sign)->str:
     else:
         sign = 0
 
-    if 0 == set_contract_(account,wast_file,abi_file,sign,result):
+    if 0 == set_contract_(account,wast_file,abi_file,vmtype,sign,result):
         return result
     return None
 

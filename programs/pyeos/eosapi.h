@@ -83,11 +83,11 @@ PyObject* get_controlled_accounts_(char *account_name);
 string create_account_(string creator, string newaccount, string owner, string active, int sign);
 void create_key_(string& pub,string& priv);
 
-string get_transaction_(string id);
-string get_transactions_(string account_name,int skip_seq,int num_seq);
-string transfer_(string& sender,string&recipient,int amount,string memo,bool sign);
+int get_transaction_(string& id,string& result);
+int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
+int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
 int push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,string& ret);
-int set_contract_(string& account,string& wastPath,string& abiPath,bool sign,string& result);
+int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
 int get_code_(string& name,string& wast,string& abi,string& code_hash);
 int get_table_(string& scope,string& code,string& table,string& result);
 

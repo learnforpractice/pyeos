@@ -15,6 +15,7 @@
 #include <eos/chain/producer_object.hpp>
 
 #include <eos/chain/wasm_interface.hpp>
+#include <eos/chain/python_interface.hpp>
 #include <eos/types/AbiSerializer.hpp>
 
 namespace native {
@@ -188,7 +189,7 @@ void apply_eos_setcode(apply_context& context) {
 
    context.require_authorization(msg.account);
 
-   FC_ASSERT( msg.vmtype == 0 );
+//   FC_ASSERT( msg.vmtype == 0 );
    FC_ASSERT( msg.vmversion == 0 );
 
    /// if an ABI is specified make sure it is well formed and doesn't
@@ -201,6 +202,7 @@ void apply_eos_setcode(apply_context& context) {
    db.modify( account, [&]( auto& a ) {
       /** TODO: consider whether a microsecond level local timestamp is sufficient */
       #warning TODO: update setcode message to include the hash, then validate it in validate 
+      a.vm_type = int(msg.vmtype);
       a.code_version = fc::sha256::hash( msg.code.data(), msg.code.size() );
       a.code.resize( msg.code.size() );
       memcpy( a.code.data(), msg.code.data(), msg.code.size() );
@@ -209,7 +211,12 @@ void apply_eos_setcode(apply_context& context) {
    });
 
    apply_context init_context( context.mutable_controller, context.mutable_db, context.trx, context.msg, msg.account );
-   wasm_interface::get().init( init_context );
+
+   if (msg.vmtype == 0) {
+      wasm_interface::get().init( init_context );
+   } else if (msg.vmtype == 1) {
+      python_interface::get().init( init_context );
+   }
 }
 
 void apply_eos_claim(apply_context& context) {

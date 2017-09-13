@@ -77,7 +77,7 @@ b'{"transaction_id":"7ea7e68ea661da58113dbcf1ef280a3959ba2d0bf194816bbb5ba2bca21
 ```
 [b'inita', 9999999696, 0, 0, b'2106-02-07T06:28:15']
 ```
->>> eosapi.get_table('inita','currency','account')
+### >>> eosapi.get_table('inita','currency','account')
 
 ```
 b'{"rows":[{"account":"account","balance":50}],"more":false}'

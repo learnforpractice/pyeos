@@ -254,7 +254,7 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
       Name recipient(recipient_);
    //   uint64_t amount = fc::variant().as_uint64();
 #if 0
-      
+
       SignedTransaction trx;
       trx.scope = sort_names({sender,recipient});
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
@@ -404,7 +404,7 @@ void py_thread() {
    Py_Finalize();
 }
 
-void py_plugin::plugin_startup() {  
+void py_plugin::plugin_startup() {
    boost::thread t{py_thread};
 }
 

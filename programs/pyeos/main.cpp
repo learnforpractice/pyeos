@@ -16,11 +16,23 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
+#include <Python.h>
+
 using namespace appbase;
 using namespace eos;
 
-int main(int argc, char** argv)
-{
+extern "C" void PyInit_eosapi();
+extern "C" PyObject* PyInit_eostypes_();
+extern "C" PyObject* PyInit_wallet();
+extern "C" PyObject* PyInit_hello();
+extern "C" PyObject* PyInit_python_contract();
+
+int python_load(string& name,string& code);
+int python_call(std::string &__pyx_v_name, std::string &__pyx_v_function, std::vector<int>  __pyx_v_args);
+
+
+
+int eos_thread(int argc, char** argv) {
    try {
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
@@ -45,6 +57,30 @@ int main(int argc, char** argv)
    } catch (...) {
       elog("unknown exception");
    }
+}
+
+
+int main(int argc, char** argv)
+{
+//   Py_InitializeEx(0);
+   Py_Initialize();
+   PyEval_InitThreads();
+
+   PyRun_SimpleString("import readline");
+   PyInit_eosapi();
+   PyInit_eostypes_();
+   PyInit_wallet();
+   PyInit_python_contract();
+   PyRun_SimpleString("import wallet;");
+   PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
+   PyRun_SimpleString("from initeos import *");
+
+//   boost::thread t{eos_thread};
+   auto thread_ = boost::thread(eos_thread,argc,argv);
+
+   PyRun_InteractiveLoop(stdin, "<stdin>");
+   Py_Finalize();
+
    return 0;
 }
 

@@ -35,6 +35,7 @@
 #include <eos/chain/authority_checker.hpp>
 
 #include <eos/chain/wasm_interface.hpp>
+#include <eos/chain/python_interface.hpp>
 
 #include <eos/types/native.hpp>
 #include <eos/types/generated.hpp>
@@ -942,10 +943,15 @@ void chain_controller::apply_message(apply_context& context)
        }
     }
     const auto& recipient = _db.get<account_object,by_name>(context.code);
-    if (recipient.code.size()) {
-       //idump((context.code)(context.msg.type));
-       wasm_interface::get().apply(context);
-    }
+   if (recipient.code.size()) {
+      //idump((context.code)(context.msg.type));
+      ilog("recipient.vm_type ${type}",("type",recipient.vm_type));
+      if (recipient.vm_type == 0){
+         wasm_interface::get().apply(context);
+      } else if (recipient.vm_type == 1) {
+          python_interface::get().apply(context);
+      }
+   }
 
 } FC_CAPTURE_AND_RETHROW((context.msg)) }
 

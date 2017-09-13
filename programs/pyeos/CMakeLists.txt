@@ -36,7 +36,8 @@ add_custom_command(
 
 file(GLOB UNIT_TESTS "tests/*.cpp")
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp eosapi.cpp 
-eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp wallet_.cpp pyobject.cpp ${UNIT_TESTS} ${COMMON_SOURCES} )
+eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp wallet_.cpp pyobject.cpp database_.cpp
+${UNIT_TESTS} ${COMMON_SOURCES} )
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin eos_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
