@@ -2,6 +2,10 @@
 #include "pyobject.hpp"
 #include "wallet_.h"
 
+void quit_app_() {
+   app().quit();
+}
+
 chain_controller& get_db(){
     return app().get_plugin<chain_plugin>().chain();
 }
@@ -110,14 +114,35 @@ string create_account__(Name creator, Name newaccount, public_key_type owner, pu
 		elog(e.to_detail_string());
 	}catch(fc::exception& e){
 		elog(e.to_detail_string());
+	} catch (fc::assert_exception & e) {
+      elog(e.to_detail_string());
 	}
 	return "";
 }
 
-string create_account_(string creator, string newaccount, string owner, string active, int sign) {
-	return create_account__(creator,newaccount,public_key_type(owner),public_key_type(active),sign);
-}
+int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result) {
+   try {
+      auto owner_auth   = eos::chain::Authority{1, {{public_key_type(owner), 1}}, {}};
+      auto active_auth  = eos::chain::Authority{1, {{public_key_type(active), 1}}, {}};
+      auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
 
+      uint64_t deposit = 1;
+      SignedTransaction trx;
+      trx.scope = sort_names({creator,config::EosContractName});
+      transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
+                                 types::newaccount{creator, newaccount, owner_auth,
+                                              active_auth, recovery_auth, deposit});
+      result = fc::json::to_pretty_string(push_transaction(trx, sign));
+      return 0;
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   } catch (fc::assert_exception & e) {
+      elog(e.to_detail_string());
+   }
+   return -1;
+}
 
 PyObject* get_info_(){
     PyArray arr;

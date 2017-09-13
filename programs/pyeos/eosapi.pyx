@@ -20,11 +20,13 @@ class JsonStruct:
 
 cdef extern from "eosapi.h":
     ctypedef int bool
+    void quit_app_()
+
     object get_info_ ()
     object get_block_(char *num_or_id)
     object get_account_(char *name)
     object get_accounts_(char *public_key)
-    string create_account_(string creator, string newaccount, string owner, string active, int sign)
+    int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result)
     object get_controlled_accounts_(char *account_name);
     void create_key_(string& pub,string& priv)
 
@@ -120,6 +122,7 @@ def get_controlled_accounts(account_name:str)->List[str]:
     return get_controlled_accounts_(account_name);
 
 def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign)->str:
+    cdef string result
     if type(creator) == str:
         creator = bytes(creator,'utf8')
     
@@ -131,11 +134,14 @@ def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign)
     
     if type(active_key) == str:
         active_key = bytes(active_key,'utf8')
-
     if sign:
-        return create_account_(creator,newaccount,owner_key,active_key, 1)
+        sign = 1
     else:
-        return create_account_(creator,newaccount,owner_key,active_key, 0)
+        sign = 0
+
+    if 0 == create_account_(creator,newaccount,owner_key,active_key, sign,result):
+        return result
+    return None
 
 def create_key()->Tuple[bytes]:
     cdef string pub
@@ -241,6 +247,18 @@ def get_table(scope,code,table):
 
 def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->str:
     pass
+
+def quit_app():
+    quit_app_();
+
+import signal
+import sys
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    quit_app()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 
 

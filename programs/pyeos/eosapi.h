@@ -67,6 +67,7 @@ using namespace eos::utilities;
 using namespace eos::wallet;
 using namespace eos::chain_apis;
 
+void quit_app_();
 chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
@@ -80,7 +81,7 @@ PyObject* get_account_(char *name);
 PyObject* get_accounts_(char *public_key);
 PyObject* get_controlled_accounts_(char *account_name);
 
-string create_account_(string creator, string newaccount, string owner, string active, int sign);
+int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result);
 void create_key_(string& pub,string& priv);
 
 int get_transaction_(string& id,string& result);
