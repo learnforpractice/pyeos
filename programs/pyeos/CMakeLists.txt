@@ -33,10 +33,17 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eostypes_.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx
+)
+
 
 file(GLOB UNIT_TESTS "tests/*.cpp")
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp eosapi.cpp 
-eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp wallet_.cpp pyobject.cpp database_.cpp
+wallet_.cpp pyobject.cpp database_.cpp eoslib_.cpp 
+eoslib.wrap.cpp eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp
 ${UNIT_TESTS} ${COMMON_SOURCES} )
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
@@ -48,7 +55,8 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" $ENV{PYTHON_INC_DIR}
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
-                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                                  PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
+                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/contracts"
                                   )
 
 

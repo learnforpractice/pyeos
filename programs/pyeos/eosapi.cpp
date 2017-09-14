@@ -96,30 +96,6 @@ void create_key_(string& pub,string& priv){
 	priv = string(key_to_wif(priv_.get_secret()));
 }
 
-string create_account__(Name creator, Name newaccount, public_key_type owner, public_key_type active, bool sign) {
-	try {
-		auto owner_auth   = eos::chain::Authority{1, {{owner, 1}}, {}};
-		auto active_auth  = eos::chain::Authority{1, {{active, 1}}, {}};
-		auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
-		printf("%d\n",sign);
-
-		uint64_t deposit = 1;
-		SignedTransaction trx;
-		trx.scope = sort_names({creator,config::EosContractName});
-		transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
-										   types::newaccount{creator, newaccount, owner_auth,
-															 active_auth, recovery_auth, deposit});
-		return fc::json::to_pretty_string(push_transaction(trx, sign));
-	}catch(fc::assert_exception& e){
-		elog(e.to_detail_string());
-	}catch(fc::exception& e){
-		elog(e.to_detail_string());
-	} catch (fc::assert_exception & e) {
-      elog(e.to_detail_string());
-	}
-	return "";
-}
-
 int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result) {
    try {
       auto owner_auth   = eos::chain::Authority{1, {{public_key_type(owner), 1}}, {}};
@@ -376,7 +352,10 @@ int push_message_(string& contract,string& action,string& args,vector<string> sc
 		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
-	}
+	}catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
+
 	return -1;
 }
 

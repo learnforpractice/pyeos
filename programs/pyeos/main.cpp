@@ -21,17 +21,6 @@
 using namespace appbase;
 using namespace eos;
 
-extern "C" void PyInit_eosapi();
-extern "C" PyObject* PyInit_eostypes_();
-extern "C" PyObject* PyInit_wallet();
-extern "C" PyObject* PyInit_hello();
-extern "C" PyObject* PyInit_python_contract();
-
-int python_load(string& name,string& code);
-int python_call(std::string &__pyx_v_name, std::string &__pyx_v_function, std::vector<int>  __pyx_v_args);
-
-
-
 int eos_thread(int argc, char** argv) {
    try {
       app().register_plugin<net_plugin>();
@@ -59,6 +48,12 @@ int eos_thread(int argc, char** argv) {
    }
 }
 
+extern "C" void PyInit_eosapi();
+extern "C" PyObject* PyInit_eostypes_();
+extern "C" PyObject* PyInit_wallet();
+extern "C" PyObject* PyInit_hello();
+extern "C" PyObject* PyInit_python_contract();
+extern "C" PyObject* PyInit_eoslib();
 
 int main(int argc, char** argv)
 {
@@ -71,9 +66,13 @@ int main(int argc, char** argv)
    PyInit_eostypes_();
    PyInit_wallet();
    PyInit_python_contract();
-   PyRun_SimpleString("import wallet;");
+   PyInit_eoslib();
+
+   PyRun_SimpleString("import wallet");
+   PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
    PyRun_SimpleString("from initeos import *");
+
 
 //   boost::thread t{eos_thread};
    auto thread_ = boost::thread(eos_thread,argc,argv);

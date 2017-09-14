@@ -32,27 +32,11 @@ wallet_manager& wm(){
 }
 
 void sign_transaction(SignedTransaction& trx) {
-   // TODO better error checking
-
-//    const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
     const auto& public_keys = wm().get_public_keys();
-    auto get_arg = fc::mutable_variant_object
-         ("transaction", trx)
-         ("available_keys", public_keys);
-
     auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-    auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-
-//    const auto& required_keys = call(host, port, get_required_keys, get_arg);
     eos::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx),public_keys};
     eos::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
-    // TODO determine chain id
-//    fc::variants sign_args = {fc::variant(trx), required_keys["required_keys"], fc::variant(chain_id_type{})};
-
-//    const auto& signed_trx = call(wallet_host, wallet_port, wallet_sign_trx, sign_args);
-//    trx = signed_trx.as<SignedTransaction>();
-    auto signed_trx = wm().sign_transaction(trx,required_keys.required_keys,chain_id_type{});
-    trx = signed_trx;
+    trx = wm().sign_transaction(trx,required_keys.required_keys,chain_id_type{});
 }
 
 PyObject* wallet_create_(std::string& name){

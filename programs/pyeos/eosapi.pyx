@@ -253,9 +253,11 @@ def quit_app():
 
 import signal
 import sys
+import time
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
     quit_app()
+    time.sleep(1.0) # wait for app shutdown
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
