@@ -68,6 +68,8 @@ using namespace eos::wallet;
 using namespace eos::chain_apis;
 
 void quit_app_();
+bool app_isshutdown_();
+
 chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();

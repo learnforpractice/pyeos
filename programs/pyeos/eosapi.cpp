@@ -116,6 +116,8 @@ int create_account_(string creator, string newaccount, string owner, string acti
       elog(e.to_detail_string());
    } catch (fc::assert_exception & e) {
       elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
    }
    return -1;
 }
@@ -174,12 +176,7 @@ PyObject *get_block_(char *num_or_id){
          arr.append(results.block_num);
          arr.append(results.refBlockPrefix);
       }
-   } catch (fc::bad_cast_exception& e) {/* do nothing */}
-   catch ( const fc::exception& e ) {
-     elog((e.to_detail_string()));
-   }
 
-   try {
       if (auto block = db.fetch_block_by_number(fc::to_uint64(block_num_or_id))){
          eos::chain_apis::read_only::get_block_results results = *block;
 
@@ -199,6 +196,8 @@ PyObject *get_block_(char *num_or_id){
    } catch (fc::bad_cast_exception& ex) {/* do nothing */}
    catch ( const fc::exception& e ) {
      elog((e.to_detail_string()));
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
    }
    return arr.get();
 }
@@ -217,31 +216,33 @@ PyObject *get_block_(char *num_or_id){
 PyObject* get_account_(char *name){
    using namespace native::eos;
    PyArray arr;
-   arr.append(name);
+//   arr.append(name);
+   try{
+      auto& db = get_db();
+      eos::chain_apis::read_only::get_account_results result;
+      eos::chain_apis::read_only::get_account_params params = {name};
+      result.name = params.name;
+      const auto& d = db.get_database();
+      const auto& accnt          = d.get<account_object,by_name>( params.name );
+      const auto& balance        = d.get<BalanceObject,byOwnerName>( params.name );
+      const auto& staked_balance = d.get<StakedBalanceObject,byOwnerName>( params.name );
 
-   auto& db = get_db();
+      arr.append((uint64_t)balance.balance);
+      arr.append((uint64_t)staked_balance.stakedBalance);
+      arr.append((uint64_t)staked_balance.unstakingBalance);
+      arr.append(staked_balance.lastUnstakingTime.to_iso_string());
 
-   eos::chain_apis::read_only::get_account_results result;
-   eos::chain_apis::read_only::get_account_params params = {name};
-
-   result.name = params.name;
-
-   const auto& d = db.get_database();
-   const auto& accnt          = d.get<account_object,by_name>( params.name );
-   const auto& balance        = d.get<BalanceObject,byOwnerName>( params.name );
-   const auto& staked_balance = d.get<StakedBalanceObject,byOwnerName>( params.name );
-
-   arr.append((uint64_t)balance.balance);
-   arr.append((uint64_t)staked_balance.stakedBalance);
-   arr.append((uint64_t)staked_balance.unstakingBalance);
-   arr.append(staked_balance.lastUnstakingTime.to_iso_string());
-
-   if( accnt.abi.size() > 4 ) {
-      eos::types::Abi abi;
-      fc::datastream<const char*> ds( accnt.abi.data(), accnt.abi.size() );
-      fc::raw::unpack( ds, abi );     
-      string s = fc::json::to_string(fc::variant(abi));
-      arr.append(s);
+      if( accnt.abi.size() > 4 ) {
+         eos::types::Abi abi;
+         fc::datastream<const char*> ds( accnt.abi.data(), accnt.abi.size() );
+         fc::raw::unpack( ds, abi );
+         string s = fc::json::to_string(fc::variant(abi));
+         arr.append(s);
+      }
+   }catch(fc::exception& ex){
+      elog(ex.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
    }
    return arr.get();
 }
@@ -387,7 +388,9 @@ int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bo
 		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
-	}
+	}catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
 	return -1;
 }
 
@@ -402,7 +405,9 @@ int get_code_(string& name,string& wast,string& abi,string& code_hash){
 		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
-	}
+	}catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
 	return -1;
 }
 
@@ -419,7 +424,9 @@ int get_table_(string& scope,string& code,string& table,string& result){
 		return 0;
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
-	}
+	}catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
 	return -1;
 }
 

@@ -21,7 +21,6 @@ class JsonStruct:
 cdef extern from "eosapi.h":
     ctypedef int bool
     void quit_app_()
-    bool app_isshutdown_()
     
     object get_info_ ()
     object get_block_(char *num_or_id)
@@ -251,9 +250,6 @@ def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->st
 
 def quit_app():
     quit_app_();
-    
-def is_shutdown():
-    return app_isshutdown_()
 
 import signal
 import sys
