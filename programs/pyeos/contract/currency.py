@@ -27,9 +27,8 @@ class Account(object):
 
 def init():
 	print('hello from init')
-	code = eoslib.N(b'python')
 	a = Account(code,100000)
-#	a.store()
+	a.store()
 
 def apply(name,type):
 	print('hello from python apply',name,type)
@@ -51,7 +50,8 @@ def apply(name,type):
 		if from_.balance > amount:
 			from_.balance -= amount
 			to_.balance += amount
-
+			from_.store()
+			to_.store()
 
 if __name__ == '__main__':
 	init()
