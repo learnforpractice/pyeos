@@ -252,7 +252,7 @@ def signal_handler(signal, frame):
     if app_quit:
         sys.exit(0)
         return
-    print('You pressed Ctrl+C!')
+    print('shutting down... you should wait for database closed successfully,\nthen press Ctrl+C again to exit application!sorry about that.')
     quit_app()
     app_quit = True
     

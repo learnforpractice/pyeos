@@ -1,5 +1,3 @@
-print(__name__)
-
 if __name__ == '__main__':
 	import eoslib_dummy as eoslib
 else:
