@@ -21,7 +21,8 @@ class JsonStruct:
 cdef extern from "eosapi.h":
     ctypedef int bool
     void quit_app_()
-
+    bool app_isshutdown_()
+    
     object get_info_ ()
     object get_block_(char *num_or_id)
     object get_account_(char *name)
@@ -250,15 +251,26 @@ def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->st
 
 def quit_app():
     quit_app_();
+    
+def is_shutdown():
+    return app_isshutdown_()
 
 import signal
 import sys
 import time
+app_quit = False
 def signal_handler(signal, frame):
+    global app_quit
+    if app_quit:
+        sys.exit(0)
+        return
     print('You pressed Ctrl+C!')
     quit_app()
-    time.sleep(1.0) # wait for app shutdown
-    sys.exit(0)
+    app_quit = True
+    
+#    while not app_isshutdown_():
+#        time.sleep(0.2) # wait for app shutdown
+#    sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
