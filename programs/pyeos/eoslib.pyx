@@ -122,6 +122,5 @@ def load_u64( scope, code, table, uint64_t key):
     table_ = toname(table)
     value = 0
     value_length = load_(Name(scope_), Name(code_), Name(table_), <void*>&key, 0, 0,<char*>&value, sizeof(value))
-    print('value_length:',value_length)
     return value
 

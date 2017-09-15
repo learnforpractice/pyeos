@@ -21,17 +21,7 @@ cdef extern int python_load(string& name,string& code) with gil:
     global code_map
     cdef PyGILState_STATE state
     cdef int ret
-    cdef int hold = 0
-    ilog("python_load")
-    ilog(name)
-#    ilog(code)
     ret = 0
-
-    if PyGILState_Check() == 0:
-        ilog("python_load not holding gil,require it.");
-#        state  = PyGILState_Ensure();
-#        hold = 1
-    log.info(name)
     module = code_map.get(name)
     cdef bytes code_ = code
     if not module or (module.__code != code_):
@@ -43,26 +33,13 @@ cdef extern int python_load(string& name,string& code) with gil:
         except Exception as e:
             log.exception(e)
             ret = -1
-
-    if hold:
-        PyGILState_Release(state)
     return ret;
 
 cdef extern int python_call(string& name,string& function,vector[uint64_t] args) with gil:
     global code_map
     cdef PyGILState_STATE state
     cdef int ret
-    cdef int hold = 0
     ret = -1
-    ilog("python_call")
-
-    if PyGILState_Check() == 0:
-        ilog("python_call not holding gil,require it.");
-
-#        state  = PyGILState_Ensure();
-#        hold = 1
-
-    log.info(name)
     func = function
     func = func.decode('utf8')
     try:
@@ -72,19 +49,3 @@ cdef extern int python_call(string& name,string& function,vector[uint64_t] args)
         ret = 0
     except Exception as e:
         log.exception(e)
-
-    if hold:
-        hold = hold
-        PyGILState_Release(state)
-    return ret
-
-cdef extern int with_gil() with gil:
-    return 1;
-
-
-
-cdef int with_gil__() with gil:
-    return 1;
-
-
-    

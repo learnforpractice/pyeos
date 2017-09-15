@@ -102,9 +102,7 @@ namespace eos { namespace chain {
       vector<uint64_t> args;
       string module_name = current_module;
       string function_name = "init";
-      ilog("python_call");
       python_call(module_name,function_name,args);
-      ilog("python_call return");
    }
 
    void python_interface::validate( apply_context& c ) {
@@ -148,9 +146,7 @@ namespace eos { namespace chain {
       current_validate_context       = &c;
       current_precondition_context   = &c;
       current_apply_context          = &c;
-      ilog("python_interface::init111");
       load( c.code, c.db );
-      ilog("python_interface::init222");
       vm_onInit();
    } FC_CAPTURE_AND_RETHROW() }
 
@@ -159,10 +155,7 @@ namespace eos { namespace chain {
       string module_name = string(name);
       string code = string((const char*)recipient.code.data(),recipient.code.size());
       current_module = module_name;
-      ilog("python_interface::load");
       python_load(module_name,code);
-      ilog("python_interface::load return.");
-
    }
 
  }}
