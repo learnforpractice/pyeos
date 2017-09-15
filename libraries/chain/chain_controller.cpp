@@ -945,7 +945,7 @@ void chain_controller::apply_message(apply_context& context)
     const auto& recipient = _db.get<account_object,by_name>(context.code);
    if (recipient.code.size()) {
       //idump((context.code)(context.msg.type));
-      ilog("recipient.vm_type ${type}",("type",recipient.vm_type));
+//      ilog("recipient.vm_type ${type}",("type",recipient.vm_type));
       if (recipient.vm_type == 0){
          wasm_interface::get().apply(context);
       } else if (recipient.vm_type == 1) {

@@ -87,7 +87,7 @@ cdef extern void dict_add(object d,object key,object value):
 
 
 def toobject(bstr):
-    bstr = json.loads(bstr.decode('utf8'))
+    bstr = json.loads(bstr)
     return JsonStruct(**bstr)
 
 def tobytes(ustr:str):
@@ -153,26 +153,23 @@ def get_transaction(id:str)->str:
     cdef string result
     if type(id) == int:
         id = str(id)
-    id = toobject(id)
+    id = tobytes(id)
     if 0 == get_transaction_(id,result):
         return result
     return None
 
 def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
     cdef string result
-    account_name = toobject(account_name)
+    account_name = tobytes(account_name)
     if 0 == get_transactions_(account_name,skip_seq,num_seq,result):
         return result
     return None
 
 def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
     cdef string result
-    if type(sender) == str:
-        sender = bytes(sender,"utf8");
-    if type(recipient) == str:
-        recipient = bytes(recipient,"utf8");
-    if type(memo) == str:
-        memo = bytes(memo,"utf8");
+    sender = tobytes(sender)
+    recipient = tobytes(recipient)
+    memo = tobytes(memo)
     if sign:
         sign = 1
     else:
@@ -185,15 +182,10 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
     cdef string ret
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
-
-    if type(contract) == str:
-        contract = bytes(contract,"utf8");
-    if type(action) == str:
-        action = bytes(action,"utf8");
-    if type(args) == str:
-        args = bytes(args,"utf8")
-
-
+    contract = tobytes(contract)
+    action = tobytes(action)
+    args = tobytes(args)
+    
     for scope in scopes:
         scopes_.push_back(tobytes(scope))
     for per in permissions:

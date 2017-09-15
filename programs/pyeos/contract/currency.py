@@ -25,12 +25,12 @@ class Account(object):
 		self.balance = eoslib.load_u64(self.scope,code,table,Account.key)
 
 def init():
-	print('hello from init')
+#	print('hello from init')
 	a = Account(code,100000)
 	a.store()
 
 def apply(name,type):
-	print('hello from python apply',name,type)
+#	print('hello from python apply',name,type)
 #	print(eoslib.n2s(name),eoslib.n2s(type))
 	if type == eoslib.N(b'transfer'):
 		msg = eoslib.readMessage()
