@@ -83,26 +83,3 @@ int main(int argc, char** argv)
    return 0;
 }
 
-
-#include <Python.h>
-#include <stdio.h>
-#include <boost/python.hpp>
-
-
-extern "C" PyObject* PyInit_eostypes_();
-extern "C" PyObject* PyInit_hello();
-int init_python(){
-//    PyImport_AppendInittab("hello", PyInit_hello);
-    Py_Initialize();
-//    PyImport_ImportModule("hello");
-
-    PyRun_SimpleString("import readline");
-//    PyInit_helloo();
-    PyInit_eostypes_();
-    PyRun_SimpleString("import hello;import eosapi;import sys;sys.path.append('./eosd')");
-    PyRun_SimpleString("from initeos import *");
-    //    get_info();
-    PyRun_InteractiveLoop(stdin, "<stdin>");
-    Py_Finalize();
-}
-
