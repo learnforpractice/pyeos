@@ -99,7 +99,7 @@ void py_plugin::plugin_startup() {
 
 void py_plugin::plugin_shutdown() {
     ilog("py_plugin::plugin_shutdown()");
-    Py_Finalize();
+//    Py_Finalize();
 }
 
 }
