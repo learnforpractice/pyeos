@@ -3,6 +3,7 @@ from libcpp.vector cimport vector
 import imp
 import logging as log
 cdef extern from "":
+    ctypedef unsigned long long uint64_t
     int PyGILState_GetThisThreadState() nogil
     int PyGILState_Check() nogil
     ctypedef int PyGILState_STATE
@@ -23,7 +24,7 @@ cdef extern int python_load(string& name,string& code) with gil:
     cdef int hold = 0
     ilog("python_load")
     ilog(name)
-    ilog(code)
+#    ilog(code)
     ret = 0
 
     if PyGILState_Check() == 0:
@@ -33,12 +34,12 @@ cdef extern int python_load(string& name,string& code) with gil:
     log.info(name)
     module = code_map.get(name)
     cdef bytes code_ = code
-    if not module or (module.code != code_):
+    if not module or (module.__code != code_):
         try:
             new_module = imp.new_module(str(name))
             exec(code,vars(new_module))
             code_map[name] = new_module
-            new_module.code = code
+            new_module.__code = code
         except Exception as e:
             log.exception(e)
             ret = -1
@@ -47,7 +48,7 @@ cdef extern int python_load(string& name,string& code) with gil:
         PyGILState_Release(state)
     return ret;
 
-cdef extern int python_call(string& name,string& function,vector[int] args) with gil:
+cdef extern int python_call(string& name,string& function,vector[uint64_t] args) with gil:
     global code_map
     cdef PyGILState_STATE state
     cdef int ret
