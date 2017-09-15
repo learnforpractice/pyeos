@@ -33,6 +33,9 @@
 
 #include <test_api/test_api.wast.hpp>
 #include <test_api/test_api.hpp>
+
+#include "memory_test/memory_test.wast.hpp"
+
 FC_REFLECT( dummy_message, (a)(b)(c) );
 FC_REFLECT( u128_msg, (values) );
 
@@ -143,7 +146,12 @@ bool is_access_violation(fc::unhandled_exception const & e) {
 bool is_tx_missing_recipient(tx_missing_recipient const & e) { return true;}
 bool is_tx_missing_auth(tx_missing_auth const & e) { return true; }
 bool is_tx_missing_scope(tx_missing_scope const& e) { return true; }
+bool is_tx_resource_exhausted(const tx_resource_exhausted& e) { return true; }
+bool is_tx_unknown_argument(const tx_unknown_argument& e) { return true; }
 bool is_assert_exception(fc::assert_exception const & e) { return true; }
+bool is_tx_resource_exhausted_or_checktime(const transaction_exception& e) {
+   return (e.code() == tx_resource_exhausted::code_value) || (e.code() == checktime_exceeded::code_value);
+}
 
 std::vector<std::string> capture;
 
@@ -380,8 +388,108 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
       BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_crypto", "asert_no_data"), {}, {} ),
          fc::assert_exception, is_assert_exception );
 
+      //Test transaction
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message"), {}, {}) == WASM_TEST_PASS, "test_transaction::send_message()");
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message_empty"), {}, {}) == WASM_TEST_PASS, "test_transaction::send_message_empty()");
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message_large"), {}, {} ),
+         tx_resource_exhausted, is_tx_resource_exhausted );
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message_max"), {}, {} ),
+         tx_resource_exhausted, is_tx_resource_exhausted );
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message_recurse"), {}, fc::raw::pack(dummy13) ),
+         transaction_exception, is_tx_resource_exhausted_or_checktime );
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_message_inline_fail"), {}, {} ),
+         fc::assert_exception, is_assert_exception );
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_transaction"), {}, {}) == WASM_TEST_PASS, "test_transaction::send_message()");
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_transaction_empty"), {}, {} ),
+         tx_unknown_argument, is_tx_unknown_argument );
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_transaction_large"), {}, {} ),
+         tx_resource_exhausted, is_tx_resource_exhausted );
+      BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_transaction_max"), {}, {} ),
+         tx_resource_exhausted, is_tx_resource_exhausted );
+
+
 
 } FC_LOG_AND_RETHROW() }
 
+#define MEMORY_TEST_RUN(account_name)                                                                      \
+      Make_Blockchain(chain);                                                                              \
+      chain.produce_blocks(1);                                                                             \
+      Make_Account(chain, account_name);                                                                   \
+      chain.produce_blocks(1);                                                                             \
+                                                                                                           \
+                                                                                                           \
+      types::setcode handler;                                                                              \
+      handler.account = #account_name;                                                                     \
+                                                                                                           \
+      auto wasm = assemble_wast( memory_test_wast );                                                       \
+      handler.code.resize(wasm.size());                                                                    \
+      memcpy( handler.code.data(), wasm.data(), wasm.size() );                                             \
+                                                                                                           \
+      {                                                                                                    \
+         eos::chain::SignedTransaction trx;                                                                \
+         trx.scope = {#account_name};                                                                      \
+         trx.messages.resize(1);                                                                           \
+         trx.messages[0].code = config::EosContractName;                                                   \
+         trx.messages[0].authorization.emplace_back(types::AccountPermission{#account_name,"active"});     \
+         transaction_set_message(trx, 0, "setcode", handler);                                              \
+         trx.expiration = chain.head_block_time() + 100;                                                   \
+         transaction_set_reference_block(trx, chain.head_block_id());                                      \
+         chain.push_transaction(trx);                                                                      \
+         chain.produce_blocks(1);                                                                          \
+      }                                                                                                    \
+                                                                                                           \
+                                                                                                           \
+      {                                                                                                    \
+         eos::chain::SignedTransaction trx;                                                                \
+         trx.scope = sort_names({#account_name,"inita"});                                                  \
+         transaction_emplace_message(trx, #account_name,                                                   \
+                            vector<types::AccountPermission>{},                                            \
+                            "transfer", types::transfer{#account_name, "inita", 1,""});                    \
+         trx.expiration = chain.head_block_time() + 100;                                                   \
+         transaction_set_reference_block(trx, chain.head_block_id());                                      \
+         chain.push_transaction(trx);                                                                      \
+         chain.produce_blocks(1);                                                                          \
+      }
+
+#define MEMORY_TEST_CASE(test_case_name, account_name)                                                     \
+BOOST_FIXTURE_TEST_CASE(test_case_name, testing_fixture)                                                   \
+{ try{                                                                                                     \
+   MEMORY_TEST_RUN(account_name);                                                                          \
+} FC_LOG_AND_RETHROW() }
+
+//Test wasm memory allocation
+MEMORY_TEST_CASE(test_memory, testmemory)
+
+//Test wasm memory allocation at boundaries
+MEMORY_TEST_CASE(test_memory_bounds, testbounds)
+
+//Test intrinsic provided memset and memcpy
+MEMORY_TEST_CASE(test_memset_memcpy, testmemset)
+
+//Test memcpy overlap at start of destination
+BOOST_FIXTURE_TEST_CASE(test_memcpy_overlap_start, testing_fixture)
+{
+   try {
+      MEMORY_TEST_RUN(testolstart);
+      BOOST_FAIL("memcpy should have thrown assert acception");
+   }
+   catch(fc::assert_exception& ex)
+   {
+      BOOST_REQUIRE(ex.to_detail_string().find("overlap of memory range is undefined") != std::string::npos);
+   }
+}
+
+//Test memcpy overlap at end of destination
+BOOST_FIXTURE_TEST_CASE(test_memcpy_overlap_end, testing_fixture)
+{
+   try {
+      MEMORY_TEST_RUN(testolend);
+      BOOST_FAIL("memcpy should have thrown assert acception");
+   }
+   catch(fc::assert_exception& ex)
+   {
+      BOOST_REQUIRE(ex.to_detail_string().find("overlap of memory range is undefined") != std::string::npos);
+   }
+}
 
 BOOST_AUTO_TEST_SUITE_END()

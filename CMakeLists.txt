@@ -175,6 +175,7 @@ add_subdirectory( libraries )
 add_subdirectory( programs )
 add_subdirectory( plugins )
 add_subdirectory( tests )
+add_subdirectory( tools )
 
 if (ENABLE_INSTALLER)
 
@@ -224,3 +225,5 @@ endif(LINUX)
 
  include(CPack)
 endif(ENABLE_INSTALLER)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/genesis.json ${CMAKE_CURRENT_BINARY_DIR}/genesis.json COPYONLY)

@@ -20,8 +20,10 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="eos-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">EOS.IO
+   &#160;<span id="projectnumber">DAWN1.0</span>
    </div>
   </td>
  </tr>
@@ -85,7 +87,7 @@ Functions</h2></td></tr>
 <tr class="memitem:aa79eb8bb393de1f4f3c2f40002340a4a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceexchange.html#aa79eb8bb393de1f4f3c2f40002340a4a">exchange::save</a> (const <a class="el" href="struct_account.html">Account</a> &amp;a)</td></tr>
 <tr class="separator:aa79eb8bb393de1f4f3c2f40002340a4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbb79e5408239e3a7c12a2c79b69db62"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
-<tr class="memitem:abbb79e5408239e3a7c12a2c79b69db62"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceexchange.html#abbb79e5408239e3a7c12a2c79b69db62">exchange::modifyAccount</a> (<a class="el" href="types_8h.html#ad67b43dc23285b01176f4c181c59fc23">AccountName</a> a, Lambda &amp;&amp;modify)</td></tr>
+<tr class="memitem:abbb79e5408239e3a7c12a2c79b69db62"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceexchange.html#abbb79e5408239e3a7c12a2c79b69db62">exchange::modifyAccount</a> (<a class="el" href="group__types.html#gad67b43dc23285b01176f4c181c59fc23">AccountName</a> a, Lambda &amp;&amp;modify)</td></tr>
 <tr class="separator:abbb79e5408239e3a7c12a2c79b69db62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d1831d86ebf1c90cc808e7dbab7b33d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceexchange.html#a7d1831d86ebf1c90cc808e7dbab7b33d">exchange::apply_currency_transfer</a> (const currency::Transfer &amp;transfer)</td></tr>
 <tr class="separator:a7d1831d86ebf1c90cc808e7dbab7b33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -103,12 +105,12 @@ Functions</h2></td></tr>
 <tr class="separator:a4a199b823910407b578e3e313dac5f24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02fd73d861ef2e4aabb38c0c9ff82947"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="exchange_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">init</a> ()</td></tr>
 <tr class="separator:a02fd73d861ef2e4aabb38c0c9ff82947"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c01edc4ed313916967237c16feb1446"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="exchange_8cpp.html#a3c01edc4ed313916967237c16feb1446">apply</a> (<a class="el" href="types_8h.html#aaa5d1cd013383c889537491c3cfd9aad">uint64_t</a> code, <a class="el" href="types_8h.html#aaa5d1cd013383c889537491c3cfd9aad">uint64_t</a> action)</td></tr>
+<tr class="memitem:a3c01edc4ed313916967237c16feb1446"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="exchange_8cpp.html#a3c01edc4ed313916967237c16feb1446">apply</a> (<a class="el" href="group__types.html#gaaa5d1cd013383c889537491c3cfd9aad">uint64_t</a> code, <a class="el" href="group__types.html#gaaa5d1cd013383c889537491c3cfd9aad">uint64_t</a> action)</td></tr>
 <tr class="separator:a3c01edc4ed313916967237c16feb1446"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This exchange contract assumes the existence of two currency contracts located at  and . These currency contracts have provided an API header defined in currench.hpp which the exchange contract will use to process messages related to deposits and withdraws.</p>
-<p>The exchange contract knows that the currency contracts <a class="el" href="group__messagecapi.html#ga993633916da61f395c03440e17d720ff">requireNotice()</a> of both the sender and receiver; therefore, the exchange contract can implement a message handler that will be called anytime funds are deposited to or withdrawn from the exchange.</p>
+<p>The exchange contract knows that the currency contracts <a class="el" href="group__messagecapi.html#gaeb32e8229c58b2b2b045080dc1d4b850" title="Add the specified account to set of accounts to be notified. ">requireNotice()</a> of both the sender and receiver; therefore, the exchange contract can implement a message handler that will be called anytime funds are deposited to or withdrawn from the exchange.</p>
 <p>When tokens are sent to  from another account the exchange will credit the user's balance of the proper currency.</p>
 <p>To withdraw from the exchange, the user simply reverses the "to" and "from" fields of the currency contract transfer message. The currency contract will require the "authority" of the exchange, but the exchange's <a class="el" href="exchange_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">init()</a> function configured this permission to allow <em>anyone</em> to transfer from the exchange.</p>
 <p>To prevent people from stealing all the money from the exchange, the exchange's transfer handler requires both the authority of the receiver and asserts that the user has a sufficient balance on the exchange. Lacking both of these the exchange will kill the transfer.</p>
@@ -124,13 +126,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void apply </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="types_8h.html#aaa5d1cd013383c889537491c3cfd9aad">uint64_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="group__types.html#gaaa5d1cd013383c889537491c3cfd9aad">uint64_t</a>&#160;</td>
           <td class="paramname"><em>code</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="types_8h.html#aaa5d1cd013383c889537491c3cfd9aad">uint64_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="group__types.html#gaaa5d1cd013383c889537491c3cfd9aad">uint64_t</a>&#160;</td>
           <td class="paramname"><em>action</em>&#160;</td>
         </tr>
         <tr>

@@ -9,6 +9,7 @@
 *.wasm
 *.s
 *.dot
+*.cmake
 \#*
 \.#*
 CMakeCache.txt
@@ -76,4 +77,3 @@ nbproject
 .project
 .pydevproject
 .settings
-

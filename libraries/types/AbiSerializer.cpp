@@ -100,7 +100,10 @@ namespace eos { namespace types {
       tables.clear();
 
       for( const auto& td : abi.types )
+      {
+         FC_ASSERT( isType(td.type), "invalid type", ("type",td.type));
          typedefs[td.newTypeName] = td.type;
+      }
 
       for( const auto& st : abi.structs )
          structs[st.name] = st;
@@ -200,7 +203,7 @@ namespace eos { namespace types {
    }
 
    void AbiSerializer::variantToBinary(const TypeName& type, const fc::variant& var, fc::datastream<char*>& ds )const
-   {
+   { try {
       auto rtype = resolveType(type);
 
       auto btype = built_in_types.find(arrayType(rtype));
@@ -224,7 +227,7 @@ namespace eos { namespace types {
             }
          }
       }
-   }
+   } FC_CAPTURE_AND_RETHROW( (type)(var) ) }
 
    Bytes AbiSerializer::variantToBinary(const TypeName& type, const fc::variant& var)const {
       if( !isType(type) ) {

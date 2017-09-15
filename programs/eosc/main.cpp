@@ -89,11 +89,15 @@ Options:
 #include <fc/io/fstream.hpp>
 
 #include "CLI11.hpp"
+#include "help_text.hpp"
+
+#define format_output(format, ...) fc::format_string(format, fc::mutable_variant_object() __VA_ARGS__ )
 
 using namespace std;
 using namespace eos;
 using namespace eos::chain;
 using namespace eos::utilities;
+using namespace eos::client::help;
 
 string program = "eosc";
 string host = "localhost";
@@ -131,7 +135,6 @@ const string wallet_lock_all = wallet_func_base + "/lock_all";
 const string wallet_unlock = wallet_func_base + "/unlock";
 const string wallet_import_key = wallet_func_base + "/import_key";
 const string wallet_sign_trx = wallet_func_base + "/sign_transaction";
-
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
    std::sort( names.begin(), names.end() );
@@ -172,11 +175,47 @@ vector<uint8_t> assemble_wast( const std::string& wast ) {
    }
 }
 
+auto tx_expiration = fc::microseconds(100);
+bool tx_force_unique = false;
+void add_standard_transaction_options(CLI::App* cmd) {
+   CLI::callback_t parse_exipration = [](CLI::results_t res) -> bool {
+      double value_ms; 
+      if (res.size() == 0 || !CLI::detail::lexical_cast(res[0], value_ms)) {
+         return false;
+      }
+      
+      tx_expiration = fc::microseconds(static_cast<uint64_t>(value_ms * 1000.0));
+      return true;
+   };
 
+   cmd->add_option("-x,--expiration", parse_exipration, "set the time in milliseconds before a transaction expires, defaults to 0.1ms");
+   cmd->add_flag("-f,--force-unique", tx_force_unique, "force the transaction to be unique. this will consume extra bandwidth and remove any protections against accidently issuing the same transaction multiple times");
+}
+
+std::string generate_nonce_string() {
+   return std::to_string(fc::time_point::now().time_since_epoch().count() % 1000000);
+}
+
+types::Message generate_nonce() {
+   return Message(N(eos),{}, N(nonce), generate_nonce_string());
+}
+
+vector<types::AccountPermission> get_account_permissions(const vector<string>& permissions) {
+   auto fixedPermissions = permissions | boost::adaptors::transformed([](const string& p) {
+      vector<string> pieces;
+      split(pieces, p, boost::algorithm::is_any_of("@"));
+      FC_ASSERT(pieces.size() == 2, "Invalid permission: ${p}", ("p", p));
+      return types::AccountPermission(pieces[0], pieces[1]);
+   });
+   vector<types::AccountPermission> accountPermissions;
+   boost::range::copy(fixedPermissions, back_inserter(accountPermissions));
+   return accountPermissions;
+}
 
 fc::variant call( const std::string& server, uint16_t port,
                   const std::string& path,
                   const fc::variant& postdata = fc::variant() );
+
 
 template<typename T>
 fc::variant call( const std::string& server, uint16_t port,
@@ -206,7 +245,7 @@ void sign_transaction(SignedTransaction& trx) {
 
 fc::variant push_transaction( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
-    trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+    trx.expiration = info.head_block_time + tx_expiration; //chain.head_block_time() + 100;
     transaction_set_reference_block(trx, info.head_block_id);
     boost::sort( trx.scope );
 
@@ -241,6 +280,9 @@ int main( int argc, char** argv ) {
    app.add_option( "--wallet-host", wallet_host, "the host where eos-walletd is running", true );
    app.add_option( "--wallet-port", wallet_port, "the port where eos-walletd is running", true );
 
+   bool verbose_errors = false;
+   app.add_flag( "-v,--verbose", verbose_errors, "output verbose messages on error");
+
    // Create subcommand
    auto create = app.add_subcommand("create", "Create various items, on and off the blockchain", false);
    create->require_subcommand();
@@ -266,6 +308,28 @@ int main( int argc, char** argv ) {
    createAccount->add_flag("-s,--skip-signature", skip_sign, "Specify that unlocked wallet keys should not be used to sign transaction");
    createAccount->set_callback([&] {
       create_account(creator, name, public_key_type(ownerKey), public_key_type(activeKey), !skip_sign);
+   });
+
+   // create producer
+   vector<string> permissions;
+   auto createProducer = create->add_subcommand("producer", "Create a new producer on the blockchain", false);
+   createProducer->add_option("name", name, "The name of the new producer")->required();
+   createProducer->add_option("OwnerKey", ownerKey, "The public key for the producer")->required();
+   createProducer->add_option("-p,--permission", permissions,
+                              "An account and permission level to authorize, as in 'account@permission' (default user@active)");
+   createProducer->add_flag("-s,--skip-signature", skip_sign, "Specify that unlocked wallet keys should not be used to sign transaction");
+   createProducer->set_callback([&name, &ownerKey, &permissions, &skip_sign] {
+      if (permissions.empty()) {
+         permissions.push_back(name + "@active");
+      }
+      auto account_permissions = get_account_permissions(permissions);
+
+      SignedTransaction trx;
+      trx.scope = sort_names({config::EosContractName, name});
+      transaction_emplace_message(trx, config::EosContractName, account_permissions,
+                                  "setproducer", types::setproducer{name, public_key_type(ownerKey), BlockchainConfiguration{}});
+
+      std::cout << fc::json::to_pretty_string(push_transaction(trx, !skip_sign)) << std::endl;
    });
 
    // Get subcommand
@@ -411,12 +475,14 @@ int main( int argc, char** argv ) {
 
    });
 
-   // Contract subcommand
+   // set subcommand
+   auto setSubcommand = app.add_subcommand("set", "Set or update blockchain state");
+   setSubcommand->require_subcommand();
+
+   // set contract subcommand
    string account;
    string wastPath;
    string abiPath;
-   auto setSubcommand = app.add_subcommand("set", "Set or update blockchain state");
-   setSubcommand->require_subcommand();
    auto contractSubcommand = setSubcommand->add_subcommand("contract", "Create or update the contract on an account");
    contractSubcommand->add_option("account", account, "The account to publish a contract for")->required();
    contractSubcommand->add_option("wast-file", wastPath, "The file containing the contract WAST")->required()
@@ -446,6 +512,61 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(push_transaction(trx, !skip_sign)) << std::endl;
    });
 
+   // set producer approve/unapprove subcommand
+   string producer;
+   auto producerSubcommand = setSubcommand->add_subcommand("producer", "Approve/unapprove producer");
+   producerSubcommand->require_subcommand();
+   auto approveCommand = producerSubcommand->add_subcommand("approve", "Approve producer");
+   auto unapproveCommand = producerSubcommand->add_subcommand("unapprove", "Unapprove producer");
+   producerSubcommand->add_option("user-name", name, "The name of the account approving")->required();
+   producerSubcommand->add_option("producer-name", producer, "The name of the producer to approve")->required();
+   producerSubcommand->add_option("-p,--permission", permissions,
+                              "An account and permission level to authorize, as in 'account@permission' (default user@active)");
+   producerSubcommand->add_flag("-s,--skip-signature", skip_sign, "Specify that unlocked wallet keys should not be used to sign transaction");
+   producerSubcommand->set_callback([&] {
+      // don't need to check unapproveCommand because one of approve or unapprove is required
+      bool approve = producerSubcommand->got_subcommand(approveCommand);
+      if (permissions.empty()) {
+         permissions.push_back(name + "@active");
+      }
+      auto account_permissions = get_account_permissions(permissions);
+
+      SignedTransaction trx;
+      trx.scope = sort_names({config::EosContractName, name});
+      transaction_emplace_message(trx, config::EosContractName, account_permissions,
+                                  "okproducer", types::okproducer{name, producer, approve});
+
+      push_transaction(trx, !skip_sign);
+      std::cout << "Set producer approval from " << name << " for " << producer << " to "
+                << (approve ? "" : "un") << "approve." << std::endl;
+   });
+
+   // set proxy subcommand
+   string proxy;
+   auto proxySubcommand = setSubcommand->add_subcommand("proxy", "Set proxy account for voting");
+   proxySubcommand->add_option("user-name", name, "The name of the account to proxy from")->required();
+   proxySubcommand->add_option("proxy-name", proxy, "The name of the account to proxy (unproxy if not provided)");
+   proxySubcommand->add_option("-p,--permission", permissions,
+                                  "An account and permission level to authorize, as in 'account@permission' (default user@active)");
+   proxySubcommand->add_flag("-s,--skip-signature", skip_sign, "Specify that unlocked wallet keys should not be used to sign transaction");
+   proxySubcommand->set_callback([&] {
+      if (permissions.empty()) {
+         permissions.push_back(name + "@active");
+      }
+      auto account_permissions = get_account_permissions(permissions);
+      if (proxy.empty()) {
+         proxy = name;
+      }
+
+      SignedTransaction trx;
+      trx.scope = sort_names({config::EosContractName, name});
+      transaction_emplace_message(trx, config::EosContractName, account_permissions,
+                                  "setproxy", types::setproxy{name, proxy});
+
+      push_transaction(trx, !skip_sign);
+      std::cout << "Set proxy for " << name << " to " << proxy << std::endl;
+   });
+
    // Transfer subcommand
    string sender;
    string recipient;
@@ -457,14 +578,28 @@ int main( int argc, char** argv ) {
    transfer->add_option("amount", amount, "The amount of EOS to send")->required();
    transfer->add_option("memo", memo, "The memo for the transfer");
    transfer->add_flag("-s,--skip-sign", skip_sign, "Specify that unlocked wallet keys should not be used to sign transaction");
+   add_standard_transaction_options(transfer);
    transfer->set_callback([&] {
       SignedTransaction trx;
       trx.scope = sort_names({sender,recipient});
+      
+      if (tx_force_unique) {
+         if (memo.size() == 0) {
+            // use the memo to add a nonce
+            memo = generate_nonce_string();
+         } else {
+            // add a nonce message
+            transaction_emplace_message(trx, generate_nonce());
+         }
+      }
+
       transaction_emplace_message(trx, config::EosContractName,
                                            vector<types::AccountPermission>{{sender,"active"}},
                                            "transfer", types::transfer{sender, recipient, amount, memo});
+
+
       auto info = get_info();
-      trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+      trx.expiration = info.head_block_time + tx_expiration; //chain.head_block_time() + 100;
       transaction_set_reference_block(trx, info.head_block_id);
       if (!skip_sign) {
          sign_transaction(trx);
@@ -598,7 +733,7 @@ int main( int argc, char** argv ) {
                                              types::newaccount{creator, newaccount, owner_auth,
                                                                active_auth, recovery_auth, deposit});
 
-        trx.expiration = info.head_block_time + 100; 
+        trx.expiration = info.head_block_time + tx_expiration; 
         transaction_set_reference_block(trx, info.head_block_id);
         batch.emplace_back(trx);
       }
@@ -629,7 +764,7 @@ int main( int argc, char** argv ) {
          transaction_emplace_message(trx, config::EosContractName,
                                               vector<types::AccountPermission>{{sender,"active"}},
                                               "transfer", types::transfer{sender, recipient, amount, memo});
-         trx.expiration = info.head_block_time + 100; 
+         trx.expiration = info.head_block_time + tx_expiration; 
          transaction_set_reference_block(trx, info.head_block_id);
 
          batch.emplace_back(trx);
@@ -666,7 +801,7 @@ int main( int argc, char** argv ) {
             transaction_emplace_message(trx, config::EosContractName,
                                                  vector<types::AccountPermission>{{sender,"active"}},
                                                  "transfer", types::transfer{sender, recipient, amount, memo});
-            trx.expiration = info.head_block_time + 100; 
+            trx.expiration = info.head_block_time + tx_expiration; 
             transaction_set_reference_block(trx, info.head_block_id);
 
             batch.emplace_back(trx);
@@ -687,7 +822,6 @@ int main( int argc, char** argv ) {
    push->require_subcommand();
 
    // push message
-   vector<string> permissions;
    string contract;
    string action;
    string data;
@@ -711,25 +845,23 @@ int main( int argc, char** argv ) {
                 ("args", fc::json::from_string(data));
       auto result = call(json_to_bin_func, arg);
 
-      auto fixedPermissions = permissions | boost::adaptors::transformed([](const string& p) {
-         vector<string> pieces;
-         boost::split(pieces, p, boost::is_any_of("@"));
-         FC_ASSERT(pieces.size() == 2, "Invalid permission: ${p}", ("p", p));
-         return types::AccountPermission(pieces[0], pieces[1]);
-      });
+      auto accountPermissions = get_account_permissions(permissions);
 
       SignedTransaction trx;
-      vector<types::AccountPermission> accountPermissions;
-      boost::copy(fixedPermissions, std::back_inserter(accountPermissions)); 
       transaction_emplace_serialized_message(trx, contract, action, accountPermissions,
                                                       result.get_object()["binargs"].as<Bytes>());
+
+      if (tx_force_unique) {
+         transaction_emplace_message(trx, generate_nonce());
+      }                                                      
+
       for( const auto& scope : scopes ) {
          vector<string> subscopes;
          boost::split( subscopes, scope, boost::is_any_of( ", :" ) );
          for( const auto& s : subscopes )
          trx.scope.emplace_back(s);
       }
-      ilog("Transaction result:\n${r}", ("r", fc::json::to_pretty_string(push_transaction(trx, !skip_sign ))));
+      std::cout << fc::json::to_pretty_string(push_transaction(trx, !skip_sign )) << std::endl;
    });
 
    // push transaction
@@ -758,14 +890,21 @@ int main( int argc, char** argv ) {
       auto errorString = e.to_detail_string();
       if (errorString.find("Connection refused") != string::npos) {
          if (errorString.find(fc::json::to_string(port)) != string::npos) {
-            elog("Failed to connect to eosd at ${ip}:${port}; is eosd running?", ("ip", host)("port", port));
+            std::cerr << format_output("Failed to connect to eosd at ${ip}:${port}; is eosd running?", ("ip", host)("port", port)) << std::endl;
          } else if (errorString.find(fc::json::to_string(wallet_port)) != string::npos) {
-            elog("Failed to connect to eos-walletd at ${ip}:${port}; is eos-walletd running?", ("ip", wallet_host)("port", wallet_port));
+            std::cerr << format_output("Failed to connect to eos-walletd at ${ip}:${port}; is eos-walletd running?", ("ip", wallet_host)("port", wallet_port)) << std::endl;
          } else {
-            elog("Failed to connect with error: ${e}", ("e", e.to_detail_string()));
+            std::cerr << format_output("Failed to connect") << std::endl;
+         }
+
+         if (verbose_errors) {
+            elog("connect error: ${e}", ("e", errorString));
          }
       } else {
-         elog("Failed with error: ${e}", ("e", e.to_detail_string()));
+         // attempt to extract the error code if one is present
+         if (!print_help_text(e) || verbose_errors) {
+            elog("Failed with error: ${e}", ("e", e.to_detail_string()));
+         }
       }
       return 1;
    }

@@ -20,8 +20,10 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="eos-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">EOS.IO
+   &#160;<span id="projectnumber">DAWN1.0</span>
    </div>
   </td>
  </tr>
@@ -62,13 +64,17 @@ $(function() {
 
 <h3><a id="index_a"></a>- a -</h3><ul>
 <li>AccountName
-: <a class="el" href="types_8h.html#ad67b43dc23285b01176f4c181c59fc23">types.h</a>
+: <a class="el" href="group__types.html#gad67b43dc23285b01176f4c181c59fc23">types.h</a>
 </li>
 <li>apply()
 : <a class="el" href="currency_8cpp.html#a3c01edc4ed313916967237c16feb1446">currency.cpp</a>
+, <a class="el" href="exchange_8cpp.html#a3c01edc4ed313916967237c16feb1446">exchange.cpp</a>
 , <a class="el" href="infinite_8cpp.html#a3c01edc4ed313916967237c16feb1446">infinite.cpp</a>
 , <a class="el" href="test__api_8cpp.html#ae515545cb26793406ab2ae133bb5be3f">test_api.cpp</a>
-, <a class="el" href="exchange_8cpp.html#a3c01edc4ed313916967237c16feb1446">exchange.cpp</a>
+, <a class="el" href="proxy_8cpp.html#a3c01edc4ed313916967237c16feb1446">proxy.cpp</a>
+, <a class="el" href="skeleton_8cpp.html#a3c01edc4ed313916967237c16feb1446">skeleton.cpp</a>
+, <a class="el" href="system_8cpp.html#a3c01edc4ed313916967237c16feb1446">system.cpp</a>
+, <a class="el" href="simpledb_8cpp.html#a3c01edc4ed313916967237c16feb1446">simpledb.cpp</a>
 </li>
 <li>apply_social_post()
 : <a class="el" href="social_8cpp.html#a2f4b1a700aef8a99b9d4c12d252d231a">social.cpp</a>
@@ -77,7 +83,7 @@ $(function() {
 : <a class="el" href="social_8cpp.html#ac3d5473926cea7fd3ad0bbcb7186fc6f">social.cpp</a>
 </li>
 <li>assert()
-: <a class="el" href="group__messagecapi.html#gae2a6ebaf48fe7c69f847ae18f109d09a">message.h</a>
+: <a class="el" href="group__systemcapi.html#gae2a6ebaf48fe7c69f847ae18f109d09a">system.h</a>
 </li>
 <li>assert_sha256()
 : <a class="el" href="crypto_8h.html#a9cb6f46f0e4193e72b9ad63107dce8b8">crypto.h</a>
@@ -120,6 +126,9 @@ $(function() {
 <li>CALL
 : <a class="el" href="test__db_8cpp.html#ac7de19ad4bc17bd50b33ce932143040d">test_db.cpp</a>
 </li>
+<li>currency_wast
+: <a class="el" href="currency_2currency_8wast_8hpp.html#af81b0cff9cea75a78074db8df522e772">currency.wast.hpp</a>
+</li>
 <li>currentCode()
 : <a class="el" href="group__messagecapi.html#ga1f06c06adc584456cf30e8086d6b55b1">message.h</a>
 </li>
@@ -128,7 +137,28 @@ $(function() {
 
 <h3><a id="index_d"></a>- d -</h3><ul>
 <li>diveq_i128()
-: <a class="el" href="math_8h.html#ad70a23703654281749410aef05c85c74">math.h</a>
+: <a class="el" href="group__mathcapi.html#gad70a23703654281749410aef05c85c74">math.h</a>
+</li>
+<li>double_add()
+: <a class="el" href="group__mathcapi.html#ga7372b74e4cb87455342d39bdf3724811">math.h</a>
+</li>
+<li>double_div()
+: <a class="el" href="group__mathcapi.html#gad67af06a6b0e9dbbf3be05d6bf99257c">math.h</a>
+</li>
+<li>double_eq()
+: <a class="el" href="group__mathcapi.html#ga8911bd5a24e0d8287d6b3d5a81500e6a">math.h</a>
+</li>
+<li>double_gt()
+: <a class="el" href="group__mathcapi.html#gab60e3f0c6651ad497f6665e032e39f6a">math.h</a>
+</li>
+<li>double_lt()
+: <a class="el" href="group__mathcapi.html#ga68d359e670da751723bf3d78ff759614">math.h</a>
+</li>
+<li>double_mult()
+: <a class="el" href="group__mathcapi.html#ga6390d36d23bd89bcd9bcf52385ba88f2">math.h</a>
+</li>
+<li>double_to_i64()
+: <a class="el" href="group__mathcapi.html#ga1388e46084036133e57508c18590b1ed">math.h</a>
 </li>
 <li>DUMMY_MESSAGE_DEFAULT_A
 : <a class="el" href="test__api_8hpp.html#a5e433756dd4c8a2f61db21799a2f64a4">test_api.hpp</a>
@@ -174,27 +204,43 @@ $(function() {
 <li>front_tertiary_i64i64i64()
 : <a class="el" href="group__dbi64i64i64.html#ga5df848251d875efca0a4673d95497c1e">db.h</a>
 </li>
+<li>FuncName
+: <a class="el" href="group__types.html#ga4c11ea58b1daa61a364225a757a05cd2">types.h</a>
+</li>
 </ul>
 
 
 <h3><a id="index_i"></a>- i -</h3><ul>
+<li>i64_to_double()
+: <a class="el" href="group__mathcapi.html#gaec506d4ee77526e67ab5f2a8ef54f2b5">math.h</a>
+</li>
 <li>infinite_wast
 : <a class="el" href="infinite_8wast_8hpp.html#aba0b267b9203736da01ac9857840672e">infinite.wast.hpp</a>
 </li>
 <li>init()
-: <a class="el" href="currency_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">currency.cpp</a>
+: <a class="el" href="exchange_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">exchange.cpp</a>
+, <a class="el" href="skeleton_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">skeleton.cpp</a>
+, <a class="el" href="system_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">system.cpp</a>
 , <a class="el" href="infinite_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">infinite.cpp</a>
+, <a class="el" href="simpledb_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">simpledb.cpp</a>
+, <a class="el" href="currency_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">currency.cpp</a>
+, <a class="el" href="proxy_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">proxy.cpp</a>
 , <a class="el" href="test__api_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">test_api.cpp</a>
-, <a class="el" href="exchange_8cpp.html#a02fd73d861ef2e4aabb38c0c9ff82947">exchange.cpp</a>
 </li>
 <li>int128_t
-: <a class="el" href="types_8h.html#a811ec3b3c805bfd6b8ec302d59fc5a94">types.h</a>
+: <a class="el" href="group__types.html#ga811ec3b3c805bfd6b8ec302d59fc5a94">types.h</a>
 </li>
 <li>int32_t
-: <a class="el" href="types_8h.html#a0d2e949ab6a1bb62f1b295cc79bc1f60">types.h</a>
+: <a class="el" href="group__types.html#ga0d2e949ab6a1bb62f1b295cc79bc1f60">types.h</a>
 </li>
 <li>int64_t
-: <a class="el" href="types_8h.html#a996e72f71b11a5bb8b3b7b6936b1516d">types.h</a>
+: <a class="el" href="group__types.html#ga996e72f71b11a5bb8b3b7b6936b1516d">types.h</a>
+</li>
+<li>InvalidMessageHandle
+: <a class="el" href="group__transactioncapi.html#ga4b337c3f5a641ee82e84d209a8bba0d7">transaction.h</a>
+</li>
+<li>InvalidTransactionHandle
+: <a class="el" href="group__transactioncapi.html#ga58df052e13ad2a3d54a2b1c99a2a8925">transaction.h</a>
 </li>
 </ul>
 
@@ -258,11 +304,32 @@ $(function() {
 
 
 <h3><a id="index_m"></a>- m -</h3><ul>
+<li>memcpy()
+: <a class="el" href="group__memorycapi.html#ga59ed1449718a3c27f7622cb3efb845af">memory.h</a>
+</li>
+<li>memset()
+: <a class="el" href="group__memorycapi.html#gad8eef9133e11fe77cd34792771f81761">memory.h</a>
+</li>
+<li>messageCreate()
+: <a class="el" href="group__transactioncapi.html#ga6940a3e31486bef36409f857e0ed7c72">transaction.h</a>
+</li>
+<li>messageDrop()
+: <a class="el" href="group__transactioncapi.html#ga77f1412808c199633b41bf2f20e3cb45">transaction.h</a>
+</li>
+<li>MessageHandle
+: <a class="el" href="group__transactioncapi.html#gaa42fca851fc0bcfd9dffc229c9552ce5">transaction.h</a>
+</li>
+<li>messageRequirePermission()
+: <a class="el" href="group__transactioncapi.html#gabf3f53f695c30abe4bd48f9b3341a016">transaction.h</a>
+</li>
+<li>messageSend()
+: <a class="el" href="group__transactioncapi.html#ga1f9346e3ef3fae10cf5fee5b9a0270ca">transaction.h</a>
+</li>
 <li>messageSize()
 : <a class="el" href="group__messagecapi.html#gaa4e5f3cd4b54bccaa36e755caecda727">message.h</a>
 </li>
 <li>multeq_i128()
-: <a class="el" href="math_8h.html#a61d571f58c24fb4663cc3729f3d5613e">math.h</a>
+: <a class="el" href="group__mathcapi.html#ga61d571f58c24fb4663cc3729f3d5613e">math.h</a>
 </li>
 <li>my_memcmp()
 : <a class="el" href="test__crypto_8cpp.html#ab7d8481ae8a9f7185f73c4454c3dae57">test_crypto.cpp</a>
@@ -308,14 +375,18 @@ $(function() {
 : <a class="el" href="group__dbi64i64i64.html#gaeaf22f2f6a83a8128120c358829d44df">db.h</a>
 </li>
 <li>now()
-: <a class="el" href="group__messagecapi.html#ga34bcb797186fc81170ac182f8bba1e7d">message.h</a>
+: <a class="el" href="group__systemcapi.html#ga34bcb797186fc81170ac182f8bba1e7d">system.h</a>
 </li>
 </ul>
 
 
 <h3><a id="index_p"></a>- p -</h3><ul>
 <li>PACKED
-: <a class="el" href="types_8h.html#a50d5ac027323a8c324137fc14c46ec7a">types.h</a>
+: <a class="el" href="group__types.html#ga50d5ac027323a8c324137fc14c46ec7a">types.h</a>
+, <a class="el" href="simpledb_8hpp.html#a8d913a38dc120fb4c0f3c8ba7adc36c2">simpledb.hpp</a>
+</li>
+<li>PermissionName
+: <a class="el" href="group__types.html#ga4bd93be9c597a8d7b6a1a3504ca63e83">types.h</a>
 </li>
 <li>PREV
 : <a class="el" href="test__db_8cpp.html#a86e923d8be4eac12d223202fd64260d5">test_db.cpp</a>
@@ -350,6 +421,9 @@ $(function() {
 <li>primary_ub
 : <a class="el" href="test__db_8cpp.html#a59d12b3568e1bf7123dc217cb9b7bc6b">test_db.cpp</a>
 </li>
+<li>printd()
+: <a class="el" href="group__consolecapi.html#gae533b1ec1f098222339ad296a7d882c8">print.h</a>
+</li>
 <li>printi()
 : <a class="el" href="group__consolecapi.html#ga23902e1572b43c290fed01d9ae736a78">print.h</a>
 </li>
@@ -361,6 +435,9 @@ $(function() {
 </li>
 <li>prints()
 : <a class="el" href="group__consolecapi.html#gaa99be0cc1b9e5cbbc2b12a43537e7ed3">print.h</a>
+</li>
+<li>proxy_wast
+: <a class="el" href="proxy_8wast_8hpp.html#a9de1008265399268b221af6bc3ec5cfb">proxy.wast.hpp</a>
 </li>
 </ul>
 
@@ -382,7 +459,7 @@ $(function() {
 : <a class="el" href="group__messagecapi.html#gaed0ef9b019ed08c7cc0241c5b4169f13">message.h</a>
 </li>
 <li>requireNotice()
-: <a class="el" href="group__messagecapi.html#ga993633916da61f395c03440e17d720ff">message.h</a>
+: <a class="el" href="group__messagecapi.html#gaeb32e8229c58b2b2b045080dc1d4b850">message.h</a>
 </li>
 </ul>
 
@@ -399,6 +476,9 @@ $(function() {
 </li>
 <li>sha256()
 : <a class="el" href="crypto_8h.html#a66d9ff9bab48522fbb9412023da09313">crypto.h</a>
+</li>
+<li>simpledb_wast
+: <a class="el" href="simpledb_8wast_8hpp.html#a22e82a0ef3ff346f0f189ebd5a14c841">simpledb.wast.hpp</a>
 </li>
 <li>store_i128i128()
 : <a class="el" href="group__dbi128i128.html#gab4dab9bf33ada70433d3f0950cf35ddd">db.h</a>
@@ -420,10 +500,10 @@ $(function() {
 : <a class="el" href="test__db_8cpp.html#a60994bec94a8a2c13e233aae04b74cae">test_db.cpp</a>
 </li>
 <li>TABLE2
-: <a class="el" href="group__database_cpp.html#ga12e5fe301df20780085295196f30edc1">db.hpp</a>
+: <a class="el" href="db_8hpp.html#a12e5fe301df20780085295196f30edc1">db.hpp</a>
 </li>
 <li>TableName
-: <a class="el" href="types_8h.html#a1d259d7ad615daec723290ee9f766dc5">types.h</a>
+: <a class="el" href="group__types.html#ga1d259d7ad615daec723290ee9f766dc5">types.h</a>
 </li>
 <li>tertiary
 : <a class="el" href="test__db_8cpp.html#a632e136a0d941bad1256d19a04735542">test_db.cpp</a>
@@ -444,13 +524,31 @@ $(function() {
 : <a class="el" href="test__api_8wast_8hpp.html#a7fd80d079f32dfa845fd2edb2dd63db2">test_api.wast.hpp</a>
 </li>
 <li>Time
-: <a class="el" href="types_8h.html#a2518c21789dfad901bbf283f9ea4247f">types.h</a>
+: <a class="el" href="group__types.html#ga2518c21789dfad901bbf283f9ea4247f">types.h</a>
 </li>
 <li>TOKEN_NAME
 : <a class="el" href="currency_8hpp.html#a2bf6bf152ba93be8cace72c5d55abc71">currency.hpp</a>
 </li>
 <li>TokenName
-: <a class="el" href="types_8h.html#a619dcf2195dd83ea4fc9aa62c92ec437">types.h</a>
+: <a class="el" href="group__types.html#ga619dcf2195dd83ea4fc9aa62c92ec437">types.h</a>
+</li>
+<li>transactionAddMessage()
+: <a class="el" href="group__transactioncapi.html#ga1290a226d7828410020ed2954ffa5fa5">transaction.h</a>
+</li>
+<li>transactionCreate()
+: <a class="el" href="group__transactioncapi.html#ga180dc33e735f9631ed9a800d7b0a511e">transaction.h</a>
+</li>
+<li>transactionDrop()
+: <a class="el" href="group__transactioncapi.html#ga37162c1f843ae69d0134be29b1cde61f">transaction.h</a>
+</li>
+<li>TransactionHandle
+: <a class="el" href="group__transactioncapi.html#ga7a095ea0165891d5ee1dbd8ee40e32cb">transaction.h</a>
+</li>
+<li>transactionRequireScope()
+: <a class="el" href="group__transactioncapi.html#ga347cc9c284bc25ed1d67b596e2320cdc">transaction.h</a>
+</li>
+<li>transactionSend()
+: <a class="el" href="group__transactioncapi.html#ga01eab43648b29422885d4d59a2864aaf">transaction.h</a>
 </li>
 </ul>
 
@@ -463,16 +561,16 @@ $(function() {
 : <a class="el" href="test__api_8hpp.html#ad758b7a5c3f18ed79d2fcd23d9f16357">test_api.hpp</a>
 </li>
 <li>uint128_t
-: <a class="el" href="types_8h.html#a396787e5ec029b1205bd3e4cd9763e7d">types.h</a>
+: <a class="el" href="group__types.html#ga396787e5ec029b1205bd3e4cd9763e7d">types.h</a>
 </li>
 <li>uint32_t
-: <a class="el" href="types_8h.html#a06896e8c53f721507066c079052171f8">types.h</a>
+: <a class="el" href="group__types.html#ga06896e8c53f721507066c079052171f8">types.h</a>
 </li>
 <li>uint64_t
-: <a class="el" href="types_8h.html#aaa5d1cd013383c889537491c3cfd9aad">types.h</a>
+: <a class="el" href="group__types.html#gaaa5d1cd013383c889537491c3cfd9aad">types.h</a>
 </li>
 <li>uint8_t
-: <a class="el" href="types_8h.html#aba7bc1797add20fe3efdf37ced1182c5">types.h</a>
+: <a class="el" href="group__types.html#gaba7bc1797add20fe3efdf37ced1182c5">types.h</a>
 </li>
 <li>update_i128i128()
 : <a class="el" href="group__dbi128i128.html#ga98e823e78f8a1caf256be99480b1c397">db.h</a>
