@@ -13,11 +13,13 @@
 #include <eos/chain/key_value_object.hpp>
 #include <eos/chain/account_object.hpp>
 #include <chrono>
+
 using namespace std;
 
 int python_load(string& name,string& code);
 //int python_call(string& name,string& function,vector<int> args);
-int python_call(std::string &__pyx_v_name, std::string &__pyx_v_function, std::vector<int>  __pyx_v_args);
+int python_call(std::string &name, std::string &function, std::vector<uint64_t>  args);
+
 
 namespace eos { namespace chain {
    using namespace IR;
@@ -85,8 +87,8 @@ namespace eos { namespace chain {
    }
 
    void  python_interface::vm_call( const char* function_name ) {
-         std::vector<int> args = { current_validate_context->msg.code,
-                                   current_validate_context->msg.type };
+         std::vector<uint64_t> args = { current_validate_context->msg.code.value,
+                                   current_validate_context->msg.type.value };
 
          string module_name = current_module;
          string function_name_ = function_name;
@@ -97,7 +99,7 @@ namespace eos { namespace chain {
 
    void  python_interface::vm_onInit()
    {
-      vector<int> args;
+      vector<uint64_t> args;
       string module_name = current_module;
       string function_name = "init";
       ilog("python_call");
@@ -146,7 +148,9 @@ namespace eos { namespace chain {
       current_validate_context       = &c;
       current_precondition_context   = &c;
       current_apply_context          = &c;
+      ilog("python_interface::init111");
       load( c.code, c.db );
+      ilog("python_interface::init222");
       vm_onInit();
    } FC_CAPTURE_AND_RETHROW() }
 
