@@ -8,12 +8,25 @@
 #ifndef EOSLIB__HPP_
 #define EOSLIB__HPP_
 #include <string>
+#include <eos/types/native.hpp>
+
 using namespace std;
+using namespace eos::types;
 
 void requireAuth_( uint64_t account );
 int readMessage_( string& buffer );
 void requireScope_(uint64_t account);
 void requireNotice_( uint64_t account );
-uint64_t string_to_name_( const char* str );
+
+
+uint64_t string_to_uint64_( string str );
+string uint64_to_string_( uint64_t n);
+
+int32_t store_(Name scope, Name code, Name table, void *keys, int key_type, char* value, uint32_t valuelen);
+int32_t update_( Name scope, Name code, Name table, void *keys, int key_type,char* value, uint32_t valuelen );
+int32_t remove_( Name scope, Name code, Name table, void *keys, int key_type, char* value, uint32_t valuelen );
+int32_t load_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen );
+
+
 
 #endif /* EOSLIB__HPP_ */
