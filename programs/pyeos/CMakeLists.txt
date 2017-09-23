@@ -1,5 +1,3 @@
-#add_executable( pyeos main.cpp )
-file(GLOB COMMON_SOURCES "common/*.cpp")
 
 if( UNIX AND NOT APPLE )
   set(rt_library rt )
@@ -39,12 +37,9 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx
 )
 
-
-file(GLOB UNIT_TESTS "tests/*.cpp")
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp eosapi.cpp 
 wallet_.cpp pyobject.cpp database_.cpp eoslib_.cpp 
-eoslib.wrap.cpp eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp
-${UNIT_TESTS} ${COMMON_SOURCES} )
+eoslib.wrap.cpp eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp)
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin eos_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 

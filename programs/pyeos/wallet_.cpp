@@ -192,8 +192,7 @@ PyObject* wallet_import_key_(string& name,string& wif_key){
     }catch(fc::exception& ex){
         elog(ex.to_detail_string());
         return py_new_bool(false);
-    }
-    catch(...){
+    }catch(...){
         return py_new_bool(false);
     }
     return py_new_bool(true);

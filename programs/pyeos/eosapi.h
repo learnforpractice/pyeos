@@ -58,6 +58,7 @@ extern "C" {
 #include <eos/chain_plugin/chain_plugin.hpp>
 #include <eos/wallet_plugin/wallet_plugin.hpp>
 #include <eos/wallet_plugin/wallet_manager.hpp>
+#include <eos/chain/wast_to_wasm.hpp>
 
 
 using namespace std;

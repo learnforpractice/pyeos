@@ -9,15 +9,6 @@ from typing import Dict, Tuple, List
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(char *log)
 
-
-class JsonStruct:
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-    def __str__(self):
-        return str(self.__dict__)
-    def __repr__(self):
-        return str(self.__dict__)
-
 cdef extern from "eosapi.h":
     ctypedef int bool
     void quit_app_()
@@ -31,8 +22,6 @@ cdef extern from "eosapi.h":
     void create_key_(string& pub,string& priv)
 
     int get_transaction_(string& id,string& result);
-    int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
-
     int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
     
     int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
@@ -86,6 +75,14 @@ cdef extern void dict_add(object d,object key,object value):
     d[key] = value
 
 
+class JsonStruct:
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+    def __str__(self):
+        return str(self.__dict__)
+    def __repr__(self):
+        return str(self.__dict__)
+    
 def toobject(bstr):
     bstr = json.loads(bstr)
     return JsonStruct(**bstr)
@@ -218,7 +215,7 @@ def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign)->str:
         return result
     return None
 
-def get_contract(name:str):
+def get_code(name:str):
     cdef string wast
     cdef string abi
     cdef string code_hash

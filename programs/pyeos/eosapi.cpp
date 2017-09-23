@@ -395,20 +395,37 @@ int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bo
 }
 
 int get_code_(string& name,string& wast,string& abi,string& code_hash){
-	try{
-		chain_apis::read_only::get_code_params params = {Name(name)};
-		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-		chain_apis::read_only::get_code_results results = ro_api.get_code(params);
-		wast = results.wast;
-		code_hash = results.code_hash.str();
-		abi = fc::json::to_string(fc::variant(results.abi));
-		return 0;
-	}catch(fc::exception& ex){
-		elog(ex.to_detail_string());
-	}catch(boost::exception& ex){
+   try{
+      chain_controller & db = app().get_plugin<chain_plugin>().chain();
+      chain_apis::read_only::get_code_results result;
+      result.name = name;
+      const auto& d = db.get_database();
+      const auto& accnt  = d.get<account_object,by_name>( name );
+
+      if( accnt.code.size() ){
+         if (accnt.vm_type == 0){
+            result.wast = chain::wasm_to_wast( (const uint8_t*)accnt.code.data(), accnt.code.size() );
+         }else{
+            result.wast = string((const char*)accnt.code.data(), accnt.code.size());
+         }
+         result.code_hash = fc::sha256::hash( accnt.code.data(), accnt.code.size() );
+      }
+      if( accnt.abi.size() > 4 ) {
+         eos::types::Abi abi;
+         fc::datastream<const char*> ds( accnt.abi.data(), accnt.abi.size() );
+         fc::raw::unpack( ds, abi );
+         result.abi = std::move(abi);
+      }
+      wast = result.wast;
+      code_hash = result.code_hash.str();
+      abi = fc::json::to_string(fc::variant(result.abi));
+      return 0;
+   }catch(fc::exception& ex){
+      elog(ex.to_detail_string());
+   }catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-	return -1;
+   return -1;
 }
 
 int get_table_(string& scope,string& code,string& table,string& result){
