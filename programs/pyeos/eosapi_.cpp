@@ -1,4 +1,5 @@
-#include "eosapi.h"
+#include "eosapi_.hpp"
+
 #include "pyobject.hpp"
 #include "wallet_.h"
 
@@ -54,7 +55,7 @@ vector<uint8_t> assemble_wast( const std::string& wast ) {
 }
 
 read_only::get_info_results get_info() {
-	auto& db = get_db();
+   auto& db = get_db();
 	return {
 		db.head_block_num(),
 		db.last_irreversible_block_num(),
