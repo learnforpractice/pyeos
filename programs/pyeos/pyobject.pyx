@@ -11,7 +11,8 @@ cdef extern object py_new_none():
     return None
 
 cdef extern object py_new_string(string& s):
-    return s
+    ss = s
+    return ss.decode('utf8')
 
 cdef extern object py_new_int(int n):
     return n
@@ -26,7 +27,8 @@ cdef extern void array_append(object arr,object v):
     arr.append(v)
 
 cdef extern void array_append_string(object arr,string& s):
-    arr.append(s)
+    ss = s
+    arr.append(ss.decode('utf8'))
 
 cdef extern void array_append_int(object arr,int n):
     arr.append(n)

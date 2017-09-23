@@ -4,7 +4,7 @@ else:
 	import eoslib
 import struct
 
-code = eoslib.N(b'python')
+code = eoslib.N(b'currency')
 table = eoslib.N(b'account')
 
 class Account(object):

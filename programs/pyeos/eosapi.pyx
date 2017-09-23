@@ -19,7 +19,7 @@ cdef extern from "eosapi_.hpp":
     object get_accounts_(char *public_key)
     int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result)
     object get_controlled_accounts_(char *account_name);
-    void create_key_(string& pub,string& priv)
+    object create_key_()
 
     int get_transaction_(string& id,string& result);
     int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
@@ -34,24 +34,40 @@ cdef extern from "eosapi_.hpp":
     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
 
 class JsonStruct:
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
+    def __init__(self, js):
+        if isinstance(js,bytes):
+            js = js.decode('utf8')
+            js = json.loads(js)
+            if isinstance(js,str):
+                js = json.loads(js)
+        for key in js:
+            value = js[key]
+            if isinstance(value,dict):
+                self.__dict__[key] = JsonStruct(value)
+            elif isinstance(value,list):
+                for i in range(len(value)):
+                    v = value[i]
+                    if isinstance(v,dict):
+                        value[i] = JsonStruct(v)
+                self.__dict__[key] = value
+            else:
+                self.__dict__[key] = value
     def __str__(self):
         return str(self.__dict__)
     def __repr__(self):
         return str(self.__dict__)
     
 def toobject(bstr):
-    bstr = json.loads(bstr)
-    return JsonStruct(**bstr)
+    return JsonStruct(bstr)
 
 def tobytes(ustr:str):
     if type(ustr) == str:
         ustr = bytes(ustr,'utf8')
     return ustr
 
-def get_info()->str:
-    return get_info_()
+def get_info():
+    info = get_info_()
+    return JsonStruct(info)
 
 def get_block(id:str)->str:
     if type(id) == int:
@@ -60,10 +76,11 @@ def get_block(id:str)->str:
         id = bytes(id,'utf8')
     return get_block_(id)
 
-def get_account(name:str)->str:
-    if type(name) == str:
+def get_account(name:str):
+    if isinstance(name,str):
         name = bytes(name,'utf8')
-    return get_account_(name)
+    result = get_account_(name)
+    return JsonStruct(result)
 
 def get_accounts(public_key:str)->List[str]:
     if type(public_key) == str:
@@ -95,14 +112,14 @@ def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign)
         sign = 0
 
     if 0 == create_account_(creator,newaccount,owner_key,active_key, sign,result):
-        return result
+        return JsonStruct(result)
     return None
 
-def create_key()->Tuple[bytes]:
+def create_key():
     cdef string pub
     cdef string priv
-    create_key_(pub,priv)
-    return(pub,priv)
+    key = create_key_()
+    return JsonStruct(key)
 
 def get_transaction(id:str)->str:
     cdef string result
@@ -110,7 +127,7 @@ def get_transaction(id:str)->str:
         id = str(id)
     id = tobytes(id)
     if 0 == get_transaction_(id,result):
-        return result
+        return JsonStruct(result)
     return None
 
 def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
@@ -155,7 +172,7 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         sign = 0
 
     if 0 == push_message_(contract,action,args,scopes_,permissions_,sign,ret):
-        return ret
+        return JsonStruct(ret)
     return None
 
 def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign)->str:
@@ -170,7 +187,7 @@ def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign)->str:
         sign = 0
 
     if 0 == set_contract_(account,wast_file,abi_file,vmtype,sign,result):
-        return result
+        return JsonStruct(result)
     return None
 
 def get_code(name:str):
@@ -190,7 +207,7 @@ def get_table(scope,code,table):
     table = tobytes(table)
 
     if 0 == get_table_(scope,code,table,result):
-        return result
+        return JsonStruct(result)
     return None
 
 def exec_func(code_:str,action_:str,json_:str,scope_:str,authorization_:str)->str:

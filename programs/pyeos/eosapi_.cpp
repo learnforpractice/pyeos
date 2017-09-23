@@ -90,11 +90,20 @@ string push_transaction( SignedTransaction& trx, bool sign ) {
     return get_db().transaction_to_variant(pts).get_string();
 }
 
-void create_key_(string& pub,string& priv){
+PyObject* create_key_(){
 	auto priv_ = fc::ecc::private_key::generate();
 	auto pub_ = public_key_type( priv_.get_public_key() );
-	pub = string(pub_);
-	priv = string(key_to_wif(priv_.get_secret()));
+	PyDict dict;
+	string key;
+	string value;
+	value = string(pub_);
+	key = "public";
+	dict.add(key,value);
+
+	key = "private";
+	value = string(key_to_wif(priv_.get_secret()));
+	dict.add(key,value);
+	return dict.get();
 }
 
 int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result) {
@@ -109,13 +118,11 @@ int create_account_(string creator, string newaccount, string owner, string acti
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
                                  types::newaccount{creator, newaccount, owner_auth,
                                               active_auth, recovery_auth, deposit});
-      result = fc::json::to_pretty_string(push_transaction(trx, sign));
+      result = fc::json::to_string(push_transaction(trx, sign));
       return 0;
    }catch(fc::assert_exception& e){
       elog(e.to_detail_string());
    }catch(fc::exception& e){
-      elog(e.to_detail_string());
-   } catch (fc::assert_exception & e) {
       elog(e.to_detail_string());
    }catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
@@ -124,21 +131,40 @@ int create_account_(string creator, string newaccount, string owner, string acti
 }
 
 PyObject* get_info_(){
-    PyArray arr;
-    const chain_controller& db=get_db();
+   PyDict dict;
+   const chain_controller& db=get_db();
+   string key;
+   string value;
 
-    arr.append(db.head_block_num());
-    arr.append(db.last_irreversible_block_num());
-    arr.append(db.head_block_id().str());
-    arr.append(db.head_block_time().to_iso_string());
-    arr.append(db.head_block_producer().toString());
+   key = "head_block_num";
+   dict.add(key,db.head_block_num());
 
-    string recent_slots = std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string();
-    arr.append(recent_slots);
+   key = "last_irreversible_block_num";
+   dict.add(key,db.last_irreversible_block_num());
 
-    double participation_rate = __builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0;
-    arr.append(participation_rate);
-    return arr.get();
+   key = "head_block_id";
+   value = db.head_block_id().str();
+   dict.add(key,value);
+
+   key = "head_block_time";
+   value = db.head_block_time().to_iso_string();
+   dict.add(key,value);
+
+   key = "head_block_producer";
+   value = db.head_block_producer().toString();
+   dict.add(key,value);
+
+   string recent_slots = std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string();
+   key = "recent_slots";
+   dict.add(key,recent_slots);
+
+   double participation_rate = __builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0;
+   key = "participation_rate";
+   dict.add(key,participation_rate);
+
+   return dict.get();
+
+
 }
 /*
 {
@@ -217,35 +243,61 @@ PyObject *get_block_(char *num_or_id){
 PyObject* get_account_(char *name){
    using namespace native::eos;
    PyArray arr;
+   PyDict dict;
 //   arr.append(name);
+/*
+   Name                       name;
+   Asset                      eos_balance = Asset(0,EOS_SYMBOL);
+   Asset                      staked_balance;
+   Asset                      unstaking_balance;
+   fc::time_point_sec         last_unstaking_time;
+   vector<permission>         permissions;
+   optional<producer_info>    producer;
+*/
+
+
    try{
       auto& db = get_db();
       eos::chain_apis::read_only::get_account_results result;
       eos::chain_apis::read_only::get_account_params params = {name};
+      string key;
+      string value;
       result.name = params.name;
       const auto& d = db.get_database();
       const auto& accnt          = d.get<account_object,by_name>( params.name );
       const auto& balance        = d.get<BalanceObject,byOwnerName>( params.name );
       const auto& staked_balance = d.get<StakedBalanceObject,byOwnerName>( params.name );
+      key = "name";
+      value = name;
+      dict.add(key,value);
 
-      arr.append((uint64_t)balance.balance);
-      arr.append((uint64_t)staked_balance.stakedBalance);
-      arr.append((uint64_t)staked_balance.unstakingBalance);
-      arr.append(staked_balance.lastUnstakingTime.to_iso_string());
+      key = "balance";
+      dict.add(key,(uint64_t)balance.balance);
+
+      key = "stakedBalance";
+      dict.add(key,(uint64_t)staked_balance.stakedBalance);
+
+      key = "unstakingBalance";
+      dict.add(key,(uint64_t)staked_balance.unstakingBalance);
+
+      key = "lastUnstakingTime";
+      value = staked_balance.lastUnstakingTime.to_iso_string();
+      dict.add(key,value);
 
       if( accnt.abi.size() > 4 ) {
          eos::types::Abi abi;
          fc::datastream<const char*> ds( accnt.abi.data(), accnt.abi.size() );
          fc::raw::unpack( ds, abi );
-         string s = fc::json::to_string(fc::variant(abi));
-         arr.append(s);
+         string value = fc::json::to_string(fc::variant(abi));
+         key = "abi";
+         dict.add(key,value);
       }
    }catch(fc::exception& ex){
       elog(ex.to_detail_string());
    }catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-   return arr.get();
+   return dict.get();
 }
 
 PyObject* get_accounts_(char *public_key){

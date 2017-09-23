@@ -50,6 +50,7 @@ public:
 	PyDict();
 	void add(PyObject* key,PyObject* value);
 	void add(std::string& key,std::string& value);
+   void add(std::string& key,long long n);
 	PyObject *get();
 private:
 	PyObject *pydict;

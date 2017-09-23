@@ -58,6 +58,12 @@ void PyDict::add(std::string& key,std::string& value){
 	dict_add(pydict,pykey,pyvalue);
 }
 
+void PyDict::add(std::string& key,long long n){
+   PyObject* pykey = py_new_string(key);
+   PyObject* pyvalue = py_new_int64(n);
+   dict_add(pydict,pykey,pyvalue);
+}
+
 PyObject *PyDict::get(){
 	return pydict;
 }
