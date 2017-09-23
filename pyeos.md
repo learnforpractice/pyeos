@@ -1,10 +1,42 @@
 Hack on Eos. Have fun!
 
-$ ./pyeos/pyeos --skip-transaction-signatures
+# what does this project for?
 
-$ ./pyeos/pyeos --skip-transaction-signatures
+Eos will be a revolutionary technology. And I'm curious about the tech behind Eos. So I think I need to do something.
+Python is the most powerfull language on the earth, it's easy to use and easy to understand.you can do a lot of things with python without paying too much time. But for the reason of permarmance,Eos is writing in C++. So I think maybe I can rewrite Eos in python? At least I can improve the usability of Eos with python. So here comes pyeos.
 
-# 1. blockchain api test
+# what pyeos can do?
+
+1. now you can call eos api with python
+2. now you can write simple contract in python
+
+
+# How to build
+You have to export two environment,that's for compile python code.
+
+```bash
+export PYTHON_LIB="~/anaconda/lib/libpython3.6m.dylib"
+export PYTHON_INC_DIR="~/anaconda/include/python3.6m"
+```
+
+Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/eos#runanode)
+
+currently only test with python 3.6 on macOS 0.12.6
+
+
+# How to run
+
+after your successful build of project,you can run the following command to start eos.
+
+```
+$ cd ~/dev/eos/build/programs/
+$ ./pyeos/pyeos --skip-transaction-signatures
+```
+
+Then a python interactive console will show, you can input command in the python console.
+
+
+# eos api
 
 ### >>> import eosapi
 ### >>> info = eosapi.get_info()
@@ -88,7 +120,7 @@ b'{"rows":[{"account":"account","balance":50}],"more":false}'
 b'{"rows":[{"account":"account","balance":999999950}],"more":false}'
 ```
 
-# 2. wallet test
+# wallet api
 
 ### >>> import wallet
 ### >>> wallet_name = 'mywallet'

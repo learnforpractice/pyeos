@@ -1,3 +1,6 @@
+
+Please refer [pyeos.md](https://github.com/learnforpractice/eos/blob/master/pyeos.md) to see the difference between eos and pyeos
+
 ## EOS.IO - The Most Powerful Infrastructure for Decentralized Applications
 
 [![Build Status](https://travis-ci.org/EOSIO/eos.svg?branch=master)](https://travis-ci.org/EOSIO/eos)
