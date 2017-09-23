@@ -27,7 +27,7 @@ cdef extern from "eosapi.h":
     int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
     int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret);
     int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
-    int get_code_(string& name,string& wast,string& abi,string& code_hash);
+    int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type);
     int get_table_(string& scope,string& code,string& table,string& result);
 
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
@@ -219,9 +219,10 @@ def get_code(name:str):
     cdef string wast
     cdef string abi
     cdef string code_hash
+    cdef int vm_type
     name = tobytes(name)
-    if 0 == get_code_(name,wast,abi,code_hash):
-        return [wast,abi,code_hash]
+    if 0 == get_code_(name,wast,abi,code_hash,vm_type):
+        return [wast,abi,code_hash,vm_type]
     return []
 
 def get_table(scope,code,table):
@@ -261,6 +262,30 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 
+import sys
+from importlib.abc import Loader, MetaPathFinder
+from importlib.util import spec_from_file_location
+
+class CodeLoader(Loader):
+    def __init__(self,code):
+        self.code = code
+    def create_module(self, spec):
+        return None # use default module creation semantics
+    def exec_module(self, module):
+        exec(self.code, vars(module))
+
+class MetaFinder(MetaPathFinder):
+    def find_spec(self, contract_name, path, target=None):
+        print(contract_name,path,target)
+        code = get_code(contract_name)
+        if not code:
+            return None
+        if code[-1] != 1:
+            return None
+        return spec_from_file_location(contract_name, None, loader=CodeLoader(code[0]),submodule_search_locations=None)
+
+def install():
+    sys.meta_path.insert(0, MetaFinder())
 
 '''
 cdef class PyMessage:

@@ -394,7 +394,7 @@ int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bo
 	return -1;
 }
 
-int get_code_(string& name,string& wast,string& abi,string& code_hash){
+int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type){
    try{
       chain_controller & db = app().get_plugin<chain_plugin>().chain();
       chain_apis::read_only::get_code_results result;
@@ -416,6 +416,7 @@ int get_code_(string& name,string& wast,string& abi,string& code_hash){
          fc::raw::unpack( ds, abi );
          result.abi = std::move(abi);
       }
+      vm_type = accnt.vm_type;
       wast = result.wast;
       code_hash = result.code_hash.str();
       abi = fc::json::to_string(fc::variant(result.abi));
