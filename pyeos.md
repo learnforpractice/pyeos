@@ -35,7 +35,7 @@ pip -m install cython
 
 Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/eos#runanode)
 
-currently only test with python 3.6 on macOS 0.12.6
+currently only test with python 3.6 on macOS 10.12.6
 
 
 # How to run
@@ -220,6 +220,14 @@ You can use get_table to retrive how much balances a account has.
 ```
 ```python
 >>> r = eosapi.get_table('currency','currency','account')
+>>> r
+```
+
+```
+{'rows': [{'account': 'account', 'balance': 100000}], 'more': False}
+```
+
+```
 >>> r.rows[0].balance
 ```
 ```
