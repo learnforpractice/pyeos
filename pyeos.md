@@ -7,8 +7,8 @@ Python is one of the most powerfull language on the earth. It's easy to use and 
 
 # What pyeos can do?
 
-1. now you can call eos api with python
-2. now you can write simple contract in python. You can find some demos in directory [contract](https://github.com/learnforpractice/eos/tree/master/programs/pyeos/contract). Anyone who want faster code can also code it in python first and then porting it to C++.
+1. call eos api with python
+2. write simple contract in python. You can find some demos in directory [contract](https://github.com/learnforpractice/eos/tree/master/programs/pyeos/contract). Anyone who want faster code can also code it in python first and then porting it to C++.
 
 
 # How to build
@@ -21,7 +21,7 @@ export PYTHON_LIB="~/anaconda/lib/libpython3.6m.dylib"
 
 ```
 
-Also you shall have cython installed. If you don't,you can install it by the following command:
+Also you shall have cython installed. If you don't,install it by the following command:
 
 ```
 python -m pip install cython
@@ -35,12 +35,12 @@ pip -m install cython
 
 Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/eos#runanode)
 
-currently only test with python 3.6 on macOS 10.12.6
+Currently only test with python 3.6 on macOS 10.12.6
 
 
 # How to run
 
-after your successful build of project,you can run the following commands to start pyeos.
+After successful build of project,run the following commands to start pyeos.
 
 ```
 $ export PYTHONHOME=~/anaconda/
@@ -48,7 +48,7 @@ $ export PYTHONPATH='~/dev/eos/programs/pyeos/'
 $ cd ~/dev/eos/build/programs/
 $ ./pyeos/pyeos
 ```
-the first three commands only need to run once. If everything is fine,a python interactive console shall appeal. you can type python code in the console.That's it. Next,let me show you what pyeos can do.
+The first three commands only need to run once. If everything is fine,a python interactive console shall appeal.That's it. Next,let us see what pyeos can do.
 
 
 # let's do some practices
@@ -78,7 +78,7 @@ the first three commands only need to run once. If everything is fine,a python i
 ```
 #### wallet.create
 
-Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is you wallet password,save it in some safe place,you will need it next time you want to unlock you wallet.
+Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password,save it in some safe place,if you forgot your wallet password or the password was compromised,you will lost everything in the wallet.Next time you unlock your wallet,a corrent password must be provided.
 ```
 >>> wallet.create('mywallet')
 'PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb'

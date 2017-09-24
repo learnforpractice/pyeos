@@ -51,10 +51,27 @@ void requireNotice_( uint64_t account ) {
 #define UPDATE_RECORD(NAME,VALUE_OBJECT) \
    ctx.NAME##_record<VALUE_OBJECT>(Name(scope), Name(ctx.code.value),Name(table), (VALUE_OBJECT::key_type*)keys, value, valuelen)
 
-#define READ_RECORD(NAME,VALUE_INDEX) \
+#define READ_RECORD(NAME) \
       FC_ASSERT(key_value_index::value_type::number_of_keys > scope_index,"scope index out off bound"); \
-      keys = (void*)(((VALUE_INDEX::value_type::key_type*)keys) + scope_index); \
-      return ctx.NAME##_record<VALUE_INDEX,by_scope_primary>(Name(scope), Name(code),Name(table), (VALUE_INDEX::value_type::key_type*)keys, value, valuelen)
+      return ctx.NAME##_record<key_value_index,by_scope_primary>(Name(scope), Name(code),Name(table), (key_value_index::value_type::key_type*)keys, value, valuelen);
+
+#define READ_RECORD_KEY128x128(NAME) \
+      FC_ASSERT(key128x128_value_index::value_type::number_of_keys > scope_index,"scope index out off bound"); \
+      if(scope_index == 0){ \
+         return ctx.NAME##_record<key128x128_value_index,by_scope_primary>(Name(scope), Name(code),Name(table), (key128x128_value_index::value_type::key_type*)keys, value, valuelen); \
+      }else if(scope_index == 1){ \
+         return ctx.NAME##_record<key128x128_value_index,by_scope_secondary>(Name(scope), Name(code),Name(table), (key128x128_value_index::value_type::key_type*)keys, value, valuelen); \
+      }
+
+#define READ_RECORD_KEY64x64x64(NAME) \
+      FC_ASSERT(key64x64x64_value_index::value_type::number_of_keys > scope_index,"scope index out off bound"); \
+      if(scope_index == 0){ \
+         return ctx.NAME##_record<key64x64x64_value_index,by_scope_primary>(Name(scope), Name(code),Name(table), (key64x64x64_value_index::value_type::key_type*)keys, value, valuelen); \
+      }else if(scope_index == 1){ \
+         return ctx.NAME##_record<key64x64x64_value_index,by_scope_secondary>(Name(scope), Name(code),Name(table), (key64x64x64_value_index::value_type::key_type*)keys, value, valuelen); \
+      }else if (scope_index == 2){ \
+         return ctx.NAME##_record<key64x64x64_value_index,by_scope_tertiary>(Name(scope), Name(code),Name(table), (key64x64x64_value_index::value_type::key_type*)keys, value, valuelen); \
+      }
 
 //      FC_ASSERT(VALUE_INDEX::value_type::number_of_keys<scope_index,"scope index out off bound");
 
@@ -111,11 +128,11 @@ int32_t load_( Name scope, Name code, Name table, void *keys,int key_type, int s
    apply_context& ctx = get_apply_ctx();
 
    if (key_type == 0) {
-      READ_RECORD(load,key_value_index);
+      READ_RECORD(load);
    } else if (key_type == 1) {
-      READ_RECORD(load,key128x128_value_index);
+      READ_RECORD_KEY128x128(load);
    } else if (key_type == 2) {
-      READ_RECORD(load,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(load);
    }
    return 0;
 }
@@ -127,11 +144,11 @@ int32_t front_( Name scope, Name code, Name table, void *keys,int key_type,int s
    apply_context& ctx = get_apply_ctx();
 
    if (key_type == 0) {
-      READ_RECORD(front,key_value_index);
+      READ_RECORD(front);
    } else if (key_type == 1) {
-      READ_RECORD(front,key128x128_value_index);
+      READ_RECORD_KEY128x128(front);
    } else if (key_type == 2) {
-      READ_RECORD(front,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(front);
    }
    return 0;
 }
@@ -143,11 +160,11 @@ int32_t back_( Name scope, Name code, Name table, void *keys,int key_type, int s
    apply_context& ctx = get_apply_ctx();
 
    if (key_type == 0) {
-      READ_RECORD(back,key_value_index);
+      READ_RECORD(back);
    } else if (key_type == 1) {
-      READ_RECORD(back,key128x128_value_index);
+      READ_RECORD_KEY128x128(back);
    } else if (key_type == 2) {
-      READ_RECORD(back,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(back);
    }
    return 0;
 }
@@ -160,11 +177,11 @@ int32_t next_( Name scope, Name code, Name table, void *keys,int key_type, int s
    apply_context& ctx = get_apply_ctx();
 
    if (key_type == 0) {
-      READ_RECORD(next,key_value_index);
+      READ_RECORD(next);
    } else if (key_type == 1) {
-      READ_RECORD(next,key128x128_value_index);
+      READ_RECORD_KEY128x128(next);
    } else if (key_type == 2) {
-      READ_RECORD(next,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(next);
    }
    return 0;
 }
@@ -174,11 +191,11 @@ int32_t previous_( Name scope, Name code, Name table, void *keys,int key_type, i
    FC_ASSERT(scope_index >= 0,"scope index must be >= 0");
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
-      READ_RECORD(previous,key_value_index);
+      READ_RECORD(previous);
    } else if (key_type == 1) {
-      READ_RECORD(previous,key128x128_value_index);
+      READ_RECORD_KEY128x128(previous);
    } else if (key_type == 2) {
-      READ_RECORD(previous,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(previous);
    }
    return 0;
 }
@@ -187,11 +204,11 @@ int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type
    FC_ASSERT(scope_index >= 0,"scope index must be >= 0");
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
-      READ_RECORD(lower_bound,key_value_index);
+      READ_RECORD(lower_bound);
    } else if (key_type == 1) {
-      READ_RECORD(lower_bound,key128x128_value_index);
+      READ_RECORD_KEY128x128(lower_bound);
    } else if (key_type == 2) {
-      READ_RECORD(lower_bound,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(lower_bound);
    }
    return 0;
 }
@@ -202,11 +219,11 @@ int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type
    FC_ASSERT(scope_index >= 0,"scope index must be >= 0");
 
    if (key_type == 0) {
-      READ_RECORD(upper_bound,key_value_index);
+      READ_RECORD(upper_bound);
    } else if (key_type == 1) {
-      READ_RECORD(upper_bound,key128x128_value_index);
+      READ_RECORD_KEY128x128(upper_bound);
    } else if (key_type == 2) {
-      READ_RECORD(upper_bound,key64x64x64_value_index);
+      READ_RECORD_KEY64x64x64(upper_bound);
    }
    return 0;
 }
