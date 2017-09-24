@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
-   PyRun_SimpleString("import eosapi;import sys;sys.path.append('./eosd')");
+   PyRun_SimpleString("import eosapi;import sys;sys.path.append('../../programs/pyeos')");
    PyRun_SimpleString("from initeos import *");
 
 

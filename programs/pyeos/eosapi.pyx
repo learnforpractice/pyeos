@@ -93,7 +93,7 @@ def get_controlled_accounts(account_name:str)->List[str]:
 
     return get_controlled_accounts_(account_name);
 
-def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign)->str:
+def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign=True)->str:
     cdef string result
     if type(creator) == str:
         creator = bytes(creator,'utf8')
@@ -196,6 +196,7 @@ def get_code(name:str):
     cdef string code_hash
     cdef int vm_type
     name = tobytes(name)
+    vm_type = 0
     if 0 == get_code_(name,wast,abi,code_hash,vm_type):
         return [wast,abi,code_hash,vm_type]
     return []
