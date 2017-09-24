@@ -137,7 +137,7 @@ def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
         return result
     return None
 
-def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
+def transfer(sender:str,recipient:str,int amount,memo:str,sign=True)->str:
     cdef string result
     sender = tobytes(sender)
     recipient = tobytes(recipient)
@@ -150,7 +150,7 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign)->str:
         return result
     return None
 
-def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign):
+def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign=True):
     cdef string ret
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
@@ -175,7 +175,7 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         return JsonStruct(ret)
     return None
 
-def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign)->str:
+def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign=True)->str:
     cdef string result
     ilog("set_contract.....");
     account = tobytes(account)

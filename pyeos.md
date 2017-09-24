@@ -76,7 +76,7 @@ the first three commands only need to run once. If everything is fine,a python i
 18624
 
 ```
-
+#### wallet.create
 
 Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is you wallet password,save it in some safe place,you will need it next time you want to unlock you wallet.
 ```
@@ -105,13 +105,17 @@ True
 #### eosapi.create_key
 
 Create owner key
-```
+```python
 >>> eosapi.create_key()
+```
+```
 {'public': 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst', 'private': '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s'}
 ```
 Create active key
-```
+```python
 >>> eosapi.create_key()
+```
+```
 {'public': 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL', 'private': '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'}
 ```
 
@@ -123,16 +127,18 @@ Import owner key
 True
 ```
 Import active key
-```
+```python
 >>> wallet.import_key('mywallet','5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
+```
+```
 True
 ```
 #### eosapi.create_account
-It's time to create account,key1 and key2 are the public key you created before.
+It's time to create a account,key1 and key2 are the public key you created before.
 ```
 >>> key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 >>> key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
->>> r = eosapi.create_account('inita', 'currency',key1,key2,True)
+>>> r = eosapi.create_account('inita', 'currency',key1,key2)
 >>> r
 ```
 ```
@@ -181,6 +187,7 @@ It's time to create account,key1 and key2 are the public key you created before.
 690000000000
 ```
 #### eosapi.set_contract
+Here comes the most exciting moment. Let's push a python smart contract to the blockchain.You can find the source file in [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract) directory
 ```python
 >>> r = eosapi.set_contract('currency','../../programs/pyeos/contract/currency.py','../../contracts/currency/currency.abi',1,True)
 >>> r
@@ -204,6 +211,7 @@ It's time to create account,key1 and key2 are the public key you created before.
 0
 ```
 #### eosapi.get_table
+You can use get_table to retrive how much balances a account has.
 ```python
 >>> eosapi.get_table('currency','currency','account')
 ```
@@ -218,8 +226,9 @@ It's time to create account,key1 and key2 are the public key you created before.
 100000
 ```
 #### eosapi.push_message
+Let's send some money to inita
 ```python
->>> r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","amount":50}',['currency','inita'],{'currency':'active'},True)
+>>> r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","amount":50}',['currency','inita'],{'currency':'active'})
 ```
 ```python
 >>> eosapi.get_table('currency','currency','account')
@@ -227,6 +236,7 @@ It's time to create account,key1 and key2 are the public key you created before.
 ```
 {'rows': [{'account': 'account', 'balance': 99950}], 'more': False}
 ```
+Let's see how much balances inita has now.
 ```python
 >>> eosapi.get_table('inita','currency','account')
 ```
