@@ -74,13 +74,15 @@ The first three commands only need to run once. If everything is fine,a python i
 ```
 ```
 18624
-
 ```
 #### wallet.create
 
 Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password,save it in some safe place,if you forgot your wallet password or the password was compromised,you will lost everything in the wallet.Next time you unlock your wallet,a corrent password must be provided.
+```python
+>>> psw = wallet.create('mywallet')
+>>> psw
 ```
->>> wallet.create('mywallet')
+```
 'PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb'
 ```
 You can see you wallet now. The * behind mywallet means the wallet is unlocked.
@@ -89,7 +91,9 @@ You can see you wallet now. The * behind mywallet means the wallet is unlocked.
 ['mywallet *']
 ```
 #### wallet.open wallet.unlock
-Next time you start pyeos,you will need to type the following command to load and unlock your wallet
+
+Next time you start pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb below to the password you created before.
+
 ```
 >>> wallet.open('mywallet')
 True

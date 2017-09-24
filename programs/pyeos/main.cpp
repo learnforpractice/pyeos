@@ -15,11 +15,15 @@
 #include <fc/exception/exception.hpp>
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/chrono.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <Python.h>
 
 using namespace appbase;
 using namespace eos;
+
+static bool init_finished = false;
 
 int eos_thread(int argc, char** argv) {
    try {
@@ -36,6 +40,7 @@ int eos_thread(int argc, char** argv) {
       if(!app().initialize<chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin,py_plugin>(argc, argv))
          return -1;
       app().startup();
+      init_finished = true;
       app().exec();
    } catch (const fc::exception& e) {
       elog("${e}", ("e",e.to_detail_string()));
@@ -70,13 +75,20 @@ int main(int argc, char** argv)
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
-   PyRun_SimpleString("import eosapi;import sys;sys.path.append('../../programs/pyeos')");
+   PyRun_SimpleString("import eosapi;");
+
+   PyThreadState* state = PyEval_SaveThread();
+   auto thread_ = boost::thread(eos_thread,argc,argv);
+   while(!init_finished){
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+   PyEval_RestoreThread(state);
+
+   PyRun_SimpleString("eosapi.register_signal_handler()");
+   PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos')");
    PyRun_SimpleString("from initeos import *");
 
-
-//   boost::thread t{eos_thread};
-   auto thread_ = boost::thread(eos_thread,argc,argv);
-
+   ilog("start interactive python.");
    PyRun_InteractiveLoop(stdin, "<stdin>");
    Py_Finalize();
 
