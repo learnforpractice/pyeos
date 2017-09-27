@@ -119,7 +119,7 @@ struct eosd_def {
       public_name("localhost"),
       p2p_port(9876),
       http_port(8888),
-      filesize (8192),
+      filesize (512),
       keys(),
       peers(),
       producers(),
@@ -575,7 +575,7 @@ launcher_def::launch (eosd_def &node, string &gts) {
   node_rt_info info;
   info.remote = node.remote;
 
-  string eosdcmd = "programs/eosd/eosd ";
+  string eosdcmd = "eosd/eosd ";
   if (skip_transaction_signatures) {
     eosdcmd += "--skip-transaction-signatures ";
   }

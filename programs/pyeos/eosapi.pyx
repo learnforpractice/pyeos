@@ -20,12 +20,13 @@ cdef extern from "eosapi_.hpp":
     int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result)
     object get_controlled_accounts_(char *account_name);
     object create_key_()
+    object get_public_key_(string& wif_key)
 
     int get_transaction_(string& id,string& result);
     int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
     
     int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
-    int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret);
+    int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret) nogil
     int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
     int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type);
     int get_table_(string& scope,string& code,string& table,string& result);
@@ -121,6 +122,11 @@ def create_key():
     key = create_key_()
     return JsonStruct(key)
 
+def get_public_key(priv_key):
+    cdef string priv_key_
+    priv_key_ = tobytes(priv_key)
+    return get_public_key_(priv_key_)
+
 def get_transaction(id:str)->str:
     cdef string result
     if type(id) == int:
@@ -151,12 +157,17 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign=True)->str:
     return None
 
 def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign=True):
-    cdef string ret
+    cdef string result
+    cdef string contract_
+    cdef string action_
+    cdef string args_
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
-    contract = tobytes(contract)
-    action = tobytes(action)
-    args = tobytes(args)
+    cdef int sign_
+    cdef int ret
+    contract_ = tobytes(contract)
+    action_ = tobytes(action)
+    args_ = tobytes(args)
     
     for scope in scopes:
         scopes_.push_back(tobytes(scope))
@@ -167,12 +178,13 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         permissions_[per] = key
 
     if sign:
-        sign = 1
+        sign_ = 1
     else:
-        sign = 0
-
-    if 0 == push_message_(contract,action,args,scopes_,permissions_,sign,ret):
-        return JsonStruct(ret)
+        sign_ = 0
+    with nogil:
+        ret = push_message_(contract_,action_,args_,scopes_,permissions_,sign_,result)
+    if ret == 0:
+        return JsonStruct(result)
     return None
 
 def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign=True)->str:
@@ -280,4 +292,10 @@ cdef class PyMessage:
     def __dealloc__(self):
         del self.msg
 '''
+cdef extern set_args(int argc,char* argv[]):
+    import sys
+    argv_ = []
+    for i in range(argc):
+        argv_.append(argv[i])
+    sys.argv = argv_
 

@@ -37,7 +37,7 @@ int eos_thread(int argc, char** argv) {
       app().register_plugin<wallet_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<py_plugin>();
-      if(!app().initialize<chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin,py_plugin>(argc, argv))
+      if(!app().initialize<py_plugin,chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin>(argc, argv))
          return -1;
       app().startup();
       init_finished = true;
@@ -60,11 +60,15 @@ extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
 
+void set_args(int argc,char** argv);
+
 int main(int argc, char** argv)
 {
+
 //   Py_InitializeEx(0);
    Py_Initialize();
    PyEval_InitThreads();
+//   set_args(argc,argv);
 
    PyRun_SimpleString("import readline");
    PyInit_eosapi();
@@ -76,6 +80,7 @@ int main(int argc, char** argv)
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
+   PyRun_SimpleString("eosapi.register_signal_handler()");
 
    PyThreadState* state = PyEval_SaveThread();
    auto thread_ = boost::thread(eos_thread,argc,argv);
@@ -84,12 +89,19 @@ int main(int argc, char** argv)
    }
    PyEval_RestoreThread(state);
 
-   PyRun_SimpleString("eosapi.register_signal_handler()");
    PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos')");
-   PyRun_SimpleString("from initeos import *");
+//   PyRun_SimpleString("from initeos import *");
+   PyRun_SimpleString("import initeos");
+   if(app().get_plugin<py_plugin>().interactive){
+      ilog("start interactive python.");
+      PyRun_SimpleString("eosapi.register_signal_handler()");
+      PyRun_InteractiveLoop(stdin, "<stdin>");
+   }
 
-   ilog("start interactive python.");
-   PyRun_InteractiveLoop(stdin, "<stdin>");
+   while(!app().isshutdown){
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+
    Py_Finalize();
 
    return 0;

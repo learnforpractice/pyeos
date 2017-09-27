@@ -86,6 +86,7 @@ PyObject* get_controlled_accounts_(char *account_name);
 
 int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result);
 PyObject* create_key_();
+PyObject *get_public_key_(string& wif_key);
 
 int get_transaction_(string& id,string& result);
 int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);

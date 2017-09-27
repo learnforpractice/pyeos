@@ -2,6 +2,8 @@
 
 #include "pyobject.hpp"
 #include "wallet_.h"
+#include "fc/bitutil.hpp"
+#include "eos/chain/block_summary_object.hpp"
 
 void quit_app_() {
    app().quit();
@@ -70,7 +72,12 @@ read_only::get_info_results get_info() {
 string push_transaction( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
-    transaction_set_reference_block(trx, info.head_block_id);
+//    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
+
+    trx.refBlockNum = fc::endian_reverse_u32(info.head_block_id._hash[0]);
+    trx.refBlockPrefix = info.head_block_id._hash[1];
+
+//    transaction_set_reference_block(trx, info.head_block_id);
     boost::sort( trx.scope );
 
     if (sign) {
@@ -104,6 +111,15 @@ PyObject* create_key_(){
 	value = string(key_to_wif(priv_.get_secret()));
 	dict.add(key,value);
 	return dict.get();
+}
+
+PyObject *get_public_key_(string& wif_key){
+   auto priv_key = eos::utilities::wif_to_key(wif_key);
+   if (!priv_key){
+      return py_new_none();
+   }
+   string pub_key = string(public_key_type(priv_key->get_public_key()));
+   return py_new_string(pub_key);
 }
 
 int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result) {
@@ -385,15 +401,16 @@ int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,
 }
 
 int push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,string& ret){
-	try{
-		ilog("Converting argument to binary...");
+   SignedTransaction trx;
+
+   try{
+//		ilog("Converting argument to binary...");
 		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
 
 		eos::chain_apis::read_only::abi_json_to_bin_params params = {contract,action,fc::json::from_string(args)};
 		auto result = ro_api.abi_json_to_bin(params);
 
-		SignedTransaction trx;
 		vector<types::AccountPermission> accountPermissions;
 		for (auto it=permissions.begin();it!=permissions.end();it++){
 				accountPermissions.push_back(types::AccountPermission(Name(it->first),it->second));
@@ -410,7 +427,11 @@ int push_message_(string& contract,string& action,string& args,vector<string> sc
       elog(boost::diagnostic_information(ex));
    }
 
-	return -1;
+   auto obj = get_db().get_database().get<eos::chain::block_summary_object>((uint16_t)trx.refBlockNum);
+   ilog("obj.block_id._hash[0] ${n} ", ("n", fc::endian_reverse_u32(obj.block_id._hash[0])));
+   ilog("trx.refBlockNum ${n} ", ("n", trx.refBlockNum) );
+
+   return -1;
 }
 
 int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result){

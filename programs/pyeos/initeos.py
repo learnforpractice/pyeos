@@ -6,4 +6,3 @@ import wallet
 wallet.open('mywallet')
 wallet.unlock('mywallet','PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1')
 '''
-

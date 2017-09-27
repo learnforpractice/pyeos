@@ -19,9 +19,10 @@ public:
    void plugin_initialize(const variables_map& options);
    void plugin_startup();
    void plugin_shutdown();
-
+   bool interactive = false;
 private:
    std::unique_ptr<class py_plugin_impl> my;
+
 };
 
 }

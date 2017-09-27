@@ -52,14 +52,15 @@ py_plugin::~py_plugin(){}
 
 void py_plugin::set_program_options(options_description&, options_description& cfg) {
    cfg.add_options()
-         ("option-name", bpo::value<string>()->default_value("default value"),
-          "Option Description")
-         ;
+          ("interactive,i", bpo::bool_switch()->default_value(false),"enter interactive mode")
+          ("option-name", bpo::value<string>()->default_value("default value"),"Option Description");
 }
 
 void py_plugin::plugin_initialize(const variables_map& options) {
-   if(options.count("option-name")) {
-      // Handle the option
+   if(options.count("interactive")) {
+      if(options.at("interactive").as<bool>()){
+         interactive = true;
+      }
    }
 }
 
@@ -94,7 +95,8 @@ void py_thread() {
 
 void py_plugin::plugin_startup() {
 //    boost::thread t{py_thread};
-    chain_controller& db = app().get_plugin<chain_plugin>().chain();
+   ilog("py_plugin::plugin_startup");
+//   chain_controller& db = app().get_plugin<chain_plugin>().chain();
 }
 
 void py_plugin::plugin_shutdown() {

@@ -24,8 +24,11 @@ class Account(object):
 
 def init():
 #	print('hello from init')
-	a = Account(code,100000)
-	a.store()
+	a = Account(code)
+	#avoid overwrite balance already exists.
+	if a.balance == 0:
+		a.balance = 100000
+		a.store()
 
 def apply(name,type):
 #	print('hello from python apply',name,type)
