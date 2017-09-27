@@ -24,7 +24,7 @@ using namespace appbase;
 using namespace eos;
 
 static bool init_finished = false;
-
+static bool shutdown_finished = false;
 int eos_thread(int argc, char** argv) {
    try {
       app().register_plugin<net_plugin>();
@@ -51,6 +51,8 @@ int eos_thread(int argc, char** argv) {
    } catch (...) {
       elog("unknown exception");
    }
+   init_finished = true;
+   shutdown_finished = true;
 }
 
 extern "C" void PyInit_eosapi();
@@ -98,7 +100,7 @@ int main(int argc, char** argv)
       PyRun_InteractiveLoop(stdin, "<stdin>");
    }
 
-   while(!app().isshutdown){
+   while(!shutdown_finished){
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
 
