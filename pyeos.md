@@ -30,7 +30,7 @@ python -m pip install cython
 or
 
 ```
-pip -m install cython
+pip install cython
 ```
 
 Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/eos#runanode)
@@ -46,7 +46,7 @@ After successful build of project,run the following commands to start pyeos.
 $ export PYTHONHOME=~/anaconda/
 $ export PYTHONPATH='~/dev/eos/programs/pyeos/'
 $ cd ~/dev/eos/build/programs/
-$ ./pyeos/pyeos
+$ ./pyeos/pyeos -i
 ```
 The first three commands only need to run once. If everything is fine,a python interactive console shall appeal.That's it. Next,let us see what pyeos can do.
 
@@ -77,7 +77,7 @@ The first three commands only need to run once. If everything is fine,a python i
 ```
 #### wallet.create
 
-Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password,save it in some safe place,if you forgot your wallet password or the password was compromised,you will lost everything in the wallet.Next time you unlock your wallet,a corrent password must be provided.
+Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password,save it in some safe place,if you forgot your wallet password or the password was compromised,you will lose everything in the wallet.Next time you unlock your wallet,a corrent password must be provided.
 ```python
 >>> psw = wallet.create('mywallet')
 >>> psw
