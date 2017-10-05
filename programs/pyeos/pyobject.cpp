@@ -45,11 +45,23 @@ PyDict::PyDict(){
 	pydict = dict_create();
 }
 
+PyDict::PyDict(PyObject* dictObj){
+   pydict = dictObj;
+}
+
 void PyDict::add(PyObject* key,PyObject* value){
 	if (key == NULL || value == NULL){
 		return;
 	}
 	dict_add(pydict,key,value);
+}
+
+void PyDict::add(std::string& key,PyObject* value){
+   if (key.size() == 0 || value == NULL){
+      return;
+   }
+   PyObject* pykey = py_new_string(key);
+   dict_add(pydict,pykey,value);
 }
 
 void PyDict::add(std::string& key,std::string& value){

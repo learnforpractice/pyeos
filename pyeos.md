@@ -92,7 +92,7 @@ You can see you wallet now. The * behind mywallet means the wallet is unlocked.
 ```
 #### wallet.open wallet.unlock
 
-Next time you start pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb below to the password you created before.
+Next time you start pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password below to the password you created before.
 
 ```
 >>> wallet.open('mywallet')

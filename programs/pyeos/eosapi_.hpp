@@ -74,7 +74,7 @@ bool app_isshutdown_();
 chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
-string push_transaction( SignedTransaction& trx, bool sign );
+PyObject* push_transaction( SignedTransaction& trx, bool sign );
 
 #define INT_65 65
 
@@ -84,15 +84,15 @@ PyObject* get_account_(char *name);
 PyObject* get_accounts_(char *public_key);
 PyObject* get_controlled_accounts_(char *account_name);
 
-int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result);
+PyObject* create_account_(string creator, string newaccount, string owner, string active, int sign);
 PyObject* create_key_();
 PyObject *get_public_key_(string& wif_key);
 
 int get_transaction_(string& id,string& result);
 int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
-int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
-int push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,string& ret);
-int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
+PyObject* transfer_(string& sender,string& recipient,int amount,string memo,bool sign);
+PyObject* push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign);
+PyObject* set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign);
 int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type);
 int get_table_(string& scope,string& code,string& table,string& result);
 

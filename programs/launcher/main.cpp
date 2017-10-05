@@ -575,7 +575,7 @@ launcher_def::launch (eosd_def &node, string &gts) {
   node_rt_info info;
   info.remote = node.remote;
 
-  string eosdcmd = "eosd/eosd ";
+  string eosdcmd = "pyeos/pyeos ";
   if (skip_transaction_signatures) {
     eosdcmd += "--skip-transaction-signatures ";
   }

@@ -43,7 +43,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pyobject.pyx
 )
 
-add_executable( pyeos main.cpp api.cpp py_plugin.cpp eosapi_.cpp 
+add_executable( pyeos main.cpp api.cpp py_plugin.cpp json.cpp eosapi_.cpp 
 wallet_.cpp pyobject.cpp database_.cpp eoslib_.cpp 
 eoslib.wrap.cpp eosapi.wrap.cpp eostypes.wrap.cpp wallet.wrap.cpp pyobject.wrap.cpp)
 

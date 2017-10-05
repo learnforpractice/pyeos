@@ -17,7 +17,7 @@ cdef extern from "eosapi_.hpp":
     object get_block_(char *num_or_id)
     object get_account_(char *name)
     object get_accounts_(char *public_key)
-    int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result)
+    object create_account_(string creator, string newaccount, string owner, string active, int sign)
     object get_controlled_accounts_(char *account_name);
     object create_key_()
     object get_public_key_(string& wif_key)
@@ -25,9 +25,9 @@ cdef extern from "eosapi_.hpp":
     int get_transaction_(string& id,string& result);
     int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
     
-    int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result);
-    int push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,string& ret) nogil
-    int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result);
+    object transfer_(string& sender,string& recipient,int amount,string memo,bool sign);
+    object push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign)
+    object set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign);
     int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type);
     int get_table_(string& scope,string& code,string& table,string& result);
 
@@ -95,7 +95,6 @@ def get_controlled_accounts(account_name:str)->List[str]:
     return get_controlled_accounts_(account_name);
 
 def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign=True)->str:
-    cdef string result
     if type(creator) == str:
         creator = bytes(creator,'utf8')
     
@@ -112,7 +111,8 @@ def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign=
     else:
         sign = 0
 
-    if 0 == create_account_(creator,newaccount,owner_key,active_key, sign,result):
+    result = create_account_(creator,newaccount,owner_key,active_key, sign)
+    if result:
         return JsonStruct(result)
     return None
 
@@ -144,7 +144,6 @@ def get_transactions(account_name:str,skip_seq:int,num_seq:int)->str:
     return None
 
 def transfer(sender:str,recipient:str,int amount,memo:str,sign=True)->str:
-    cdef string result
     sender = tobytes(sender)
     recipient = tobytes(recipient)
     memo = tobytes(memo)
@@ -152,19 +151,18 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign=True)->str:
         sign = 1
     else:
         sign = 0
-    if 0 == transfer_(sender,recipient,amount,memo,sign,result):
-        return result
+    result = transfer_(sender,recipient,amount,memo,sign)
+    if result:
+        return JsonStruct(result)
     return None
 
 def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign=True):
-    cdef string result
     cdef string contract_
     cdef string action_
     cdef string args_
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
     cdef int sign_
-    cdef int ret
     contract_ = tobytes(contract)
     action_ = tobytes(action)
     args_ = tobytes(args)
@@ -181,14 +179,13 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         sign_ = 1
     else:
         sign_ = 0
-    with nogil:
-        ret = push_message_(contract_,action_,args_,scopes_,permissions_,sign_,result)
-    if ret == 0:
+    print(contract_,action_,args_,scopes_,permissions_,sign_)
+    result = push_message_(contract_,action_,args_,scopes_,permissions_,sign_)
+    if result:
         return JsonStruct(result)
     return None
 
 def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign=True)->str:
-    cdef string result
     ilog("set_contract.....");
     account = tobytes(account)
     wast_file = tobytes(wast_file)
@@ -198,7 +195,8 @@ def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign=True)->s
     else:
         sign = 0
 
-    if 0 == set_contract_(account,wast_file,abi_file,vmtype,sign,result):
+    result = set_contract_(account,wast_file,abi_file,vmtype,sign)
+    if result:
         return JsonStruct(result)
     return None
 

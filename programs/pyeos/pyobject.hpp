@@ -17,6 +17,8 @@ PyObject* py_new_bool(int b);
 PyObject* py_new_string(std::string& s);
 PyObject* py_new_int(int n);
 PyObject* py_new_int64(long long n);
+PyObject* py_new_float(double n);
+
 PyObject* array_create();
 void array_append(PyObject* arr,PyObject* v);
 void array_append_string(PyObject* arr,std::string& s);
@@ -48,7 +50,9 @@ class PyDict
 {
 public:
 	PyDict();
+   PyDict(PyObject* dictObj);
 	void add(PyObject* key,PyObject* value);
+   void add(std::string& key,PyObject* value);
 	void add(std::string& key,std::string& value);
    void add(std::string& key,long long n);
 	PyObject *get();

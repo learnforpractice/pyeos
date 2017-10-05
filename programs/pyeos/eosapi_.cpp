@@ -4,6 +4,7 @@
 #include "wallet_.h"
 #include "fc/bitutil.hpp"
 #include "eos/chain/block_summary_object.hpp"
+#include "json.hpp"
 
 void quit_app_() {
    app().quit();
@@ -69,7 +70,7 @@ read_only::get_info_results get_info() {
 	};
 }
 
-string push_transaction( SignedTransaction& trx, bool sign ) {
+string push_transaction_bk( SignedTransaction& trx, bool sign ) {
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
 //    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
@@ -97,6 +98,31 @@ string push_transaction( SignedTransaction& trx, bool sign ) {
     return get_db().transaction_to_variant(pts).get_string();
 }
 
+PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
+    auto info = get_info();
+    trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
+//    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
+
+    trx.refBlockNum = fc::endian_reverse_u32(info.head_block_id._hash[0]);
+    trx.refBlockPrefix = info.head_block_id._hash[1];
+
+//    transaction_set_reference_block(trx, info.head_block_id);
+    boost::sort( trx.scope );
+
+    if (sign) {
+       sign_transaction(trx);
+    }
+
+    auto v = fc::variant(trx);
+// ilog(fc::json::to_string( trx ));
+
+   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   auto result = python::json::to_string(rw.push_transaction(v.get_object()));
+// ilog(result);
+   return result;
+
+}
+
 PyObject* create_key_(){
 	auto priv_ = fc::ecc::private_key::generate();
 	auto pub_ = public_key_type( priv_.get_public_key() );
@@ -122,7 +148,7 @@ PyObject *get_public_key_(string& wif_key){
    return py_new_string(pub_key);
 }
 
-int create_account_(string creator, string newaccount, string owner, string active, int sign,string& result) {
+PyObject* create_account_(string creator, string newaccount, string owner, string active, int sign) {
    try {
       auto owner_auth   = eos::chain::Authority{1, {{public_key_type(owner), 1}}, {}};
       auto active_auth  = eos::chain::Authority{1, {{public_key_type(active), 1}}, {}};
@@ -134,8 +160,7 @@ int create_account_(string creator, string newaccount, string owner, string acti
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
                                  types::newaccount{creator, newaccount, owner_auth,
                                               active_auth, recovery_auth, deposit});
-      result = fc::json::to_string(push_transaction(trx, sign));
-      return 0;
+      return push_transaction(trx, sign);
    }catch(fc::assert_exception& e){
       elog(e.to_detail_string());
    }catch(fc::exception& e){
@@ -143,7 +168,7 @@ int create_account_(string creator, string newaccount, string owner, string acti
    }catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-   return -1;
+   return py_new_none();
 }
 
 PyObject* get_info_(){
@@ -384,7 +409,7 @@ int get_transactions_(string& account_name,int skip_seq,int num_seq,string& resu
 	return -1;
 }
 
-int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,string& result){
+PyObject* transfer_(string& sender,string& recipient,int amount,string memo,bool sign){
 	try{
 		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
 		SignedTransaction trx;
@@ -392,15 +417,14 @@ int transfer_(string& sender,string& recipient,int amount,string memo,bool sign,
 		transaction_emplace_message(trx, config::EosContractName,
 											vector<types::AccountPermission>{{sender,"active"}},
 											"transfer", types::transfer{sender, recipient, amount, memo});
-		result = push_transaction(trx,sign);
-		return 0;
+		return push_transaction(trx,sign);
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}
-	return -1;
+	return py_new_none();
 }
 
-int push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,string& ret){
+PyObject* push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign){
    SignedTransaction trx;
 
    try{
@@ -419,8 +443,7 @@ int push_message_(string& contract,string& action,string& args,vector<string> sc
 		for( const auto& s : scopes ) {
 		   trx.scope.emplace_back(s);
 		}
-		ret = push_transaction(trx,sign);
-		return 0;
+		return push_transaction(trx,sign);
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}catch(boost::exception& ex){
@@ -431,10 +454,10 @@ int push_message_(string& contract,string& action,string& args,vector<string> sc
    ilog("obj.block_id._hash[0] ${n} ", ("n", fc::endian_reverse_u32(obj.block_id._hash[0])));
    ilog("trx.refBlockNum ${n} ", ("n", trx.refBlockNum) );
 
-   return -1;
+   return py_new_none();
 }
 
-int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign,string& result){
+PyObject* set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign){
 	try{
       types::setcode handler;
 		std::string wast;
@@ -458,14 +481,13 @@ int set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bo
 		transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
 											 "setcode", handler);
 		std::cout << "Publishing contract..." << std::endl;
-		result = fc::json::to_string(push_transaction(trx,sign));
-		return 0;
+		return push_transaction(trx,sign);
 	}catch(fc::exception& ex){
 		elog(ex.to_detail_string());
 	}catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-	return -1;
+	return py_new_none();
 }
 
 int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type){
