@@ -86,7 +86,6 @@ def store_u64( scope, code, table, uint64_t key, uint64_t value):
     table_ = toname(table)
     return store_(Name(scope_), Name(code_), Name(table_), <void*>&key, 0, <char*>&value, sizeof(value))
 
-
 def update( scope,  code,  table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
@@ -119,7 +118,9 @@ def load( scope, code, table, bytes keys, int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = load_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def load_u64( scope, code, table, uint64_t key):
     cdef uint64_t scope_
@@ -142,7 +143,7 @@ int32_t previous_( Name scope, Name code, Name table, void *keys,int key_type, i
 int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 '''
-def front( scope, code, table, bytes keys,int key_type,int scope_index, uint32_t valuelen ):
+def front( scope, code, table, bytes keys,int key_type,int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -154,7 +155,9 @@ def front( scope, code, table, bytes keys,int key_type,int scope_index, uint32_t
     code_ = toname(code)
     table_ = toname(table)
     value_length = front_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def back( scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
@@ -168,7 +171,9 @@ def back( scope, code, table, bytes keys,int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = back_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def next( scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
@@ -182,7 +187,9 @@ def next( scope, code, table, bytes keys,int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = next_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def previous( scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
@@ -196,7 +203,9 @@ def previous( scope, code, table, bytes keys,int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = previous_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def lower_bound( scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
@@ -210,7 +219,9 @@ def lower_bound( scope, code, table, bytes keys,int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = lower_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 def upper_bound( scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
@@ -224,6 +235,8 @@ def upper_bound( scope, code, table, bytes keys,int key_type, int scope_index):
     code_ = toname(code)
     table_ = toname(table)
     value_length = upper_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    return value[:value_length]
+    if value_length > 0:
+        return value[:value_length]
+    return None
 
 
