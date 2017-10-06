@@ -82,7 +82,7 @@ int32_t store_(Name scope, Name code, Name table, void *keys, int key_type, char
 //   return ctx.store_record<key_value_object>(Name(scope), Name(ctx.code.value),Name(table), (key_value_object::key_type*)keys, data, valuelen);
 
    if (key_type == 0) {
-      UPDATE_RECORD(store,key_value_object);
+      return UPDATE_RECORD(store,key_value_object);
    } else if (key_type == 1) {
       return UPDATE_RECORD(store,key128x128_value_object);
    } else if (key_type == 2) {

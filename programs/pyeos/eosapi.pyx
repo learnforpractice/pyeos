@@ -185,7 +185,7 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         return JsonStruct(result)
     return None
 
-def set_contract(account:str,wast_file:str,abi_file:str,vmtype:int,sign=True)->str:
+def set_contract(account:str,wast_file:str,abi_file:str,vmtype=1,sign=True)->str:
     ilog("set_contract.....");
     account = tobytes(account)
     wast_file = tobytes(wast_file)
