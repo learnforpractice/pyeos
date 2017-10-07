@@ -16,6 +16,7 @@ cdef extern from "eoslib_.hpp":
     int readMessage_( string& buffer );
     void requireScope_(uint64_t account);
     void requireNotice_( uint64_t account );
+    uint64_t currentCode_();
 
     int32_t store_(Name scope, Name code, Name table, void *keys, int key_type, char* value, uint32_t valuelen);
     int32_t update_( Name scope, Name code, Name table, void *keys, int key_type,char* value, uint32_t valuelen );
@@ -66,6 +67,9 @@ def requireNotice(account):
     cdef uint64_t account_
     account_ = toname(account)
     requireNotice_(account_)
+
+def currentCode():
+    return currentCode_()
 
 def store( scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_

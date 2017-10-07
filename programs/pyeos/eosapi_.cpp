@@ -223,6 +223,19 @@ PyObject* get_info_(){
 */
 
 PyObject *get_block_(char *num_or_id){
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   try{
+      chain_apis::read_only::get_block_params params = {string(num_or_id)};
+      chain_apis::read_only::get_block_results results = ro_api.get_block(params);
+      return python::json::to_string(results);
+   } catch (fc::bad_cast_exception& ex) {/* do nothing */}
+   catch ( const fc::exception& e ) {
+     elog((e.to_detail_string()));
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
+
    PyArray arr;
    auto& db = get_db();
 

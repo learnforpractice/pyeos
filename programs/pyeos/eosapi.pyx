@@ -72,7 +72,8 @@ def get_info():
 
 def get_block(id:str)->str:
     if type(id) == int:
-        id = bytes(id)
+        id = str(id)
+        id = bytes(id,'utf8')
     if type(id) == str:
         id = bytes(id,'utf8')
     return get_block_(id)
