@@ -35,7 +35,7 @@ cdef extern from "eosapi_.hpp":
     int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_buffer,int length) 
     int exec_func_(char *code_,char *action_,char *json_,char *scope,char *authorization,char *ts_result,int length)
 
-class JsonStruct:
+class JsonStruct(object):
     def __init__(self, js):
         if isinstance(js,bytes):
             js = js.decode('utf8')
@@ -55,9 +55,9 @@ class JsonStruct:
             else:
                 self.__dict__[key] = value
     def __str__(self):
-        return json.dumps(self.__dict__, sort_keys=False,indent=4, separators=(',', ': '))
+        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     def __repr__(self):
-        return json.dumps(self.__dict__, sort_keys=False,indent=4, separators=(',', ': '))
+        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     
 def toobject(bstr):
     return JsonStruct(bstr)
