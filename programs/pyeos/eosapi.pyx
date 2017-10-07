@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 from eostypes_ cimport *
+
 #import eostypes_
 from typing import Dict, Tuple, List
 
@@ -54,9 +55,9 @@ class JsonStruct:
             else:
                 self.__dict__[key] = value
     def __str__(self):
-        return str(self.__dict__)
+        return json.dumps(self.__dict__, sort_keys=False,indent=4, separators=(',', ': '))
     def __repr__(self):
-        return str(self.__dict__)
+        return json.dumps(self.__dict__, sort_keys=False,indent=4, separators=(',', ': '))
     
 def toobject(bstr):
     return JsonStruct(bstr)
@@ -76,7 +77,8 @@ def get_block(id:str)->str:
         id = bytes(id,'utf8')
     if type(id) == str:
         id = bytes(id,'utf8')
-    return get_block_(id)
+    info = get_block_(id)
+    return JsonStruct(info)
 
 def get_account(name:str):
     if isinstance(name,str):
