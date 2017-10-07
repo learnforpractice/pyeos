@@ -5,9 +5,13 @@
 #include "fc/bitutil.hpp"
 #include "eos/chain/block_summary_object.hpp"
 #include "json.hpp"
+#include <fc/time.hpp>
 
 void quit_app_() {
    app().quit();
+}
+uint32_t now2_(){
+    return fc::time_point::now().sec_since_epoch();
 }
 
 chain_controller& get_db(){

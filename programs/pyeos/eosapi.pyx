@@ -12,8 +12,10 @@ cdef extern from "<fc/log/logger.hpp>":
 
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
+    ctypedef unsigned int uint32_t
     void quit_app_()
-    
+    uint32_t now2_()
+
     object get_info_ ()
     object get_block_(char *num_or_id)
     object get_account_(char *name)
@@ -66,7 +68,8 @@ def tobytes(ustr:str):
     if type(ustr) == str:
         ustr = bytes(ustr,'utf8')
     return ustr
-
+def now():
+    return now2_()
 def get_info():
     info = get_info_()
     return JsonStruct(info)

@@ -1,6 +1,7 @@
 #include "eoslib_.hpp"
 #include <fc/exception/exception.hpp>
 #include <eos/chain/python_interface.hpp>
+#include <eos/chain/chain_controller.hpp>
 
 using namespace eos;
 using namespace eos::chain;
@@ -30,6 +31,9 @@ void  requireAuth_( uint64_t account ){
    get_validate_ctx().require_authorization( Name(account) );
 }
 
+uint32_t now_(){
+   return get_validate_ctx().controller.head_block_time().sec_since_epoch();
+}
 
 uint64_t currentCode_() {
    return get_validate_ctx().code.value;

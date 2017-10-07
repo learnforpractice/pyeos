@@ -119,24 +119,24 @@ class Ask(object):
 class Account(object):
     def __init__(self,owner):
         self.owner = owner
-        self.load()
+#        self.load()
     def __call__(self):
         return struct.pack('QQQI',self.owner,self.eos_balance,self.currency_balance,self.open_orders)
     def store(self):
-        eoslib.store(exchange,exchange,table,0,self())
-    def load(self):
-        result = eoslib.load(exchange,exchange,table,eoslib.n2s(self.owner),0,0)
+        keys = struct.pack("Q",self.owner)
+        values = struct.pack('QQI',self.eos_balance,self.currency_balance,self.open_orders)
+        eoslib.store(exchange,exchange,table,keys,0,values)
+    def load(owner):
+        keys = struct.pack("Q",owner)
+        result = eoslib.load(exchange,exchange,table,keys,0,0)
         if result:
+            self = Account(owner)
             result = struct.unpack('QQI',result)
             self.eos_balance = result[1]
             self.currency_balance = result[2]
             self.open_orders = result[3]
-            return True
-        else:
-            self.eos_balance = 0
-            self.currency_balance = 0
-            self.open_orders = 0
-        return False
+            return self
+        return None
 
 '''
       "name" : "BuyOrder",
@@ -177,13 +177,14 @@ class SellOrder(Ask):
 def apply_exchange_buy():
     order = BuyOrder()
     bid = order
+    print(eoslib.n2s(bid.buyer.name))
     eoslib.requireAuth( bid.buyer.name ); 
     assert bid.quantity > 0, "invalid quantity" ;
-    assert bid.expiration > time.time(), "order expired" ;
+    assert bid.expiration > eoslib.now(), "order expired" ;
     print( eoslib.n2s(bid.buyer.name), " created bid for ", order.quantity, " currency at price: ", order.price, "\n" );
-    buyer_account = Account( bid.buyer.name );
-
-
+    buyer_account = Account.load( bid.buyer.name );
+    print('buyer_account:',buyer_account)
+    
 def apply_exchange_sell():
     order = SellOrder()
 
@@ -202,7 +203,7 @@ def apply_eos_transfer():
     pass
 
 def init():
-    pass
+    print(eoslib.now())
 
 def apply(code,action):
     if code == exchange:

@@ -70,6 +70,7 @@ using namespace eos::chain_apis;
 
 void quit_app_();
 bool app_isshutdown_();
+uint32_t now2_();
 
 chain_controller& db();
 string to_bitset(uint64_t val);

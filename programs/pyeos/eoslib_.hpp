@@ -18,6 +18,7 @@ int readMessage_( string& buffer );
 void requireScope_(uint64_t account);
 void requireNotice_( uint64_t account );
 uint64_t currentCode_();
+uint32_t now_();
 
 uint64_t string_to_uint64_( string str );
 string uint64_to_string_( uint64_t n);

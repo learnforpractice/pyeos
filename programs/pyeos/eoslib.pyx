@@ -16,6 +16,7 @@ cdef extern from "eoslib_.hpp":
     void requireScope_(uint64_t account);
     void requireNotice_( uint64_t account );
     uint64_t currentCode_();
+    uint32_t now_();
 
     int32_t store_(Name scope, Name code, Name table, void *keys, int key_type, char* value, uint32_t valuelen);
     int32_t update_( Name scope, Name code, Name table, void *keys, int key_type,char* value, uint32_t valuelen );
@@ -29,6 +30,8 @@ cdef extern from "eoslib_.hpp":
     int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 
 
+def now():
+    return now_()
 
 cdef uint64_t toname(name):
     if type(name) == int:
