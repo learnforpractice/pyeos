@@ -16,7 +16,7 @@ class Account(object):
 		else:
 			self.balance = balance
 	def isEmpty(self):
-		return balance == 0
+		return self.balance == 0
 	def store(self):
 		eoslib.store_u64(self.scope,code,table,Account.key,self.balance)
 	def load(self):

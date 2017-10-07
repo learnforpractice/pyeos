@@ -8,7 +8,6 @@ cdef extern from "eoslib_.hpp":
     cdef cppclass Name:
         Name()
         Name(uint64_t)
-
     uint64_t string_to_uint64_( string str );
     string uint64_to_string_( uint64_t n );
     
@@ -147,34 +146,53 @@ int32_t previous_( Name scope, Name code, Name table, void *keys,int key_type, i
 int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 '''
-def front( scope, code, table, bytes keys,int key_type,int scope_index):
+cdef int get_key_size(int key_type):
+    if key_type == 0:
+        return 64/8
+    elif key_type == 1:
+        return 128*2/8
+    elif key_type == 2:
+        return 64*3/8
+    return 0
+
+def front( scope, code, table, bytes keys_,int key_type,int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char *keys_ = keys
-    cdef char value[1024]
+    cdef char *keys = keys_
+    cdef char value[512]
+    cdef int key_size
     cdef int value_length
-
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = front_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
+    if get_key_size(key_type) != len(keys_):
+        return None
+    if key_type > 2:
+        return None
+    key_size = get_key_size(key_type)
+    value_length = front_(Name(scope_), Name(code_), Name(table_), <void*>keys, key_type, scope_index,value, sizeof(value))
     if value_length > 0:
         return value[:value_length]
     return None
 
-def back( scope, code, table, bytes keys,int key_type, int scope_index):
+def back( scope, code, table, bytes keys_,int key_type,int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char *keys_ = keys
-    cdef char value[1024]
+    cdef char *keys = keys_
+    cdef char value[512]
+    cdef int key_size
     cdef int value_length
-
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = back_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
+    if get_key_size(key_type) != len(keys_):
+        return None
+    if key_type > 2:
+        return None
+    key_size = get_key_size(key_type)
+    value_length = back_(Name(scope_), Name(code_), Name(table_), <void*>keys, key_type, scope_index,value, sizeof(value))
     if value_length > 0:
         return value[:value_length]
     return None

@@ -17,8 +17,15 @@ def n2s(n):
 
 def requireAuth(name):
     pass
+
+msg = None
+def writeMessage(msg_):
+    global msg
+    msg = msg_
+    
 def readMessage():
-    return struct.pack('QQQ',N(b'python'),N(b'inita'),10000)
+    return msg
+#    return struct.pack('QQQ',N(b'python'),N(b'inita'),10000)
 
 def requireScope(account):
     pass
