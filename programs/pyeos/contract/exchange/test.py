@@ -1,12 +1,16 @@
-
-
 def test():
-    pass
+#from contract.exchange import test
+#test.test()
+    import eosapi
+    r = eosapi.push_message('eos','transfer','{"from":"inita","to":"exchange","amount":10,"memo":"hello"}',['exchange','inita'],{'inita':'active'})
+    r = eosapi.push_message('eos','transfer','{"from":"exchange","to":"inita","amount":1,"memo":"hello"}',['exchange','inita'],{'exchange':'active','inita':'active'})
 
 if __name__ == '__main__':
+    import sys
+    sys.path.insert(0,'..')
     from exchange import *
-    import eoslib_dummy as eoslib
-    from eoslib_dummy import N,readMessage,writeMessage
+    import eoslib as eoslib
+    from eoslib import N,readMessage,writeMessage
     
     init()
     writeMessage(bytes(512))
