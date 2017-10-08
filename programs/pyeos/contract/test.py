@@ -1,7 +1,9 @@
 if __name__ == '__main__':
     import eoslib_dummy as eoslib
+    from eoslib.dummy import N
 else:
     import eoslib
+    from eoslib import N
 import struct
 
 first = eoslib.N('b')
@@ -116,7 +118,18 @@ def test_x128x128():
 
 def init():
 #    test_x64x64x64()
-    test_x128x128()
+#    test_x128x128()
+    keys = struct.pack('Q',N('a'))
+    values = struct.pack('QQQ',123,456,789)
+    r = eoslib.store('test','test','transfer',keys,0,values)
+    print(r)
+    keys = struct.pack('Q',N('b'))
+    values = struct.pack('QQQ',123,456,789)
+    r = eoslib.store('test','test','transfer',keys,0,values)
+    print(r)
+    r = eoslib.load('test','test','transfer',keys,0,0)
+    print(r)
+    print(struct.unpack('QQQ',r))
 
 def apply(name,type):
 #    print('hello from python apply',name,type)

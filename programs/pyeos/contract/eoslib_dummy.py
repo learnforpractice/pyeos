@@ -1,4 +1,5 @@
 import struct
+import time
 
 def s2n(name):
     for i in range(len(name)-1,8):
@@ -7,7 +8,8 @@ def s2n(name):
 
 def N(name):
     return s2n(name)
-
+def now():
+    return int(time.time())
 def n2s(n):
     s = struct.pack('Q',n&0xffffffffffffffff)
     if s.endswith(b'\x00'):

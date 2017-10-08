@@ -176,6 +176,11 @@ PyObject* create_account_(string creator, string newaccount, string owner, strin
 }
 
 PyObject* get_info_(){
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   chain_apis::read_only::get_info_params params = {};
+   chain_apis::read_only::get_info_results results = ro_api.get_info(params);
+   return python::json::to_string(results);
+
    PyDict dict;
    const chain_controller& db=get_db();
    string key;

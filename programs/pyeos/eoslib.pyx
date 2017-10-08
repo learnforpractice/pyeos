@@ -73,7 +73,7 @@ def requireNotice(account):
 def currentCode():
     return currentCode_()
 
-def store( scope, code, table, bytes keys, int key_type, bytes value):
+def store(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -83,7 +83,7 @@ def store( scope, code, table, bytes keys, int key_type, bytes value):
     table_ = toname(table)
     return store_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, value, len(value))
 
-def store_u64( scope, code, table, uint64_t key, uint64_t value):
+def store_u64(scope, code, table, uint64_t key, uint64_t value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -92,7 +92,7 @@ def store_u64( scope, code, table, uint64_t key, uint64_t value):
     table_ = toname(table)
     return store_(Name(scope_), Name(code_), Name(table_), <void*>&key, 0, <char*>&value, sizeof(value))
 
-def update( scope,  code,  table, bytes keys, int key_type, bytes value):
+def update(scope,  code,  table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -102,7 +102,7 @@ def update( scope,  code,  table, bytes keys, int key_type, bytes value):
     table_ = toname(table)
     return update_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, value, len(value))
 
-def remove( scope, code, table, bytes keys, int key_type, bytes value):
+def remove(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -112,7 +112,7 @@ def remove( scope, code, table, bytes keys, int key_type, bytes value):
     table_ = toname(table)
     return remove_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, value, len(value))
 
-def load( scope, code, table, bytes keys, int key_type, int scope_index):
+def load(scope, code, table, bytes keys, int key_type, int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -128,7 +128,7 @@ def load( scope, code, table, bytes keys, int key_type, int scope_index):
         return value[:value_length]
     return None
 
-def load_u64( scope, code, table, uint64_t key):
+def load_u64(scope, code, table, uint64_t key):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -158,7 +158,7 @@ cdef int get_key_size(int key_type):
         return 64*3/8
     return 0
 
-def front( scope, code, table, bytes keys_,int key_type,int scope_index):
+def front(scope, code, table, bytes keys_,int key_type,int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -179,7 +179,7 @@ def front( scope, code, table, bytes keys_,int key_type,int scope_index):
         return value[:value_length]
     return None
 
-def back( scope, code, table, bytes keys_,int key_type,int scope_index):
+def back(scope, code, table, bytes keys_,int key_type,int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -200,7 +200,7 @@ def back( scope, code, table, bytes keys_,int key_type,int scope_index):
         return value[:value_length]
     return None
 
-def next( scope, code, table, bytes keys,int key_type, int scope_index):
+def next(scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -216,7 +216,7 @@ def next( scope, code, table, bytes keys,int key_type, int scope_index):
         return value[:value_length]
     return None
 
-def previous( scope, code, table, bytes keys,int key_type, int scope_index):
+def previous(scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
@@ -248,7 +248,7 @@ def lower_bound( scope, code, table, bytes keys,int key_type, int scope_index):
         return value[:value_length]
     return None
 
-def upper_bound( scope, code, table, bytes keys,int key_type, int scope_index):
+def upper_bound(scope, code, table, bytes keys,int key_type, int scope_index):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_

@@ -57,7 +57,8 @@ class JsonStruct(object):
             else:
                 self.__dict__[key] = value
     def __str__(self):
-        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
+        return str(self.__dict__)
+#        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     
@@ -185,7 +186,7 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         sign_ = 1
     else:
         sign_ = 0
-    print(contract_,action_,args_,scopes_,permissions_,sign_)
+#    print(contract_,action_,args_,scopes_,permissions_,sign_)
     result = push_message_(contract_,action_,args_,scopes_,permissions_,sign_)
     if result:
         return JsonStruct(result)
