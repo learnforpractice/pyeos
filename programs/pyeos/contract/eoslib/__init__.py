@@ -42,6 +42,10 @@ def update( scope,  code,  table, keys,  key_type,  value):
 def remove( scope, code, table, keys,  key_type,  value):
     pass
 def load( scope, code, table, keys,  key_type,  scope_index):
-    return 0
+    return bytes(128)
 def load_u64( scope, code, table,  key):
+    return 0
+def front( scope, code, table,keys,key_type,scope_index,values):
+    return 0
+def back( scope, code, table,keys,key_type,scope_index,values):
     return 0

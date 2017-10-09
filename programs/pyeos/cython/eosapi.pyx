@@ -61,7 +61,7 @@ class JsonStruct(object):
 #        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
-    
+
 def toobject(bstr):
     return JsonStruct(bstr)
 
@@ -172,6 +172,8 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
     cdef int sign_
     contract_ = tobytes(contract)
     action_ = tobytes(action)
+    if not isinstance(args,str):
+        args = json.dumps(args)
     args_ = tobytes(args)
     
     for scope in scopes:
