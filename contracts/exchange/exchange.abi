@@ -63,8 +63,8 @@
     }
   ],
   "tables": [
-    {"table":"bids","type":"Bid"},
-    {"table":"asks","type":"Ask"},
-    {"table":"account","type":"Account"}
+    {"table":"bids","type":"Bid","indextype": "i64","keynames" : ["name"],"keytypes" : ["AccountName"]},
+    {"table":"asks","type":"Ask","indextype": "i64","keynames" : ["name"],"keytypes" : ["AccountName"]},
+    {"table":"account","type":"Account","indextype": "i64","keynames" : ["owner"],"keytypes" : ["AccountName"]}
   ]
 }

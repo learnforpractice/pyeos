@@ -448,7 +448,7 @@ PyObject* transfer_(string& sender,string& recipient,int amount,string memo,bool
 
 PyObject* push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign){
    SignedTransaction trx;
-
+   ilog(args);
    try{
 //		ilog("Converting argument to binary...");
 		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();

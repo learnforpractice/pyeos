@@ -112,21 +112,17 @@ def remove(scope, code, table, bytes keys, int key_type, bytes value):
     table_ = toname(table)
     return remove_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, value, len(value))
 
-def load(scope, code, table, bytes keys, int key_type, int scope_index):
+def load(scope, code, table, bytes keys, int key_type, int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
     cdef char *keys_ = keys
-    cdef char value[1024]
-    cdef int value_length
+    cdef char *values_ = values
     
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = load_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return load_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
 def load_u64(scope, code, table, uint64_t key):
     cdef uint64_t scope_
@@ -158,110 +154,82 @@ cdef int get_key_size(int key_type):
         return 64*3/8
     return 0
 
-def front(scope, code, table, bytes keys_,int key_type,int scope_index):
+def front(scope, code, table, bytes keys,int key_type,int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char *keys = keys_
-    cdef char value[512]
-    cdef int key_size
+    cdef char *keys_ = keys
+    cdef char *values_ = values
     cdef int value_length
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    if get_key_size(key_type) != len(keys_):
+    if get_key_size(key_type) != len(keys):
         return None
     if key_type > 2:
         return None
-    key_size = get_key_size(key_type)
-    value_length = front_(Name(scope_), Name(code_), Name(table_), <void*>keys, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return front_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
-def back(scope, code, table, bytes keys_,int key_type,int scope_index):
+def back(scope, code, table, bytes keys,int key_type,int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char *keys = keys_
-    cdef char value[512]
-    cdef int key_size
-    cdef int value_length
+    cdef char *keys_ = keys
+    cdef char *values_ = values
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    if get_key_size(key_type) != len(keys_):
+    if get_key_size(key_type) != len(keys):
         return None
     if key_type > 2:
         return None
-    key_size = get_key_size(key_type)
-    value_length = back_(Name(scope_), Name(code_), Name(table_), <void*>keys, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return back_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
-def next(scope, code, table, bytes keys,int key_type, int scope_index):
+def next(scope, code, table, bytes keys,int key_type, int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
     cdef char *keys_ = keys
-    cdef char value[1024]
-    cdef int value_length
+    cdef char *values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = next_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return next_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
-def previous(scope, code, table, bytes keys,int key_type, int scope_index):
+def previous(scope, code, table, bytes keys,int key_type, int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
     cdef char *keys_ = keys
-    cdef char value[1024]
-    cdef int value_length
+    cdef char *values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = previous_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return previous_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
-def lower_bound( scope, code, table, bytes keys,int key_type, int scope_index):
+def lower_bound(scope, code, table, bytes keys,int key_type, int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
     cdef char *keys_ = keys
-    cdef char value[1024]
-    cdef int value_length
+    cdef char *values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = lower_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
+    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 
-def upper_bound(scope, code, table, bytes keys,int key_type, int scope_index):
+def upper_bound(scope, code, table, bytes keys,int key_type, int scope_index,bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
     cdef char *keys_ = keys
-    cdef char value[1024]
-    cdef int value_length
+    cdef char *values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    value_length = upper_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,value, sizeof(value))
-    if value_length > 0:
-        return value[:value_length]
-    return None
-
+    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, key_type, scope_index,values_, len(values))
 

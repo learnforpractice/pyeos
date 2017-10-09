@@ -33,19 +33,19 @@ def requireScope(account):
     pass
 def requireNotice(account):
     pass
-def store( scope, code, table, keys,  key_type,  value):
+def store( scope, code, table, keys,  key_type,  values):
     pass
 def store_u64( scope, code, table, key,  value):
     pass
-def update( scope,  code,  table, keys,  key_type,  value):
+def update( scope,  code,  table, keys,  key_type,  values):
     pass
 def remove( scope, code, table, keys,  key_type,  value):
     pass
-def load( scope, code, table, keys,  key_type,  scope_index):
-    return bytes(128)
+def load( scope, code, table, keys,  key_type,  scope_index,values):
+    return values
 def load_u64( scope, code, table,  key):
     return 0
 def front( scope, code, table,keys,key_type,scope_index,values):
-    return 0
+    return values
 def back( scope, code, table,keys,key_type,scope_index,values):
-    return 0
+    return values

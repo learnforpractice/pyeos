@@ -1,3 +1,4 @@
+import os
 import json
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -196,6 +197,10 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
 
 def set_contract(account:str,wast_file:str,abi_file:str,vmtype=1,sign=True)->str:
     ilog("set_contract.....");
+    if not os.path.exists(wast_file):
+        return False
+    if not os.path.exists(abi_file):
+        return False
     account = tobytes(account)
     wast_file = tobytes(wast_file)
     abi_file = tobytes(abi_file)

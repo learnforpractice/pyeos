@@ -91,7 +91,7 @@ int main(int argc, char** argv)
    }
    PyEval_RestoreThread(state);
 
-   PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos')");
+   PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos');sys.path.append('../../programs/pyeos/contract')");
 //   PyRun_SimpleString("from initeos import *");
    PyRun_SimpleString("import initeos");
    if(app().get_plugin<py_plugin>().interactive){
