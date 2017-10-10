@@ -27,8 +27,8 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
-    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pyx
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx
 )
 
 add_custom_command(
@@ -43,9 +43,13 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/pyobject.pyx
 )
 
+
+
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
-interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
-wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp wrap/pyobject.wrap.cpp)
+    interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
+    interface/math_.cpp 
+    wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
+    wrap/pyobject.wrap.cpp wrap/eosmath.wrap.cpp)
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin eos_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 

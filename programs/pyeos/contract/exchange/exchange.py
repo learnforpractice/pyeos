@@ -1,4 +1,5 @@
 import eoslib
+from eostypes import uint64,uint128
 from eoslib import N,readMessage,requireAuth,now
 import struct
 import time
@@ -11,23 +12,8 @@ table_account = N(b'account')
 table_asks = N(b'asks')
 table_bids = N(b'bids')
 
-MAX_INT64 = 0xffffffffffffffff
-
 Name = eoslib.n2s
 
-class uint64(int):
-    def from_bytes(bs):
-        return uint64(int.from_bytes(bs,'little'))
-    def __call__(self):
-#        return struct.pack('QQ',self & MAX_INT64,self >> 64)
-        return self.to_bytes(8,'little')
-
-class uint128(int):
-    def from_bytes(bs):
-        return uint128(int.from_bytes(bs,'little'))
-    def __call__(self):
-#        return struct.pack('QQ',self & MAX_INT64,self >> 64)
-        return self.to_bytes(16,'little')
 
 class Object(object):
     def __str__(self):
@@ -94,6 +80,7 @@ class OrderID(Object):
     def __call__(self):
         self.raw_data = struct.pack('QQ',self.name,self.id)
         return self.raw_data
+ 
 '''
          "buyer" : "OrderID",
          "price" : "UInt128",
@@ -512,16 +499,14 @@ def apply_eos_transfer():
         assert False, "notified on transfer that is not relevant to this exchange"
 
 def init():
-    print(eoslib.now())
+    n1 = uint128(1000)
+    n2 = uint128(99)
+    print(n1*n2)
+    print(n1/n2)
+    print(n1+n2)
+    print(n1-n2)
+    print(n2-n1)
 
-def test():
-    keys = struct.pack("Q",eoslib.N('inita'))
-    values = bytes(20)
-    ret = eoslib.load(exchange,exchange,table_account,keys,0,0,values)
-    print(ret)
-    print(keys,values)
-    values = struct.unpack('QQI',values)
-    print(values)
 
 def apply(code,action):
     if code == exchange:

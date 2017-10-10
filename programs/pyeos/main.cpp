@@ -56,7 +56,7 @@ int eos_thread(int argc, char** argv) {
 }
 
 extern "C" void PyInit_eosapi();
-extern "C" PyObject* PyInit_eostypes_();
+extern "C" PyObject* PyInit_eostypes();
 extern "C" PyObject* PyInit_wallet();
 extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
    PyRun_SimpleString("import readline");
    PyInit_eosapi();
-   PyInit_eostypes_();
+   PyInit_eostypes();
    PyInit_wallet();
    PyInit_python_contract();
    PyInit_eoslib();

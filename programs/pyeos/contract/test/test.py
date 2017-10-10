@@ -137,6 +137,23 @@ def apply(name,type):
     if type == eoslib.N(b'transfer'):
         pass
 
+def test():
+    n1 = uint128(1000)
+    n2 = uint128(99)
+    print(n1*n2)
+    print(n1/n2)
+    print(n1+n2)
+    print(n1-n2)
+    print(n2-n1)
+
+    n1 = Token(1000)
+    n2 = Token(99)
+    print(n1*n2)
+    print(n1/n2)
+    print(n1+n2)
+    print(n1-n2)
+    print(n2-n1)
+
 if __name__ == '__main__':
     init()
     apply(eoslib.N(b'python'),eoslib.N(b'transfer'))
