@@ -119,13 +119,21 @@ PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
 
    auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
 
+   PyObject *ret = py_new_none();
    PyThreadState* state = PyEval_SaveThread();
-   auto result = rw.push_transaction(fc::variant(trx).get_object());
+   try{
+      auto result = rw.push_transaction(fc::variant(trx).get_object());
+      ret = python::json::to_string(result);
+   // ilog(result);
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
    PyEval_RestoreThread(state);
-
-   auto js = python::json::to_string(result);
-// ilog(result);
-   return js;
+   return ret;
 
 }
 
@@ -473,11 +481,11 @@ PyObject* push_message_(string& contract,string& action,string& args,vector<stri
 	}catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-
+/*
    auto obj = get_db().get_database().get<eos::chain::block_summary_object>((uint16_t)trx.refBlockNum);
    ilog("obj.block_id._hash[0] ${n} ", ("n", fc::endian_reverse_u32(obj.block_id._hash[0])));
    ilog("trx.refBlockNum ${n} ", ("n", trx.refBlockNum) );
-
+*/
    return py_new_none();
 }
 
