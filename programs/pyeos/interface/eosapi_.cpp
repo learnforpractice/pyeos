@@ -118,13 +118,13 @@ PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
     }
 
    auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   chain_apis::read_write::push_transaction_results result;
 
-   PyObject *ret = py_new_none();
+   bool success = false;
    PyThreadState* state = PyEval_SaveThread();
    try{
-      auto result = rw.push_transaction(fc::variant(trx).get_object());
-      ret = python::json::to_string(result);
-   // ilog(result);
+      result = rw.push_transaction(fc::variant(trx).get_object());
+      success = true;
    }catch(fc::assert_exception& e){
       elog(e.to_detail_string());
    }catch(fc::exception& e){
@@ -132,9 +132,15 @@ PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
    }catch(boost::exception& ex){
       elog(boost::diagnostic_information(ex));
    }
-   PyEval_RestoreThread(state);
-   return ret;
 
+   ilog(" PyEval_RestoreThread begin");
+   PyEval_RestoreThread(state);
+   ilog(" PyEval_RestoreThread end");
+
+   if(success){
+      return python::json::to_string(result);
+   }
+   return py_new_none();
 }
 
 PyObject* create_key_(){

@@ -66,3 +66,7 @@ class python_interface {
 
 
 } } // eos::chain
+
+int python_load_with_exception_handing(std::string& name,std::string& code);
+int python_call_with_exception_handing(std::string& name,std::string& function,std::vector<uint64_t> args);
+

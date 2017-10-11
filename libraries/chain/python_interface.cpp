@@ -17,9 +17,42 @@
 using namespace std;
 
 int python_load(string& name,string& code);
+int python_load_with_no_gil(std::string& name,std::string& code);
+
 //int python_call(string& name,string& function,vector<int> args);
 int python_call(std::string &name, std::string &function, std::vector<uint64_t>  args);
+int python_call_no_gil(std::string &name, std::string &function, std::vector<uint64_t>  args);
 
+
+int python_load_with_exception_handing(std::string& name,std::string& code){
+   try{
+      return python_load_with_no_gil(name,code);
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }catch(...){
+      elog("unhandled exception!!!");
+   }
+   return -1;
+}
+
+int python_call_with_exception_handing(std::string& name,std::string& function,vector<uint64_t> args){
+   try{
+      return python_call_no_gil(name,function,args);
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }catch(...){
+      elog("unhandled exception!!!");
+   }
+   return -1;
+}
 
 namespace eos { namespace chain {
    using namespace IR;

@@ -10,6 +10,10 @@ cdef extern from "":
     PyGILState_STATE PyGILState_Ensure() nogil 
     void PyGILState_Release(PyGILState_STATE state) nogil
 
+cdef extern from "eos/chain/python_interface.hpp":
+    int python_load_with_exception_handing(string& name,string& code);
+    int python_call_with_exception_handing(string& name,string& function,vector[uint64_t] args)
+
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(string& str)
     
@@ -17,7 +21,7 @@ cdef extern from "<fc/log/logger.hpp>":
 
 code_map = {}
 
-cdef extern int python_load(string& name,string& code) with gil:
+cdef extern int python_load_with_no_gil(string& name,string& code):
     global code_map
     cdef PyGILState_STATE state
     cdef int ret
@@ -35,9 +39,11 @@ cdef extern int python_load(string& name,string& code) with gil:
             ret = -1
     return ret;
 
-cdef extern int python_call(string& name,string& function,vector[uint64_t] args) with gil:
+cdef extern int python_load(string& name,string& code) with gil:
+    return python_load_with_exception_handing(name,code)
+
+cdef extern python_call_no_gil(string& name,string& function,vector[uint64_t] args):
     global code_map
-    cdef PyGILState_STATE state
     cdef int ret
     ret = -1
     func = function
@@ -49,3 +55,8 @@ cdef extern int python_call(string& name,string& function,vector[uint64_t] args)
         ret = 0
     except Exception as e:
         log.exception(e)
+    return ret
+
+cdef extern int python_call(string& name,string& function,vector[uint64_t] args) except+ with gil:
+    return python_call_with_exception_handing(name,function,args)
+
