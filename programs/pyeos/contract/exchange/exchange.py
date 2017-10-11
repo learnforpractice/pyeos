@@ -1,5 +1,5 @@
 import eoslib
-from eostypes import uint64,uint128
+
 from eoslib import N,readMessage,requireAuth,now
 import struct
 import time
@@ -14,6 +14,50 @@ table_bids = N(b'bids')
 
 Name = eoslib.n2s
 
+class uint64(int):
+    
+    def __new__(cls, value):
+        if isinstance(value,bytes):
+            return int.__new__(cls, int.from_bytes(value,'little'))
+        return int.__new__(cls, value)
+
+    def __div__(self,other):
+        return int(int.__div__(self,other))
+
+    def __truediv__(self,other):
+        return int(int.__truediv__(self,other))
+
+    def __mul__(self,other):
+        return int(int.__mul__(self,other))
+
+    def from_bytes(bs):
+        return int.from_bytes(bs,'little')
+
+    def __call__(self):
+        return int.to_bytes(self,8,'little')
+
+class uint128(int):
+    
+    def __new__(cls, value):
+        if isinstance(value,bytes):
+            return int.__new__(cls, int.from_bytes(value,'little'))
+        else:
+            return int.__new__(cls, value)
+
+    def __div__(self,other):
+        return int(int.__div__(self,other))
+
+    def __truediv__(self,other):
+        return int(int.__truediv__(self,other))
+
+    def __mul__(self,other):
+        return int(int.__mul__(self,other))
+
+    def from_bytes(bs):
+        return int.from_bytes(bs,'little')
+
+    def __call__(self):
+        return int.to_bytes(self,16,'little')
 
 class Object(object):
     def __str__(self):
@@ -45,7 +89,7 @@ class Account(Object):
     def save(self):
         keys = struct.pack("Q",self.owner)
         print(self.eos_balance,self.currency_balance,self.open_orders)
-        values = struct.pack('QQI',self.eos_balance,int(self.currency_balance),self.open_orders)
+        values = struct.pack('QQI',self.eos_balance,self.currency_balance,self.open_orders)
         eoslib.store(exchange,exchange,table_account,keys,0,values)
     def load(self):
         keys = struct.pack("Q",self.owner)
@@ -122,32 +166,32 @@ class Bid(Object):
         if eoslib.load(exchange,exchange,table_bids,keys,1,1,values) > 0:
             bid = Bid()
             bid.buyer = OrderID(keys[:16])
-            bid.price = uint128.from_bytes(kes[16:])
+            bid.price = uint128.from_bytes(keys[16:])
             result = struct.unpack('QI',values)
             bid.quantity = result[0]
             bid.expiration = result[1]
             return bid
         return None
 
-    def front_by_id():
+    def front_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
         if eoslib.front(exchange,exchange,table_bids,keys,1,0,values) > 0:
             bid = Bid()
             bid.buyer = OrderID(keys[:16])
-            bid.price = uint128.from_bytes(kes[16:])
+            bid.price = uint128.from_bytes(keys[16:])
             result = struct.unpack('QI',values)
             bid.quantity = result[0]
             bid.expiration = result[1]
             return bid
         return None
-    def back_by_id():
+    def back_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
         if eoslib.back(exchange,exchange,table_bids,keys,1,0,values) > 0:
             bid = Bid()
             bid.buyer = OrderID(keys[:16])
-            bid.price = uint128.from_bytes(kes[16:])
+            bid.price = uint128.from_bytes(keys[16:])
             result = struct.unpack('QI',values)
             bid.quantity = result[0]
             bid.expiration = result[1]
@@ -177,6 +221,33 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    def next_by_order_id(self):
+        keys = struct.pack('16s16s',self.buyer(),bytes(16))
+        values = struct.pack('QI',self.quantity,self.expiration)
+        if eoslib.next(exchange,exchange,table_bids,keys,1,0,values) > 0:
+            bid = Ask()
+            bid.seller = OrderID(keys[:16])
+            bid.price = uint128.from_bytes(keys[16:])
+            result = struct.unpack('QI',values)
+            bid.quantity = result[0]
+            bid.expiration = result[1]
+            return bid
+        return None
+    def next_by_price(self):
+        keys = struct.pack('16s16s',bytes(16),self.price())
+        values = struct.pack('QI',self.quantity,self.expiration)
+        if eoslib.next(exchange,exchange,table_bids,keys,1,0,values) > 0:
+            bid = Ask()
+            bid.seller = OrderID(keys[:16])
+            bid.price = uint128.from_bytes(keys[16:])
+            result = struct.unpack('QI',values)
+            bid.quantity = result[0]
+            bid.expiration = result[1]
+            return bid
+        return None
+    def __repr__(self):
+        return str(self.__dict__)
+
 '''
          "seller" : "OrderID",
          "price" : "UInt128",
@@ -189,8 +260,21 @@ class Ask(Object):
         self.price = uint128(0)
         self.quantity = 0
         self.expiration = 0
+        
+    @property
+    def price(self):
+        return self._temperature
+
+    @price.setter
+    def price(self, value):
+        if value < -273:
+            raise ValueError("Temperature below -273 is not possible")
+        print("Setting value")
+        self._temperature = value
+        
     def __call__(self):
         return struct.pack('16s16sQI',self.seller(),self.price(),self.quantity,self.expiration)
+
     def store(self):
         keys = struct.pack('16s16s',self.seller(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -227,7 +311,7 @@ class Ask(Object):
             return ask
         else:
             return None
-    def front_by_id():
+    def front_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
         if eoslib.front(exchange,exchange,table_bids,keys,1,0,values) > 0:
@@ -239,7 +323,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
-    def back_by_id():
+    def back_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
         if eoslib.back(exchange,exchange,table_bids,keys,1,0,values) > 0:
@@ -275,6 +359,32 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    def next_by_order_id(self):
+        keys = struct.pack('16s16s',self.seller(),bytes(16))
+        values = struct.pack('QI',self.quantity,self.expiration)
+        if eoslib.next(exchange,exchange,table_bids,keys,1,0,values) > 0:
+            ask = Ask()
+            ask.seller = OrderID(keys[:16])
+            ask.price = uint128.from_bytes(keys[16:])
+            result = struct.unpack('QI',values)
+            ask.quantity = result[0]
+            ask.expiration = result[1]
+            return ask
+        return None
+    def next_by_price(self):
+        keys = struct.pack('16s16s',bytes(16),self.price())
+        values = struct.pack('QI',self.quantity,self.expiration)
+        if eoslib.next(exchange,exchange,table_bids,keys,1,0,values) > 0:
+            ask = Ask()
+            ask.seller = OrderID(keys[:16])
+            ask.price = uint128.from_bytes(keys[16:])
+            result = struct.unpack('QI',values)
+            ask.quantity = result[0]
+            ask.expiration = result[1]
+            return ask
+        return None
+    def __repr__(self):
+        return str(self.__dict__)
 '''
       "name" : "BuyOrder",
       "base" : "Bid",
@@ -302,19 +412,24 @@ class SellOrder(Ask):
     def __init__(self):
         self.msg = readMessage()
         self.seller = OrderID(self.msg[:16])
-        self.price = uint128.from_bytes(self.msg[16:32])
+        self.price = uint128(self.msg[16:32])
         self.quantity = int.from_bytes(self.msg[32:40],'little')
         self.expiration = int.from_bytes(self.msg[40:],'little')
         self.fill_or_kill = self.msg[-1]
+
+def min(a,b):
+    if a > b:
+        return uint64(b)
+    return uint64(a)
 
 #void match( Bid& bid, Account& buyer, Ask& ask, Account& seller )
 def match( bid, buyer, ask, seller ):
     print( "match bid: ", bid, "\nmatch ask: ", ask, "\n");
     
     ask_eos = ask.quantity * ask.price;
-    
+    print(type(ask.quantity),type(ask.price))
     fill_amount_eos = min( ask_eos, bid.quantity );
-    fill_amount_currency = 0;
+    fill_amount_currency = uint64(0);
     
     if fill_amount_eos == ask_eos: #/// complete fill of ask
         fill_amount_currency = ask.quantity;
@@ -499,14 +614,17 @@ def apply_eos_transfer():
         assert False, "notified on transfer that is not relevant to this exchange"
 
 def init():
-    n1 = uint128(1000)
-    n2 = uint128(99)
-    print(n1*n2)
-    print(n1/n2)
-    print(n1+n2)
-    print(n1-n2)
-    print(n2-n1)
+    ask = Ask.front_by_order_id()
+    print(ask)
+    while ask:
+        ask = ask.next_by_order_id()
+        print(ask)
 
+    bid = Bid.front_by_order_id()
+    print(bid)
+    while bid:
+        bid = bid.next_by_order_id()
+        print(bid)
 
 def apply(code,action):
     if code == exchange:
