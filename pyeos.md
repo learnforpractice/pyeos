@@ -257,7 +257,7 @@ Let's see how much balances inita has now.
 ```
 
 # let's play with dex
-before we can play with decentralized exchange,a few work need to be done.open test.py in [program/pyeos/contract/exchang](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange),edit wallet password and keys in test.init as show below,we have created in [the first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
+before we can play with decentralized exchange,a few work need to be done.open test.py in [program/pyeos/contract/exchang](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange),edit wallet password and keys in test.init as show below,we have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
 
 ```python
 def init():
@@ -275,7 +275,8 @@ now run the following commands:
 ```python
 from contract.exchange import test
 test.init();
-test.test()
+test.test_deposit()
+test.test_bs()
 ```
 
 for more information on what test does,read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange/test.py)

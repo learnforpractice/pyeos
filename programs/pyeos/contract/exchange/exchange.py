@@ -443,6 +443,8 @@ def apply_exchange_buy():
     assert bid.expiration > eoslib.now(), "order expired" 
     print( eoslib.n2s(bid.buyer.name), " created bid for ", order.quantity, " currency at price: ", order.price, "\n" )
     buyer_account = Account( bid.buyer.name )
+    buyer_account.eos_balance -= bid.quantity
+   
     print('buyer_account:',buyer_account)
     lowest_ask = Ask.front_by_price()
     if not lowest_ask:

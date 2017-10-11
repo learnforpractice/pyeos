@@ -28,7 +28,26 @@ def init():
     r = eosapi.set_contract('exchange','../../programs/pyeos/contract/exchange/exchange.py','../../contracts/exchange/exchange.abi',1)
     assert r
 
-def test():
+def test_deposit():
+    messages = [
+                [{"from":"currency","to":"inita","amount":1000},['currency','inita'],{'currency':'active'}],
+                [{"from":"currency","to":"initb","amount":1000},['currency','initb'],{'currency':'active'}],
+                [{"from":"inita","to":"exchange","amount":1000},['exchange','inita'],{'inita':'active'}],
+                [{"from":"initb","to":"exchange","amount":1000},['exchange','initb'],{'initb':'active'}],
+                ]
+    for msg in messages:
+        args,scopes,permissions = msg
+        r = eosapi.push_message('currency','transfer',args,scopes,permissions)
+
+    messages = [
+                [ {"from":"inita","to":"exchange","amount":1000,"memo":"hello"},['exchange','inita'],{'inita':'active'}],
+                [ {"from":"initb","to":"exchange","amount":1000,"memo":"hello"},['exchange','initb'],{'initb':'active'}],
+                ]
+    for msg in messages:
+        args,scopes,permissions = msg
+        r = eosapi.push_message('eos','transfer',args,scopes,permissions)
+
+def test_bs():
 #from contract.exchange import test
 #test.test()
 
@@ -50,6 +69,7 @@ def test():
         args,scopes,permissions = msg
         r = eosapi.push_message('eos','transfer',args,scopes,permissions)
 
+def test_bs():
     args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 4,"expiration" : "2017-11-11T13:12:28","fill_or_kill":0}
     scopes = ['exchange','inita']
     permissions = {'inita':'active'}
