@@ -67,20 +67,22 @@ def toobject(bstr):
     return JsonStruct(bstr)
 
 def tobytes(ustr:str):
-    if type(ustr) == str:
+    if isinstance(ustr,str):
         ustr = bytes(ustr,'utf8')
     return ustr
+
 def now():
     return now2_()
+
 def get_info():
     info = get_info_()
     return JsonStruct(info)
 
 def get_block(id:str)->str:
-    if type(id) == int:
+    if isinstance(id,int):
         id = str(id)
         id = bytes(id,'utf8')
-    if type(id) == str:
+    if isinstance(id,str):
         id = bytes(id,'utf8')
     info = get_block_(id)
     return JsonStruct(info)
@@ -92,27 +94,27 @@ def get_account(name:str):
     return JsonStruct(result)
 
 def get_accounts(public_key:str)->List[str]:
-    if type(public_key) == str:
+    if isinstance(public_key,str):
         public_key = bytes(public_key,'utf8')
     return get_accounts_(public_key)
 
 def get_controlled_accounts(account_name:str)->List[str]:
-    if type(account_name) == str:
+    if isinstance(account_name,str):
         account_name = bytes(account_name,'utf8')
 
     return get_controlled_accounts_(account_name);
 
 def create_account(creator:str,newaccount:str,owner_key:str,active_key:str,sign=True)->str:
-    if type(creator) == str:
+    if isinstance(creator,str):
         creator = bytes(creator,'utf8')
     
-    if type(newaccount) == str:
+    if isinstance(newaccount,str):
         newaccount = bytes(newaccount,'utf8')
     
-    if type(owner_key) == str:
+    if isinstance(owner_key,str):
         owner_key = bytes(owner_key,'utf8')
     
-    if type(active_key) == str:
+    if isinstance(active_key,str):
         active_key = bytes(active_key,'utf8')
     if sign:
         sign = 1
@@ -137,7 +139,7 @@ def get_public_key(priv_key):
 
 def get_transaction(id:str)->str:
     cdef string result
-    if type(id) == int:
+    if isinstance(id,int):
         id = str(id)
     id = tobytes(id)
     if 0 == get_transaction_(id,result):

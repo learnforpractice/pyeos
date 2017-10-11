@@ -46,6 +46,12 @@
       "fields" : {
          "fill_or_kill" : "UInt8"
        }
+    },{
+      "name" : "Id",
+      "fields" : {
+        "name"  : "AccountName",
+         "n" : "UInt64"
+       }
     }
   ],
   "actions": [{
@@ -60,6 +66,9 @@
     },{
       "action": "cancelsell",
       "type": "OrderID"
+    },{
+      "action": "dotest",
+      "type": "Id"
     }
   ],
   "tables": [

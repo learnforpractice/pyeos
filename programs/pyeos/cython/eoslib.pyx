@@ -34,9 +34,9 @@ def now():
     return now_()
 
 cdef uint64_t toname(name):
-    if type(name) == int:
+    if isinstance(name,int):
         return name
-    if type(name) == str:
+    if isinstance(name,str):
         name = bytes(name,'utf8')
     return string_to_uint64_(name)
 

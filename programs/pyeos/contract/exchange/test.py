@@ -46,11 +46,6 @@ def test():
     for msg in messages:
         args,scopes,permissions = msg
         r = eosapi.push_message('eos','transfer',args,scopes,permissions)
-    expiration = '2017-10-10T09:56:52'
-    messages = [
-                [ {"from":"inita","to":"exchange","amount":1000,"memo":"hello"},['exchange','inita'],{'inita':'active'}],
-                [ {"from":"initb","to":"exchange","amount":1000,"memo":"hello"},['exchange','initb'],{'initb':'active'}],
-                ]
 
 def t2():
     args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 1,"expiration" : "2017-11-11T13:12:28","fill_or_kill":1}
