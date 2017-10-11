@@ -413,7 +413,8 @@ eosapi.get_table('inita','currency','account')
 ```
 
 # let's play with dex
-before we can play with decentralized exchange,a few work need to be done.open test.py in [program/pyeos/contract/exchang](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange),edit wallet password and keys in test.init as show below,we have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
+
+Before we can play with decentralized exchange,a few work need to be done. Open test.py in [program/pyeos/contract/exchang](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
 
 ```python
 def init():
@@ -426,7 +427,7 @@ def init():
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 ```
 
-now run the following commands to play with dex:
+Now run the following commands to play with dex:
 
 ```python
 from contract.exchange import test
@@ -434,6 +435,7 @@ test.init();
 test.test_deposit()
 test.test_bs()
 ```
+
 You can always check the result with the following command
 
 ```
