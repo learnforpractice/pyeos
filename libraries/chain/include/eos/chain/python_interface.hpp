@@ -4,6 +4,7 @@
 #include <eos/chain/message_handling_contexts.hpp>
 #include <Runtime/Runtime.h>
 #include "IR/Module.h"
+#include <Python.h>
 
 namespace eos { namespace chain {
 
@@ -66,7 +67,4 @@ class python_interface {
 
 
 } } // eos::chain
-
-int python_load_with_exception_handing(std::string& name,std::string& code);
-int python_call_with_exception_handing(std::string& name,std::string& function,std::vector<uint64_t> args);
 

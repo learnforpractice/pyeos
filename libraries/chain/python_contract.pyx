@@ -2,28 +2,16 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 import imp
 import logging as log
-cdef extern from "":
-    ctypedef unsigned long long uint64_t
-    int PyGILState_GetThisThreadState() nogil
-    int PyGILState_Check() nogil
-    ctypedef int PyGILState_STATE
-    PyGILState_STATE PyGILState_Ensure() nogil 
-    void PyGILState_Release(PyGILState_STATE state) nogil
-
-cdef extern from "eos/chain/python_interface.hpp":
-    int python_load_with_exception_handing(string& name,string& code);
-    int python_call_with_exception_handing(string& name,string& function,vector[uint64_t] args)
 
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(string& str)
-    
+    ctypedef unsigned long long uint64_t
 #from typing import Dict, Tuple, List
 
 code_map = {}
 
-cdef extern int python_load_with_no_gil(string& name,string& code):
+cdef extern int python_load(string& name,string& code):
     global code_map
-    cdef PyGILState_STATE state
     cdef int ret
     ret = 0
     module = code_map.get(name)
@@ -39,10 +27,7 @@ cdef extern int python_load_with_no_gil(string& name,string& code):
             ret = -1
     return ret;
 
-cdef extern int python_load(string& name,string& code) with gil:
-    return python_load_with_exception_handing(name,code)
-
-cdef extern python_call_no_gil(string& name,string& function,vector[uint64_t] args):
+cdef extern python_call(string& name,string& function,vector[uint64_t] args):
     global code_map
     cdef int ret
     ret = -1
@@ -56,7 +41,4 @@ cdef extern python_call_no_gil(string& name,string& function,vector[uint64_t] ar
     except Exception as e:
         log.exception(e)
     return ret
-
-cdef extern int python_call(string& name,string& function,vector[uint64_t] args) except+ with gil:
-    return python_call_with_exception_handing(name,function,args)
 
