@@ -13,10 +13,12 @@ def init():
     
     key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
-    r = eosapi.create_account('inita', 'currency',key1,key2)
-    assert r
-    r = eosapi.create_account('inita', 'exchange',key1,key2)
-    assert r
+    if not eosapi.get_account('currency'):
+        r = eosapi.create_account('inita', 'currency',key1,key2)
+        assert r
+    if not eosapi.get_account('exchange'):
+        r = eosapi.create_account('inita', 'exchange',key1,key2)
+        assert r
     num = eosapi.get_info().head_block_num
     while num == eosapi.get_info().head_block_num: # wait for finish of create account
         time.sleep(0.2)
@@ -46,6 +48,16 @@ def test():
     for msg in messages:
         args,scopes,permissions = msg
         r = eosapi.push_message('eos','transfer',args,scopes,permissions)
+
+    args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 4,"expiration" : "2017-11-11T13:12:28","fill_or_kill":0}
+    scopes = ['exchange','inita']
+    permissions = {'inita':'active'}
+    r = eosapi.push_message('exchange','buy',args,scopes,permissions)
+    
+    args = {"seller" : {"name":"initb","id":1},"price" : "2","quantity" : 2,"expiration" : "2017-11-11T13:12:28","fill_or_kill":0}
+    scopes = ['exchange','inita']
+    permissions = {'initb':'active'}
+    r = eosapi.push_message('exchange','sell',args,scopes,permissions)
 
 def t2():
     args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 1,"expiration" : "2017-11-11T13:12:28","fill_or_kill":1}

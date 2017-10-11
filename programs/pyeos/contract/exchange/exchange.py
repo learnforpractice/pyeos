@@ -14,6 +14,11 @@ table_bids = N(b'bids')
 
 Name = eoslib.n2s
 
+def min(a,b):
+    if a > b:
+        return uint64(b)
+    return uint64(a)
+
 class uint64(int):
     
     def __new__(cls, value):
@@ -383,12 +388,12 @@ class Ask(Object):
 '''
 class BuyOrder(Bid):
     def __init__(self):
-        self.msg = readMessage()
-        self.buyer = OrderID(self.msg[:16])
-        self.price = uint128(self.msg[16:32])
-        self.quantity = uint64(self.msg[32:40])
-        self.expiration = uint64(self.msg[40:])
-        self.fill_or_kill = self.msg[-1]
+        msg = readMessage()
+        self.buyer = OrderID(msg[:16])
+        self.price = uint128(msg[16:32]) # eos tokens per currency
+        self.quantity = uint64(msg[32:40]) #buy currency amount
+        self.expiration = uint64(msg[40:])
+        self.fill_or_kill = msg[-1]
 
 '''
       "name" : "SellOrder",
@@ -399,17 +404,12 @@ class BuyOrder(Bid):
 '''
 class SellOrder(Ask):
     def __init__(self):
-        self.msg = readMessage()
-        self.seller = OrderID(self.msg[:16])
-        self.price = uint128(self.msg[16:32])
-        self.quantity = uint64(self.msg[32:40])
-        self.expiration = uint64(self.msg[40:])
-        self.fill_or_kill = self.msg[-1]
-
-def min(a,b):
-    if a > b:
-        return uint64(b)
-    return uint64(a)
+        msg = readMessage()
+        self.seller = OrderID(msg[:16])
+        self.price = uint128(msg[16:32]) # eos tokens per currency
+        self.quantity = uint64(msg[32:40]) #sell currency amount
+        self.expiration = uint64(msg[40:])
+        self.fill_or_kill = msg[-1]
 
 #void match( Bid& bid, Account& buyer, Ask& ask, Account& seller )
 def match( bid, buyer, ask, seller ):
@@ -434,6 +434,12 @@ def match( bid, buyer, ask, seller ):
     ask.quantity -= fill_amount_currency;
     buyer.currency_balance += fill_amount_currency;
 
+    print('+'*64)
+    print(fill_amount_eos,fill_amount_currency)
+    print(bid,buyer)
+    print(ask,seller)
+    print('+'*64)
+    
 def apply_exchange_buy():
     order = BuyOrder()
     bid = order
@@ -461,7 +467,7 @@ def apply_exchange_buy():
     while lowest_ask.price <= bid.price :
        print( "lowest ask <= bid.price\n",lowest_ask.price, bid.price);
        match( bid, buyer_account, lowest_ask, seller_account );
-    
+
        if lowest_ask.quantity == 0:
           seller_account.open_orders-=1;
           seller_account.save();
