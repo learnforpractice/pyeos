@@ -16,6 +16,7 @@ def init():
     if not eosapi.get_account('currency'):
         r = eosapi.create_account('inita', 'currency',key1,key2)
         assert r
+
     if not eosapi.get_account('exchange'):
         r = eosapi.create_account('inita', 'exchange',key1,key2)
         assert r
@@ -58,7 +59,9 @@ def test():
     scopes = ['exchange','inita']
     permissions = {'initb':'active'}
     r = eosapi.push_message('exchange','sell',args,scopes,permissions)
-
+    r = eosapi.get_table('exchange','exchange','account')
+    print(r)
+    
 def t2():
     args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 1,"expiration" : "2017-11-11T13:12:28","fill_or_kill":1}
     scopes = ['exchange','inita']

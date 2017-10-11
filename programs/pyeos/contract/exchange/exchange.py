@@ -433,12 +433,6 @@ def match( bid, buyer, ask, seller ):
     
     ask.quantity -= fill_amount_currency;
     buyer.currency_balance += fill_amount_currency;
-
-    print('+'*64)
-    print(fill_amount_eos,fill_amount_currency)
-    print(bid,buyer)
-    print(ask,seller)
-    print('+'*64)
     
 def apply_exchange_buy():
     order = BuyOrder()

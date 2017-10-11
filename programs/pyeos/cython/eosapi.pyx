@@ -91,7 +91,9 @@ def get_account(name:str):
     if isinstance(name,str):
         name = bytes(name,'utf8')
     result = get_account_(name)
-    return JsonStruct(result)
+    if result:
+        return JsonStruct(result)
+    return None
 
 def get_accounts(public_key:str)->List[str]:
     if isinstance(public_key,str):

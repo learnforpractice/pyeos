@@ -117,13 +117,15 @@ PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
        sign_transaction(trx);
     }
 
-    auto v = fc::variant(trx);
-// ilog(fc::json::to_string( trx ));
-
    auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   auto result = python::json::to_string(rw.push_transaction(v.get_object()));
+
+   PyThreadState* state = PyEval_SaveThread();
+   auto result = rw.push_transaction(fc::variant(trx).get_object());
+   PyEval_RestoreThread(state);
+
+   auto js = python::json::to_string(result);
 // ilog(result);
-   return result;
+   return js;
 
 }
 
