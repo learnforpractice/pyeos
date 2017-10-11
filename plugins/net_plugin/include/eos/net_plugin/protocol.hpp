@@ -1,6 +1,7 @@
 #pragma once
 #include <eos/chain/block.hpp>
 #include <eos/chain/types.hpp>
+#include <chrono>
 
 namespace eos {
    using namespace chain;
@@ -19,20 +20,40 @@ namespace eos {
       string          agent;
    };
 
-   struct notice_message {
-      vector<transaction_id_type> known_trx;
-      vector<block_id_type>       known_blocks;
+   typedef std::chrono::system_clock::duration::rep tstamp;
+   typedef int32_t                                  tdist;
+
+   static_assert(sizeof(std::chrono::system_clock::duration::rep) >= 8, "system_clock is expected to be at least 64 bits");
+
+   struct time_message {
+              tstamp  org;       //!< origin timestamp
+              tstamp  rec;       //!< receive timestamp
+              tstamp  xmt;       //!< transmit timestamp
+      mutable tstamp  dst;       //!< destination timestamp
    };
 
+  using ordered_txn_ids = vector<transaction_id_type>;
+  using ordered_blk_ids = vector<block_id_type>;
+
+  struct notice_message {
+      ordered_txn_ids known_trx;
+      ordered_blk_ids known_blocks;
+   };
 
    struct request_message {
-      vector<transaction_id_type> req_trx;
-      vector<block_id_type>       req_blocks;
+      ordered_txn_ids req_trx;
+      ordered_blk_ids req_blocks;
    };
 
+  struct thread_ids {
+    ordered_txn_ids gen_trx; // is this necessary to send?
+    ordered_txn_ids user_trx;
+  };
+
+  using cycle_ids = vector<thread_ids>;
    struct block_summary_message {
-      signed_block                block;
-      vector<transaction_id_type> trx_ids;
+      signed_block_header         block_header;
+      vector<cycle_ids>           trx_ids;
    };
 
    struct sync_request_message {
@@ -41,6 +62,7 @@ namespace eos {
    };
 
    using net_message = static_variant<handshake_message,
+                                      time_message,
                                       notice_message,
                                       request_message,
                                       sync_request_message,
@@ -58,7 +80,9 @@ FC_REFLECT( eos::handshake_message,
             (head_num)(head_id)
             (os)(agent) )
 
-FC_REFLECT( eos::block_summary_message, (block)(trx_ids) )
+FC_REFLECT( eos::time_message, (org)(rec)(xmt)(dst) )
+FC_REFLECT( eos::thread_ids, (gen_trx)(user_trx) );
+FC_REFLECT( eos::block_summary_message, (block_header)(trx_ids) )
 FC_REFLECT( eos::notice_message, (known_trx)(known_blocks) )
 FC_REFLECT( eos::request_message, (req_trx)(req_blocks) )
 FC_REFLECT( eos::sync_request_message, (start_block)(end_block) )
@@ -122,14 +146,14 @@ State:
         send of another request.
 
      Once you have caught up to all peers, notify all peers of your head block so they know that you
-     know the LIB and will start sending you real time tranasctions
+     know the LIB and will start sending you real time transactions
 
 parallel fetches, request in groups
 
 
 only relay transactions to peers if we don't already know about it.
 
-send a notification rather than a transaaction if the txn is > 3mtu size.
+send a notification rather than a transaction if the txn is > 3mtu size.
 
 
 

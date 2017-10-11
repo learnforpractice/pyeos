@@ -8,7 +8,7 @@ if [ $ARCH == "ubuntu" ]; then
                          libbz2-dev libssl-dev libgmp3-dev \
                          autotools-dev build-essential \
                          libbz2-dev libicu-dev python-dev \
-                         autoconf libtool git
+                         autoconf libtool git curl
     OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     OPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
 
@@ -60,7 +60,7 @@ if [ $ARCH == "ubuntu" ]; then
 fi
 
 if [ $ARCH == "darwin" ]; then
-    DEPS="git automake libtool boost openssl llvm@4 gmp wget cmake"
+    DEPS="git automake libtool boost openssl llvm@4 gmp wget cmake gettext"
     brew update
     brew install --force $DEPS
     brew unlink $DEPS && brew link --force $DEPS

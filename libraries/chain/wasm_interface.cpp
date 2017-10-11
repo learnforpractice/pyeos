@@ -19,6 +19,24 @@ namespace eos { namespace chain {
    using namespace Runtime;
    typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
 
+   class wasm_memory
+   {
+   public:
+      explicit wasm_memory(wasm_interface& interface);
+      wasm_memory(const wasm_memory&) = delete;
+      wasm_memory(wasm_memory&&) = delete;
+      ~wasm_memory();
+      U32 sbrk(I32 num_bytes);
+   private:
+      static U32 limit_32bit_address(Uptr address);
+
+      static const U32 _max_memory = 1024 * 1024;
+      wasm_interface& _wasm_interface;
+      Uptr _num_pages;
+      const U32 _min_bytes;
+      U32 _num_bytes;
+   };
+
    wasm_interface::wasm_interface() {
    }
 
@@ -28,18 +46,23 @@ namespace eos { namespace chain {
    const int CHECKTIME_LIMIT = 18000;
 #endif
 
-DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
-   auto dur = wasm_interface::get().current_execution_time();
-   if (dur > CHECKTIME_LIMIT) {
-      wlog("checktime called ${d}", ("d", dur));
-      throw checktime_exceeded();
+   void checktime(int64_t duration)
+   {
+      if (duration > CHECKTIME_LIMIT) {
+         wlog("checktime called ${d}", ("d", duration));
+         throw checktime_exceeded();
+      }
    }
+
+DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
+   checktime(wasm_interface::get().current_execution_time());
 }
+
    template <typename Function, typename KeyType, int numberOfKeys>
    int32_t validate(int32_t valueptr, int32_t valuelen, Function func) {
-      
+
       static const uint32_t keylen = numberOfKeys*sizeof(KeyType);
-      
+
       FC_ASSERT( valuelen >= keylen, "insufficient data passed" );
 
       auto& wasm  = wasm_interface::get();
@@ -53,6 +76,21 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
 
       return func(wasm.current_apply_context, keys, value, valuelen);
    }
+
+   template <typename Function>
+   int32_t validate_str(int32_t keyptr, int32_t keylen, int32_t valueptr, int32_t valuelen, Function func) {
+
+      auto& wasm  = wasm_interface::get();
+      FC_ASSERT( wasm.current_apply_context, "no apply context found" );
+
+      char* key   = memoryArrayPtr<char>( wasm.current_memory, keyptr, keylen );
+      char* value = memoryArrayPtr<char>( wasm.current_memory, valueptr, valuelen );
+
+      std::string keys(key, keylen);
+
+      return func(wasm.current_apply_context, &keys, value, valuelen);
+   }
+
 
 #define READ_RECORD(READFUNC, INDEX, SCOPE) \
    auto lambda = [&](apply_context* ctx, INDEX::value_type::key_type* keys, char *data, uint32_t datalen) -> int32_t { \
@@ -104,7 +142,7 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
 
 DEFINE_RECORD_UPDATE_FUNCTIONS(i64, key_value_index);
 DEFINE_RECORD_READ_FUNCTIONS(i64,,key_value_index, by_scope_primary);
-
+      
 DEFINE_RECORD_UPDATE_FUNCTIONS(i128i128, key128x128_value_index);
 DEFINE_RECORD_READ_FUNCTIONS(i128i128, primary_,   key128x128_value_index, by_scope_primary);
 DEFINE_RECORD_READ_FUNCTIONS(i128i128, secondary_, key128x128_value_index, by_scope_secondary);
@@ -113,6 +151,55 @@ DEFINE_RECORD_UPDATE_FUNCTIONS(i64i64i64, key64x64x64_value_index);
 DEFINE_RECORD_READ_FUNCTIONS(i64i64i64, primary_,   key64x64x64_value_index, by_scope_primary);
 DEFINE_RECORD_READ_FUNCTIONS(i64i64i64, secondary_, key64x64x64_value_index, by_scope_secondary);
 DEFINE_RECORD_READ_FUNCTIONS(i64i64i64, tertiary_,  key64x64x64_value_index, by_scope_tertiary);
+
+
+#define UPDATE_RECORD_STR(FUNCTION) \
+  auto lambda = [&](apply_context* ctx, std::string* keys, char *data, uint32_t datalen) -> int32_t { \
+    return ctx->FUNCTION<keystr_value_object>( Name(scope), Name(ctx->code.value), Name(table), keys, data, datalen); \
+  }; \
+  return validate_str<decltype(lambda)>(keyptr, keylen, valueptr, valuelen, lambda);
+
+#define READ_RECORD_STR(FUNCTION) \
+  auto lambda = [&](apply_context* ctx, std::string* keys, char *data, uint32_t datalen) -> int32_t { \
+    auto res = ctx->FUNCTION<keystr_value_index, by_scope_primary>( Name(scope), Name(code), Name(table), keys, data, datalen); \
+    return res; \
+  }; \
+  return validate_str<decltype(lambda)>(keyptr, keylen, valueptr, valuelen, lambda);
+
+DEFINE_INTRINSIC_FUNCTION6(env,store_str,store_str,i32,i64,scope,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  UPDATE_RECORD_STR(store_record)
+}
+DEFINE_INTRINSIC_FUNCTION6(env,update_str,update_str,i32,i64,scope,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  UPDATE_RECORD_STR(update_record)
+}
+DEFINE_INTRINSIC_FUNCTION4(env,remove_str,remove_str,i32,i64,scope,i64,table,i32,keyptr,i32,keylen) {
+  int32_t valueptr=0, valuelen=0;
+  UPDATE_RECORD_STR(remove_record)
+}
+
+DEFINE_INTRINSIC_FUNCTION7(env,load_str,load_str,i32,i64,scope,i64,code,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  READ_RECORD_STR(load_record)
+}
+DEFINE_INTRINSIC_FUNCTION5(env,front_str,front_str,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) {
+  int32_t keyptr=0, keylen=0;
+  READ_RECORD_STR(front_record)
+}
+DEFINE_INTRINSIC_FUNCTION5(env,back_str,back_str,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) {
+  int32_t keyptr=0, keylen=0;
+  READ_RECORD_STR(back_record)
+}
+DEFINE_INTRINSIC_FUNCTION7(env,next_str,next_str,i32,i64,scope,i64,code,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  READ_RECORD_STR(next_record)
+}
+DEFINE_INTRINSIC_FUNCTION7(env,previous_str,previous_str,i32,i64,scope,i64,code,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  READ_RECORD_STR(previous_record)
+}
+DEFINE_INTRINSIC_FUNCTION7(env,lower_bound_str,lower_bound_str,i32,i64,scope,i64,code,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  READ_RECORD_STR(lower_bound_record)
+}
+DEFINE_INTRINSIC_FUNCTION7(env,upper_bound_str,upper_bound_str,i32,i64,scope,i64,code,i64,table,i32,keyptr,i32,keylen,i32,valueptr,i32,valuelen) {
+  READ_RECORD_STR(upper_bound_record)
+}
 
 DEFINE_INTRINSIC_FUNCTION3(env, assert_sha256,assert_sha256,none,i32,dataptr,i32,datalen,i32,hash) {
    FC_ASSERT( datalen > 0 );
@@ -203,6 +290,13 @@ DEFINE_INTRINSIC_FUNCTION1(env,i64_to_double,i64_to_double,i64,i64,a) {
    return *reinterpret_cast<uint64_t *>(&res);
 }
 
+DEFINE_INTRINSIC_FUNCTION2(env,getActiveProducers,getActiveProducers,none,i32,producers,i32,datalen) {
+   auto& wasm    = wasm_interface::get();
+   auto  mem     = wasm.current_memory;
+   types::AccountName* dst = memoryArrayPtr<types::AccountName>( mem, producers, datalen );
+   return wasm_interface::get().current_validate_context->get_active_producers(dst, datalen);
+}
+
 DEFINE_INTRINSIC_FUNCTION0(env,now,now,i32) {
    return wasm_interface::get().current_validate_context->controller.head_block_time().sec_since_epoch();
 }
@@ -248,6 +342,16 @@ DEFINE_INTRINSIC_FUNCTION3(env,memset,memset,i32,i32,rel_ptr,i32,value,i32,len) 
 
    memset( ptr, value, len );
    return rel_ptr;
+}
+
+DEFINE_INTRINSIC_FUNCTION1(env,sbrk,sbrk,i32,i32,num_bytes) {
+   auto& wasm          = wasm_interface::get();
+
+   FC_ASSERT( num_bytes >= 0, "sbrk can only allocate memory, not reduce" );
+   FC_ASSERT( wasm.current_memory_management != nullptr, "sbrk can only be called during the scope of wasm_interface::vm_call" );
+   U32 previous_bytes_allocated = wasm.current_memory_management->sbrk(num_bytes);
+   checktime(wasm.current_execution_time());
+   return previous_bytes_allocated;
 }
 
 
@@ -417,6 +521,15 @@ DEFINE_INTRINSIC_FUNCTION1(env,prints,prints,none,i32,charptr) {
   std::cerr << std::string( str, strnlen(str, wasm.current_state->mem_end-charptr) );
 }
 
+DEFINE_INTRINSIC_FUNCTION2(env,printhex,printhex,none,i32,data,i32,datalen) {
+  auto& wasm  = wasm_interface::get();
+  auto  mem   = wasm.current_memory;
+  
+  char* buff = memoryArrayPtr<char>(mem, data, datalen);
+  std::cerr << fc::to_hex(buff, datalen) << std::endl;
+}
+
+
 DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
 }
 
@@ -472,6 +585,7 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
 
    void  wasm_interface::vm_call( const char* name ) {
    try {
+      std::unique_ptr<wasm_memory> wasm_memory_mgmt;
       try {
          /*
          name += "_" + std::string( current_validate_context->msg.code ) + "_";
@@ -497,8 +611,11 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
          memcpy( memstart, state.init_memory.data(), state.mem_end);
 
          checktimeStart = fc::time_point::now();
+         wasm_memory_mgmt.reset(new wasm_memory(*this));
 
          Runtime::invokeFunction(call,args);
+         wasm_memory_mgmt.reset();
+         checktime(current_execution_time());
       } catch( const Runtime::Exception& e ) {
           edump((std::string(describeExceptionCause(e.cause))));
           edump((e.callStack));
@@ -613,11 +730,14 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
             
           char* memstart = &memoryRef<char>( current_memory, 0 );
          // state.init_memory.resize(1<<16); /// TODO: actually get memory size
-          for( uint32_t i = 0; i < 10000; ++i )
-              if( memstart[i] ) {
-                   state.mem_end = i+1;
-                   //std::cerr << (char)memstart[i];
-              }
+          const auto allocated_memory = Runtime::getDefaultMemorySize(state.instance);
+          for( uint64_t i = 0; i < allocated_memory; ++i )
+          {
+             if( memstart[i] )
+             {
+                state.mem_end = i+1;
+             }
+          }
           //ilog( "INIT MEMORY: ${size}", ("size", state.mem_end) );
 
           state.init_memory.resize(state.mem_end);
@@ -647,6 +767,56 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
       current_module = state.instance;
       current_memory = getDefaultMemory( current_module );
       current_state  = &state;
+   }
+
+   wasm_memory::wasm_memory(wasm_interface& interface)
+   : _wasm_interface(interface)
+   , _num_pages(Runtime::getMemoryNumPages(interface.current_memory))
+   , _min_bytes(limit_32bit_address(_num_pages << numBytesPerPageLog2))
+   {
+      _wasm_interface.current_memory_management = this;
+      _num_bytes = _min_bytes;
+   }
+
+   wasm_memory::~wasm_memory()
+   {
+      if (_num_bytes > _min_bytes)
+         sbrk((I32)_min_bytes - (I32)_num_bytes);
+
+      _wasm_interface.current_memory_management = nullptr;
+   }
+
+   U32 wasm_memory::sbrk(I32 num_bytes)
+   {
+      const U32 previous_num_bytes = _num_bytes;
+      if(Runtime::getMemoryNumPages(_wasm_interface.current_memory) != _num_pages)
+         throw eos::chain::page_memory_error();
+
+      // Round the absolute value of num_bytes to an alignment boundary, and ensure it won't allocate too much or too little memory.
+      num_bytes = (num_bytes + 7) & ~7;
+      if(num_bytes > 0 && previous_num_bytes > _max_memory - num_bytes)
+         throw eos::chain::page_memory_error();
+      else if(num_bytes < 0 && previous_num_bytes < _min_bytes - num_bytes)
+         throw eos::chain::page_memory_error();
+
+      // Update the number of bytes allocated, and compute the number of pages needed for it.
+      _num_bytes += num_bytes;
+      const Uptr num_desired_pages = (_num_bytes + IR::numBytesPerPage - 1) >> IR::numBytesPerPageLog2;
+
+      // Grow or shrink the memory object to the desired number of pages.
+      if(num_desired_pages > _num_pages)
+         Runtime::growMemory(_wasm_interface.current_memory, num_desired_pages - _num_pages);
+      else if(num_desired_pages < _num_pages)
+         Runtime::shrinkMemory(_wasm_interface.current_memory, _num_pages - num_desired_pages);
+
+      _num_pages = num_desired_pages;
+
+      return previous_num_bytes;
+   }
+
+   U32 wasm_memory::limit_32bit_address(Uptr address)
+   {
+      return (U32)(address > UINT32_MAX ? UINT32_MAX : address);
    }
 
 } }

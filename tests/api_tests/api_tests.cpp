@@ -35,6 +35,7 @@
 #include <test_api/test_api.hpp>
 
 #include "memory_test/memory_test.wast.hpp"
+#include "extended_memory_test/extended_memory_test.wast.hpp"
 
 FC_REFLECT( dummy_message, (a)(b)(c) );
 FC_REFLECT( u128_msg, (values) );
@@ -301,15 +302,25 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
 
       CAPTURE(cerr, CALL_TEST_FUNCTION( TEST_METHOD("test_print", "test_printn"), {}, {}) );
       BOOST_CHECK_EQUAL( capture.size() , 8);
+
+      std::cout << capture[0] << std::endl
+                << capture[1] << std::endl
+                << capture[2] << std::endl
+                << capture[3] << std::endl
+                << capture[4] << std::endl
+                << capture[5] << std::endl
+                << capture[6] << std::endl
+                << capture[7] << std::endl;
+
       BOOST_CHECK_EQUAL( (
          capture[0] == "abcde" && 
          capture[1] == "ab.de"  && 
          capture[2] == "1q1q1q" &&
          capture[3] == "abcdefghijk" &&
          capture[4] == "abcdefghijkl" &&
-         capture[5] == "abcdefghijklm" &&
-         capture[6] == "abcdefghijklm" &&
-         capture[7] == "abcdefghijklm" 
+         capture[5] == "abcdefghijkl1" &&
+         capture[6] == "abcdefghijkl1" &&
+         capture[7] == "abcdefghijkl1" 
       ), true);
 
       //Test math
@@ -378,6 +389,9 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
       //Test db (i64i64i64)
       BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_db", "key_i64i64i64_general"), {}, {} ) == WASM_TEST_PASS, "test_db::key_i64i64i64_general()" );
 
+      //Test db (str)
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_db", "key_str_general"), {}, {} ) == WASM_TEST_PASS, "test_db::key_str_general()" );
+
       //Test crypto
       BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_crypto", "test_sha256"), {}, {} ) == WASM_TEST_PASS, "test_crypto::test_sha256()" );
       BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_crypto", "sha256_no_data"), {}, {} ),
@@ -407,11 +421,15 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
       BOOST_CHECK_EXCEPTION( CALL_TEST_FUNCTION( TEST_METHOD("test_transaction", "send_transaction_max"), {}, {} ),
          tx_resource_exhausted, is_tx_resource_exhausted );
 
+      auto& gpo = chain_db.get<global_property_object>();
+      std::vector<AccountName> prods(gpo.active_producers.size());
+      std::copy(gpo.active_producers.begin(), gpo.active_producers.end(), prods.begin());
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_chain", "test_activeprods"), {}, fc::raw::pack(prods) ) == WASM_TEST_PASS, "test_chain::test_activeprods()" );
 
 
 } FC_LOG_AND_RETHROW() }
 
-#define MEMORY_TEST_RUN(account_name)                                                                      \
+#define MEMORY_TEST_RUN(account_name, test_wast)                                                           \
       Make_Blockchain(chain);                                                                              \
       chain.produce_blocks(1);                                                                             \
       Make_Account(chain, account_name);                                                                   \
@@ -421,7 +439,7 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
       types::setcode handler;                                                                              \
       handler.account = #account_name;                                                                     \
                                                                                                            \
-      auto wasm = assemble_wast( memory_test_wast );                                                       \
+      auto wasm = assemble_wast( test_wast );                                                              \
       handler.code.resize(wasm.size());                                                                    \
       memcpy( handler.code.data(), wasm.data(), wasm.size() );                                             \
                                                                                                            \
@@ -451,27 +469,27 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
          chain.produce_blocks(1);                                                                          \
       }
 
-#define MEMORY_TEST_CASE(test_case_name, account_name)                                                     \
+#define MEMORY_TEST_CASE(test_case_name, account_name, test_wast)                                          \
 BOOST_FIXTURE_TEST_CASE(test_case_name, testing_fixture)                                                   \
 { try{                                                                                                     \
-   MEMORY_TEST_RUN(account_name);                                                                          \
+   MEMORY_TEST_RUN(account_name, test_wast);                                                               \
 } FC_LOG_AND_RETHROW() }
 
 //Test wasm memory allocation
-MEMORY_TEST_CASE(test_memory, testmemory)
+MEMORY_TEST_CASE(test_memory, testmemory, memory_test_wast)
 
 //Test wasm memory allocation at boundaries
-MEMORY_TEST_CASE(test_memory_bounds, testbounds)
+MEMORY_TEST_CASE(test_memory_bounds, testbounds, memory_test_wast)
 
 //Test intrinsic provided memset and memcpy
-MEMORY_TEST_CASE(test_memset_memcpy, testmemset)
+MEMORY_TEST_CASE(test_memset_memcpy, testmemset, memory_test_wast)
 
 //Test memcpy overlap at start of destination
 BOOST_FIXTURE_TEST_CASE(test_memcpy_overlap_start, testing_fixture)
 {
    try {
-      MEMORY_TEST_RUN(testolstart);
-      BOOST_FAIL("memcpy should have thrown assert acception");
+      MEMORY_TEST_RUN(testolstart, memory_test_wast);
+      BOOST_FAIL("memcpy should have thrown assert exception");
    }
    catch(fc::assert_exception& ex)
    {
@@ -483,12 +501,44 @@ BOOST_FIXTURE_TEST_CASE(test_memcpy_overlap_start, testing_fixture)
 BOOST_FIXTURE_TEST_CASE(test_memcpy_overlap_end, testing_fixture)
 {
    try {
-      MEMORY_TEST_RUN(testolend);
-      BOOST_FAIL("memcpy should have thrown assert acception");
+      MEMORY_TEST_RUN(testolend, memory_test_wast);
+      BOOST_FAIL("memcpy should have thrown assert exception");
    }
    catch(fc::assert_exception& ex)
    {
       BOOST_REQUIRE(ex.to_detail_string().find("overlap of memory range is undefined") != std::string::npos);
+   }
+}
+
+//Test logic for memory.hpp adding extra pages of memory
+MEMORY_TEST_CASE(test_extended_memory, testextmem, extended_memory_test_wast)
+
+//Test logic for extra pages of memory
+MEMORY_TEST_CASE(test_page_memory, testpagemem, extended_memory_test_wast)
+
+//Test logic for exceeding extra pages of memory
+BOOST_FIXTURE_TEST_CASE(test_page_memory_exceeded, testing_fixture)
+{
+   try {
+      MEMORY_TEST_RUN(testmemexc, extended_memory_test_wast);
+      BOOST_FAIL("sbrk should have thrown exception");
+   }
+   catch (eos::chain::page_memory_error& )
+   {
+      // expected behavior
+   }
+}
+
+//Test logic for preventing reducing page memory
+BOOST_FIXTURE_TEST_CASE(test_page_memory_negative_bytes, testing_fixture)
+{
+   try {
+      MEMORY_TEST_RUN(testnegbytes, extended_memory_test_wast);
+      BOOST_FAIL("sbrk should have thrown exception");
+   }
+   catch (fc::assert_exception& ex)
+   {
+      BOOST_REQUIRE(ex.to_detail_string().find("not reduce") != std::string::npos);
    }
 }
 
