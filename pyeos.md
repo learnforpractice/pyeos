@@ -286,7 +286,7 @@ info
 Here comes the most exciting moment. Let's push a python smart contract to the blockchain.You can find the source file in [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract) directory
 
 ```python
-r = eosapi.set_contract('currency','../../programs/pyeos/contract/exchange/currency.py','../../contracts/currency/currency.abi',1,True)
+r = eosapi.set_contract('currency','../../programs/pyeos/contract/currency/currency.py','../../contracts/currency/currency.abi',1,True)
 r
 ```
 
@@ -433,6 +433,7 @@ Now run the following commands to play with dex:
 from contract.exchange import test
 test.init();
 test.test_deposit()
+test.test_withdraw()
 test.test_bs()
 ```
 

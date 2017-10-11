@@ -133,9 +133,7 @@ PyObject* push_transaction( SignedTransaction& trx, bool sign ) {
       elog(boost::diagnostic_information(ex));
    }
 
-   ilog(" PyEval_RestoreThread begin");
    PyEval_RestoreThread(state);
-   ilog(" PyEval_RestoreThread end");
 
    if(success){
       return python::json::to_string(result);

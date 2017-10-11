@@ -47,27 +47,42 @@ def test_deposit():
         args,scopes,permissions = msg
         r = eosapi.push_message('eos','transfer',args,scopes,permissions)
 
-def test_bs():
-#from contract.exchange import test
-#test.test()
-
+def test_withdraw():
     messages = [
-                [{"from":"currency","to":"inita","amount":1000},['currency','inita'],{'currency':'active'}],
-                [{"from":"currency","to":"initb","amount":1000},['currency','initb'],{'currency':'active'}],
-                [{"from":"inita","to":"exchange","amount":1000},['exchange','inita'],{'inita':'active'}],
-                [{"from":"initb","to":"exchange","amount":1000},['exchange','initb'],{'initb':'active'}],
-                ]
-    for msg in messages:
-        args,scopes,permissions = msg
-        r = eosapi.push_message('currency','transfer',args,scopes,permissions)
-
-    messages = [
-                [ {"from":"inita","to":"exchange","amount":1000,"memo":"hello"},['exchange','inita'],{'inita':'active'}],
-                [ {"from":"initb","to":"exchange","amount":1000,"memo":"hello"},['exchange','initb'],{'initb':'active'}],
+                [   
+                    {"from":"exchange","to":"inita","amount":1,"memo":"hello"},
+                    ['exchange','inita'],
+                    {'exchange':'active','inita':'active'}
+                 ],
+                [
+                    {"from":"exchange","to":"initb","amount":1,"memo":"hello"},
+                    ['exchange','initb'],
+                    {'exchange':'active','initb':'active'}
+                 ],
                 ]
     for msg in messages:
         args,scopes,permissions = msg
         r = eosapi.push_message('eos','transfer',args,scopes,permissions)
+        
+    
+    messages = [
+                [{"from":"exchange","to":"inita","amount":1,"memo":"hello"},['exchange','inita'],{'exchange':'active','inita':'active'}],
+                [{"from":"exchange","to":"initb","amount":1,"memo":"hello"},['exchange','initb'],{'exchange':'active','initb':'active'}]
+               ]
+
+#r = eosapi.push_message('currency','transfer',{"from":"exchange","to":"initb","amount":1,"memo":"hello"},['exchange','initb'],{'exchange':'active','initb':'active'})
+
+    for msg in messages:
+        args,scopes,permissions = msg
+        r = eosapi.push_message('currency','transfer',args,scopes,permissions)
+
+def test_deadlock():
+#raise a "tx_missing_scope: missing required scope" exception
+    r = eosapi.push_message('currency','transfer',{"from":"currency","to":"inita","amount":1,"memo":"hello"},['inita'],{'currency':'active'})
+
+#raise a "tx_missing_auth: missing required authority" exception
+    r = eosapi.push_message('currency','transfer',{"from":"currency","to":"inita","amount":1,"memo":"hello"},['currency','inita'],{})
+
 
 def test_bs():
     args = {"buyer" : {"name":"inita","id":1},"price" : "2","quantity" : 4,"expiration" : "2017-11-11T13:12:28","fill_or_kill":0}

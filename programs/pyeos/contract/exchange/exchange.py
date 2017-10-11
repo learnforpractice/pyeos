@@ -582,6 +582,7 @@ def apply_currency_transfer():
         account.currency_balance += transfer.amount
         account.save()
     elif transfer.from_ == exchange:
+        requireAuth(transfer.to_); # require the receiver of funds (account owner) to authorize this transfer
         account = Account(transfer.to_)
         account.currency_balance -= transfer.amount
         account.save()
