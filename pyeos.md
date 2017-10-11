@@ -21,6 +21,13 @@ export PYTHON_LIB="~/anaconda/lib/libpython3.6m.dylib"
 
 ```
 
+and in order to fix "fatal error: 'libintl.h' file not found",do the following command,change the gettext version as you want.
+
+```bash
+ln -s /usr/local/Cellar/gettext/0.19.8.1/include/libintl.h /usr/local/include/.
+ln -s /usr/local/Cellar/gettext/0.19.8.1/lib/libintl.* /usr/local/lib/
+```
+
 Also you shall have cython installed. If you don't,install it by the following command:
 
 ```
