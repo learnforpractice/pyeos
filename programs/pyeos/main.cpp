@@ -85,6 +85,7 @@ int main(int argc, char** argv)
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
+   PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
 
    PyThreadState* state = PyEval_SaveThread();

@@ -66,11 +66,22 @@ def test():
     import mnist_loader
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     training_data = list(training_data)
-    for d in training_data[:100]:
+    txids = []
+    counter = 0
+    for d in training_data[:1]:
         data = pickle.dumps([d,])
         data = zlib.compress(data)
     #    print(data)
         r = eosapi.push_message('mnist','train',data,['mnist'],{'mnist':'active'},rawargs=True)
+        if r.transaction_id in txids:
+            raise 'dumplicate ts id'
+        txids.append(r.transaction_id)
+        counter += 1
+        if counter % 50 == 0:
+            print(counter)
+            num = eosapi.get_info().head_block_num
+            while num == eosapi.get_info().head_block_num: # wait for finish of create account
+                time.sleep(0.2)
 
 '''
 

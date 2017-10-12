@@ -15,13 +15,18 @@ and omits many desirable features.
 #### Libraries
 # Standard library
 import random
-import eoslib
 import struct
 import numpy as np
 import zlib
 import pickle
 
+import eoslib
+from eoslib import N
+
 # Third-party libraries
+
+mnist = N(b'mnist')
+table_network = N(b'network')
 
 class Network(object):
 
@@ -38,9 +43,61 @@ class Network(object):
         ever used in computing the outputs from later layers."""
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
-        self.weights = [np.random.randn(y, x)
-                        for x, y in zip(sizes[:-1], sizes[1:])]
+        if not self.load():
+            self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
+            self.weights = [np.random.randn(y, x)
+                            for x, y in zip(sizes[:-1], sizes[1:])]
+
+    def load(self):
+        sizeweights = 0
+        sizebiases = 0
+    
+        keys = struct.pack('Q',N('sizeweights'))
+        values = bytes(8)
+        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) > 0:
+            sizeweights = int.from_bytes(values,'little')
+        
+        if sizeweights <= 0:
+            return False
+    
+        keys = struct.pack('Q',N('sizebiases'))
+        values = bytes(8)
+        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) > 0:
+            sizebiases = int.from_bytes(values,'little')
+    
+        if sizebiases <= 0:
+            return False
+    
+        keys = struct.pack('Q',N('weights'))
+        values = bytes(sizeweights)
+        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
+            return False
+        self.weights = pickle.loads(values)
+    
+        keys = struct.pack('Q',N('biases'))
+        values = bytes(sizebiases)
+        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
+            return False
+        self.biases = pickle.loads(values)
+        return True
+
+    def save(self):
+        biases = pickle.dumps(self.biases)
+        weights = pickle.dumps(self.weights)
+
+        keys = struct.pack('Q',N('sizeweights'))
+        values = struct.pack('Q',len(weights))
+        eoslib.store(mnist,mnist,table_network,keys,0,values)
+
+        keys = struct.pack('Q',N('sizebiases'))
+        values = struct.pack('Q',len(biases))
+        eoslib.store(mnist,mnist,table_network,keys,0,values)
+
+        keys = struct.pack('Q',N('weights'))
+        eoslib.store(mnist,mnist,table_network,keys,0,weights)
+
+        keys = struct.pack('Q',N('biases'))
+        eoslib.store(mnist,mnist,table_network,keys,0,biases)
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
@@ -75,7 +132,8 @@ class Network(object):
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
                 print("Epoch {} : {} / {}".format(j,self.evaluate(test_data),n_test));
-
+        self.save()
+        
     def test(self,test_data):
         test_data = list(test_data)
         n_test = len(test_data)
@@ -180,6 +238,7 @@ def train():
 #    data1 = vectorized_result(data[1])
     
     net.SGD(data, 1, 1, 3.0, test_data=None)
+    print('training end...')
 
 def identify():
     n = np.argmax(self.feedforward(x))
@@ -190,10 +249,11 @@ def test():
 
 def init():
     pass
+    
 
 def apply(code,action):
     print(code,action)
-    if code == eoslib.N(b'mnist'):
+    if code == mnist:
         if action == eoslib.N(b'train'):
             train()
         elif action == eoslib.N(b'test'):

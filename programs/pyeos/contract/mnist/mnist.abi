@@ -25,6 +25,13 @@
       "fields": {
         "data": "Bytes",
       }
+    },{
+      "name": "network",
+      "base": "",
+      "fields": {
+        "name":"Name",
+        "data": "Bytes",
+      }
     }
   ],
   "actions": [{
@@ -33,10 +40,10 @@
     }
   ],
   "tables": [{
-      "table": "account",
-      "type": "account",
+      "table": "network",
+      "type": "network",
       "indextype": "i64",
-      "keynames" : ["account"],
+      "keynames" : ["name"],
       "keytypes" : ["Name"]
     }
   ]
