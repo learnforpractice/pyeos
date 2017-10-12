@@ -17,7 +17,6 @@
 using namespace std;
 
 int python_load(string& name,string& code);
-//int python_call(string& name,string& function,vector<int> args);
 int python_call(std::string &name, std::string &function, std::vector<uint64_t>  args);
 
 
@@ -57,8 +56,6 @@ namespace eos { namespace chain {
       }
       return *python;
    }
-
-
 
    struct RootResolver : Runtime::Resolver
    {
@@ -115,7 +112,19 @@ namespace eos { namespace chain {
       vector<uint64_t> args;
       string module_name = current_module;
       string function_name = "init";
-      python_call(module_name,function_name,args);
+      PyGILState_STATE save = PyGILState_Ensure();
+      try{
+         python_call(module_name,function_name,args);
+      }catch(fc::assert_exception& e){
+         elog(e.to_detail_string());
+      }catch(fc::exception& e){
+         elog(e.to_detail_string());
+      }catch(boost::exception& ex){
+         elog(boost::diagnostic_information(ex));
+      }catch(...){
+         elog("unhandled exception!!!");
+      }
+      PyGILState_Release(save);
    }
 
    void python_interface::validate( apply_context& c ) {
@@ -169,6 +178,7 @@ namespace eos { namespace chain {
       string code = string((const char*)recipient.code.data(),recipient.code.size());
       current_module = module_name;
       PyGILState_STATE save = PyGILState_Ensure();
+      ilog("python_interface::load");
       try{
          python_load(module_name,code);
       }catch(fc::assert_exception& e){
