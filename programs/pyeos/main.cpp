@@ -37,8 +37,11 @@ int eos_thread(int argc, char** argv) {
       app().register_plugin<wallet_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<py_plugin>();
-      if(!app().initialize<py_plugin,chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin>(argc, argv))
+      if(!app().initialize<py_plugin,chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin>(argc, argv)){
+         init_finished = true;
+         shutdown_finished = true;
          return -1;
+      }
       app().startup();
       init_finished = true;
       app().exec();
@@ -90,6 +93,10 @@ int main(int argc, char** argv)
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
    PyEval_RestoreThread(state);
+   if (shutdown_finished){
+      Py_Finalize();
+      return 0;
+   }
 
    PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos');sys.path.append('../../programs/pyeos/contract')");
 //   PyRun_SimpleString("from initeos import *");
