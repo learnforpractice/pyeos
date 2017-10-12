@@ -29,6 +29,12 @@ cdef extern from "eoslib_.hpp":
     int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
     int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 
+    void unpack_(string& raw,string& out)
+
+def unpack(bytes bs):
+    cdef string out
+    unpack_(bs,out)
+    return out
 
 def now():
     return now_()

@@ -35,5 +35,6 @@ int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type
 int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen );
 
 
+void unpack_(string& raw,string& out);
 
 #endif /* EOSLIB__HPP_ */

@@ -1,10 +1,3 @@
-if not __name__ == '__main__':
-    import eosapi
-    import wallet
-    psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
-    wallet.open('mywallet')
-    wallet.unlock('mywallet',psw)
-
 def init():
     import time
     psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
@@ -20,9 +13,9 @@ def init():
     if not eosapi.get_account('exchange'):
         r = eosapi.create_account('inita', 'exchange',key1,key2)
         assert r
-    num = eosapi.get_info().head_block_num
-    while num == eosapi.get_info().head_block_num: # wait for finish of create account
-        time.sleep(0.2)
+        num = eosapi.get_info().head_block_num
+        while num == eosapi.get_info().head_block_num: # wait for finish of create account
+            time.sleep(0.2)
     r = eosapi.set_contract('currency','../../programs/pyeos/contract/currency/currency.py','../../contracts/currency/currency.abi',1)
     assert r
     r = eosapi.set_contract('exchange','../../programs/pyeos/contract/exchange/exchange.py','../../contracts/exchange/exchange.abi',1)

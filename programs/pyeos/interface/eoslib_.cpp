@@ -2,7 +2,7 @@
 #include <fc/exception/exception.hpp>
 #include <eos/chain/python_interface.hpp>
 #include <eos/chain/chain_controller.hpp>
-
+#include <fc/io/raw.hpp>
 using namespace eos;
 using namespace eos::chain;
 
@@ -17,6 +17,11 @@ uint64_t string_to_uint64_( string str ) {
 
 string uint64_to_string_( uint64_t n) {
    return Name(n).toString();
+}
+
+void unpack_(string& raw,string& out){
+   std::vector<char> v(raw.begin(),raw.end());
+   out = fc::raw::unpack<string>(v);
 }
 
 static inline apply_context& get_apply_ctx() {

@@ -30,7 +30,7 @@ cdef extern from "eosapi_.hpp":
     int get_transactions_(string& account_name,int skip_seq,int num_seq,string& result);
     
     object transfer_(string& sender,string& recipient,int amount,string memo,bool sign);
-    object push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign)
+    object push_message_(string& contract,string& action,string& args,vector[string] scopes,map[string,string]& permissions,bool sign,bool rawargs)
     object set_contract_(string& account,string& wastPath,string& abiPath,int vmtype,bool sign);
     int get_code_(string& name,string& wast,string& abi,string& code_hash,int& vm_type);
     int get_table_(string& scope,string& code,string& table,string& result);
@@ -67,6 +67,8 @@ def toobject(bstr):
     return JsonStruct(bstr)
 
 def tobytes(ustr:str):
+    if isinstance(ustr,bytes):
+        return ustr
     if isinstance(ustr,str):
         ustr = bytes(ustr,'utf8')
     return ustr
@@ -168,17 +170,19 @@ def transfer(sender:str,recipient:str,int amount,memo:str,sign=True)->str:
         return JsonStruct(result)
     return None
 
-def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign=True):
+def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:Dict,sign=True,rawargs=False):
     cdef string contract_
     cdef string action_
     cdef string args_
     cdef vector[string] scopes_;
     cdef map[string,string] permissions_;
     cdef int sign_
+    cdef int rawargs_
     contract_ = tobytes(contract)
     action_ = tobytes(action)
-    if not isinstance(args,str):
-        args = json.dumps(args)
+    if not rawargs:
+        if not isinstance(args,str):
+            args = json.dumps(args)
     args_ = tobytes(args)
     
     for scope in scopes:
@@ -193,8 +197,12 @@ def push_message(contract:str,action:str,args:str,scopes:List[str],permissions:D
         sign_ = 1
     else:
         sign_ = 0
+    if rawargs:
+        rawargs_ = 1
+    else:
+        rawargs_ = 0
 #    print(contract_,action_,args_,scopes_,permissions_,sign_)
-    result = push_message_(contract_,action_,args_,scopes_,permissions_,sign_)
+    result = push_message_(contract_,action_,args_,scopes_,permissions_,sign_,rawargs_)
     if result:
         return JsonStruct(result)
     return None

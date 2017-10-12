@@ -460,15 +460,19 @@ PyObject* transfer_(string& sender,string& recipient,int amount,string memo,bool
 	return py_new_none();
 }
 
-PyObject* push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign){
+PyObject* push_message_(string& contract,string& action,string& args,vector<string> scopes,map<string,string>& permissions,bool sign,bool rawargs){
    SignedTransaction trx;
-   ilog(args);
    try{
 //		ilog("Converting argument to binary...");
 		auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 		auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-
-		eos::chain_apis::read_only::abi_json_to_bin_params params = {contract,action,fc::json::from_string(args)};
+		eos::chain_apis::read_only::abi_json_to_bin_params params;
+		if (!rawargs){
+	      params = {contract,action,fc::json::from_string(args)};
+		}else{
+		   eos::types::Vector<char> v(args.begin(),args.end());
+         params = {contract,action,fc::variant(v)};
+		}
 		auto result = ro_api.abi_json_to_bin(params);
 
 		vector<types::AccountPermission> accountPermissions;
