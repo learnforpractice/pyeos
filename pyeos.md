@@ -2,13 +2,13 @@ Hack on Eos. Have fun!
 
 # What does this project for?
 
-Eos have the potential of been a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
+Eos have the potential of be a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
 Python is one of the most powerfull language on the earth. It's easy to use and easy to understand,also it's easy to interface with other program language such as c++,c etc. You can do a lot of things with python without paying too much time and too much energy. But for the reason of permarmance,Eos is writing in C++. So I think maybe I can rewrite Eos in python? At least I can improve the usability of Eos with python. So here comes pyeos.
 
 # What pyeos can do?
 
 1. call eos api with python
-2. write simple contract in python. You can find some demos in directory [contract](https://github.com/learnforpractice/eos/tree/master/programs/pyeos/contract). Anyone who want faster code can also code it in python first and then porting it to C++.
+2. write simple contract in python. You can find some demos in directory [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract). Anyone who want faster code can also code it in python first and then porting it to C++.
 
 
 # How to build
@@ -40,7 +40,7 @@ or
 pip install cython
 ```
 
-Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/eos#runanode)
+Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
 
 Currently only test with python 3.6 on macOS 10.12.6
 

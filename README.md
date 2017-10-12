@@ -1,5 +1,5 @@
 
-Please refer [pyeos.md](https://github.com/learnforpractice/eos/blob/master/pyeos.md) to see the difference between eos and pyeos
+Please refer [pyeos.md](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md) to see the difference between eos and pyeos
 
 ## EOS.IO - The Most Powerful Infrastructure for Decentralized Applications
 
