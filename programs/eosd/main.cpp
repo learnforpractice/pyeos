@@ -9,7 +9,6 @@
 #include <eos/account_history_api_plugin/account_history_api_plugin.hpp>
 #include <eos/wallet_api_plugin/wallet_api_plugin.hpp>
 
-
 #include <fc/log/logger_config.hpp>
 #include <fc/exception/exception.hpp>
 
@@ -25,7 +24,6 @@ int main(int argc, char** argv)
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
       app().register_plugin<account_history_api_plugin>();
-      if(!app().initialize<chain_plugin, http_plugin, net_plugin,account_history_api_plugin>(argc, argv))
       app().register_plugin<wallet_api_plugin>();
       if(!app().initialize<chain_plugin, http_plugin, net_plugin>(argc, argv))
          return -1;
