@@ -67,7 +67,9 @@ class Network(object):
     
         if sizebiases <= 0:
             return False
-    
+
+        print("+++++++++++++++++",sizeweights,sizebiases)
+        
         keys = struct.pack('Q',N('weights'))
         values = bytes(sizeweights)
         if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
@@ -79,6 +81,7 @@ class Network(object):
         if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
             return False
         self.biases = pickle.loads(values)
+        print('load success!')
         return True
 
     def save(self):
@@ -222,9 +225,6 @@ def vectorized_result(j):
     e[j] = 1.0
     return e
 
-
-net = Network([784, 30, 10])
-
 def train():
     eoslib.requireAuth(eoslib.N(b'mnist'))
     data = eoslib.readMessage()
@@ -236,7 +236,7 @@ def train():
 #    print(data)
 #    data0 = np.reshape(data[0], (784, 1))
 #    data1 = vectorized_result(data[1])
-    
+    net = Network([784, 30, 10])
     net.SGD(data, 1, 1, 3.0, test_data=None)
     print('training end...')
 
@@ -248,8 +248,36 @@ def test():
     pass
 
 def init():
-    pass
+    net = Network([784, 30, 10])
+    return
+
+def test():
+    net = Network([784, 30, 10])
+    biases = pickle.dumps(net.biases)
+    weights = pickle.dumps(net.weights)
+    print(len(weights))
+    keys = struct.pack('Q',N('sizeweights'))
+    values = struct.pack('Q',len(weights))
+    ret = eoslib.store(mnist,mnist,table_network,keys,0,values)
+    print('store return:',ret)
     
+    keys = struct.pack('Q',N('sizeweights'))
+    values = bytes(8)
+    eoslib.load(mnist,mnist,table_network,keys,0,0,values)
+    print('load return:',int.from_bytes(values,'little'))
+    
+    keys = struct.pack('Q',N('weights'))
+    ret = eoslib.store(mnist,mnist,table_network,keys,0,weights)
+    print('store return:',ret)
+
+    keys = struct.pack('Q',N('weights'))
+    values = bytes(len(weights))
+    ret = eoslib.load(mnist,mnist,table_network,keys,0,0,values)
+    print('load return:',ret)
+#    print(values)
+
+#    print(net.weights)
+#    print(net.biases)
 
 def apply(code,action):
     print(code,action)

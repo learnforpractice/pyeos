@@ -11,9 +11,11 @@ def init():
     import wallet
     import eosapi
 
+    '''
     psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
     wallet.open('mywallet')
     wallet.unlock('mywallet',psw)
+    '''
     
     key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
@@ -23,9 +25,15 @@ def init():
         num = eosapi.get_info().head_block_num
         while num == eosapi.get_info().head_block_num: # wait for finish of create account
             time.sleep(0.2)
-
+    return
     r = eosapi.set_contract('mnist','../../programs/pyeos/contract/mnist/mnist.py','../../programs/pyeos/contract/mnist/mnist.abi',1)
     assert r
+
+'''
+key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
+key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+r = eosapi.create_account('inita', 'mnist',key1,key2)
+'''
 
 '''
 psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
