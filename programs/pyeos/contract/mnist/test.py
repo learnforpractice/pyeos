@@ -12,7 +12,7 @@ def init():
     import eosapi
 
     '''
-    psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
+    psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
     wallet.open('mywallet')
     wallet.unlock('mywallet',psw)
     '''
@@ -25,7 +25,6 @@ def init():
         num = eosapi.get_info().head_block_num
         while num == eosapi.get_info().head_block_num: # wait for finish of create account
             time.sleep(0.2)
-    return
     r = eosapi.set_contract('mnist','../../programs/pyeos/contract/mnist/mnist.py','../../programs/pyeos/contract/mnist/mnist.abi',1)
     assert r
 
@@ -36,7 +35,7 @@ r = eosapi.create_account('inita', 'mnist',key1,key2)
 '''
 
 '''
-psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
+psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
 wallet.open('mywallet')
 wallet.unlock('mywallet',psw)
 
@@ -73,6 +72,7 @@ def test():
     sys.path.insert(0,p)
     import mnist_loader
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
+    print('load done!')
     training_data = list(training_data)
     txids = []
     counter = 0
@@ -81,6 +81,7 @@ def test():
         data = zlib.compress(data)
     #    print(data)
         r = eosapi.push_message('mnist','train',data,['mnist'],{'mnist':'active'},rawargs=True)
+        print(r.transaction_id)
         if r.transaction_id in txids:
             raise 'dumplicate ts id'
         txids.append(r.transaction_id)

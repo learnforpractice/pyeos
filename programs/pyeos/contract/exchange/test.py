@@ -1,8 +1,9 @@
+import time
+import wallet
+import eosapi
+
 def init():
-    import time
-    import wallet
-    import eosapi
-    psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
+    psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
     wallet.open('mywallet')
     wallet.unlock('mywallet',psw)
     

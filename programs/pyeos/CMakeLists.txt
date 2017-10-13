@@ -3,6 +3,14 @@ if( UNIX AND NOT APPLE )
   set(rt_library rt )
 endif()
 
+if( "$ENV{PYTHON_INC_DIR}" STREQUAL "" )
+  message( FATAL_ERROR "PYTHON_INC_DIR env not found." )
+endif()
+
+if( "$ENV{PYTHON_LIB}" STREQUAL "")
+  message( FATAL_ERROR "PYTHON_LIB env not found." )
+endif()
+
 find_package( Gperftools QUIET )
 if( GPERFTOOLS_FOUND )
     message( STATUS "Found gperftools; compiling steemd with TCMalloc")
