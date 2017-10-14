@@ -25,7 +25,7 @@ def init():
         num = eosapi.get_info().head_block_num
         while num == eosapi.get_info().head_block_num: # wait for finish of create account
             time.sleep(0.2)
-    r = eosapi.set_contract('mnist','../../programs/pyeos/contract/mnist/mnist.py','../../programs/pyeos/contract/mnist/mnist.abi',1)
+    r = eosapi.set_contract('mnist','../../programs/pyeos/contracts/mnist/mnist.py','../../programs/pyeos/contracts/mnist/mnist.abi',1)
     assert r
 
 '''
@@ -44,8 +44,8 @@ key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 eosapi.create_account('inita', 'mnist',key1,key2)
 import os
-p = os.path.join(os.getcwd(),'../../programs/pyeos/contract/mnist/mnist.py')
-r = eosapi.set_contract('mnist',p,'../../programs/pyeos/contract/mnist/mnist.abi',1)
+p = os.path.join(os.getcwd(),'../../programs/pyeos/contracts/mnist/mnist.py')
+r = eosapi.set_contract('mnist',p,'../../programs/pyeos/contracts/mnist/mnist.abi',1)
 
 '''
 
@@ -61,14 +61,14 @@ def vectorized_result(j):
 def test():
     import eosapi
     '''
-    p = os.path.join(os.getcwd(),'../../programs/pyeos/contract/mnist/mnist.pkl.gz')
+    p = os.path.join(os.getcwd(),'../../programs/pyeos/contracts/mnist/mnist.pkl.gz')
     f = gzip.open(p, 'rb')
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
     print('load done!')
     training_data = list(training_data)
     '''
-    p = os.path.join(os.getcwd(),'../../programs/pyeos/contract/mnist')
+    p = os.path.join(os.getcwd(),'../../programs/pyeos/contracts/mnist')
     sys.path.insert(0,p)
     import mnist_loader
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
@@ -94,7 +94,7 @@ def test():
 
 '''
 
-r = eosapi.set_contract('mnist','../../programs/pyeos/contract/mnist/mnist.py','../../programs/pyeos/contract/mnist/mnist.abi',1)
+r = eosapi.set_contract('mnist','../../programs/pyeos/contracts/mnist/mnist.py','../../programs/pyeos/contracts/mnist/mnist.abi',1)
 
 import binascii
 data = bytes(128)

@@ -12,11 +12,25 @@ typedef unsigned long long   uint64_t;
 typedef uint64_t TableName;
 
 uint64_t string_to_uint64_( string str ) {
-   return Name(str).value;
+   try{
+      return Name(str).value;
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }
+   return 0;
 }
 
 string uint64_to_string_( uint64_t n) {
    return Name(n).toString();
+}
+
+void pack_(string& raw,string& out){
+   std::vector<char> o = fc::raw::pack<string>(raw);
+   out = string(o.begin(),o.end());
 }
 
 void unpack_(string& raw,string& out){

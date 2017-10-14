@@ -14,6 +14,9 @@
 #include <eos/chain/account_object.hpp>
 #include <chrono>
 
+int python_load_with_gil(std::string& name,std::string& code);
+int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t>  args);
+
 namespace eos { namespace chain {
    using namespace IR;
    using namespace Runtime;
@@ -472,6 +475,33 @@ DEFINE_INTRINSIC_FUNCTION2(env,readMessage,readMessage,i32,i32,destptr,i32,dests
 //   wdump((destsize)(wasm.current_validate_context->msg.data.size()));
    memcpy( begin, wasm.current_validate_context->msg.data.data(), minlen );
    return minlen;
+}
+
+DEFINE_INTRINSIC_FUNCTION3(env,pythonLoad,pythonLoad,i32,i64,name,i32,codeptr,i32,codesize) {
+   FC_ASSERT( codesize > 0 );
+
+   wasm_interface& wasm = wasm_interface::get();
+   auto  mem   = wasm.current_memory;
+   char* codebegin = memoryArrayPtr<char>( mem, codeptr, uint32_t(codesize) );
+   std::string name_ = std::string(Name(name));
+   std::string code(codebegin,codesize);
+   ilog("python_load_with_gil");
+   return python_load_with_gil(name_,code);
+}
+
+DEFINE_INTRINSIC_FUNCTION4(env,pythonCall,pythonCall,i32,i64,name,i64,func,i32,argsptr,i32,argssize) {
+
+   wasm_interface& wasm = wasm_interface::get();
+   auto  mem   = wasm.current_memory;
+   uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
+   std::string name_ = std::string(Name(name));
+   std::string func_ = std::string(Name(func));
+   std::vector<uint64_t> args;
+   for(int i=0;i<argssize;i++){
+      args.push_back(argsbegin[i]);
+   }
+   ilog("python_call_with_gil");
+   return python_call_with_gil(name_,func_,args);
 }
 
 DEFINE_INTRINSIC_FUNCTION2(env,assert,assert,none,i32,test,i32,msg) {

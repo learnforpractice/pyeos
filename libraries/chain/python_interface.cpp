@@ -19,6 +19,42 @@ using namespace std;
 int python_load(string& name,string& code);
 int python_call(std::string &name, std::string &function, std::vector<uint64_t>  args);
 
+int python_load_with_gil(string& name,string& code){
+   int ret = 0;
+   PyGILState_STATE save = PyGILState_Ensure();
+   try{
+      ret = python_load(name,code);
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }catch(...){
+      elog("unhandled exception!!!");
+   }
+   PyGILState_Release(save);
+   return ret;
+}
+
+int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t>  args){
+   int ret = 0;
+   PyGILState_STATE save = PyGILState_Ensure();
+   try{
+      ret = python_call(name,function,args);
+   }catch(fc::assert_exception& e){
+      elog(e.to_detail_string());
+   }catch(fc::exception& e){
+      elog(e.to_detail_string());
+   }catch(boost::exception& ex){
+      elog(boost::diagnostic_information(ex));
+   }catch(...){
+      elog("unhandled exception!!!");
+   }
+   PyGILState_Release(save);
+   return ret;
+}
+
 
 namespace eos { namespace chain {
    using namespace IR;
@@ -90,19 +126,7 @@ namespace eos { namespace chain {
          string module_name = current_module;
          string function_name_ = function_name;
 
-         PyGILState_STATE save = PyGILState_Ensure();
-         try{
-            python_call(module_name,function_name_,args);
-         }catch(fc::assert_exception& e){
-            elog(e.to_detail_string());
-         }catch(fc::exception& e){
-            elog(e.to_detail_string());
-         }catch(boost::exception& ex){
-            elog(boost::diagnostic_information(ex));
-         }catch(...){
-            elog("unhandled exception!!!");
-         }
-         PyGILState_Release(save);
+         python_call_with_gil(module_name,function_name_,args);
    }
 
    void  python_interface::vm_apply()        { vm_call("apply" );          }
@@ -112,19 +136,7 @@ namespace eos { namespace chain {
       vector<uint64_t> args;
       string module_name = current_module;
       string function_name = "init";
-      PyGILState_STATE save = PyGILState_Ensure();
-      try{
-         python_call(module_name,function_name,args);
-      }catch(fc::assert_exception& e){
-         elog(e.to_detail_string());
-      }catch(fc::exception& e){
-         elog(e.to_detail_string());
-      }catch(boost::exception& ex){
-         elog(boost::diagnostic_information(ex));
-      }catch(...){
-         elog("unhandled exception!!!");
-      }
-      PyGILState_Release(save);
+      python_call_with_gil(module_name,function_name,args);
    }
 
    void python_interface::validate( apply_context& c ) {
@@ -179,18 +191,7 @@ namespace eos { namespace chain {
       current_module = module_name;
       PyGILState_STATE save = PyGILState_Ensure();
       ilog("python_interface::load");
-      try{
-         python_load(module_name,code);
-      }catch(fc::assert_exception& e){
-         elog(e.to_detail_string());
-      }catch(fc::exception& e){
-         elog(e.to_detail_string());
-      }catch(boost::exception& ex){
-         elog(boost::diagnostic_information(ex));
-      }catch(...){
-         elog("unhandled exception!!!");
-      }
-      PyGILState_Release(save);
+      python_load_with_gil(module_name,code);
    }
 
  }}
