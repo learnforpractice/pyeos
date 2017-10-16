@@ -14,13 +14,13 @@
 #include <eos/chain/account_object.hpp>
 #include <chrono>
 
-int python_load_with_gil(std::string& name,std::string& code);
-int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t>  args);
-
 namespace eos { namespace chain {
    using namespace IR;
    using namespace Runtime;
    typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
+
+   int python_load_with_gil(std::string& name,std::string& code);
+   int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t>  args);
 
    class wasm_memory
    {
@@ -659,14 +659,14 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
    { try {
       try {
             FunctionInstance* init = asFunctionNullable(getInstanceExport(current_module,"init"));
-            if( !apply ) {
+            if( !init ) {
                elog( "no onInit method found" );
                return; /// if not found then it is a no-op
             }
 
          checktimeStart = fc::time_point::now();
 
-            const FunctionType* functionType = getFunctionType(apply);
+            const FunctionType* functionType = getFunctionType(init);
             FC_ASSERT( functionType->parameters.size() == 0 );
 
             std::vector<Value> args(0);
@@ -714,7 +714,67 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
 
    } FC_CAPTURE_AND_RETHROW() }
 
+int wasm_interface::call_function(apply_context& c, uint64_t code,
+      uint64_t function, std::vector<uint64_t> args) {
+   try {
+      current_validate_context = &c;
+      current_precondition_context = &c;
+      current_apply_context = &c;
+
+      load(Name(code), c.db);
+
+      std::unique_ptr<wasm_memory> wasm_memory_mgmt;
+      try {
+         /*
+          name += "_" + std::string( current_validate_context->msg.code ) + "_";
+          name += std::string( current_validate_context->msg.type );
+          */
+         /// TODO: cache this somehow
+         FunctionInstance* call = asFunctionNullable(
+               getInstanceExport(current_module, std::string(Name(function))));
+         if (!call) {
+            //wlog( "unable to find call ${name}", ("name",name));
+            return -1;
+         }
+         //FC_ASSERT( apply, "no entry point found for ${call}", ("call", std::string(name))  );
+
+         FC_ASSERT(getFunctionType(call)->parameters.size() == 2);
+
+         std::vector<Value> args_;
+
+         for (uint64_t& value : args) {
+            args_.push_back(value);
+         }
+
+         auto& state = *current_state;
+         char* memstart = &memoryRef<char>(current_memory, 0);
+         memset(memstart + state.mem_end, 0, ((1 << 16) - state.mem_end));
+         memcpy(memstart, state.init_memory.data(), state.mem_end);
+
+         checktimeStart = fc::time_point::now();
+         wasm_memory_mgmt.reset(new wasm_memory(*this));
+
+         Runtime::invokeFunction(call, args_);
+         wasm_memory_mgmt.reset();
+         checktime(current_execution_time());
+      } catch (const Runtime::Exception& e) {
+         edump((std::string(describeExceptionCause(e.cause))));
+         edump((e.callStack));
+         throw;
+      }
+      return 0;
+   } catch (fc::exception& er) {
+      elog(er.to_detail_string());
+   } catch (const std::exception& e) {
+      elog(e.what());
+   } catch (...) {
+      elog("unhandled exception!");
+   }
+   return -1;
+}
+
    void wasm_interface::init( apply_context& c ) {
+
     try {
       current_validate_context       = &c;
       current_precondition_context   = &c;

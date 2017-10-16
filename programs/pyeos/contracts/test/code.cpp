@@ -34,6 +34,11 @@ extern "C" {
        int a[size];
        readMessage(a,sizeof(a));
     }
+
+    void hello(uint64_t a, uint64_t b) {
+       print(a,b);
+    }
+
     void test(int size)  {
        int a[size];
        readMessage(a,sizeof(a));
@@ -52,3 +57,4 @@ extern "C" {
        }
     }
 }
+

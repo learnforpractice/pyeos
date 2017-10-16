@@ -37,6 +37,7 @@ class wasm_interface {
       void precondition( apply_context& c );
 
       int64_t current_execution_time();
+      int call_function(apply_context& c, uint64_t code, uint64_t function, std::vector<uint64_t> args);
 
       apply_context*       current_apply_context        = nullptr;
       apply_context*       current_validate_context     = nullptr;

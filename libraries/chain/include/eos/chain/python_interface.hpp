@@ -6,9 +6,10 @@
 #include "IR/Module.h"
 #include <Python.h>
 
-namespace eos { namespace chain {
+namespace eos {
+namespace chain {
 
-class  chain_controller;
+class chain_controller;
 /**
  * @class python_interface
  *
@@ -18,53 +19,54 @@ class  chain_controller;
  * in the future.
  */
 class python_interface {
-   public:
-      struct ModuleState {
-         Runtime::ModuleInstance* instance     = nullptr;
-         IR::Module*              module       = nullptr;
-         int                      mem_start    = 0;
-         int                      mem_end      = 1<<16;
-         vector<char>             init_memory;
-         fc::sha256               code_version;
-      };
+public:
+   struct ModuleState {
+      Runtime::ModuleInstance* instance = nullptr;
+      IR::Module* module = nullptr;
+      int mem_start = 0;
+      int mem_end = 1 << 16;
+      vector<char> init_memory;
+      fc::sha256 code_version;
+   };
 
-      static python_interface& get();
+   static python_interface& get();
 
-      void init( apply_context& c );
-      void apply( apply_context& c );
-      void validate( apply_context& c );
-      void precondition( apply_context& c );
+   void init(apply_context& c);
+   void apply(apply_context& c);
+   void validate(apply_context& c);
+   void precondition(apply_context& c);
 
-      int64_t current_execution_time();
+   int64_t current_execution_time();
 
-      apply_context*       current_apply_context        = nullptr;
-      apply_context*       current_validate_context     = nullptr;
-      apply_context*       current_precondition_context = nullptr;
+   apply_context* current_apply_context = nullptr;
+   apply_context* current_validate_context = nullptr;
+   apply_context* current_precondition_context = nullptr;
 
-      Runtime::MemoryInstance*   current_memory  = nullptr;
+   Runtime::MemoryInstance* current_memory = nullptr;
 //      Runtime::ModuleInstance*   current_module  = nullptr;
-      string   current_module;
-      ModuleState*               current_state   = nullptr;
+   string current_module;
+   ModuleState* current_state = nullptr;
 
-   private:
-      void load( const AccountName& name, const chainbase::database& db );
+private:
+   void load(const AccountName& name, const chainbase::database& db);
 
-      char* vm_allocate( int bytes );   
-      void  vm_call( const char* name );
-      void  vm_validate();
-      void  vm_precondition();
-      void  vm_apply();
-      void  vm_onInit();
-      U32   vm_pointer_to_offset( char* );
+   char* vm_allocate(int bytes);
+   void vm_call(const char* name);
+   void vm_validate();
+   void vm_precondition();
+   void vm_apply();
+   void vm_onInit();
+   U32 vm_pointer_to_offset(char*);
 
+   map<AccountName, ModuleState> instances;
+   fc::time_point checktimeStart;
 
-
-      map<AccountName, ModuleState> instances;
-      fc::time_point checktimeStart;
-
-      python_interface();
+   python_interface();
 };
 
+int wasm_call_function(uint64_t code, uint64_t function, std::vector<uint64_t> args);
 
-} } // eos::chain
+
+}
+} // eos::chain
 

@@ -32,6 +32,9 @@ cdef extern from "eoslib_.hpp":
     void unpack_(string& raw, string& out)
     void pack_(string& raw, string& out)
 
+cdef extern from "<eos/chain/python_interface.hpp>" namespace "eos::chain":
+    int wasm_call_function(uint64_t code, uint64_t function, vector[uint64_t] args);
+
 def pack(bytes bs):
     cdef string out
     pack_(bs, out)
@@ -244,4 +247,12 @@ def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     code_ = toname(code)
     table_ = toname(table)
     return upper_bound_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+
+def call_wasm_function(uint64_t code, uint64_t function, args: list):
+    cdef vector[uint64_t] args_
+    for arg in args:
+        args_.push_back(arg)
+    return wasm_call_function(code, function, args_);
+
+
 

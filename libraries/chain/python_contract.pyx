@@ -6,7 +6,6 @@ import logging as log
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(string& str)
     ctypedef unsigned long long uint64_t
-#from typing import Dict, Tuple, List
 
 code_map = {}
 
@@ -43,4 +42,8 @@ cdef extern python_call(string& name,string& function,vector[uint64_t] args):
     except Exception as e:
         log.exception(e)
     return ret
+
+
+
+
 
