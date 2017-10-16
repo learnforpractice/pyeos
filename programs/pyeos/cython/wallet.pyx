@@ -3,12 +3,12 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 
-from eostypes_ cimport *
+from eostypes_ cimport * 
 
 from typing import Dict, Tuple, List
 
 
-cdef extern from *:
+cdef extern from * :
     ctypedef unsigned long long int64_t
 
 cdef extern from "wallet_.h":
@@ -22,34 +22,34 @@ cdef extern from "wallet_.h":
     object wallet_lock_all_();
     object wallet_lock_(string& name);
     object wallet_unlock_(string& name, string& password);
-    object wallet_import_key_(string& name,string& wif_key);
+    object wallet_import_key_(string& name, string& wif_key);
 
-def create(name:str)->str:
+def create(name:str) -> str:
     if type(name) == str:
-        name = bytes(name,'utf8')
+        name = bytes(name, 'utf8')
     return wallet_create_(name)
 
-def open(name:str)->bool:
+def open(name:str) -> bool:
     if type(name) == str:
-        name = bytes(name,'utf8')
+        name = bytes(name, 'utf8')
     return wallet_open_(name)
 
-def set_dir(path_name:str)->bool:
+def set_dir(path_name:str) -> bool:
     if type(path_name) == str:
-        path_name = bytes(path_name,'utf8')
+        path_name = bytes(path_name, 'utf8')
     return wallet_set_dir_(path_name)
 
-def set_timeout(secs)->bool:
+def set_timeout(secs) -> bool:
     return wallet_set_timeout_(secs)
 
-def sign_transaction(txn,keys,id):
+def sign_transaction(txn, keys, id):
 #    const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,const chain::chain_id_type& id
     pass
 
-def list_wallets()->List[bytes]:
+def list_wallets() -> List[bytes]:
     return wallet_list_wallets_();
 
-def list_keys()->Dict[str,str]:
+def list_keys() -> Dict[str, str]:
     return wallet_list_keys_();
 
 def get_public_keys():
@@ -58,26 +58,26 @@ def get_public_keys():
 def lock_all():
     return wallet_lock_all_()
 
-def lock(name:str)->bool:
+def lock(name:str) -> bool:
     if type(name) == str:
-        name = bytes(name,'utf8')
+        name = bytes(name, 'utf8')
     return wallet_lock_(name)
 
-def unlock(name:str, password:str)->bool:
+def unlock(name:str, password:str) -> bool:
     if type(name) == str:
-        name = bytes(name,'utf8')
+        name = bytes(name, 'utf8')
 
     if type(password) == str:
-        password = bytes(password,'utf8')
+        password = bytes(password, 'utf8')
     
-    return wallet_unlock_(name,password)
+    return wallet_unlock_(name, password)
 
-def import_key(name:str,wif_key:str)->bool:
+def import_key(name:str, wif_key:str) -> bool:
     if type(name) == str:
-        name = bytes(name,'utf8')
+        name = bytes(name, 'utf8')
     if type(wif_key) == str:
-        wif_key = bytes(wif_key,'utf8')
-    return wallet_import_key_(name,wif_key)
+        wif_key = bytes(wif_key, 'utf8')
+    return wallet_import_key_(name, wif_key)
     
     
     

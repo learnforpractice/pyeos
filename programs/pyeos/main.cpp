@@ -37,7 +37,8 @@ int eos_thread(int argc, char** argv) {
       app().register_plugin<wallet_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<py_plugin>();
-      if(!app().initialize<py_plugin,chain_plugin, http_plugin, net_plugin,account_history_api_plugin,wallet_plugin>(argc, argv)){
+      if (!app().initialize<py_plugin, chain_plugin, http_plugin, net_plugin,
+            account_history_api_plugin, wallet_plugin>(argc, argv)) {
          init_finished = true;
          shutdown_finished = true;
          return -1;
@@ -65,10 +66,9 @@ extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
 
-void set_args(int argc,char** argv);
+void set_args(int argc, char** argv);
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 
 //   Py_InitializeEx(0);
    Py_Initialize();
@@ -89,26 +89,27 @@ int main(int argc, char** argv)
    PyRun_SimpleString("eosapi.register_signal_handler()");
 
    PyThreadState* state = PyEval_SaveThread();
-   auto thread_ = boost::thread(eos_thread,argc,argv);
-   while(!init_finished){
+   auto thread_ = boost::thread(eos_thread, argc, argv);
+   while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
    PyEval_RestoreThread(state);
-   if (shutdown_finished){
+   if (shutdown_finished) {
       Py_Finalize();
       return 0;
    }
 
-   PyRun_SimpleString("import sys;sys.path.append('../../programs/pyeos');sys.path.append('../../programs/pyeos/contract')");
+   PyRun_SimpleString(
+         "import sys;sys.path.append('../../programs/pyeos');sys.path.append('../../programs/pyeos/contract')");
 //   PyRun_SimpleString("from initeos import *");
    PyRun_SimpleString("import initeos");
-   if(app().get_plugin<py_plugin>().interactive){
+   if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");
       PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
    }
 
-   while(!shutdown_finished){
+   while (!shutdown_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
 

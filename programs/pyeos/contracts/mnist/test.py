@@ -20,12 +20,12 @@ def init():
     key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
     if not eosapi.get_account('mnist'):
-        r = eosapi.create_account('inita', 'mnist',key1,key2)
+        r = eosapi.create_account('inita', 'mnist', key1, key2)
         assert r
         num = eosapi.get_info().head_block_num
-        while num == eosapi.get_info().head_block_num: # wait for finish of create account
+        while num == eosapi.get_info().head_block_num:  # wait for finish of create account
             time.sleep(0.2)
-    r = eosapi.set_contract('mnist','../../programs/pyeos/contracts/mnist/mnist.py','../../programs/pyeos/contracts/mnist/mnist.abi',1)
+    r = eosapi.set_contract('mnist', '../../programs/pyeos/contracts/mnist/mnist.py', '../../programs/pyeos/contracts/mnist/mnist.abi', 1)
     assert r
 
 '''
@@ -68,8 +68,8 @@ def test():
     print('load done!')
     training_data = list(training_data)
     '''
-    p = os.path.join(os.getcwd(),'../../programs/pyeos/contracts/mnist')
-    sys.path.insert(0,p)
+    p = os.path.join(os.getcwd(), '../../programs/pyeos/contracts/mnist')
+    sys.path.insert(0, p)
     import mnist_loader
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     print('load done!')
@@ -77,10 +77,10 @@ def test():
     txids = []
     counter = 0
     for d in training_data[:1]:
-        data = pickle.dumps([d,])
+        data = pickle.dumps([d, ])
         data = zlib.compress(data)
     #    print(data)
-        r = eosapi.push_message('mnist','train',data,['mnist'],{'mnist':'active'},rawargs=True)
+        r = eosapi.push_message('mnist', 'train', data, ['mnist'], {'mnist':'active'}, rawargs=True)
         print(r.transaction_id)
         if r.transaction_id in txids:
             raise 'dumplicate ts id'
@@ -89,7 +89,7 @@ def test():
         if counter % 50 == 0:
             print(counter)
             num = eosapi.get_info().head_block_num
-            while num == eosapi.get_info().head_block_num: # wait for finish of create account
+            while num == eosapi.get_info().head_block_num:  # wait for finish of create account
                 time.sleep(0.2)
 
 '''
@@ -106,7 +106,7 @@ r = eosapi.push_message('mnist','train',{'data':bytes(10)},['mnist'],{'mnist':'a
 
 '''        
 if __name__ == '__main__':
-    sys.path.insert(0,'..')
+    sys.path.insert(0, '..')
     import mnist
 
     net = mnist.Network([784, 30, 10])

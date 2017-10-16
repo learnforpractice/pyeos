@@ -41,12 +41,11 @@ extern "C" {
 
     /// The apply method implements the dispatch of events to this contract
     void apply( uint64_t code, uint64_t action ) {
-       auto a = N(-);
        if( code == N(test) ) {
           if( action == N(test) ) {
              requireAuth(N(test));
              char *code = "def hello():\n" \
-             "    print('hello,world')";
+                          "    print('hello,world')";
              pythonLoad(N(hello),code,strlen(code));
              pythonCall(N(hello),N(hello),0,0);
           }

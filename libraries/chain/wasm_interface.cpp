@@ -658,7 +658,7 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
    void  wasm_interface::vm_onInit()
    { try {
       try {
-            FunctionInstance* apply = asFunctionNullable(getInstanceExport(current_module,"init"));
+            FunctionInstance* init = asFunctionNullable(getInstanceExport(current_module,"init"));
             if( !apply ) {
                elog( "no onInit method found" );
                return; /// if not found then it is a no-op
@@ -671,7 +671,7 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
 
             std::vector<Value> args(0);
 
-            Runtime::invokeFunction(apply,args);
+            Runtime::invokeFunction(init,args);
       } catch( const Runtime::Exception& e ) {
           edump((std::string(describeExceptionCause(e.cause))));
           edump((e.callStack));

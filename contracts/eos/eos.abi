@@ -1,0 +1,175 @@
+{
+    "types": [
+        {
+            "newTypeName": "AccountName",
+            "type": "Name"
+        },
+        {
+            "newTypeName": "ShareType",
+            "type": "Int64"
+        }
+    ],
+    "structs": [
+        {
+            "name": "transfer",
+            "base": "",
+            "fields": {
+                "from": "AccountName",
+                "to": "AccountName",
+                "amount": "UInt64",
+                "memo": "String"
+            }
+        },
+        {
+            "name": "lock",
+            "base": "",
+            "fields": {
+                "from": "AccountName",
+                "to": "AccountName",
+                "amount": "ShareType"
+            }
+        },
+        {
+            "name": "unlock",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "amount": "ShareType"
+            }
+        },
+        {
+            "name": "claim",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "amount": "ShareType"
+            }
+        },
+        {
+            "name": "okproducer",
+            "base": "",
+            "fields": {
+                "voter": "AccountName",
+                "producer": "AccountName",
+                "approve": "Int8"
+            }
+        },
+        {
+            "name": "setproducer",
+            "base": "",
+            "fields": {
+                "name": "AccountName",
+                "key": "PublicKey",
+                "configuration": "BlockchainConfiguration"
+            }
+        },
+        {
+            "name": "setproxy",
+            "base": "",
+            "fields": {
+                "stakeholder": "AccountName",
+                "proxy": "AccountName"
+            }
+        },
+        {
+            "name": "updateauth",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "permission": "PermissionName",
+                "parent": "PermissionName",
+                "authority": "Authority"
+            }
+        },
+        {
+            "name": "linkauth",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "code": "AccountName",
+                "type": "FuncName",
+                "requirement": "PermissionName"
+            }
+        },
+        {
+            "name": "unlinkauth",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "code": "AccountName",
+                "type": "FuncName"
+            }
+        },
+        {
+            "name": "deleteauth",
+            "base": "",
+            "fields": {
+                "account": "AccountName",
+                "permission": "PermissionName"
+            }
+        },
+        {
+            "name": "newaccount",
+            "base": "",
+            "fields": {
+                "creator": "AccountName",
+                "name": "AccountName",
+                "owner": "Authority",
+                "active": "Authority",
+                "recovery": "Authority",
+                "deposit": "Asset"
+            }
+        }
+    ],
+    "actions": [
+        {
+            "action": "transfer",
+            "type": "transfer"
+        },
+        {
+            "action": "lock",
+            "type": "lock"
+        },
+        {
+            "action": "unlock",
+            "type": "unlock"
+        },
+        {
+            "action": "claim",
+            "type": "claim"
+        },
+        {
+            "action": "okproducer",
+            "type": "okproducer"
+        },
+        {
+            "action": "setproducer",
+            "type": "setproducer"
+        },
+        {
+            "action": "setproxy",
+            "type": "setproxy"
+        },
+        {
+            "action": "linkauth",
+            "type": "linkauth"
+        },
+        {
+            "action": "unlinkauth",
+            "type": "unlinkauth"
+        },
+        {
+            "action": "updateauth",
+            "type": "updateauth"
+        },
+        {
+            "action": "deleteauth",
+            "type": "deleteauth"
+        },
+        {
+            "action": "newaccount",
+            "type": "newaccount"
+        }
+    ],
+    "tables": []
+}

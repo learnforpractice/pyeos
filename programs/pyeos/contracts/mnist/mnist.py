@@ -52,33 +52,33 @@ class Network(object):
         sizeweights = 0
         sizebiases = 0
     
-        keys = struct.pack('Q',N('sizeweights'))
+        keys = struct.pack('Q', N('sizeweights'))
         values = bytes(8)
-        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) > 0:
-            sizeweights = int.from_bytes(values,'little')
+        if eoslib.load(mnist, mnist, table_network, keys, 0, 0, values) > 0:
+            sizeweights = int.from_bytes(values, 'little')
         
         if sizeweights <= 0:
             return False
     
-        keys = struct.pack('Q',N('sizebiases'))
+        keys = struct.pack('Q', N('sizebiases'))
         values = bytes(8)
-        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) > 0:
-            sizebiases = int.from_bytes(values,'little')
+        if eoslib.load(mnist, mnist, table_network, keys, 0, 0, values) > 0:
+            sizebiases = int.from_bytes(values, 'little')
     
         if sizebiases <= 0:
             return False
 
-        print("+++++++++++++++++",sizeweights,sizebiases)
+        print("+++++++++++++++++", sizeweights, sizebiases)
         
-        keys = struct.pack('Q',N('weights'))
+        keys = struct.pack('Q', N('weights'))
         values = bytes(sizeweights)
-        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
+        if eoslib.load(mnist, mnist, table_network, keys, 0, 0, values) <= 0:
             return False
         self.weights = pickle.loads(values)
     
-        keys = struct.pack('Q',N('biases'))
+        keys = struct.pack('Q', N('biases'))
         values = bytes(sizebiases)
-        if eoslib.load(mnist,mnist,table_network,keys,0,0,values) <= 0:
+        if eoslib.load(mnist, mnist, table_network, keys, 0, 0, values) <= 0:
             return False
         self.biases = pickle.loads(values)
         print('load success!')
@@ -88,24 +88,24 @@ class Network(object):
         biases = pickle.dumps(self.biases)
         weights = pickle.dumps(self.weights)
 
-        keys = struct.pack('Q',N('sizeweights'))
-        values = struct.pack('Q',len(weights))
-        eoslib.store(mnist,mnist,table_network,keys,0,values)
+        keys = struct.pack('Q', N('sizeweights'))
+        values = struct.pack('Q', len(weights))
+        eoslib.store(mnist, mnist, table_network, keys, 0, values)
 
-        keys = struct.pack('Q',N('sizebiases'))
-        values = struct.pack('Q',len(biases))
-        eoslib.store(mnist,mnist,table_network,keys,0,values)
+        keys = struct.pack('Q', N('sizebiases'))
+        values = struct.pack('Q', len(biases))
+        eoslib.store(mnist, mnist, table_network, keys, 0, values)
 
-        keys = struct.pack('Q',N('weights'))
-        eoslib.store(mnist,mnist,table_network,keys,0,weights)
+        keys = struct.pack('Q', N('weights'))
+        eoslib.store(mnist, mnist, table_network, keys, 0, weights)
 
-        keys = struct.pack('Q',N('biases'))
-        eoslib.store(mnist,mnist,table_network,keys,0,biases)
+        keys = struct.pack('Q', N('biases'))
+        eoslib.store(mnist, mnist, table_network, keys, 0, biases)
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
         for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a)+b)
+            a = sigmoid(np.dot(w, a) + b)
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
@@ -129,18 +129,18 @@ class Network(object):
         for j in range(epochs):
             random.shuffle(training_data)
             mini_batches = [
-                training_data[k:k+mini_batch_size]
+                training_data[k:k + mini_batch_size]
                 for k in range(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
-                print("Epoch {} : {} / {}".format(j,self.evaluate(test_data),n_test));
+                print("Epoch {} : {} / {}".format(j, self.evaluate(test_data), n_test));
         self.save()
         
-    def test(self,test_data):
+    def test(self, test_data):
         test_data = list(test_data)
         n_test = len(test_data)
-        print("{} / {}".format(self.evaluate(test_data),n_test));
+        print("{} / {}".format(self.evaluate(test_data), n_test));
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying
@@ -151,11 +151,11 @@ class Network(object):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
+            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+        self.weights = [w - (eta / len(mini_batch)) * nw
                         for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
+        self.biases = [b - (eta / len(mini_batch)) * nb
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
@@ -167,10 +167,10 @@ class Network(object):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward
         activation = x
-        activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer
+        activations = [x]  # list to store all the activations, layer by layer
+        zs = []  # list to store all the z vectors, layer by layer
         for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, activation)+b
+            z = np.dot(w, activation) + b
             zs.append(z)
             activation = sigmoid(z)
             activations.append(activation)
@@ -188,9 +188,9 @@ class Network(object):
         for l in range(2, self.num_layers):
             z = zs[-l]
             sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sp
             nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+            nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
         return (nabla_b, nabla_w)
 
     def evaluate(self, test_data):
@@ -205,16 +205,16 @@ class Network(object):
     def cost_derivative(self, output_activations, y):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
-        return (output_activations-y)
+        return (output_activations - y)
 
 #### Miscellaneous functions
 def sigmoid(z):
     """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
+    return 1.0 / (1.0 + np.exp(-z))
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
+    return sigmoid(z) * (1 - sigmoid(z))
 
 def vectorized_result(j):
     """Return a 10-dimensional unit vector with a 1.0 in the jth
@@ -256,31 +256,31 @@ def test():
     biases = pickle.dumps(net.biases)
     weights = pickle.dumps(net.weights)
     print(len(weights))
-    keys = struct.pack('Q',N('sizeweights'))
-    values = struct.pack('Q',len(weights))
-    ret = eoslib.store(mnist,mnist,table_network,keys,0,values)
-    print('store return:',ret)
+    keys = struct.pack('Q', N('sizeweights'))
+    values = struct.pack('Q', len(weights))
+    ret = eoslib.store(mnist, mnist, table_network, keys, 0, values)
+    print('store return:', ret)
     
-    keys = struct.pack('Q',N('sizeweights'))
+    keys = struct.pack('Q', N('sizeweights'))
     values = bytes(8)
-    eoslib.load(mnist,mnist,table_network,keys,0,0,values)
-    print('load return:',int.from_bytes(values,'little'))
+    eoslib.load(mnist, mnist, table_network, keys, 0, 0, values)
+    print('load return:', int.from_bytes(values, 'little'))
     
-    keys = struct.pack('Q',N('weights'))
-    ret = eoslib.store(mnist,mnist,table_network,keys,0,weights)
-    print('store return:',ret)
+    keys = struct.pack('Q', N('weights'))
+    ret = eoslib.store(mnist, mnist, table_network, keys, 0, weights)
+    print('store return:', ret)
 
-    keys = struct.pack('Q',N('weights'))
+    keys = struct.pack('Q', N('weights'))
     values = bytes(len(weights))
-    ret = eoslib.load(mnist,mnist,table_network,keys,0,0,values)
-    print('load return:',ret)
+    ret = eoslib.load(mnist, mnist, table_network, keys, 0, 0, values)
+    print('load return:', ret)
 #    print(values)
 
 #    print(net.weights)
 #    print(net.biases)
 
-def apply(code,action):
-    print(code,action)
+def apply(code, action):
+    print(code, action)
     if code == mnist:
         if action == eoslib.N(b'train'):
             train()
