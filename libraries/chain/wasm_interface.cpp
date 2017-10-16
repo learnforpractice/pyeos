@@ -504,6 +504,21 @@ DEFINE_INTRINSIC_FUNCTION4(env,pythonCall,pythonCall,i32,i64,name,i64,func,i32,a
    return python_call_with_gil(name_,func_,args);
 }
 
+DEFINE_INTRINSIC_FUNCTION4(env,wasmCall,wasmCall,i32,i64,code,i64,func,i32,argsptr,i32,argssize) {
+
+   wasm_interface& wasm = wasm_interface::get();
+   auto  mem   = wasm.current_memory;
+   uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
+   std::string name_ = std::string(Name(code));
+   std::string func_ = std::string(Name(func));
+   std::vector<uint64_t> args;
+   for(int i=0;i<argssize;i++){
+      args.push_back(argsbegin[i]);
+   }
+   ilog("wasm_call_function");
+   return wasm.call_function(*wasm.current_apply_context,code,func,args);
+}
+
 DEFINE_INTRINSIC_FUNCTION2(env,assert,assert,none,i32,test,i32,msg) {
    const char* m = &Runtime::memoryRef<char>( wasm_interface::get().current_memory, msg );
   std::string message( m );
