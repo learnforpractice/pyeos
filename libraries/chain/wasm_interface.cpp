@@ -519,6 +519,34 @@ DEFINE_INTRINSIC_FUNCTION4(env,wasmCall,wasmCall,i32,i64,code,i64,func,i32,argsp
    return wasm.call_function(*wasm.current_apply_context,code,func,args);
 }
 
+static char wasmReturn[1024];
+static int writeSize = 0;
+
+DEFINE_INTRINSIC_FUNCTION2(env,writeReturn,wasmCall,i32,i32,argsptr,i32,argssize) {
+
+   wasm_interface& wasm = wasm_interface::get();
+   auto  mem   = wasm.current_memory;
+   uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
+   memcpy(wasmReturn,argsbegin,argssize);
+   writeSize = argssize;
+   return 0;
+}
+
+DEFINE_INTRINSIC_FUNCTION2(env,readReturn,wasmCall,i32,i32,argsptr,i32,argssize) {
+
+   wasm_interface& wasm = wasm_interface::get();
+   auto  mem   = wasm.current_memory;
+   uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
+   memcpy(argsbegin,wasmReturn,argssize);
+   writeSize = argssize;
+   return 0;
+}
+
+
+DEFINE_INTRINSIC_FUNCTION0(env,getWriteReturnSize,getWriteReturnSize,i32) {
+   return writeSize;
+}
+
 DEFINE_INTRINSIC_FUNCTION2(env,assert,assert,none,i32,test,i32,msg) {
    const char* m = &Runtime::memoryRef<char>( wasm_interface::get().current_memory, msg );
   std::string message( m );
@@ -554,16 +582,19 @@ DEFINE_INTRINSIC_FUNCTION1(env,printi128,printi128,none,i32,val) {
   std::cerr << fc::variant(v).get_string();
 }
 DEFINE_INTRINSIC_FUNCTION1(env,printn,printn,none,i64,val) {
-  std::cerr << Name(val).toString();
+   ilog(Name(val).toString());
+//   std::cerr << Name(val).toString();
 }
 
 DEFINE_INTRINSIC_FUNCTION1(env,prints,prints,none,i32,charptr) {
-  auto& wasm  = wasm_interface::get();
+//   ilog("in prints");
+   auto& wasm  = wasm_interface::get();
   auto  mem   = wasm.current_memory;
 
   const char* str = &memoryRef<const char>( mem, charptr );
-
-  std::cerr << std::string( str, strnlen(str, wasm.current_state->mem_end-charptr) );
+//  ilog("${str} ${n}",("str",str)("n",wasm.current_state->mem_end-charptr));
+  ilog(std::string( str, strnlen(str, wasm.current_state->mem_end-charptr) ));
+//  std::cerr << std::string( str, strnlen(str, wasm.current_state->mem_end-charptr) );
 }
 
 DEFINE_INTRINSIC_FUNCTION2(env,printhex,printhex,none,i32,data,i32,datalen) {
@@ -571,7 +602,8 @@ DEFINE_INTRINSIC_FUNCTION2(env,printhex,printhex,none,i32,data,i32,datalen) {
   auto  mem   = wasm.current_memory;
   
   char* buff = memoryArrayPtr<char>(mem, data, datalen);
-  std::cerr << fc::to_hex(buff, datalen) << std::endl;
+  ilog(fc::to_hex(buff, datalen));
+//  std::cerr << fc::to_hex(buff, datalen) << std::endl;
 }
 
 
@@ -588,8 +620,6 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
       }
       return *wasm;
    }
-
-
 
    struct RootResolver : Runtime::Resolver
    {
@@ -735,7 +765,7 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
       current_validate_context = &c;
       current_precondition_context = &c;
       current_apply_context = &c;
-
+      ilog("call_function ${n}",("n",std::string(Name(code))));
       load(Name(code), c.db);
 
       std::unique_ptr<wasm_memory> wasm_memory_mgmt;
@@ -748,7 +778,7 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
          FunctionInstance* call = asFunctionNullable(
                getInstanceExport(current_module, std::string(Name(function))));
          if (!call) {
-            //wlog( "unable to find call ${name}", ("name",name));
+            wlog( "unable to find call ${name}", ("name",string(Name(code))));
             return -1;
          }
          //FC_ASSERT( apply, "no entry point found for ${call}", ("call", std::string(name))  );
@@ -758,7 +788,8 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
          std::vector<Value> args_;
 
          for (uint64_t& value : args) {
-            args_.push_back(value);
+//            ilog("${n}",("n",value));
+            args_.push_back(Value(value));
          }
 
          auto& state = *current_state;

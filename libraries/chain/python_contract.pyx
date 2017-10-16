@@ -42,8 +42,3 @@ cdef extern python_call(string& name,string& function,vector[uint64_t] args):
     except Exception as e:
         log.exception(e)
     return ret
-
-
-
-
-

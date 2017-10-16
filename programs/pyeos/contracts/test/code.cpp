@@ -30,13 +30,12 @@ void read_length(char *raw_array,int& length,int& length_size){
 
 extern "C" {
     void init()  {
-       int size = 1024;
-       int a[size];
-       readMessage(a,sizeof(a));
+       print("code::init");
     }
 
     void hello(uint64_t a, uint64_t b) {
        print(a,b);
+       print("hello,word");
     }
 
     void test(int size)  {

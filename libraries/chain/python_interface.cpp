@@ -65,9 +65,12 @@ int python_call_with_gil(std::string &name, std::string &function,
 
 int wasm_call_function(uint64_t code, uint64_t function,
       std::vector<uint64_t> args) {
-
-   apply_context& c = *python_interface::get().current_apply_context;
-   return wasm_interface::get().call_function(c, code, function, args);
+//   ilog("wasm_call_function args.size:${n}",("n",args.size()));
+   for (auto& n : args) {
+      ilog("${n}",("n",n));
+   }
+   apply_context* c = python_interface::get().current_apply_context;
+   return wasm_interface::get().call_function(*c, code, function, args);
 
 }
 
@@ -206,7 +209,6 @@ void python_interface::load(const AccountName& name,
    string code = string((const char*) recipient.code.data(),
          recipient.code.size());
    current_module = module_name;
-   PyGILState_STATE save = PyGILState_Ensure();
    ilog("python_interface::load");
    python_load_with_gil(module_name, code);
 }

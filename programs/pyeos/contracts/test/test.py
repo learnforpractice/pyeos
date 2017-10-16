@@ -22,16 +22,36 @@ def init():
     if 1:
         r = eosapi.set_contract('test', '../../programs/pyeos/contracts/test/code.py', '../../programs/pyeos/contracts/test/test.abi', 1)
         assert r
-    else:
+    elif False:
         r = eosapi.set_contract('test', './pyeos/contracts/test/test.wast', '../../programs/pyeos/contracts/test/test.abi', 0)
+        assert r
+    else:
+        if not eosapi.get_account('test2'):
+            r = eosapi.create_account('inita', 'test2', key1, key2)
+            assert r
+            num = eosapi.get_info().head_block_num
+            while num == eosapi.get_info().head_block_num:  # wait for finish of create account
+                time.sleep(0.2)
+        r = eosapi.set_contract('test2', './pyeos/contracts/test/test.wast', '../../programs/pyeos/contracts/test/test.abi', 0)
         assert r
 
 '''
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+r = eosapi.create_account('inita', 'test2',key1,key2)
+
+r = eosapi.set_contract('test2','./pyeos/contracts/test/test.wast','../../programs/pyeos/contracts/test/test.abi',0)
+
 r = eosapi.create_account('inita', 'test',key1,key2)
 
-r = eosapi.set_contract('test','./pyeos/contracts/test/test.wast','../../programs/pyeos/contracts/test/test.abi',0)
+r = eosapi.set_contract('test', '../../programs/pyeos/contracts/test/code.py', '../../programs/pyeos/contracts/test/test.abi', 1)
+
+
+key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
+key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+r = eosapi.create_account('inita', 'test2',key1,key2)
+r = eosapi.set_contract('test2', './pyeos/contracts/test/test.wast', '../../programs/pyeos/contracts/test/test.abi', 0)
+
 
 args = {"name": "test","balance": [1,2,3]}
 r = eosapi.push_message('test','test',args,['test'],{'test':'active'})

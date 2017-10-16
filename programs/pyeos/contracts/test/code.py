@@ -3,6 +3,7 @@ import struct
 from eoslib import N
 def init():
 	print('hello from init')
+	eoslib.call_wasm_function(N('test2'), N(b'hello'), [1,2])
 
 test = N(b'test')
 
