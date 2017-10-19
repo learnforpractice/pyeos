@@ -24,17 +24,17 @@ cdef extern from "wallet_.h":
     object wallet_unlock_(string& name, string& password);
     object wallet_import_key_(string& name, string& wif_key);
 
-def create(name:str) -> str:
+def create(name: str) -> str:
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_create_(name)
 
-def open(name:str) -> bool:
+def open(name: str) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_open_(name)
 
-def set_dir(path_name:str) -> bool:
+def set_dir(path_name: str) -> bool:
     if type(path_name) == str:
         path_name = bytes(path_name, 'utf8')
     return wallet_set_dir_(path_name)
@@ -58,12 +58,12 @@ def get_public_keys():
 def lock_all():
     return wallet_lock_all_()
 
-def lock(name:str) -> bool:
+def lock(name: str) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_lock_(name)
 
-def unlock(name:str, password:str) -> bool:
+def unlock(name: str, password: str) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
 
@@ -72,7 +72,7 @@ def unlock(name:str, password:str) -> bool:
     
     return wallet_unlock_(name, password)
 
-def import_key(name:str, wif_key:str) -> bool:
+def import_key(name: str, wif_key: str) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     if type(wif_key) == str:

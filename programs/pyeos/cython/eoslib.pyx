@@ -96,7 +96,7 @@ def store(scope, code, table, bytes keys, int key_type, bytes value):
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return store_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, value, len(value))
+    return store_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
 
 def store_u64(scope, code, table, uint64_t key, uint64_t value):
     cdef uint64_t scope_
@@ -115,7 +115,7 @@ def update(scope, code, table, bytes keys, int key_type, bytes value):
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return update_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, value, len(value))
+    return update_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
 
 def remove(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
@@ -125,7 +125,7 @@ def remove(scope, code, table, bytes keys, int key_type, bytes value):
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return remove_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, value, len(value))
+    return remove_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
 
 def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -137,7 +137,7 @@ def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return load_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return load_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def load_u64(scope, code, table, uint64_t key):
     cdef uint64_t scope_
@@ -183,7 +183,7 @@ def front(scope, code, table, bytes keys, int key_type, int scope_index, bytes v
         return None
     if key_type > 2:
         return None
-    return front_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return front_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -198,7 +198,7 @@ def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
         return None
     if key_type > 2:
         return None
-    return back_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return back_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def next(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -210,7 +210,7 @@ def next(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return next_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return next_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def previous(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -222,7 +222,7 @@ def previous(scope, code, table, bytes keys, int key_type, int scope_index, byte
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return previous_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return previous_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def lower_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -234,7 +234,7 @@ def lower_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return lower_bound_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -246,7 +246,7 @@ def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return upper_bound_(Name(scope_), Name(code_), Name(table_), < void *> keys_, key_type, scope_index, values_, len(values))
+    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
 
 def call_wasm_function(uint64_t code, uint64_t function, args: list):
     cdef vector[uint64_t] args_

@@ -41,7 +41,7 @@ void sign_transaction(SignedTransaction& trx) {
          chain_id_type { });
 }
 
-PyObject* wallet_create_(std::string& name) {
+PyObject *wallet_create_(std::string& name) {
    string password = "";
    try {
       password = wm().create(name);
@@ -52,7 +52,7 @@ PyObject* wallet_create_(std::string& name) {
    return py_new_string(password);
 }
 
-PyObject* wallet_open_(std::string& name) {
+PyObject *wallet_open_(std::string& name) {
    try {
       wm().open(name);
    } catch (fc::exception& ex) {
@@ -64,7 +64,7 @@ PyObject* wallet_open_(std::string& name) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_set_dir_(std::string& path_name) {
+PyObject *wallet_set_dir_(std::string& path_name) {
    try {
       wm().set_dir(path_name);
    } catch (fc::exception& ex) {
@@ -76,7 +76,7 @@ PyObject* wallet_set_dir_(std::string& path_name) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_set_timeout_(int secs) {
+PyObject *wallet_set_timeout_(int secs) {
    try {
       wm().set_timeout(secs);
    } catch (fc::exception& ex) {
@@ -94,7 +94,7 @@ PyObject* wallet_set_timeout_(int secs) {
  }
  */
 
-PyObject* wallet_list_wallets_() {
+PyObject *wallet_list_wallets_() {
    PyArray arr;
    try {
       auto list = wm().list_wallets();
@@ -109,7 +109,7 @@ PyObject* wallet_list_wallets_() {
    return arr.get();
 }
 
-PyObject* wallet_list_keys_() {
+PyObject *wallet_list_keys_() {
    PyDict results;
    try {
       map<public_key_type, std::string> keys = wm().list_keys();
@@ -129,7 +129,7 @@ PyObject* wallet_list_keys_() {
    return results.get();
 }
 
-PyObject* wallet_get_public_keys_() {
+PyObject *wallet_get_public_keys_() {
    PyArray results;
 
    try {
@@ -148,7 +148,7 @@ PyObject* wallet_get_public_keys_() {
    return results.get();
 }
 
-PyObject* wallet_lock_all_() {
+PyObject *wallet_lock_all_() {
    try {
       wm().lock_all();
    } catch (fc::exception& ex) {
@@ -160,7 +160,7 @@ PyObject* wallet_lock_all_() {
    return py_new_bool(true);
 }
 
-PyObject* wallet_lock_(string& name) {
+PyObject *wallet_lock_(string& name) {
    try {
       wm().lock(name);
    } catch (fc::exception& ex) {
@@ -172,7 +172,7 @@ PyObject* wallet_lock_(string& name) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_unlock_(string& name, string& password) {
+PyObject *wallet_unlock_(string& name, string& password) {
    try {
       wm().unlock(name, password);
    } catch (fc::exception& ex) {
@@ -184,7 +184,7 @@ PyObject* wallet_unlock_(string& name, string& password) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_import_key_(string& name, string& wif_key) {
+PyObject *wallet_import_key_(string& name, string& wif_key) {
    try {
       wm().import_key(name, wif_key);
    } catch (fc::exception& ex) {

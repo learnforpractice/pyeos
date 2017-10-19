@@ -29,16 +29,11 @@ int eos_thread(int argc, char** argv) {
    try {
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
-      app().register_plugin<http_plugin>();
       app().register_plugin<producer_plugin>();
-      app().register_plugin<chain_plugin>();
-      app().register_plugin<account_history_plugin>();
       app().register_plugin<account_history_api_plugin>();
-      app().register_plugin<wallet_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<py_plugin>();
-      if (!app().initialize<py_plugin, chain_plugin, http_plugin, net_plugin,
-            account_history_api_plugin, wallet_plugin>(argc, argv)) {
+      if(!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(argc, argv)) {
          init_finished = true;
          shutdown_finished = true;
          return -1;

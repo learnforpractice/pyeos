@@ -97,7 +97,7 @@ string push_transaction_bk(SignedTransaction& trx, bool sign) {
    return get_db().transaction_to_variant(pts).get_string();
 }
 
-PyObject* push_transaction(SignedTransaction& trx, bool sign) {
+PyObject *push_transaction(SignedTransaction& trx, bool sign) {
    auto info = get_info();
    trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
 //    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
@@ -136,7 +136,7 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    return py_new_none();
 }
 
-PyObject* create_key_() {
+PyObject *create_key_() {
    auto priv_ = fc::ecc::private_key::generate();
    auto pub_ = public_key_type(priv_.get_public_key());
    PyDict dict;
@@ -161,15 +161,12 @@ PyObject *get_public_key_(string& wif_key) {
    return py_new_string(pub_key);
 }
 
-PyObject* create_account_(string creator, string newaccount, string owner,
+PyObject *create_account_(string creator, string newaccount, string owner,
       string active, int sign) {
    try {
-      auto owner_auth = eos::chain::Authority { 1, {
-            { public_key_type(owner), 1 } }, { } };
-      auto active_auth = eos::chain::Authority { 1, { { public_key_type(active),
-            1 } }, { } };
-      auto recovery_auth = eos::chain::Authority { 1, { }, { { { creator,
-            "active" }, 1 } } };
+      auto owner_auth = eos::chain::Authority{1, {{ public_key_type(owner), 1 }}, {}};
+      auto active_auth = eos::chain::Authority{1, {{public_key_type(active),1}},{}};
+      auto recovery_auth = eos::chain::Authority {1, {}, {{{creator,"active"}, 1}}};
 
       uint64_t deposit = 1;
       SignedTransaction trx;
@@ -189,7 +186,7 @@ PyObject* create_account_(string creator, string newaccount, string owner,
    return py_new_none();
 }
 
-PyObject* get_info_() {
+PyObject *get_info_() {
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
    chain_apis::read_only::get_info_params params = { };
    chain_apis::read_only::get_info_results results = ro_api.get_info(params);
@@ -322,7 +319,7 @@ PyObject *get_block_(char *num_or_id) {
  optional<types::Abi>       abi;
  };
  */
-PyObject* get_account_(char *name) {
+PyObject *get_account_(char *name) {
    using namespace native::eos;
    PyArray arr;
    PyDict dict;
@@ -382,7 +379,7 @@ PyObject* get_account_(char *name) {
    return dict.get();
 }
 
-PyObject* get_accounts_(char *public_key) {
+PyObject *get_accounts_(char *public_key) {
    PyArray arr;
    try {
       if (public_key == NULL) {
@@ -407,7 +404,7 @@ PyObject* get_accounts_(char *public_key) {
    return arr.get();
 }
 
-PyObject* get_controlled_accounts_(char *account_name) {
+PyObject *get_controlled_accounts_(char *account_name) {
    PyArray arr;
    try {
       if (account_name == NULL) {
@@ -462,7 +459,7 @@ int get_transactions_(string& account_name, int skip_seq, int num_seq,
    return -1;
 }
 
-PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
+PyObject *transfer_(string& sender, string& recipient, int amount, string memo,
       bool sign) {
    try {
       auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
@@ -478,7 +475,7 @@ PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
    return py_new_none();
 }
 
-PyObject* push_message_(string& contract, string& action, string& args,
+PyObject *push_message_(string& contract, string& action, string& args,
       vector<string> scopes, map<string, string>& permissions, bool sign,
       bool rawargs) {
    SignedTransaction trx;
@@ -519,7 +516,7 @@ PyObject* push_message_(string& contract, string& action, string& args,
    return py_new_none();
 }
 
-PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
+PyObject *set_contract_(string& account, string& wastPath, string& abiPath,
       int vmtype, bool sign) {
    try {
       types::setcode handler;

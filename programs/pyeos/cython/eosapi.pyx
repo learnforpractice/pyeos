@@ -80,7 +80,7 @@ def get_info():
     info = get_info_()
     return JsonStruct(info)
 
-def get_block(id:str) -> str:
+def get_block(id: str) -> str:
     if isinstance(id, int):
         id = str(id)
         id = bytes(id, 'utf8')
@@ -89,7 +89,7 @@ def get_block(id:str) -> str:
     info = get_block_(id)
     return JsonStruct(info)
 
-def get_account(name:str):
+def get_account(name: str):
     if isinstance(name, str):
         name = bytes(name, 'utf8')
     result = get_account_(name)
@@ -97,18 +97,18 @@ def get_account(name:str):
         return JsonStruct(result)
     return None
 
-def get_accounts(public_key:str) -> List[str]:
+def get_accounts(public_key: str) -> List[str]:
     if isinstance(public_key, str):
         public_key = bytes(public_key, 'utf8')
     return get_accounts_(public_key)
 
-def get_controlled_accounts(account_name:str) -> List[str]:
+def get_controlled_accounts(account_name: str) -> List[str]:
     if isinstance(account_name, str):
         account_name = bytes(account_name, 'utf8')
 
     return get_controlled_accounts_(account_name);
 
-def create_account(creator:str, newaccount:str, owner_key:str, active_key:str, sign=True) -> str:
+def create_account(creator: str, newaccount: str, owner_key: str, active_key: str, sign=True) -> str:
     if isinstance(creator, str):
         creator = bytes(creator, 'utf8')
     
@@ -141,7 +141,7 @@ def get_public_key(priv_key):
     priv_key_ = tobytes(priv_key)
     return get_public_key_(priv_key_)
 
-def get_transaction(id:str) -> str:
+def get_transaction(id: str) -> str:
     cdef string result
     if isinstance(id, int):
         id = str(id)
@@ -150,14 +150,14 @@ def get_transaction(id:str) -> str:
         return JsonStruct(result)
     return None
 
-def get_transactions(account_name:str, skip_seq:int, num_seq:int) -> str:
+def get_transactions(account_name: str, skip_seq: int, num_seq: int) -> str:
     cdef string result
     account_name = tobytes(account_name)
     if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
         return result
     return None
 
-def transfer(sender:str, recipient:str, int amount, memo:str, sign=True) -> str:
+def transfer(sender: str, recipient: str, int amount, memo: str, sign=True) -> str:
     sender = tobytes(sender)
     recipient = tobytes(recipient)
     memo = tobytes(memo)
@@ -170,7 +170,7 @@ def transfer(sender:str, recipient:str, int amount, memo:str, sign=True) -> str:
         return JsonStruct(result)
     return None
 
-def push_message(contract:str, action:str, args:str, scopes:List[str], permissions:Dict, sign=True, rawargs=False):
+def push_message(contract: str, action: str, args: str, scopes: List[str], permissions: Dict, sign=True, rawargs=False):
     cdef string contract_
     cdef string action_
     cdef string args_
@@ -207,7 +207,7 @@ def push_message(contract:str, action:str, args:str, scopes:List[str], permissio
         return JsonStruct(result)
     return None
 
-def set_contract(account:str, wast_file:str, abi_file:str, vmtype=1, sign=True) -> str:
+def set_contract(account: str, wast_file: str, abi_file: str, vmtype=1, sign=True) -> str:
     ilog("set_contract.....");
     if not os.path.exists(wast_file):
         return False
@@ -226,7 +226,7 @@ def set_contract(account:str, wast_file:str, abi_file:str, vmtype=1, sign=True) 
         return JsonStruct(result)
     return None
 
-def get_code(name:str):
+def get_code(name: str):
     cdef string wast
     cdef string abi
     cdef string code_hash

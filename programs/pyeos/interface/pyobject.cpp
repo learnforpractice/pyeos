@@ -42,34 +42,34 @@ PyDict::PyDict() {
    pydict = dict_create();
 }
 
-PyDict::PyDict(PyObject* dictObj) {
+PyDict::PyDict(PyObject *dictObj) {
    pydict = dictObj;
 }
 
-void PyDict::add(PyObject* key, PyObject* value) {
+void PyDict::add(PyObject *key, PyObject *value) {
    if (key == NULL || value == NULL) {
       return;
    }
    dict_add(pydict, key, value);
 }
 
-void PyDict::add(std::string& key, PyObject* value) {
+void PyDict::add(std::string& key, PyObject *value) {
    if (key.size() == 0 || value == NULL) {
       return;
    }
-   PyObject* pykey = py_new_string(key);
+   PyObject *pykey = py_new_string(key);
    dict_add(pydict, pykey, value);
 }
 
 void PyDict::add(std::string& key, std::string& value) {
-   PyObject* pykey = py_new_string(key);
-   PyObject* pyvalue = py_new_string(value);
+   PyObject *pykey = py_new_string(key);
+   PyObject *pyvalue = py_new_string(value);
    dict_add(pydict, pykey, pyvalue);
 }
 
 void PyDict::add(std::string& key, long long n) {
-   PyObject* pykey = py_new_string(key);
-   PyObject* pyvalue = py_new_int64(n);
+   PyObject *pykey = py_new_string(key);
+   PyObject *pyvalue = py_new_int64(n);
    dict_add(pydict, pykey, pyvalue);
 }
 

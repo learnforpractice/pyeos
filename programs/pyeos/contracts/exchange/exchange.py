@@ -65,12 +65,15 @@ class uint128(int):
         return int.to_bytes(self,16,'little')
 
 class Object(object):
+    
     def __str__(self):
         return str(self.__dict__)
+    
     def __repr__(self):
         return str(self.__dict__)
 
 class Transfer(Object):
+    
     def __init__(self):
         self.msg = readMessage()
         self.from_ = uint64(self.msg[:8])
@@ -88,14 +91,17 @@ class Transfer(Object):
        }
 '''
 class Account(Object):
+    
     def __init__(self,owner):
         self.owner = owner
         self.load()
+        
     def save(self):
         keys = struct.pack("Q",self.owner)
         print(self.eos_balance,self.currency_balance,self.open_orders)
         values = struct.pack('QQI',self.eos_balance,self.currency_balance,self.open_orders)
         eoslib.store(exchange,exchange,table_account,keys,0,values)
+        
     def load(self):
         keys = struct.pack("Q",self.owner)
         print(self.owner)
@@ -117,6 +123,7 @@ class Account(Object):
       uint64_t    id  = 0;
 '''
 class OrderID(Object):
+    
     def __init__(self,bs=None):
         if bs:
             result = struct.unpack('QQ',bs)
@@ -126,6 +133,7 @@ class OrderID(Object):
             self.name = 0
             self.id = 0
         self.raw_data = None
+        
     def __call__(self):
         self.raw_data = struct.pack('QQ',self.name,self.id)
         return self.raw_data
@@ -137,15 +145,18 @@ class OrderID(Object):
          "expiration" : "Time"
 '''
 class Bid(Object):
+    
     def __init__(self):
         self.buyer = OrderID()
         self.price = uint128(0)
         self.quantity = uint64(0)
         self.expiration = 0
+        
     def store(self):
         keys = struct.pack('16s16s',self.buyer(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
         return eoslib.store(exchange,exchange,table_bids,keys,1,values)
+    
     def remove(self):
         keys = struct.pack('16s16s',self.buyer(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -165,6 +176,7 @@ class Bid(Object):
             return bid
         else:
             return None
+        
     def load_by_price(price):
         keys = struct.pack('16s16s',bytes(16),price())
         values = bytes(12)
@@ -190,6 +202,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def back_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
@@ -202,6 +215,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def front_by_price():
         keys = bytes(32)
         values = bytes(8+4)
@@ -214,6 +228,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def back_by_price():
         keys = bytes(32)
         values = bytes(8+4)
@@ -226,6 +241,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def next_by_order_id(self):
         keys = struct.pack('16s16s',self.buyer(),bytes(16))
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -238,6 +254,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def next_by_price(self):
         keys = struct.pack('16s16s',bytes(16),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -250,6 +267,7 @@ class Bid(Object):
             bid.expiration = result[1]
             return bid
         return None
+    
     def __repr__(self):
         return str(self.__dict__)
 
@@ -260,6 +278,7 @@ class Bid(Object):
          "expiration" : "Time"
 '''
 class Ask(Object):
+    
     def __init__(self):
         self.seller = OrderID(0)
         self.price = uint128(0)
@@ -292,6 +311,7 @@ class Ask(Object):
             return ask
         else:
             return None
+        
     def load_by_price(price):
         keys = struct.pack('16s16s',bytes(16),price())
         values = bytes(12)
@@ -305,6 +325,7 @@ class Ask(Object):
             return ask
         else:
             return None
+        
     def front_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
@@ -317,6 +338,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+
     def back_by_order_id():
         keys = bytes(32)
         values = bytes(8+4)
@@ -329,6 +351,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    
     def front_by_price():
         keys = bytes(32)
         values = bytes(8+4)
@@ -341,6 +364,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    
     def back_by_price():
         keys = bytes(32)
         values = bytes(8+4)
@@ -353,6 +377,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    
     def next_by_order_id(self):
         keys = struct.pack('16s16s',self.seller(),bytes(16))
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -365,6 +390,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    
     def next_by_price(self):
         keys = struct.pack('16s16s',bytes(16),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
@@ -377,6 +403,7 @@ class Ask(Object):
             ask.expiration = result[1]
             return ask
         return None
+    
     def __repr__(self):
         return str(self.__dict__)
 '''

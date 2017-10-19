@@ -2,7 +2,7 @@ Hack on Eos. Have fun!
 
 # What does this project for?
 
-Eos have the potential of be a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
+Eos has the potential of be a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
 Python is one of the most powerfull language on the earth. It's easy to use and easy to understand,also it's easy to interface with other program language such as c++,c etc. You can do a lot of things with python without paying too much time and too much energy. But for the reason of permarmance,Eos is writing in C++. So I think maybe I can rewrite Eos in python? At least I can improve the usability of Eos with python. So here comes pyeos.
 
 # What pyeos can do?

@@ -100,7 +100,7 @@ void requireNotice_(uint64_t account) {
 //      FC_ASSERT(VALUE_INDEX::value_type::number_of_keys<scope_index,"scope index out off bound");
 
 int32_t store_(Name scope, Name code, Name table, void *keys, int key_type,
-      char* value, uint32_t valuelen) {
+      char *value, uint32_t valuelen) {
 //   key128x128_value_index
    apply_context& ctx = get_apply_ctx();
 //   return ctx.store_record<key_value_object>(Name(scope), Name(ctx.code.value),Name(table), (key_value_object::key_type*)keys, data, valuelen);
@@ -121,7 +121,7 @@ int32_t store_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t update_(Name scope, Name code, Name table, void *keys, int key_type,
-      char* value, uint32_t valuelen) {
+      char *value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
       RETURN_UPDATE_RECORD(update, key_value_object);
@@ -135,7 +135,7 @@ int32_t update_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t remove_(Name scope, Name code, Name table, void *keys, int key_type,
-      char* value, uint32_t valuelen) {
+      char *value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
       RETURN_UPDATE_RECORD(remove, key_value_object);
@@ -148,7 +148,7 @@ int32_t remove_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t load_(Name scope, Name code, Name table, void *keys, int key_type,
-      int scope_index, char* value, uint32_t valuelen) {
+      int scope_index, char *value, uint32_t valuelen) {
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -165,7 +165,7 @@ int32_t load_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t front_(Name scope, Name code, Name table, void *keys, int key_type,
-      int scope_index, char* value, uint32_t valuelen) {
+      int scope_index, char *value, uint32_t valuelen) {
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -182,7 +182,7 @@ int32_t front_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t back_(Name scope, Name code, Name table, void *keys, int key_type,
-      int scope_index, char* value, uint32_t valuelen) {
+      int scope_index, char *value, uint32_t valuelen) {
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -199,7 +199,7 @@ int32_t back_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t next_(Name scope, Name code, Name table, void *keys, int key_type,
-      int scope_index, char* value, uint32_t valuelen) {
+      int scope_index, char *value, uint32_t valuelen) {
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -216,7 +216,7 @@ int32_t next_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t previous_(Name scope, Name code, Name table, void *keys, int key_type,
-      int scope_index, char* value, uint32_t valuelen) {
+      int scope_index, char *value, uint32_t valuelen) {
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
    apply_context& ctx = get_apply_ctx();
@@ -231,7 +231,7 @@ int32_t previous_(Name scope, Name code, Name table, void *keys, int key_type,
 }
 
 int32_t lower_bound_(Name scope, Name code, Name table, void *keys,
-      int key_type, int scope_index, char* value, uint32_t valuelen) {
+      int key_type, int scope_index, char *value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
@@ -245,7 +245,7 @@ int32_t lower_bound_(Name scope, Name code, Name table, void *keys,
 }
 
 int32_t upper_bound_(Name scope, Name code, Name table, void *keys,
-      int key_type, int scope_index, char* value, uint32_t valuelen) {
+      int key_type, int scope_index, char *value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
 
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
