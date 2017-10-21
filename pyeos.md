@@ -44,6 +44,12 @@ Now following the instruction on [Building EOS and running a node](https://githu
 
 Currently only test with python 3.6 on macOS 10.12.6
 
+# About code style
+
+Bad code style will affect the cooperation between developers. So there must be some rule for developers to follow. Here is my recommendation: [google cpp guide](https://google.github.io/styleguide/cppguide.html) Who use eclipse as their IDE can use the following tool to format there cpp code.
+http://www.cppstyle.com/
+
+Also in order to compatible with eos source code, Change the tab with to 3 spaces.
 
 # How to run
 
