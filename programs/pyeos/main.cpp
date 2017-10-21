@@ -1,21 +1,21 @@
 #include <appbase/application.hpp>
 
-#include <eos/producer_plugin/producer_plugin.hpp>
+#include <eos/account_history_api_plugin/account_history_api_plugin.hpp>
+#include <eos/account_history_plugin/account_history_plugin.hpp>
+#include <eos/chain_api_plugin/chain_api_plugin.hpp>
 #include <eos/chain_plugin/chain_plugin.hpp>
 #include <eos/http_plugin/http_plugin.hpp>
-#include <eos/chain_api_plugin/chain_api_plugin.hpp>
 #include <eos/net_plugin/net_plugin.hpp>
-#include <eos/account_history_plugin/account_history_plugin.hpp>
-#include <eos/account_history_api_plugin/account_history_api_plugin.hpp>
+#include <eos/producer_plugin/producer_plugin.hpp>
 #include <eos/py_plugin/py_plugin.hpp>
-#include <eos/wallet_plugin/wallet_plugin.hpp>
 #include <eos/wallet_api_plugin/wallet_api_plugin.hpp>
+#include <eos/wallet_plugin/wallet_plugin.hpp>
 
-#include <fc/log/logger_config.hpp>
 #include <fc/exception/exception.hpp>
+#include <fc/log/logger_config.hpp>
 
-#include <boost/exception/diagnostic_information.hpp>
 #include <boost/chrono.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/thread/thread.hpp>
 
 #include <Python.h>
@@ -33,7 +33,8 @@ int eos_thread(int argc, char** argv) {
       app().register_plugin<account_history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<py_plugin>();
-      if(!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(argc, argv)) {
+      if (!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(
+              argc, argv)) {
          init_finished = true;
          shutdown_finished = true;
          return -1;
@@ -42,11 +43,11 @@ int eos_thread(int argc, char** argv) {
       init_finished = true;
       app().exec();
    } catch (const fc::exception& e) {
-      elog("${e}", ("e",e.to_detail_string()));
+      elog("${e}", ("e", e.to_detail_string()));
    } catch (const boost::exception& e) {
-      elog("${e}", ("e",boost::diagnostic_information(e)));
+      elog("${e}", ("e", boost::diagnostic_information(e)));
    } catch (const std::exception& e) {
-      elog("${e}", ("e",e.what()));
+      elog("${e}", ("e", e.what()));
    } catch (...) {
       elog("unknown exception");
    }
@@ -64,11 +65,10 @@ extern "C" PyObject* PyInit_eoslib();
 void set_args(int argc, char** argv);
 
 int main(int argc, char** argv) {
-
-//   Py_InitializeEx(0);
+   //   Py_InitializeEx(0);
    Py_Initialize();
    PyEval_InitThreads();
-//   set_args(argc,argv);
+   //   set_args(argc,argv);
 
    PyRun_SimpleString("import readline");
    PyInit_eosapi();
@@ -95,8 +95,10 @@ int main(int argc, char** argv) {
    }
 
    PyRun_SimpleString(
-         "import sys;sys.path.append('../../programs/pyeos');sys.path.append('../../programs/pyeos/contract')");
-//   PyRun_SimpleString("from initeos import *");
+       "import "
+       "sys;sys.path.append('../../programs/pyeos');sys.path.append('../../"
+       "programs/pyeos/contract')");
+   //   PyRun_SimpleString("from initeos import *");
    PyRun_SimpleString("import initeos");
    if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");
@@ -112,4 +114,3 @@ int main(int argc, char** argv) {
 
    return 0;
 }
-

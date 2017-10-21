@@ -5,20 +5,20 @@ MAX_INT64 = 0xffffffffffffffff
 precision = int.to_bytes(1000*1000*1000*1000*1000,16,'little')
 
 cdef extern from "math_.hpp":
-    void mul64_(char *n1,char *n2,char *out);
-    void div64_(char *n1,char *n2,char *out);
-    void add64_(char *n1,char *n2,char *out);
-    void sub64_(char *n1,char *n2,char *out);
-    void mul128_(char *n1,char *n2,char *out);
-    void div128_(char *n1,char *n2,char *out);
-    void add128_(char *n1,char *n2,char *out);
-    void sub128_(char *n1,char *n2,char *out);
+    void mul64_(char* n1,char* n2,char* out);
+    void div64_(char* n1,char* n2,char* out);
+    void add64_(char* n1,char* n2,char* out);
+    void sub64_(char* n1,char* n2,char* out);
+    void mul128_(char* n1,char* n2,char* out);
+    void div128_(char* n1,char* n2,char* out);
+    void add128_(char* n1,char* n2,char* out);
+    void sub128_(char* n1,char* n2,char* out);
 
-    int gt64_(char *n1,char *n2);
-    int lt64_(char *n1,char *n2);
+    int gt64_(char* n1,char* n2);
+    int lt64_(char* n1,char* n2);
     
-    int gt128_(char *n1,char *n2);
-    int lt128_(char *n1,char *n2);
+    int gt128_(char* n1,char* n2);
+    int lt128_(char* n1,char* n2);
 
 def mul64(bytes n1,bytes n2,bytes out):
     assert len(n1) == 8

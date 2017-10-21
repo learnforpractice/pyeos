@@ -18,16 +18,16 @@ cdef extern from "eoslib_.hpp":
     uint64_t currentCode_();
     uint32_t now_();
 
-    int32_t store_(Name scope, Name code, Name table, void *keys, int key_type, char * value, uint32_t valuelen);
-    int32_t update_(Name scope, Name code, Name table, void *keys, int key_type, char * value, uint32_t valuelen);
-    int32_t remove_(Name scope, Name code, Name table, void *keys, int key_type, char * value, uint32_t valuelen);
-    int32_t load_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen);
-    int32_t front_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
-    int32_t back_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
-    int32_t next_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
-    int32_t previous_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
-    int32_t lower_bound_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
-    int32_t upper_bound_(Name scope, Name code, Name table, void *keys, int key_type, int scope_index, char * value, uint32_t valuelen)
+    int32_t store_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t update_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t load_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen);
+    int32_t front_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t back_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t next_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t previous_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t lower_bound_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t upper_bound_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
 
     void unpack_(string& raw, string& out)
     void pack_(string& raw, string& out)
@@ -92,11 +92,11 @@ def store(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
+    cdef char* keys_ = keys
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return store_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
+    return store_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
 
 def store_u64(scope, code, table, uint64_t key, uint64_t value):
     cdef uint64_t scope_
@@ -105,39 +105,39 @@ def store_u64(scope, code, table, uint64_t key, uint64_t value):
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return store_(Name(scope_), Name(code_), Name(table_), < void *>& key, 0, < char *>& value, sizeof(value))
+    return store_(Name(scope_), Name(code_), Name(table_), < void* >& key, 0, < char *>& value, sizeof(value))
 
 def update(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
+    cdef char* keys_ = keys
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return update_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
+    return update_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
 
 def remove(scope, code, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
+    cdef char* keys_ = keys
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return remove_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, value, len(value))
+    return remove_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
 
 def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
     
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return load_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return load_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def load_u64(scope, code, table, uint64_t key):
     cdef uint64_t scope_
@@ -150,15 +150,15 @@ def load_u64(scope, code, table, uint64_t key):
     code_ = toname(code)
     table_ = toname(table)
     value = 0
-    value_length = load_(Name(scope_), Name(code_), Name(table_), < void *>& key, 0, 0, < char *>& value, sizeof(value))
+    value_length = load_(Name(scope_), Name(code_), Name(table_), < void* >& key, 0, 0, < char *>& value, sizeof(value))
     return value
 '''
-int32_t front_( Name scope, Name code, Name table, void *keys,int key_type,int scope_index, char* value, uint32_t valuelen )
-int32_t back_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
-int32_t next_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
-int32_t previous_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
-int32_t lower_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
-int32_t upper_bound_( Name scope, Name code, Name table, void *keys,int key_type, int scope_index, char* value, uint32_t valuelen )
+int32_t front_( Name scope, Name code, Name table, void* keys,int key_type,int scope_index, char* value, uint32_t valuelen )
+int32_t back_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
+int32_t next_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
+int32_t previous_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
+int32_t lower_bound_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
+int32_t upper_bound_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
 '''
 cdef int get_key_size(int key_type):
     if key_type == 0:
@@ -173,8 +173,8 @@ def front(scope, code, table, bytes keys, int key_type, int scope_index, bytes v
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
     cdef int value_length
     scope_ = toname(scope)
     code_ = toname(code)
@@ -183,14 +183,14 @@ def front(scope, code, table, bytes keys, int key_type, int scope_index, bytes v
         return None
     if key_type > 2:
         return None
-    return front_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return front_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
@@ -198,55 +198,55 @@ def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
         return None
     if key_type > 2:
         return None
-    return back_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return back_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def next(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return next_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return next_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def previous(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return previous_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return previous_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def lower_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
     cdef uint64_t code_
     cdef uint64_t table_
-    cdef char * keys_ = keys
-    cdef char * values_ = values
+    cdef char* keys_ = keys
+    cdef char* values_ = values
 
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void *>keys_, key_type, scope_index, values_, len(values))
+    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
 def call_wasm_function(uint64_t code, uint64_t function, args: list):
     cdef vector[uint64_t] args_

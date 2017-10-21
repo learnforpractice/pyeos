@@ -8,9 +8,9 @@
 #ifndef PYOBJECT_HPP_
 #define PYOBJECT_HPP_
 
+#include <Python.h>
 #include <string>
 #include <vector>
-#include <Python.h>
 PyObject* py_new_none();
 PyObject* py_new_bool(int b);
 PyObject* py_new_string(std::string& s);
@@ -31,30 +31,32 @@ void dict_add(PyObject* d, PyObject* key, PyObject* value);
 using namespace std;
 
 class PyArray {
-public:
+  public:
    PyArray();
-   void append(PyObject *obj);
+   void append(PyObject* obj);
    void append(std::string s);
    void append(int n);
    void append(unsigned int n);
    void append(uint64_t n);
    void append(double n);
-   PyObject *get();
-private:
-   PyObject *arr;
+   PyObject* get();
+
+  private:
+   PyObject* arr;
 };
 
 class PyDict {
-public:
+  public:
    PyDict();
    PyDict(PyObject* dictObj);
    void add(PyObject* key, PyObject* value);
    void add(std::string& key, PyObject* value);
    void add(std::string& key, std::string& value);
    void add(std::string& key, long long n);
-   PyObject *get();
-private:
-   PyObject *pydict;
+   PyObject* get();
+
+  private:
+   PyObject* pydict;
 };
 
 #endif /* PYOBJECT_HPP_ */

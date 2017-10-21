@@ -9,7 +9,7 @@ from eostypes_ cimport *
 from typing import Dict, Tuple, List
 
 cdef extern from "<fc/log/logger.hpp>":
-    void ilog(char *log)
+    void ilog(char* log)
 
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
@@ -18,11 +18,11 @@ cdef extern from "eosapi_.hpp":
     uint32_t now2_()
 
     object get_info_ ()
-    object get_block_(char *num_or_id)
-    object get_account_(char *name)
-    object get_accounts_(char *public_key)
+    object get_block_(char* num_or_id)
+    object get_account_(char* name)
+    object get_accounts_(char* public_key)
     object create_account_(string creator, string newaccount, string owner, string active, int sign)
-    object get_controlled_accounts_(char *account_name);
+    object get_controlled_accounts_(char* account_name);
     object create_key_()
     object get_public_key_(string& wif_key)
 
@@ -30,13 +30,13 @@ cdef extern from "eosapi_.hpp":
     int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
     
     object transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
-    object push_message_(string& contract, string& action, string& args, vector[string] scopes, map[string, string] & permissions, bool sign, bool rawargs)
+    object push_message_(string& contract, string& action, string& args, vector[string] scopes, map[string, string]& permissions, bool sign, bool rawargs)
     object set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
     int get_table_(string& scope, string& code, string& table, string& result);
 
-    int setcode_(char *account_, char *wast_file, char *abi_file, char *ts_buffer, int length) 
-    int exec_func_(char *code_, char *action_, char *json_, char *scope, char *authorization, char *ts_result, int length)
+    int setcode_(char* account_, char* wast_file, char* abi_file, char* ts_buffer, int length) 
+    int exec_func_(char* code_, char* action_, char* json_, char* scope, char* authorization, char* ts_result, int length)
 
 class JsonStruct(object):
     def __init__(self, js):
@@ -316,7 +316,7 @@ cdef class PyMessage:
     def __dealloc__(self):
         del self.msg
 '''
-cdef extern set_args(int argc, char *argv[]):
+cdef extern set_args(int argc, char* argv[]):
     import sys
     argv_ = []
     for i in range(argc):
