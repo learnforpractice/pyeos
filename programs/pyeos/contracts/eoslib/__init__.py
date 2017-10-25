@@ -1,3 +1,4 @@
+#dummy source for test in standalone python
 import struct
 import time
 

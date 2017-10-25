@@ -49,6 +49,7 @@ public:
    APPBASE_PLUGIN_REQUIRES((chain_plugin))
 
    producer_plugin();
+   void produce_block();
    virtual ~producer_plugin();
 
    virtual void set_program_options(
