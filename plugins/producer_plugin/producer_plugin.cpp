@@ -52,6 +52,7 @@ public:
 
    boost::program_options::variables_map _options;
    bool _production_enabled = false;
+   bool _auto_gen_block = false;
    uint32_t _required_producer_participation = 33 * config::Percent1;
    uint32_t _production_skip_flags = eos::chain::chain_controller::skip_nothing;
    eos::chain::block_schedule::factory _production_scheduler = eos::chain::block_schedule::in_single_thread;
@@ -99,7 +100,8 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
-         ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
+      ("enable-auto-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_auto_gen_block = e;}), "automate generate block.")
+      ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("required-participation", boost::program_options::bool_switch()->notifier([this](int e){my->_required_producer_participation = uint32_t(e*config::Percent1);}), "Percent of producers (0-99) that must be participating in order to produce blocks")
          ("producer-name,p", boost::program_options::value<vector<string>>()->composing()->multitoken(),
           ("ID of producer controlled by this node (e.g. inita; may specify multiple times)"))
@@ -179,11 +181,17 @@ void producer_plugin::plugin_startup()
             new_chain_banner(chain);
          my->_production_skip_flags |= eos::chain::chain_controller::skip_undo_history_check;
       }
-      my->schedule_production_loop();
+      if (my->_auto_gen_block) {
+         my->schedule_production_loop();
+      }
    } else
       elog("No producers configured! Please add producer IDs and private keys to configuration.");
    ilog("producer plugin:  plugin_startup() end");
    } FC_CAPTURE_AND_RETHROW() }
+
+void producer_plugin::produce_block() {
+   my->schedule_production_loop();
+}
 
 void producer_plugin::plugin_shutdown() {
    try {
@@ -229,10 +237,8 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       const auto& db = app().get_plugin<chain_plugin>().chain();
       auto producer  = db.head_block_producer();
       auto pending   = db.pending().size();
-#if 0
       wlog("${p} generated block #${n} @ ${t} with ${count} trxs  ${pending} pending", ("p", producer)(capture)("pending",pending) );
-#endif  
-    break;
+      break;
    }
    case block_production_condition::not_synced:
       ilog("Not producing block because production is disabled until we receive a recent block (see: --enable-stale-production)");
@@ -259,8 +265,9 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       elog( "exception producing block" );
       break;
    }
-
-   schedule_production_loop();
+   if (_auto_gen_block) {
+      schedule_production_loop();
+   }
    return result;
 }
 
@@ -324,10 +331,12 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       return block_production_condition::low_participation;
    }
 
-   if( llabs((scheduled_time - now).count()) > fc::milliseconds( 500 ).count() )
-   {
-      capture("scheduled_time", scheduled_time)("now", now);
-      return block_production_condition::lag;
+   if (_auto_gen_block) {
+      if( llabs((scheduled_time - now).count()) > fc::milliseconds( 500 ).count() )
+      {
+         capture("scheduled_time", scheduled_time)("now", now);
+         return block_production_condition::lag;
+      }
    }
 
    auto block = chain.generate_block(

@@ -52,6 +52,7 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 
 #include <eos/chain/exceptions.hpp>
 #include <eos/chain_api_plugin/chain_api_plugin.hpp>
+#include <eos/producer_plugin/producer_plugin.hpp>
 #include <fc/io/json.hpp>
 
 #include <eos/chain/wast_to_wasm.hpp>
@@ -78,6 +79,8 @@ wallet_manager& get_wm();
 PyObject* push_transaction(SignedTransaction& trx, bool sign);
 
 #define INT_65 65
+
+void produce_block_();
 
 PyObject* get_info_();
 PyObject* get_block_(char* num_or_id);

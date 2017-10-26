@@ -134,6 +134,11 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    return py_new_none();
 }
 
+void produce_block_() {
+   app().get_plugin<producer_plugin>().produce_block();
+}
+
+
 PyObject* create_key_() {
    auto priv_ = fc::ecc::private_key::generate();
    auto pub_ = public_key_type(priv_.get_public_key());
