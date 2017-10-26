@@ -61,10 +61,12 @@ extern "C" PyObject* PyInit_wallet();
 extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
+extern "C" PyObject* PyInit_eostest();
 
 void set_args(int argc, char** argv);
 
 int main(int argc, char** argv) {
+
    //   Py_InitializeEx(0);
    Py_Initialize();
    PyEval_InitThreads();
@@ -76,10 +78,12 @@ int main(int argc, char** argv) {
    PyInit_wallet();
    PyInit_python_contract();
    PyInit_eoslib();
+   PyInit_eostest();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
+   PyRun_SimpleString("import eostest;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
 

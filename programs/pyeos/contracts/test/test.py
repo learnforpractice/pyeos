@@ -36,12 +36,21 @@ def init():
         assert r
 
 '''
+"public": "EOS8mq8WGQLUjd1H4JKL5Tm6PFfUUVTkTTet7rw35SAiomYv7BSJ6",
+"private": "5KYry5CQQf2WmWJvfNBJRDEGbcjPDeexvL1A6t7cffc6kqmU9fp"
+
+"public": "EOS53UQPLciNxxadU1AWzxS96F4Z4J4ef45RTE5ykPwcoaYN5ihcm",
+"private": "5J35BjYbRHtBZbPX7h3tx9939rv3YzcCnofLTEYhqtme3HKo2Cb"
+
+
+
 psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
 wallet.open('mywallet')
 wallet.unlock('mywallet', psw)
 
-key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+key1 = 'EOS8mq8WGQLUjd1H4JKL5Tm6PFfUUVTkTTet7rw35SAiomYv7BSJ6'
+key2 = 'EOS53UQPLciNxxadU1AWzxS96F4Z4J4ef45RTE5ykPwcoaYN5ihcm'
+
 r = eosapi.create_account('inita', 'test2',key1,key2)
 
 r = eosapi.set_contract('test2','./pyeos/contracts/test/test.wast','../../programs/pyeos/contracts/test/test.abi',0)
