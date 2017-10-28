@@ -32,7 +32,7 @@ add_library( eos_chain
            )
 add_library(python3.6m SHARED IMPORTED)
 set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
-target_link_libraries( eos_chain fc chainbase eos_types Logging 
+target_link_libraries( eos_chain fc chainbase appbase eos_types Logging 
     IR WAST WASM Runtime 
     python3.6m boost_python3-mt
 )

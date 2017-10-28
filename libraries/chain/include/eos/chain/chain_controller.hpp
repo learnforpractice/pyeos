@@ -40,6 +40,8 @@
 #include <eos/chain/chain_administration_interface.hpp>
 #include <eos/chain/exceptions.hpp>
 
+#include <appbase/application.hpp>
+
 #include <fc/log/logger.hpp>
 
 #include <map>

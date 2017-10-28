@@ -280,7 +280,6 @@ ProcessedTransaction chain_controller::_push_transaction(const SignedTransaction
    // notify_changed_objects();
    // The transaction applied successfully. Merge its changes into the pending block session.
    temp_session.squash();
-
    // notify anyone listening to pending transactions
    on_pending_transaction(trx); /// TODO move this to apply... ??? why... 
 
@@ -663,7 +662,8 @@ void chain_controller::check_transaction_output(const T& expected, const T& actu
 }
 
 void chain_controller::_apply_block(const signed_block& next_block)
-{ try {
+{
+   try {
    uint32_t next_block_num = next_block.block_num();
    uint32_t skip = _skip_flags;
 
@@ -1313,7 +1313,6 @@ void chain_controller::update_signing_producer(const producer_object& signing_pr
 {
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
    uint64_t new_block_aslot = dpo.current_absolute_slot + get_slot_at_time( new_block.timestamp );
-
    _db.modify( signing_producer, [&]( producer_object& _wit )
    {
       _wit.last_aslot = new_block_aslot;
@@ -1338,8 +1337,12 @@ void chain_controller::update_last_irreversible_block()
       [](const producer_object* a, const producer_object* b) {
          return a->last_confirmed_block_num < b->last_confirmed_block_num;
       });
-
-   uint32_t new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
+   uint32_t new_last_irreversible_block_num = 0;
+   if (appbase::app().is_debug_mode()) {
+      new_last_irreversible_block_num = head_block_num();
+   } else {
+      new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
+   }
 
    if (new_last_irreversible_block_num > dpo.last_irreversible_block_num) {
       _db.modify(dpo, [&](dynamic_global_property_object& _dpo) {
@@ -1353,7 +1356,6 @@ void chain_controller::update_last_irreversible_block()
    // If this is null, there are no blocks on disk, so the zero is correct
    if (old_last_irreversible_block)
       last_block_on_disk = old_last_irreversible_block->block_num();
-
    if (last_block_on_disk < new_last_irreversible_block_num)
       for (auto block_to_write = last_block_on_disk + 1;
            block_to_write <= new_last_irreversible_block_num;
