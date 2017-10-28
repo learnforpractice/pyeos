@@ -16,6 +16,7 @@ PyObject* py_new_bool(int b);
 PyObject* py_new_string(std::string& s);
 PyObject* py_new_int(int n);
 PyObject* py_new_int64(long long n);
+PyObject* py_new_uint64(unsigned long long n);
 PyObject* py_new_float(double n);
 
 PyObject* array_create();
