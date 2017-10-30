@@ -277,7 +277,7 @@ def transactionRequireScope(uint32_t handle, string scope, readOnly=0):
 def transactionAddMessage(uint32_t handle,uint32_t msg_handle):
     transactionAddMessage_(handle,msg_handle);
 
-def transactionSend_(uint32_t handle):
+def transactionSend(uint32_t handle):
     transactionSend_(handle);
 
 def transactionDrop(uint32_t handle):

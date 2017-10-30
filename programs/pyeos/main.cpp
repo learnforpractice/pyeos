@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
    PyRun_SimpleString(
        "import sys;"
         "sys.path.append('../../programs/pyeos');"
-        "sys.path.append('../../programs/pyeos/contract');"
+        "sys.path.append('../../programs/pyeos/contracts');"
    );
    //   PyRun_SimpleString("from initeos import *");
 #if 0

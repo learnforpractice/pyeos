@@ -38,6 +38,12 @@
     },{
       "action": "testdb",
       "type": "test"
+    },{
+      "action": "testmsg",
+      "type": "Bytes"
+    },{
+      "action": "testts",
+      "type": "Bytes"
     }
   ],
   "tables": [{

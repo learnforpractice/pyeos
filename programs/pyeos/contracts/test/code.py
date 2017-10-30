@@ -10,7 +10,7 @@ test = N(b'test')
 def test_call_wasm_function():
     eoslib.call_wasm_function(N('test2'), N(b'hello'), [1,2])
 
-def test():
+def test_db1():
     msg = eoslib.readMessage()
     print(len(msg))
     result = int.from_bytes(msg[:8], 'little')
@@ -95,13 +95,30 @@ def test_db():
     print('----------------end----------------------')
 
 def test_transaction():
-    handle = eoslib.transactionCreate()
-    eoslib.transactionRequireScope(handle,b'test',0)
-    
+    print("------------------test_transaction---------------")
+    tshandle = eoslib.transactionCreate()
+    eoslib.transactionRequireScope(tshandle,b'test',0)
+    eoslib.transactionRequireScope(tshandle,b'inita',0)
+
+#'{"from":"test","to":"inita","amount":50}'
+    data = struct.pack("QQQ",N(b'test'),N(b'inita'),50)
+    msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
+    eoslib.messageRequirePermission(msghandle,b'test',b'active')
+
+    eoslib.transactionAddMessage(tshandle,msghandle)
+    eoslib.transactionSend(tshandle)
+
+def test_message():
+#'{"from":"currency","to":"test","amount":50}'
+    data = struct.pack("QQQ",N(b'test'),N(b'inita'),50)
+    msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
+    eoslib.messageRequirePermission(msghandle,b'test',b'active')
+    eoslib.messageSend(msghandle)
 
 def apply(code, action):
-    eoslib.requireAuth(test)
+    print(code,action)
     if code == test:
+        eoslib.requireAuth(test)
         if action == N(b'transfer'):
             msg = eoslib.readMessage()
             result = struct.unpack('QQQ', msg)
@@ -110,8 +127,13 @@ def apply(code, action):
             to_ = result[1]
             amount = result[2]
         elif action == N(b'test'):
-            test()
+            test_db2()
         elif action == N(b'testdb'):
             test_db()
         elif action == N(b'callwasm'):
         		test_call_wasm_function()
+        elif action == N(b'testmsg'):
+            print('testmsg')
+            test_message()
+        elif action == N(b'testts'):
+            test_transaction()
