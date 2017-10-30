@@ -35,6 +35,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <iostream>
+#include <boost/thread/thread.hpp>
+
 
 using std::string;
 using std::vector;
@@ -340,6 +342,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
    //         ilog("no pending transactions!");
          return block_production_condition::lag;
       }
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
    }
 
    if (!_manual_gen_block && _gen_empty_block) {
@@ -367,8 +370,9 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
    }
 
    capture("n", block.block_num())("t", block.timestamp)("c", now)("count",count);
-
-   app().get_plugin<net_plugin>().broadcast_block(block);
+   if (!app().is_debug_mode()) {
+      app().get_plugin<net_plugin>().broadcast_block(block);
+   }
    return block_production_condition::produced;
 }
 
