@@ -27,92 +27,93 @@ def test_db1():
     print(values)
 
 def test_db():
-    for i in range(4,11):
-        keys = int.to_bytes(i+1,8,'little')
-        values = int.to_bytes(i+2,8,'little')
+    for i in range(4, 11):
+        keys = int.to_bytes(i + 1, 8, 'little')
+        values = int.to_bytes(i + 2, 8, 'little')
         eoslib.store(test, test, test, keys, 0, values)
 
     print('----------upper bound------------')
-    keys = int.to_bytes(8,8,'little')
+    keys = int.to_bytes(8, 8, 'little')
     for i in range(4):
         values = bytes(8)
-        ret = eoslib.upper_bound(test, test, test, keys, 0,0,values)
+        ret = eoslib.upper_bound(test, test, test, keys, 0, 0, values)
         print(ret)
-        print('keys:',int.from_bytes(keys,'little'))
-        print('values',int.from_bytes(values,'little'))
+        print('keys:', int.from_bytes(keys, 'little'))
+        print('values', int.from_bytes(values, 'little'))
 
     print('----------upper bound------------')
-    keys = int.to_bytes(8,8,'little')
+    keys = int.to_bytes(8, 8, 'little')
     values = bytes(8)
-    ret = eoslib.upper_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.upper_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
     values = bytes(8)
-    ret = eoslib.upper_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.upper_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
     values = bytes(8)
-    ret = eoslib.upper_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.upper_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
     print('----------lower bound------------')
-    keys = int.to_bytes(0,8,'little')
+    keys = int.to_bytes(0, 8, 'little')
     for i in range(4):
         values = bytes(8)
-        ret = eoslib.lower_bound(test, test, test, keys, 0,0,values)
+        ret = eoslib.lower_bound(test, test, test, keys, 0, 0, values)
         print(ret)
-        print('keys:',int.from_bytes(keys,'little'))
-        print('values',int.from_bytes(values,'little'))
+        print('keys:', int.from_bytes(keys, 'little'))
+        print('values', int.from_bytes(values, 'little'))
 
     print('----------lower bound------------')
-    keys = int.to_bytes(1,8,'little')
+    keys = int.to_bytes(1, 8, 'little')
     values = bytes(8)
-    ret = eoslib.lower_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.lower_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
-    keys = int.to_bytes(1,8,'little')
+    keys = int.to_bytes(1, 8, 'little')
     values = bytes(8)
-    ret = eoslib.lower_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.lower_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
-    keys = int.to_bytes(1,8,'little')
+    keys = int.to_bytes(1, 8, 'little')
     values = bytes(8)
-    ret = eoslib.lower_bound(test, test, test, keys, 0,0,values)
+    ret = eoslib.lower_bound(test, test, test, keys, 0, 0, values)
     print(ret)
-    print('keys:',int.from_bytes(keys,'little'))
-    print('values',int.from_bytes(values,'little'))
+    print('keys:', int.from_bytes(keys, 'little'))
+    print('values', int.from_bytes(values, 'little'))
 
     print('----------------end----------------------')
 
 def test_transaction():
     print("------------------test_transaction---------------")
+    #transaction will apply in the next block
     tshandle = eoslib.transactionCreate()
-    eoslib.transactionRequireScope(tshandle,b'test',0)
-    eoslib.transactionRequireScope(tshandle,b'inita',0)
+    eoslib.transactionRequireScope(tshandle, b'test', 0)
+    eoslib.transactionRequireScope(tshandle, b'inita', 0)
 
-#'{"from":"test","to":"inita","amount":50}'
-    data = struct.pack("QQQ",N(b'test'),N(b'inita'),50)
+# '{"from":"test","to":"inita","amount":50}'
+    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
     msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
-    eoslib.messageRequirePermission(msghandle,b'test',b'active')
+    eoslib.messageRequirePermission(msghandle, b'test', b'active')
 
-    eoslib.transactionAddMessage(tshandle,msghandle)
+    eoslib.transactionAddMessage(tshandle, msghandle)
     eoslib.transactionSend(tshandle)
 
 def test_message():
-#'{"from":"currency","to":"test","amount":50}'
-    data = struct.pack("QQQ",N(b'test'),N(b'inita'),50)
+# '{"from":"currency","to":"test","amount":50}'
+    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
     msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
-    eoslib.messageRequirePermission(msghandle,b'test',b'active')
+    eoslib.messageRequirePermission(msghandle, b'test', b'active')
     eoslib.messageSend(msghandle)
 
 def apply(code, action):
