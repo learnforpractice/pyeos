@@ -43,6 +43,15 @@ def init():
 "private": "5J35BjYbRHtBZbPX7h3tx9939rv3YzcCnofLTEYhqtme3HKo2Cb"
 
 
+key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
+key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+r = eosapi.create_account('inita', 'test', key1, key2)
+r = eosapi.set_contract('test', '../../programs/pyeos/contracts/test/code.py', '../../programs/pyeos/contracts/test/test.abi', 1)
+
+args = {"name": "test","balance": [1,2,3]}
+r = eosapi.push_message('test','testdb',args,['test'],{'test':'active'})
+
+
 
 psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
 wallet.open('mywallet')
@@ -68,6 +77,10 @@ r = eosapi.set_contract('test2', './pyeos/contracts/test/test.wast', '../../prog
 
 args = {"name": "test","balance": [1,2,3]}
 r = eosapi.push_message('test','test',args,['test'],{'test':'active'})
+
+args = {"name": "test","balance": [1,2,3]}
+r = eosapi.push_message('test','testdb',args,['test'],{'test':'active'})
+
 
 from contracts.test import test;test.init()
 
