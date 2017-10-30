@@ -67,6 +67,17 @@ private:
 int wasm_call_function(uint64_t code, uint64_t function, std::vector<uint64_t> args);
 
 
+uint32_t transactionCreate_();
+void transactionRequireScope_(uint32_t handle, string& scope, uint32_t readOnly);
+void transactionAddMessage_(uint32_t handle,uint32_t msg_handle);
+void transactionSend_(uint32_t handle);
+void transactionDrop_(uint32_t handle);
+uint32_t messageCreate_(string& code, string& type, string& data);
+void messageRequirePermission_(uint32_t handle, string& account,string& permission);
+void messageSend_(uint32_t handle);
+void messageDrop_(uint32_t handle);
+
+
 }
 } // eos::chain
 
