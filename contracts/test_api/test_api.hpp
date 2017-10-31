@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
+ */
 #pragma once
 
 #define WASM_TEST_ERROR_CODE *((unsigned int *)((1<<16) - 2*sizeof(unsigned int)))
@@ -123,4 +127,24 @@ struct test_transaction {
 
 struct test_chain {
   static unsigned int test_activeprods();
+};
+
+struct test_string {
+  static unsigned int construct_with_size();
+  static unsigned int construct_with_data();
+  static unsigned int construct_with_data_copied();
+  static unsigned int construct_with_data_partially();
+  static unsigned int copy_constructor();
+  static unsigned int assignment_operator();
+  static unsigned int index_operator();
+  static unsigned int index_out_of_bound();
+  static unsigned int substring();
+  static unsigned int substring_out_of_bound();
+  static unsigned int concatenation_null_terminated();
+  static unsigned int concatenation_non_null_terminated();
+  static unsigned int assign();
+  static unsigned int comparison_operator();
+  static unsigned int print_null_terminated();
+  static unsigned int print_non_null_terminated();
+  static unsigned int print_unicode();
 };

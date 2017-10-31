@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
+ */
 #include <eos/chain_plugin/chain_plugin.hpp>
 #include <eos/chain/fork_database.hpp>
 #include <eos/chain/block_log.hpp>
@@ -48,7 +52,26 @@ public:
    fc::optional<block_log>          block_logger;
    fc::optional<chain_controller>   chain;
    chain_id_type                    chain_id;
+   uint32_t                         rcvd_block_trans_execution_time;
+   uint32_t                         trans_execution_time;
+   uint32_t                         create_block_trans_execution_time;
+   uint32_t                         per_scope_trans_msg_rate_limit_time_frame_sec;
+   uint32_t                         per_scope_trans_msg_rate_limit;
 };
+
+#ifdef NDEBUG
+const uint32_t chain_plugin::DEFAULT_RECEIVED_BLOCK_TRANSACTION_EXECUTION_TIME = 12;
+const uint32_t chain_plugin::DEFAULT_TRANSACTION_EXECUTION_TIME = 3;
+const uint32_t chain_plugin::DEFAULT_CREATE_BLOCK_TRANSACTION_EXECUTION_TIME = 3;
+#else
+const uint32_t chain_plugin::DEFAULT_RECEIVED_BLOCK_TRANSACTION_EXECUTION_TIME = 72;
+const uint32_t chain_plugin::DEFAULT_TRANSACTION_EXECUTION_TIME = 18;
+const uint32_t chain_plugin::DEFAULT_CREATE_BLOCK_TRANSACTION_EXECUTION_TIME = 18;
+#endif
+
+const uint32_t chain_plugin::DEFAULT_PER_SCOPE_TRANSACTION_MSG_RATE_LIMIT_TIME_FRAME_SECONDS = 18;
+const uint32_t chain_plugin::DEFAULT_PER_SCOPE_TRANSACTION_MSG_RATE_LIMIT = 1800;
+
 
 
 chain_plugin::chain_plugin()
@@ -61,10 +84,20 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
 {
    cfg.add_options()
          ("genesis-json", bpo::value<boost::filesystem::path>(), "File to read Genesis State from")
-     ("genesis-timestamp", bpo::value<string>(), "override the initial timestamp in the Genesis State file")
+         ("genesis-timestamp", bpo::value<string>(), "override the initial timestamp in the Genesis State file")
          ("block-log-dir", bpo::value<bfs::path>()->default_value("blocks"),
           "the location of the block log (absolute path or relative to application data dir)")
          ("checkpoint,c", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
+         ("rcvd-block-trans-execution-time", bpo::value<uint32_t>()->default_value(DEFAULT_RECEIVED_BLOCK_TRANSACTION_EXECUTION_TIME),
+          "Limits the maximum time (in milliseconds) that is allowed a transaction's code to execute from a received block.")
+         ("trans-execution-time", bpo::value<uint32_t>()->default_value(DEFAULT_TRANSACTION_EXECUTION_TIME),
+          "Limits the maximum time (in milliseconds) that is allowed a pushed transaction's code to execute.")
+         ("create-block-trans-execution-time", bpo::value<uint32_t>()->default_value(DEFAULT_CREATE_BLOCK_TRANSACTION_EXECUTION_TIME),
+          "Limits the maximum time (in milliseconds) that is allowed a transaction's code to execute while creating a block.")
+         ("per-scope-transaction-msg-rate-limit-time-frame-sec", bpo::value<uint32_t>()->default_value(DEFAULT_PER_SCOPE_TRANSACTION_MSG_RATE_LIMIT_TIME_FRAME_SECONDS),
+          "The time frame, in seconds, that the per-scope-transaction-msg-rate-limit is imposed over.")
+         ("per-scope-transaction-msg-rate-limit", bpo::value<uint32_t>()->default_value(DEFAULT_PER_SCOPE_TRANSACTION_MSG_RATE_LIMIT),
+          "Limits the maximum rate of transaction messages that an account is allowed each per-scope-transaction-msg-rate-limit-time-frame-sec.")
          ;
    cli.add_options()
          ("replay-blockchain", bpo::bool_switch()->default_value(false),
@@ -139,6 +172,13 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
          my->loaded_checkpoints[item.first] = item.second;
       }
    }
+
+   my->rcvd_block_trans_execution_time = options.at("rcvd-block-trans-execution-time").as<uint32_t>() * 1000;
+   my->trans_execution_time = options.at("trans-execution-time").as<uint32_t>() * 1000;
+   my->create_block_trans_execution_time = options.at("create-block-trans-execution-time").as<uint32_t>() * 1000;
+
+   my->per_scope_trans_msg_rate_limit_time_frame_sec = options.at("per-scope-transaction-msg-rate-limit-time-frame-sec").as<uint32_t>();
+   my->per_scope_trans_msg_rate_limit = options.at("per-scope-transaction-msg-rate-limit").as<uint32_t>();
 }
 
 void chain_plugin::plugin_startup() 
@@ -160,7 +200,12 @@ void chain_plugin::plugin_startup()
    my->block_logger = block_log(my->block_log_dir);
    my->chain_id = genesis.compute_chain_id();
    my->chain = chain_controller(db, *my->fork_db, *my->block_logger,
-                                initializer, native_contract::make_administrator());
+                                initializer, native_contract::make_administrator(),
+                                my->trans_execution_time,
+                                my->rcvd_block_trans_execution_time,
+                                my->create_block_trans_execution_time,
+                                my->per_scope_trans_msg_rate_limit_time_frame_sec,
+                                my->per_scope_trans_msg_rate_limit);
 
    if(!my->readonly) {
       ilog("starting chain in read/write mode");
@@ -240,10 +285,7 @@ types::Abi getAbi( const chain_controller& db, const Name& account ) {
    const auto& code_accnt  = d.get<account_object,by_name>( account );
 
    eos::types::Abi abi;
-   if( code_accnt.abi.size() > 4 ) {
-      fc::datastream<const char*> ds( code_accnt.abi.data(), code_accnt.abi.size() );
-      fc::raw::unpack( ds, abi );
-   }
+   types::AbiSerializer::to_abi(code_accnt.abi, abi);
    return abi;
 }
 
@@ -257,8 +299,6 @@ string getTableType( const types::Abi& abi, const Name& tablename ) {
 }
 
 read_only::get_table_rows_result read_only::get_table_rows( const read_only::get_table_rows_params& p )const {
-   const auto& d = db.get_database();
-
    const types::Abi abi = getAbi( db, p.code );
    auto table_type = getTableType( abi, p.table );
    auto table_key = PRIMARY;
@@ -298,7 +338,7 @@ read_only::get_block_results read_only::get_block(const read_only::get_block_par
 }
 
 read_write::push_block_results read_write::push_block(const read_write::push_block_params& params) {
-   db.push_block(params);
+   db.push_block(params, chain_controller::validation_steps::skip_nothing);
    return read_write::push_block_results();
 }
 
@@ -335,10 +375,8 @@ read_only::get_code_results read_only::get_code( const get_code_params& params )
       result.wast = chain::wasm_to_wast( (const uint8_t*)accnt.code.data(), accnt.code.size() );
       result.code_hash = fc::sha256::hash( accnt.code.data(), accnt.code.size() );
    }
-   if( accnt.abi.size() > 4 ) {
-      eos::types::Abi abi;
-      fc::datastream<const char*> ds( accnt.abi.data(), accnt.abi.size() );
-      fc::raw::unpack( ds, abi );
+   eos::types::Abi abi;
+   if( types::AbiSerializer::to_abi(accnt.abi, abi) ) {
       result.abi = std::move(abi);
    }
    return result;
@@ -351,7 +389,6 @@ read_only::get_account_results read_only::get_account( const get_account_params&
    result.name = params.name;
 
    const auto& d = db.get_database();
-   const auto& accnt          = d.get<account_object,by_name>( params.name );
    const auto& balance        = d.get<BalanceObject,byOwnerName>( params.name );
    const auto& staked_balance = d.get<StakedBalanceObject,byOwnerName>( params.name );
 

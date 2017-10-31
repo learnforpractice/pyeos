@@ -1,25 +1,6 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
 #include <eos/chain/global_property_object.hpp>
@@ -58,7 +39,10 @@ namespace eos { namespace chain {
    class chain_controller {
       public:
          chain_controller(database& database, fork_database& fork_db, block_log& blocklog,
-                          chain_initializer_interface& starter, unique_ptr<chain_administration_interface> admin);
+                          chain_initializer_interface& starter, unique_ptr<chain_administration_interface> admin,
+                          uint32_t trans_execution_time, uint32_t rcvd_block_trans_execution_time,
+                          uint32_t create_block_trans_execution_time, uint32_t per_scope_trans_msg_rate_limit_time_frame_sec,
+                          uint32_t per_scope_trans_msg_rate_limit);
          chain_controller(chain_controller&&) = default;
          ~chain_controller();
 
@@ -107,7 +91,10 @@ namespace eos { namespace chain {
             skip_producer_schedule_check= 1 << 10, ///< used while reindexing
             skip_validate               = 1 << 11, ///< used prior to checkpoint, skips validate() call on transaction
             skip_scope_check            = 1 << 12, ///< used to skip checks for proper scope
-            skip_output_check           = 1 << 13  ///< used to skip checks for outputs in block exactly matching those created from apply
+            skip_output_check           = 1 << 13, ///< used to skip checks for outputs in block exactly matching those created from apply
+            pushed_transaction          = 1 << 14, ///< used to indicate that the origination of the call was from a push_transaction, to determine time allotment
+            created_block               = 1 << 15, ///< used to indicate that the origination of the call was for creating a block, to determine time allotment
+            received_block              = 1 << 16  ///< used to indicate that the origination of the call was for a received block, to determine time allotment
          };
 
          /**
@@ -271,6 +258,21 @@ namespace eos { namespace chain {
 
 
          const deque<SignedTransaction>&  pending()const { return _pending_transactions; }
+
+         /**
+          * Determine what the current message rate is.
+          * @param now                       The current block time seconds
+          * @param last_update_sec           The block time at the last update of the message rate
+          * @param rate_limit_time_frame_sec The time frame, in seconds, that the rate limit is over
+          * @param rate_limit                The rate that is not allowed to be exceeded
+          * @param previous_rate             The rate at the last_update_sec
+          * @param type                      The string type description (for logging errors)
+          * @param name                      The account name associated with this rate (for logging errors)
+          * @return the calculated rate at this time
+          * @throws tx_msgs_exceeded if current message rate exceeds the passed in rate_limit
+          */
+         static uint32_t _transaction_message_rate(uint32_t now, uint32_t last_update_sec, uint32_t rate_limit_time_frame_sec,
+                                                   uint32_t rate_limit, uint32_t previous_rate, const char* type, const AccountName& name);
    private:
 
          /// Reset the object graph in-memory
@@ -344,6 +346,13 @@ namespace eos { namespace chain {
                                                             types::AccountName code_account,
                                                             types::FuncName type) const;
 
+         /**
+          * Calculate all rates associated with the given message and enforce rate limiting.
+          * @param message  The message to calculate
+          * @throws tx_msgs_exceeded if any of the calculated message rates exceed the configured rate limit
+          */
+         void rate_limit_message(const Message& message);
+
          void process_message(const Transaction& trx, AccountName code, const Message& message,
                               MessageOutput& output, apply_context* parent_context = nullptr);
          void apply_message(apply_context& c);
@@ -380,6 +389,12 @@ namespace eos { namespace chain {
 
          bool                             _currently_applying_block = false;
          uint64_t                         _skip_flags = 0;
+
+         const uint32_t                   _trans_execution_time;
+         const uint32_t                   _rcvd_block_trans_execution_time;
+         const uint32_t                   _create_block_trans_execution_time;
+         const uint32_t                   _per_scope_trans_msg_rate_limit_time_frame_sec;
+         const uint32_t                   _per_scope_trans_msg_rate_limit;
 
          flat_map<uint32_t,block_id_type> _checkpoints;
 

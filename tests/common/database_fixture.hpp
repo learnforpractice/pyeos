@@ -1,31 +1,13 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
 
 #include <eos/chain/chain_controller.hpp>
 #include <eos/chain/producer_object.hpp>
 #include <eos/chain/exceptions.hpp>
+#include <eos/chain_plugin/chain_plugin.hpp>
 
 #include <eos/native_contract/native_contract_chain_initializer.hpp>
 #include <eos/native_contract/native_contract_chain_administrator.hpp>
@@ -145,6 +127,10 @@ public:
    testing_blockchain(chainbase::database& db, fork_database& fork_db, block_log& blocklog,
                      chain_initializer_interface& initializer, testing_fixture& fixture);
 
+   testing_blockchain(chainbase::database& db, fork_database& fork_db, block_log& blocklog,
+                     chain_initializer_interface& initializer, testing_fixture& fixture,
+                     uint32_t rate_limit_time_frame_sec,  uint32_t rate_limit);
+
    /**
     * @brief Publish the provided contract to the blockchain, owned by owner
     * @param owner The account to publish the contract under
@@ -216,6 +202,8 @@ public:
    void set_hold_transactions_for_review(bool hold_trxs) {
       hold_for_review = hold_trxs;
    }
+
+   static std::vector<uint8_t> assemble_wast(const std::string& wast);
 
 protected:
    chainbase::database& db;
