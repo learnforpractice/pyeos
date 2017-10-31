@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
+ */
 #include <boost/function.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <eos/chain/wasm_interface.hpp>
@@ -12,7 +16,9 @@
 #include "IR/Validate.h"
 #include <eos/chain/key_value_object.hpp>
 #include <eos/chain/account_object.hpp>
+#include <eos/types/AbiSerializer.hpp>
 #include <chrono>
+#include <boost/lexical_cast.hpp>
 
 namespace eos { namespace chain {
    using namespace IR;
@@ -43,22 +49,53 @@ namespace eos { namespace chain {
    wasm_interface::wasm_interface() {
    }
 
+   wasm_interface::key_type wasm_interface::to_key_type(const types::TypeName& type_name)
+   {
+      if ("str" == type_name)
+         return str;
+      if ("i64" == type_name)
+         return i64;
+      if ("i128i128" == type_name)
+         return i128i128;
+      if ("i64i64i64" == type_name)
+         return i64i64i64;
+
+      return invalid_key_type;
+   }
+
+   std::string wasm_interface::to_type_name(key_type key_type)
+   {
+      switch (key_type)
+      {
+      case str:
+         return "str";
+      case i64:
+         return "i64";
+      case i128i128:
+         return "i128i128";
+      case i64i64i64:
+         return "i64i64i64";
+      default:
+         return std::string("<invalid key type - ") + boost::lexical_cast<std::string>(int(key_type)) + ">";
+      }
+   }
+
 #ifdef NDEBUG
    const int CHECKTIME_LIMIT = 3000;
 #else
    const int CHECKTIME_LIMIT = 18000;
 #endif
 
-   void checktime(int64_t duration)
+   void checktime(int64_t duration, uint32_t checktime_limit)
    {
-      if (duration > CHECKTIME_LIMIT) {
+      if (duration > checktime_limit) {
          wlog("checktime called ${d}", ("d", duration));
          throw checktime_exceeded();
       }
    }
 
 DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
-   checktime(wasm_interface::get().current_execution_time());
+   checktime(wasm_interface::get().current_execution_time(), wasm_interface::get().checktime_limit);
 }
 
    template <typename Function, typename KeyType, int numberOfKeys>
@@ -95,9 +132,26 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
    }
 
 
+#define VERIFY_TABLE(TYPE) \
+   const auto table_name = Name(table); \
+   auto& wasm  = wasm_interface::get(); \
+   if (wasm.table_key_types) \
+   { \
+      auto table_key = wasm.table_key_types->find(table_name); \
+      if (table_key == wasm.table_key_types->end()) \
+      { \
+         FC_ASSERT(!wasm.tables_fixed, "abi did not define table ${t}", ("t", table_name)); \
+         wasm.table_key_types->emplace(std::make_pair(table_name,wasm_interface::TYPE)); \
+      } \
+      else \
+      { \
+         FC_ASSERT(wasm_interface::TYPE == table_key->second, "abi definition for ${table} expects \"${type}\", but code is requesting \"" #TYPE "\"", ("table",table_name)("type",wasm_interface::to_type_name(table_key->second))); \
+      } \
+   }
+
 #define READ_RECORD(READFUNC, INDEX, SCOPE) \
    auto lambda = [&](apply_context* ctx, INDEX::value_type::key_type* keys, char *data, uint32_t datalen) -> int32_t { \
-      auto res = ctx->READFUNC<INDEX, SCOPE>( Name(scope), Name(code), Name(table), keys, data, datalen); \
+      auto res = ctx->READFUNC<INDEX, SCOPE>( Name(scope), Name(code), table_name, keys, data, datalen); \
       if (res >= 0) res += INDEX::value_type::number_of_keys*sizeof(INDEX::value_type::key_type); \
       return res; \
    }; \
@@ -105,43 +159,38 @@ DEFINE_INTRINSIC_FUNCTION0(env,checktime,checktime,none) {
 
 #define UPDATE_RECORD(UPDATEFUNC, INDEX, DATASIZE) \
    auto lambda = [&](apply_context* ctx, INDEX::value_type::key_type* keys, char *data, uint32_t datalen) -> int32_t { \
-      return ctx->UPDATEFUNC<INDEX::value_type>( Name(scope), Name(ctx->code.value), Name(table), keys, data, datalen); \
+      return ctx->UPDATEFUNC<INDEX::value_type>( Name(scope), Name(ctx->code.value), table_name, keys, data, datalen); \
    }; \
    return validate<decltype(lambda), INDEX::value_type::key_type, INDEX::value_type::number_of_keys>(valueptr, DATASIZE, lambda);
 
 #define DEFINE_RECORD_UPDATE_FUNCTIONS(OBJTYPE, INDEX) \
    DEFINE_INTRINSIC_FUNCTION4(env,store_##OBJTYPE,store_##OBJTYPE,i32,i64,scope,i64,table,i32,valueptr,i32,valuelen) { \
+      VERIFY_TABLE(OBJTYPE) \
       UPDATE_RECORD(store_record, INDEX, valuelen); \
    } \
    DEFINE_INTRINSIC_FUNCTION4(env,update_##OBJTYPE,update_##OBJTYPE,i32,i64,scope,i64,table,i32,valueptr,i32,valuelen) { \
+      VERIFY_TABLE(OBJTYPE) \
       UPDATE_RECORD(update_record, INDEX, valuelen); \
    } \
    DEFINE_INTRINSIC_FUNCTION3(env,remove_##OBJTYPE,remove_##OBJTYPE,i32,i64,scope,i64,table,i32,valueptr) { \
+      VERIFY_TABLE(OBJTYPE) \
       UPDATE_RECORD(remove_record, INDEX, sizeof(typename INDEX::value_type::key_type)*INDEX::value_type::number_of_keys); \
    }
 
-#define DEFINE_RECORD_READ_FUNCTIONS(OBJTYPE, FUNCPREFIX, INDEX, SCOPE) \
-   DEFINE_INTRINSIC_FUNCTION5(env,load_##FUNCPREFIX##OBJTYPE,load_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(load_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,front_##FUNCPREFIX##OBJTYPE,front_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(front_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,back_##FUNCPREFIX##OBJTYPE,back_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(back_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,next_##FUNCPREFIX##OBJTYPE,next_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(next_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,previous_##FUNCPREFIX##OBJTYPE,previous_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(previous_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,lower_bound_##FUNCPREFIX##OBJTYPE,lower_bound_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(lower_bound_record, INDEX, SCOPE); \
-   } \
-   DEFINE_INTRINSIC_FUNCTION5(env,upper_bound_##FUNCPREFIX##OBJTYPE,upper_bound_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
-      READ_RECORD(upper_bound_record, INDEX, SCOPE); \
+#define DEFINE_RECORD_READ_FUNCTION(OBJTYPE, ACTION, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_INTRINSIC_FUNCTION5(env,ACTION##_##FUNCPREFIX##OBJTYPE,ACTION##_##FUNCPREFIX##OBJTYPE,i32,i64,scope,i64,code,i64,table,i32,valueptr,i32,valuelen) { \
+      VERIFY_TABLE(OBJTYPE) \
+      READ_RECORD(ACTION##_record, INDEX, SCOPE); \
    }
+
+#define DEFINE_RECORD_READ_FUNCTIONS(OBJTYPE, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, load, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, front, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, back, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, next, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, previous, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, lower_bound, FUNCPREFIX, INDEX, SCOPE) \
+   DEFINE_RECORD_READ_FUNCTION(OBJTYPE, upper_bound, FUNCPREFIX, INDEX, SCOPE)
 
 DEFINE_RECORD_UPDATE_FUNCTIONS(i64, key_value_index);
 DEFINE_RECORD_READ_FUNCTIONS(i64,,key_value_index, by_scope_primary);
@@ -157,14 +206,16 @@ DEFINE_RECORD_READ_FUNCTIONS(i64i64i64, tertiary_,  key64x64x64_value_index, by_
 
 
 #define UPDATE_RECORD_STR(FUNCTION) \
+  VERIFY_TABLE(str) \
   auto lambda = [&](apply_context* ctx, std::string* keys, char *data, uint32_t datalen) -> int32_t { \
-    return ctx->FUNCTION<keystr_value_object>( Name(scope), Name(ctx->code.value), Name(table), keys, data, datalen); \
+    return ctx->FUNCTION<keystr_value_object>( Name(scope), Name(ctx->code.value), table_name, keys, data, datalen); \
   }; \
   return validate_str<decltype(lambda)>(keyptr, keylen, valueptr, valuelen, lambda);
 
 #define READ_RECORD_STR(FUNCTION) \
+  VERIFY_TABLE(str) \
   auto lambda = [&](apply_context* ctx, std::string* keys, char *data, uint32_t datalen) -> int32_t { \
-    auto res = ctx->FUNCTION<keystr_value_index, by_scope_primary>( Name(scope), Name(code), Name(table), keys, data, datalen); \
+    auto res = ctx->FUNCTION<keystr_value_index, by_scope_primary>( Name(scope), Name(code), table_name, keys, data, datalen); \
     return res; \
   }; \
   return validate_str<decltype(lambda)>(keyptr, keylen, valueptr, valuelen, lambda);
@@ -337,6 +388,17 @@ DEFINE_INTRINSIC_FUNCTION3(env,memcpy,memcpy,i32,i32,dstp,i32,srcp,i32,len) {
    return dstp;
 }
 
+DEFINE_INTRINSIC_FUNCTION3(env,memcmp,memcmp,i32,i32,dstp,i32,srcp,i32,len) {
+   auto& wasm          = wasm_interface::get();
+   auto  mem           = wasm.current_memory;
+   char* dst           = memoryArrayPtr<char>( mem, dstp, len);
+   const char* src     = memoryArrayPtr<const char>( mem, srcp, len );
+   FC_ASSERT( len > 0 );
+
+   return memcmp( dst, src, uint32_t(len) );
+}
+
+
 DEFINE_INTRINSIC_FUNCTION3(env,memset,memset,i32,i32,rel_ptr,i32,value,i32,len) {
    auto& wasm          = wasm_interface::get();
    auto  mem           = wasm.current_memory;
@@ -353,7 +415,7 @@ DEFINE_INTRINSIC_FUNCTION1(env,sbrk,sbrk,i32,i32,num_bytes) {
    FC_ASSERT( num_bytes >= 0, "sbrk can only allocate memory, not reduce" );
    FC_ASSERT( wasm.current_memory_management != nullptr, "sbrk can only be called during the scope of wasm_interface::vm_call" );
    U32 previous_bytes_allocated = wasm.current_memory_management->sbrk(num_bytes);
-   checktime(wasm.current_execution_time());
+   checktime(wasm.current_execution_time(), wasm_interface::get().checktime_limit);
    return previous_bytes_allocated;
 }
 
@@ -597,10 +659,19 @@ DEFINE_INTRINSIC_FUNCTION1(env,prints,prints,none,i32,charptr) {
 //  std::cerr << std::string( str, strnlen(str, wasm.current_state->mem_end-charptr) );
 }
 
+DEFINE_INTRINSIC_FUNCTION2(env,prints_l,prints_l,none,i32,charptr,i32,len) {
+  auto& wasm  = wasm_interface::get();
+  auto  mem   = wasm.current_memory;
+
+  const char* str = &memoryRef<const char>( mem, charptr );
+
+  std::cerr << std::string( str, len );
+}
+
 DEFINE_INTRINSIC_FUNCTION2(env,printhex,printhex,none,i32,data,i32,datalen) {
   auto& wasm  = wasm_interface::get();
   auto  mem   = wasm.current_memory;
-  
+
   char* buff = memoryArrayPtr<char>(mem, data, datalen);
   ilog(fc::to_hex(buff, datalen));
 //  std::cerr << fc::to_hex(buff, datalen) << std::endl;
@@ -690,7 +761,7 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
 
          Runtime::invokeFunction(call,args);
          wasm_memory_mgmt.reset();
-         checktime(current_execution_time());
+         checktime(current_execution_time(), checktime_limit);
       } catch( const Runtime::Exception& e ) {
           edump((std::string(describeExceptionCause(e.cause))));
           edump((e.callStack));
@@ -748,13 +819,18 @@ DEFINE_INTRINSIC_FUNCTION1(env,free,free,none,i32,ptr) {
    } FC_CAPTURE_AND_RETHROW() }
 
 
-   void wasm_interface::apply( apply_context& c ) {
+   void wasm_interface::apply( apply_context& c, uint32_t execution_time, bool received_block ) {
     try {
       current_validate_context       = &c;
       current_precondition_context   = &c;
       current_apply_context          = &c;
+      checktime_limit                = execution_time;
 
       load( c.code, c.db );
+      // if this is a received_block, then ignore the table_key_types
+      if (received_block)
+         table_key_types = nullptr;
+
       vm_apply();
 
    } FC_CAPTURE_AND_RETHROW() }
@@ -802,7 +878,7 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
 
          Runtime::invokeFunction(call, args_);
          wasm_memory_mgmt.reset();
-         checktime(current_execution_time());
+         checktime(current_execution_time(), checktime_limit);
       } catch (const Runtime::Exception& e) {
          edump((std::string(describeExceptionCause(e.cause))));
          edump((e.callStack));
@@ -825,6 +901,7 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
       current_validate_context       = &c;
       current_precondition_context   = &c;
       current_apply_context          = &c;
+      checktime_limit                = CHECKTIME_LIMIT;
 
       load( c.code, c.db );
       vm_onInit();
@@ -839,14 +916,15 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
 
       auto& state = instances[name];
       if( state.code_version != recipient.code_version ) {
-         if( state.instance ) {
-            /// TODO: free existing instance and module
+        if( state.instance ) {
+           /// TODO: free existing instance and module
 #warning TODO: free existing module if the code has been updated, currently leak memory
-            state.instance     = nullptr;
-            state.module       = nullptr;
-            state.code_version = fc::sha256();
-         }
-         state.module = new IR::Module();
+           state.instance     = nullptr;
+           state.module       = nullptr;
+           state.code_version = fc::sha256();
+        }
+        state.module = new IR::Module();
+        state.table_key_types.clear();
 
         try
         {
@@ -881,6 +959,21 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
           //std::cerr <<"\n";
           state.code_version = recipient.code_version;
 //          idump((state.code_version));
+
+          types::Abi abi;
+          if( types::AbiSerializer::to_abi(recipient.abi, abi) )
+          {
+             state.tables_fixed = true;
+             for(auto& table : abi.tables)
+             {
+                const auto key_type = to_key_type(table.indextype);
+                if (key_type == invalid_key_type)
+                   throw Serialization::FatalSerializationException("For code \"" + (std::string)name + "\" indextype of \"" +
+                                                                    table.indextype + "\" referenced but not supported");
+
+                state.table_key_types.emplace(std::make_pair(table.table, key_type));
+             }
+          }
         }
         catch(Serialization::FatalSerializationException exception)
         {
@@ -900,9 +993,11 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
           throw;
         }
       }
-      current_module = state.instance;
-      current_memory = getDefaultMemory( current_module );
-      current_state  = &state;
+      current_module  = state.instance;
+      current_memory  = getDefaultMemory( current_module );
+      current_state   = &state;
+      table_key_types = &state.table_key_types;
+      tables_fixed    = state.tables_fixed;
    }
 
    wasm_memory::wasm_memory(wasm_interface& interface)

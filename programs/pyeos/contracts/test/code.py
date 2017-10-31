@@ -100,13 +100,20 @@ def test_transaction():
     tshandle = eoslib.transactionCreate()
     eoslib.transactionRequireScope(tshandle, b'test', 0)
     eoslib.transactionRequireScope(tshandle, b'inita', 0)
-    print('--------1------')
+
 # '{"from":"test","to":"inita","amount":50}'
     data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
     msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
     eoslib.messageRequirePermission(msghandle, b'test', b'active')
-    print('22222222222222222')
     eoslib.transactionAddMessage(tshandle, msghandle)
+
+#{"from":"test", "to":"inita", "amount":50, "memo":"hello"}
+    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
+    data += eoslib.pack(b'hello')
+    msghandle = eoslib.messageCreate(b'eos', b'transfer', data)
+    eoslib.messageRequirePermission(msghandle, b'test', b'active')
+    eoslib.transactionAddMessage(tshandle, msghandle)
+
     eoslib.transactionSend(tshandle)
     print('-------end-------------')
 
@@ -116,6 +123,14 @@ def test_message():
     msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
     eoslib.messageRequirePermission(msghandle, b'test', b'active')
     eoslib.messageSend(msghandle)
+
+#{"from":"test", "to":"inita", "amount":50, "memo":"hello"}
+    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
+    data += eoslib.pack(b'hello')
+    msghandle = eoslib.messageCreate(b'eos', b'transfer', data)
+    eoslib.messageRequirePermission(msghandle, b'test', b'active')
+    eoslib.messageSend(msghandle)
+
 
 def apply(code, action):
     print(code,action)

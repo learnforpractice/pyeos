@@ -1,25 +1,6 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
  */
 
 #include <eos/chain/chain_controller.hpp>
@@ -33,6 +14,7 @@
 #include <eos/chain/producer_object.hpp>
 #include <eos/chain/permission_link_object.hpp>
 #include <eos/chain/authority_checker.hpp>
+#include <eos/chain/rate_limiting_object.hpp>
 
 #include <eos/chain/wasm_interface.hpp>
 #include <eos/chain/python_interface.hpp>
@@ -675,6 +657,7 @@ void chain_controller::_apply_block(const signed_block& next_block)
 {
    try {
    uint32_t next_block_num = next_block.block_num();
+
    uint32_t skip = _skip_flags;
 
    FC_ASSERT((skip & skip_merkle_check) || next_block.transaction_merkle_root == next_block.calculate_merkle_root(),
@@ -903,6 +886,53 @@ void chain_controller::validate_expiration(const Transaction& trx) const
               ("now",now)("trx.exp",trx.expiration));
 } FC_CAPTURE_AND_RETHROW((trx)) }
 
+uint32_t chain_controller::_transaction_message_rate(uint32_t now, uint32_t last_update_sec, uint32_t rate_limit_time_frame_sec,
+                                                     uint32_t rate_limit, uint32_t previous_rate, const char* type, const AccountName& name)
+{
+   const auto delta_time = now - last_update_sec;
+   uint32_t message_count = 1;
+   if (delta_time <= rate_limit_time_frame_sec)
+   {
+      message_count += ( ( ( rate_limit_time_frame_sec - delta_time ) * fc::uint128( previous_rate ) )
+                     / rate_limit_time_frame_sec ).to_uint64();
+      EOS_ASSERT(message_count <= rate_limit, tx_msgs_exceeded,
+                 "Rate limiting ${type}=${name} messages sent, ${count} exceeds ${max} messages limit per ${sec} seconds. Wait 1 second and try again",
+                 ("type",type)
+                 ("name",name)
+                 ("count",message_count)
+                 ("max",rate_limit)
+                 ("sec", rate_limit_time_frame_sec));
+   }
+
+   return message_count;
+}
+
+void chain_controller::rate_limit_message(const Message& message)
+{ try {
+   for (const auto& permission : message.authorization)
+   {
+      auto rate_limiting = _db.find<rate_limiting_object, by_name>(permission.account);
+      const auto now = head_block_time().sec_since_epoch();
+      if (rate_limiting == nullptr)
+      {
+         _db.create<rate_limiting_object>([&](rate_limiting_object& rlo) {
+            rlo.name = permission.account;
+            rlo.trans_msg_rate_per_account = 1;
+            rlo.last_update_sec = now;
+         });
+      }
+      else
+      {
+         const auto message_rate =
+               _transaction_message_rate(now, rate_limiting->last_update_sec, _per_scope_trans_msg_rate_limit_time_frame_sec,
+                                        _per_scope_trans_msg_rate_limit, rate_limiting->trans_msg_rate_per_account, "account", permission.account);
+         _db.modify(*rate_limiting, [&] (rate_limiting_object& rlo) {
+            rlo.trans_msg_rate_per_account = message_rate;
+            rlo.last_update_sec = now;
+         });
+      }
+   }
+} FC_CAPTURE_AND_RETHROW((message)) }
 
 void chain_controller::process_message(const Transaction& trx, AccountName code,
                                        const Message& message, MessageOutput& output, apply_context* parent_context) {
@@ -967,15 +997,22 @@ void chain_controller::apply_message(apply_context& context)
        }
     }
     const auto& recipient = _db.get<account_object,by_name>(context.code);
-   if (recipient.code.size()) {
-      //idump((context.code)(context.msg.type));
-//      ilog("recipient.vm_type ${type}",("type",recipient.vm_type));
-      if (recipient.vm_type == 0){
-         wasm_interface::get().apply(context);
-      } else if (recipient.vm_type == 1) {
-          python_interface::get().apply(context);
-      }
-   }
+
+    if (recipient.code.size()) {
+       //idump((context.code)(context.msg.type));
+       const uint32_t execution_time =
+          _skip_flags | received_block
+             ? _rcvd_block_trans_execution_time
+             : _skip_flags | created_block
+               ? _create_block_trans_execution_time
+               : _trans_execution_time;
+       const bool is_received_block = _skip_flags & received_block;
+       if (recipient.vm_type == 0){
+          wasm_interface::get().apply(context, execution_time, is_received_block);
+       } else if (recipient.vm_type == 1) {
+           python_interface::get().apply(context);
+       }
+    }
 
 } FC_CAPTURE_AND_RETHROW((context.msg)) }
 
@@ -1006,6 +1043,7 @@ typename T::Processed chain_controller::process_transaction( const T& trx, int d
 
    for( uint32_t i = 0; i < trx.messages.size(); ++i ) {
       auto& output = ptrx.output[i];
+      rate_limit_message(trx.messages[i]);
       process_message(trx, trx.messages[i].code, trx.messages[i], output);
       if (output.inline_transaction.valid() ) {
          const Transaction& trx = *output.inline_transaction;
@@ -1146,6 +1184,7 @@ void chain_controller::initialize_indexes() {
    _db.add_index<transaction_multi_index>();
    _db.add_index<generated_transaction_multi_index>();
    _db.add_index<producer_multi_index>();
+   _db.add_index<rate_limiting_index>();
 }
 
 void chain_controller::initialize_chain(chain_initializer_interface& starter)
@@ -1176,7 +1215,7 @@ void chain_controller::initialize_chain(chain_initializer_interface& starter)
             MessageOutput output;
             ProcessedTransaction trx; /// dummy tranaction required for scope validation
             std::sort(trx.scope.begin(), trx.scope.end() );
-            with_skip_flags(skip_scope_check | skip_transaction_signatures | skip_authority_check, [&](){
+            with_skip_flags(skip_scope_check | skip_transaction_signatures | skip_authority_check | received_block, [&](){
                process_message(trx,m.code,m,output); 
             });
          });
@@ -1185,8 +1224,13 @@ void chain_controller::initialize_chain(chain_initializer_interface& starter)
 } FC_CAPTURE_AND_RETHROW() }
 
 chain_controller::chain_controller(database& database, fork_database& fork_db, block_log& blocklog,
-                                   chain_initializer_interface& starter, unique_ptr<chain_administration_interface> admin)
-   : _db(database), _fork_db(fork_db), _block_log(blocklog), _admin(std::move(admin)) {
+                                   chain_initializer_interface& starter, unique_ptr<chain_administration_interface> admin,
+                                   uint32_t trans_execution_time, uint32_t rcvd_block_trans_execution_time,
+                                   uint32_t create_block_trans_execution_time, uint32_t per_scope_trans_msg_rate_limit_time_frame_sec,
+                                   uint32_t per_scope_trans_msg_rate_limit)
+   : _db(database), _fork_db(fork_db), _block_log(blocklog), _admin(std::move(admin)), _trans_execution_time(trans_execution_time),
+     _rcvd_block_trans_execution_time(rcvd_block_trans_execution_time), _create_block_trans_execution_time(create_block_trans_execution_time),
+     _per_scope_trans_msg_rate_limit_time_frame_sec(per_scope_trans_msg_rate_limit_time_frame_sec), _per_scope_trans_msg_rate_limit(per_scope_trans_msg_rate_limit) {
 
    initialize_indexes();
    starter.register_types(*this, _db);
@@ -1231,7 +1275,8 @@ void chain_controller::replay() {
                           skip_transaction_dupe_check |
                           skip_tapos_check |
                           skip_producer_schedule_check |
-                          skip_authority_check);
+                          skip_authority_check |
+                          received_block);
    }
    auto end = fc::time_point::now();
    ilog("Done replaying ${n} blocks, elapsed time: ${t} sec",
@@ -1478,10 +1523,8 @@ ProcessedTransaction chain_controller::transaction_from_variant( const fc::varia
                result.messages[i].data = message_to_binary( result.messages[i].code, result.messages[i].type, data ); 
                /*
                const auto& code_account = _db.get<account_object,by_name>( result.messages[i].code );
-               if( code_account.abi.size() > 4 ) { /// 4 == packsize of empty Abi
-                  fc::datastream<const char*> ds( code_account.abi.data(), code_account.abi.size() );
-                  eos::types::Abi abi;
-                  fc::raw::unpack( ds, abi );
+               eos::types::Abi abi;
+               if( AbiSerializer::to_abi(code_account.abi, abi) ) {
                   types::AbiSerializer abis( abi );
                   result.messages[i].data = abis.variantToBinary( abis.getActionType( result.messages[i].type ), data );
                }
@@ -1500,10 +1543,8 @@ ProcessedTransaction chain_controller::transaction_from_variant( const fc::varia
 vector<char> chain_controller::message_to_binary( Name code, Name type, const fc::variant& obj )const 
 { try {
    const auto& code_account = _db.get<account_object,by_name>( code );
-   if( code_account.abi.size() > 4 ) { /// 4 == packsize of empty Abi
-      fc::datastream<const char*> ds( code_account.abi.data(), code_account.abi.size() );
-      eos::types::Abi abi;
-      fc::raw::unpack( ds, abi );
+   eos::types::Abi abi;
+   if( types::AbiSerializer::to_abi(code_account.abi, abi) ) {
       types::AbiSerializer abis( abi );
       return abis.variantToBinary( abis.getActionType( type ), obj );
    }
@@ -1511,10 +1552,8 @@ vector<char> chain_controller::message_to_binary( Name code, Name type, const fc
 } FC_CAPTURE_AND_RETHROW( (code)(type)(obj) ) }
 fc::variant chain_controller::message_from_binary( Name code, Name type, const vector<char>& data )const {
    const auto& code_account = _db.get<account_object,by_name>( code );
-   if( code_account.abi.size() > 4 ) { /// 4 == packsize of empty Abi
-      fc::datastream<const char*> ds( code_account.abi.data(), code_account.abi.size() );
-      eos::types::Abi abi;
-      fc::raw::unpack( ds, abi );
+   eos::types::Abi abi;
+   if( types::AbiSerializer::to_abi(code_account.abi, abi) ) {
       types::AbiSerializer abis( abi );
       return abis.binaryToVariant( abis.getActionType( type ), data );
    }
@@ -1542,7 +1581,7 @@ fc::variant  chain_controller::transaction_to_variant( const ProcessedTransactio
        SET_FIELD( msg_mvo, msg, authorization );
 
        const auto& code_account = _db.get<account_object,by_name>( msg.code );
-       if( code_account.abi.size() > 4 ) { /// 4 == packsize of empty Abi
+       if( !types::AbiSerializer::is_empty_abi(code_account.abi) ) {
           try {
              msg_mvo( "data", message_from_binary( msg.code, msg.type, msg.data ) ); 
              msg_mvo( "hex_data", msg.data );
