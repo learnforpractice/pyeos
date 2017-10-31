@@ -1,9 +1,9 @@
 Hack on Eos. Have fun!
 # Table of contents
 1. [What does this project for?](#projectfor)
-2. [What pyeos can do?](#whatpyeoscando)
-3. [Building pyeos](#buildingpyeos)
-4. [Running pyeos](#runningpyeos)
+2. [What Pyeos can do?](#whatpyeoscando)
+3. [Building Pyeos](#buildingpyeos)
+4. [Running Pyeos](#runningpyeos)
 5. [Pyeos api overview](#pyeosapioverview)
 6. [Playing with DEX](#playwithdex)
 7. [Sending messages with smart contracts](#sendingmsginline)
@@ -14,18 +14,18 @@ Hack on Eos. Have fun!
 # What does this project for?
 
 Eos has the potential of be a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
-Python is one of the most powerfull language on the earth. It's easy to use and easy to understand,also it's easy to interface with other program language such as c++,c etc. You can do a lot of things with python without paying too much time and too much energy. But for the reason of performance, Eos is writing in C++. So I think maybe I can rewrite Eos in python? At least I can improve the usability of Eos with python. So here comes pyeos.
+Python is one of the most powerfull language on the earth. It's easy to use and easy to understand,also it's easy to interface with other program language such as c++,c etc. You can do a lot of things with Python without paying too much time and too much energy. But for the reason of performance, Eos is writing in C++. So I think maybe I can rewrite Eos in Python? At least I can improve the usability of Eos with Python. So here comes Pyeos.
 
 <a name="whatpyeoscando"></a>
-# What pyeos can do?
+# What Pyeos can do?
 
-1. call eos api with python
-2. write simple contract in python. You can find some demos in directory [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in python first and then porting it to C++.
+1. call eos api with Python
+2. write simple contract in Python. You can find some demos in directory [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
 
 <a name="buildingpyeos"></a>
-# Building pyeos
+# Building Pyeos
 
-You have to export two environment before build,one telling the compiler where to find the python header file,the other telling the linker where to find the python library.
+You have to export two environment before build,one telling the compiler where to find the Python header file,the other telling the linker where to find the Python library.
 
 ```bash
 export PYTHON_INC_DIR="~/anaconda/include/python3.6m"
@@ -54,7 +54,7 @@ pip install cython
 
 Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
 
-Currently only test with python 3.6 on macOS 10.12.6
+Currently only test with Python 3.6 on macOS 10.12.6
 
 <a name="aboutcodestyle"></a>
 # About code style
@@ -65,9 +65,9 @@ http://www.cppstyle.com/
 Also in order to compatible with eos source code, Change the tab with to 3 spaces.
 
 <a name="runningpyeos"></a>
-# Running pyeos
+# Running Pyeos
 
-After successful build of project,run the following commands to start pyeos.
+After successful build of project,run the following commands to start Pyeos.
 
 ```
 $ export PYTHONHOME=~/anaconda/
@@ -75,7 +75,16 @@ $ export PYTHONPATH='~/dev/eos/programs/pyeos/'
 $ cd ~/dev/eos/build/programs/
 $ ./pyeos/pyeos -i
 ```
-The first three commands only need to run once. If everything is fine,a python interactive console shall appeal.That's it. Next,let us see what pyeos can do.
+The first three commands only need to run once. If everything is fine,a Python interactive console shall appeal.That's it. Next,let us see what Pyeos can do. For a better debug, replace 
+
+```
+./pyeos/pyeos -i
+```
+with
+```
+./pyeos/pyeos --debug -i
+```
+
 
 <a name="pyeosapioverview"></a>
 # Pyeos api overview
@@ -134,7 +143,7 @@ wallet.list_wallets()
 ```
 #### wallet.open wallet.unlock
 
-Next time you start pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password below to the password you created before.
+Next time you start Pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password below to the password you created before.
 
 ```
 wallet.open('mywallet')
@@ -177,6 +186,7 @@ wallet.import_key('mywallet','5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9
 ```
 
 Import active key
+
 ```python
 wallet.import_key('mywallet','5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
 ```
@@ -304,7 +314,7 @@ info
 ```
 
 #### eosapi.set_contract
-Here comes the most exciting moment. Let's push a python smart contract to the blockchain.You can find the source code in [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract) directory
+Here comes the most exciting moment. Let's push a Python smart contract to the blockchain.You can find the source code in [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract) directory
 
 ```python
 r = eosapi.set_contract('currency','../../programs/pyeos/contract/currency/currency.py','../../contracts/currency/currency.abi',1,True)

@@ -100,14 +100,15 @@ def test_transaction():
     tshandle = eoslib.transactionCreate()
     eoslib.transactionRequireScope(tshandle, b'test', 0)
     eoslib.transactionRequireScope(tshandle, b'inita', 0)
-
+    print('--------1------')
 # '{"from":"test","to":"inita","amount":50}'
     data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
     msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
     eoslib.messageRequirePermission(msghandle, b'test', b'active')
-
+    print('22222222222222222')
     eoslib.transactionAddMessage(tshandle, msghandle)
     eoslib.transactionSend(tshandle)
+    print('-------end-------------')
 
 def test_message():
 # '{"from":"currency","to":"test","amount":50}'

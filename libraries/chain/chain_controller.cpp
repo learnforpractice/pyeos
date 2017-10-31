@@ -257,13 +257,18 @@ bool chain_controller::_push_block(const signed_block& new_block)
  * queues.
  */
 ProcessedTransaction chain_controller::push_transaction(const SignedTransaction& trx, uint32_t skip)
-{ try {
-   return with_skip_flags(skip, [&]() {
+{
+   ilog("+++++++++++++++++chain_controller::push_transaction begin");
+   try {
+   auto ret = with_skip_flags(skip, [&]() {
       return _db.with_write_lock([&]() {
          return _push_transaction(trx);
       });
    });
-} FC_CAPTURE_AND_RETHROW((trx)) }
+   ilog("+++++++++++++++++chain_controller::push_transaction end");
+   return ret;
+   }FC_CAPTURE_AND_RETHROW((trx))
+}
 
 ProcessedTransaction chain_controller::_push_transaction(const SignedTransaction& trx) {
    // If this is the first transaction pushed after applying a block, start a new undo session.
@@ -281,7 +286,7 @@ ProcessedTransaction chain_controller::_push_transaction(const SignedTransaction
    // The transaction applied successfully. Merge its changes into the pending block session.
    temp_session.squash();
    // notify anyone listening to pending transactions
-   on_pending_transaction(trx); /// TODO move this to apply... ??? why... 
+   on_pending_transaction(trx); /// TODO move this to apply... ??? why...
 
    return pt;
 }
@@ -293,15 +298,20 @@ signed_block chain_controller::generate_block(
    block_schedule::factory scheduler, /* = block_schedule::by_threading_conflits */
    uint32_t skip /* = 0 */
    )
-{ try {
-   return with_skip_flags( skip, [&](){
+{
+   ilog("+++++++++++++++++chain_controller::generate_block begin");
+   try {
+   auto ret = with_skip_flags( skip, [&](){
       auto b = _db.with_write_lock( [&](){
          return _generate_block( when, producer, block_signing_private_key, scheduler );
       });
       push_block(b, skip);
       return b;
    });
-} FC_CAPTURE_AND_RETHROW( (when) ) }
+   ilog("+++++++++++++++++chain_controller::generate_block end");
+   return ret;
+   } FC_CAPTURE_AND_RETHROW( (when) )
+}
 
 signed_block chain_controller::_generate_block(
    fc::time_point_sec when,

@@ -37,6 +37,8 @@
 #include <iostream>
 #include <boost/thread/thread.hpp>
 
+#include <eos/chain/generated_transaction_object.hpp>
+
 
 using std::string;
 using std::vector;
@@ -194,7 +196,12 @@ void producer_plugin::plugin_startup()
    } FC_CAPTURE_AND_RETHROW() }
 
 void producer_plugin::produce_block() {
-   my->schedule_production_loop();
+   if (my->_manual_gen_block) {
+      my->schedule_production_loop();
+   } else {
+      ilog("not in manual generate block mode.");
+   }
+
 }
 
 void producer_plugin::plugin_shutdown() {
@@ -334,18 +341,37 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       capture("pct", uint32_t(100*uint64_t(prate) / config::Percent1));
       return block_production_condition::low_participation;
    }
+   if (!_manual_gen_block) {
+      if (!_gen_empty_block) {
+         bool foundpending = false;
+         const auto& db = app().get_plugin<chain_plugin>().chain();
+         auto pending   = db.pending().size();
+         if (pending > 0) {
+      //         ilog("no pending transactions!");
+            foundpending = true;
+         }
+   //      ilog("begin db.get_index");
+         if (!foundpending) {
+            auto& _db = chain.get_database();
+            const auto& generated = _db.get_index<eos::chain::generated_transaction_multi_index, eos::chain::generated_transaction_object::by_status>().equal_range(eos::chain::generated_transaction_object::PENDING);
+            if (generated.first != generated.second) {//inline transaction empty?
+               foundpending = true;
+               ilog("found generated transactions");
+            }
+         }
+   //      ilog("end db.get_index");
 
-   if (!_gen_empty_block) {
-      const auto& db = app().get_plugin<chain_plugin>().chain();
-      auto pending   = db.pending().size();
-      if (pending <= 0) {
-   //         ilog("no pending transactions!");
-         return block_production_condition::lag;
+         if (!foundpending) {
+            return block_production_condition::lag;
+         }
+   //      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
       }
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
    }
 
-   if (!_manual_gen_block && _gen_empty_block) {
+   _gen_empty_block = false;
+
+//   if (!_manual_gen_block && _gen_empty_block) {
+   if (false) {
       if( llabs((scheduled_time - now).count()) > fc::milliseconds( 500 ).count() )
       {
          capture("scheduled_time", scheduled_time)("now", now);
@@ -360,6 +386,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       _production_scheduler,
       _production_skip_flags
       );
+
 
    uint32_t count = 0;
    for( const auto& cycle : block.cycles ) {

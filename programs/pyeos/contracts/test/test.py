@@ -36,7 +36,7 @@ def init():
     r = eosapi.push_message('currency','transfer','{"from":"currency","to":"test","amount":1000}',['currency','test'],{'currency':'active'})
     wait()
 
-def test_send_message():
+def send_message():
     r = eosapi.get_table('test','currency','account')
     print(r)
     r = eosapi.get_table('inita','currency','account')
@@ -52,7 +52,7 @@ def test_send_message():
     print(r)
 
 
-def test_send_transaction():
+def send_transaction():
     r = eosapi.get_table('test','currency','account')
     print(r)
     r = eosapi.get_table('inita','currency','account')
