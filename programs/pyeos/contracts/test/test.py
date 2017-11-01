@@ -48,7 +48,6 @@ def init():
         if not eosapi.get_account('currency'):
             r = eosapi.create_account('inita', 'currency', key1, key2)
 
-    with wait:
         if not eosapi.get_account('test'):
             r = eosapi.create_account('inita', 'test', key1, key2)
             assert r
@@ -56,8 +55,6 @@ def init():
     with wait:
         r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi',1)
         assert r
-
-    with wait:
         r = eosapi.set_contract('test','../../programs/pyeos/contracts/test/code.py','../../programs/pyeos/contracts/test/test.abi',1)
         assert r
 
@@ -102,6 +99,14 @@ def send_transaction():
     print(r)
     r = eosapi.get_table('inita','currency','account')
     print(r)
+    
+    wait()
+
+    r = eosapi.get_table('test','currency','account')
+    print(r)
+    r = eosapi.get_table('inita','currency','account')
+    print(r)
+
 
 def send_eos_inline():
     args = {"from":"inita", "to":"test", "amount":1000, "memo":"hello"}

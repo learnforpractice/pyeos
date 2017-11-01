@@ -961,7 +961,7 @@ void chain_controller::process_message(const Transaction& trx, AccountName code,
       fc::raw::pack( enc, asynctrx );
       auto id = enc.result();
       auto gtrx = GeneratedTransaction(id, asynctrx);
-
+      wlog("_db.create<generated_transaction_object>");
       _db.create<generated_transaction_object>([&](generated_transaction_object& transaction) {
          transaction.trx = gtrx;
          transaction.status = generated_transaction_object::PENDING;
@@ -1431,15 +1431,28 @@ void chain_controller::clear_expired_transactions()
    //Transactions must have expired by at least two forking windows in order to be removed.
    auto& transaction_idx = _db.get_mutable_index<transaction_multi_index>();
    const auto& dedupe_index = transaction_idx.indices().get<by_expiration>();
-   while( (!dedupe_index.empty()) && (head_block_time() > dedupe_index.rbegin()->trx.expiration) )
-      transaction_idx.remove(*dedupe_index.rbegin());
+   while( (!dedupe_index.empty()) && (head_block_time() > dedupe_index.rbegin()->trx.expiration) ) {
+      if (appbase::app().is_debug_mode()) {
+         wlog("dedupe transaction is not removed in order to ignore pointer double free problem, dedupe_index.size() ${n}",("n",dedupe_index.size()));
+         break;
+      } else {
+         transaction_idx.remove(*dedupe_index.rbegin());
+      }
+   }
 
    //Look for expired transactions in the pending generated list, and remove them.
    //Transactions must have expired by at least two forking windows in order to be removed.
    auto& generated_transaction_idx = _db.get_mutable_index<generated_transaction_multi_index>();
    const auto& generated_index = generated_transaction_idx.indices().get<generated_transaction_object::by_expiration>();
-   while( (!generated_index.empty()) && (head_block_time() > generated_index.rbegin()->trx.expiration) )
-      generated_transaction_idx.remove(*generated_index.rbegin());
+   while( (!generated_index.empty()) && (head_block_time() > generated_index.rbegin()->trx.expiration) ) {
+      if (appbase::app().is_debug_mode()) {
+         wlog("generated transaction is not removed in order to ignore pointer double free problem, generated_index.size() ${n}",("n",generated_index.size()));
+         break;
+      } else {
+         generated_transaction_idx.remove(*generated_index.rbegin());
+      }
+   }
+
 } FC_CAPTURE_AND_RETHROW() }
 
 using boost::container::flat_set;
