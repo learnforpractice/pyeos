@@ -1,25 +1,6 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
 
@@ -61,6 +42,7 @@ namespace eos { namespace chain {
    FC_DECLARE_DERIVED_EXCEPTION( tx_resource_exhausted,             eos::chain::transaction_exception, 3030015, "transaction exhausted allowed resources" )
    FC_DECLARE_DERIVED_EXCEPTION( page_memory_error,                 eos::chain::transaction_exception, 3030016, "error in WASM page memory" )
    FC_DECLARE_DERIVED_EXCEPTION( unsatisfied_permission,            eos::chain::transaction_exception, 3030017, "Unsatisfied permission" )
+   FC_DECLARE_DERIVED_EXCEPTION( tx_msgs_exceeded,                  eos::chain::transaction_exception, 3030018, "Number of transaction messages per authorized account has been exceeded" )
 
    FC_DECLARE_DERIVED_EXCEPTION( invalid_pts_address,               eos::chain::utility_exception, 3060001, "invalid pts address" )
    FC_DECLARE_DERIVED_EXCEPTION( insufficient_feeds,                eos::chain::chain_exception, 37006, "insufficient feeds" )

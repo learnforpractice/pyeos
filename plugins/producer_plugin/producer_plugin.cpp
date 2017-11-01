@@ -1,25 +1,6 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
  */
 #include <eos/producer_plugin/producer_plugin.hpp>
 #include <eos/net_plugin/net_plugin.hpp>
@@ -35,6 +16,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <iostream>
+#include <boost/thread/thread.hpp>
+
+#include <eos/chain/generated_transaction_object.hpp>
+
 
 using std::string;
 using std::vector;
@@ -52,7 +37,8 @@ public:
 
    boost::program_options::variables_map _options;
    bool _production_enabled = false;
-   bool _auto_gen_block = false;
+   bool _manual_gen_block = false;
+   bool _gen_empty_block = false;
    uint32_t _required_producer_participation = 33 * config::Percent1;
    uint32_t _production_skip_flags = eos::chain::chain_controller::skip_nothing;
    eos::chain::block_schedule::factory _production_scheduler = eos::chain::block_schedule::in_single_thread;
@@ -100,7 +86,8 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
-      ("enable-auto-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_auto_gen_block = e;}), "automate generate block.")
+      ("manual_gen_block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
+      ("gen_empty_block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
       ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("required-participation", boost::program_options::bool_switch()->notifier([this](int e){my->_required_producer_participation = uint32_t(e*config::Percent1);}), "Percent of producers (0-99) that must be participating in order to produce blocks")
          ("producer-name,p", boost::program_options::value<vector<string>>()->composing()->multitoken(),
@@ -109,7 +96,7 @@ void producer_plugin::set_program_options(
                                                                                                 fc::json::to_string(private_key_default)),
           "Tuple of [PublicKey, WIF private key] (may specify multiple times)")
          ;
-   command_line_options.add(producer_options);
+//   command_line_options.add(producer_options);
    config_file_options.add(producer_options);
 
    command_line_options.add_options()
@@ -181,7 +168,7 @@ void producer_plugin::plugin_startup()
             new_chain_banner(chain);
          my->_production_skip_flags |= eos::chain::chain_controller::skip_undo_history_check;
       }
-      if (my->_auto_gen_block) {
+      if (!my->_manual_gen_block) {
          my->schedule_production_loop();
       }
    } else
@@ -190,7 +177,12 @@ void producer_plugin::plugin_startup()
    } FC_CAPTURE_AND_RETHROW() }
 
 void producer_plugin::produce_block() {
-   my->schedule_production_loop();
+   if (my->_manual_gen_block) {
+      my->schedule_production_loop();
+   } else {
+      ilog("not in manual generate block mode.");
+   }
+
 }
 
 void producer_plugin::plugin_shutdown() {
@@ -256,7 +248,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       elog("Not producing block because node appears to be on a minority fork with only ${pct}% producer participation", (capture) );
       break;
    case block_production_condition::lag:
-      elog("Not producing block because node didn't wake up within 500ms of the slot time.");
+//      elog("Not producing block because node didn't wake up within 500ms of the slot time.");
       break;
    case block_production_condition::consecutive:
       elog("Not producing block because the last block was generated by the same producer.\nThis node is probably disconnected from the network so block production has been disabled.\nDisable this check with --allow-consecutive option.");
@@ -265,7 +257,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       elog( "exception producing block" );
       break;
    }
-   if (_auto_gen_block) {
+   if (!_manual_gen_block) {
       schedule_production_loop();
    }
    return result;
@@ -330,8 +322,37 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       capture("pct", uint32_t(100*uint64_t(prate) / config::Percent1));
       return block_production_condition::low_participation;
    }
+   if (!_manual_gen_block) {
+      if (!_gen_empty_block) {
+         bool foundpending = false;
+         const auto& db = app().get_plugin<chain_plugin>().chain();
+         auto pending   = db.pending().size();
+         if (pending > 0) {
+      //         ilog("no pending transactions!");
+            foundpending = true;
+         }
+   //      ilog("begin db.get_index");
+         if (!foundpending) {
+            auto& _db = chain.get_database();
+            const auto& generated = _db.get_index<eos::chain::generated_transaction_multi_index, eos::chain::generated_transaction_object::by_status>().equal_range(eos::chain::generated_transaction_object::PENDING);
+            if (generated.first != generated.second) {//inline transaction empty?
+               foundpending = true;
+               ilog("found generated transactions");
+            }
+         }
+   //      ilog("end db.get_index");
 
-   if (_auto_gen_block) {
+         if (!foundpending) {
+            return block_production_condition::lag;
+         }
+   //      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+      }
+   }
+
+   _gen_empty_block = false;
+
+//   if (!_manual_gen_block && _gen_empty_block) {
+   if (false) {
       if( llabs((scheduled_time - now).count()) > fc::milliseconds( 500 ).count() )
       {
          capture("scheduled_time", scheduled_time)("now", now);
@@ -347,6 +368,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       _production_skip_flags
       );
 
+
    uint32_t count = 0;
    for( const auto& cycle : block.cycles ) {
       for( const auto& thread : cycle ) {
@@ -356,8 +378,9 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
    }
 
    capture("n", block.block_num())("t", block.timestamp)("c", now)("count",count);
-
-   app().get_plugin<net_plugin>().broadcast_block(block);
+   if (!app().is_debug_mode()) {
+      app().get_plugin<net_plugin>().broadcast_block(block);
+   }
    return block_production_condition::produced;
 }
 

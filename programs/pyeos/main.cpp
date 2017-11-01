@@ -62,6 +62,8 @@ extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_eostest();
+extern "C" PyObject* PyInit_database();
+
 
 void set_args(int argc, char** argv);
 
@@ -79,13 +81,25 @@ int main(int argc, char** argv) {
    PyInit_python_contract();
    PyInit_eoslib();
    PyInit_eostest();
+   PyInit_database();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import eostest;");
+   PyRun_SimpleString("import database;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
+   PyRun_SimpleString(
+       "import sys;"
+        "sys.path.append('../../programs/pyeos');"
+        "sys.path.append('../../programs/pyeos/contracts');"
+   );
+   //   PyRun_SimpleString("from initeos import *");
+#if 0
+   PyRun_InteractiveLoop(stdin, "<stdin>");
+   return 0;
+#endif
 
    PyThreadState* state = PyEval_SaveThread();
    auto thread_ = boost::thread(eos_thread, argc, argv);
@@ -98,12 +112,8 @@ int main(int argc, char** argv) {
       return 0;
    }
 
-   PyRun_SimpleString(
-       "import "
-       "sys;sys.path.append('../../programs/pyeos');sys.path.append('../../"
-       "programs/pyeos/contract')");
-   //   PyRun_SimpleString("from initeos import *");
    PyRun_SimpleString("import initeos");
+
    if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");
       PyRun_SimpleString("eosapi.register_signal_handler()");

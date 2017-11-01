@@ -202,8 +202,7 @@ void python_interface::init(apply_context& c) {
    }FC_CAPTURE_AND_RETHROW()
 }
 
-void python_interface::load(const AccountName& name,
-      const chainbase::database& db) {
+void python_interface::load(const AccountName& name, const chainbase::database& db) {
    const auto& recipient = db.get<account_object, by_name>(name);
    string module_name = string(name);
    string code = string((const char*) recipient.code.data(),
@@ -212,6 +211,107 @@ void python_interface::load(const AccountName& name,
    ilog("python_interface::load");
    python_load_with_gil(module_name, code);
 }
+
+uint32_t transactionCreate_() {
+   auto& ptrx = python_interface::get().current_apply_context->create_pending_transaction();
+   return ptrx.handle;
+}
+
+static void emplace_scope(const Name& scope, std::vector<Name>& scopes) {
+   auto i = std::upper_bound( scopes.begin(), scopes.end(), scope);
+   if (i == scopes.begin() || *(i - 1) != scope ) {
+     scopes.insert(i, scope);
+   }
+}
+
+void transactionRequireScope_(uint32_t handle, string& scope, uint32_t readOnly) {
+   auto& ptrx = python_interface::get().current_apply_context->get_pending_transaction(handle);
+   if(readOnly == 0) {
+      emplace_scope(Name(scope), ptrx.scope);
+   } else {
+      emplace_scope(Name(scope), ptrx.readscope);
+   }
+
+   ptrx.check_size();
+}
+
+
+void transactionAddMessage_(uint32_t handle,uint32_t msg_handle) {
+   auto apply_context  = python_interface::get().current_apply_context;
+   auto& ptrx = apply_context->get_pending_transaction(handle);
+   auto& pmsg = apply_context->get_pending_message(msg_handle);
+   ptrx.messages.emplace_back(pmsg);
+   ptrx.check_size();
+   apply_context->release_pending_message(msg_handle);
+}
+
+
+void transactionSend_(uint32_t handle) {
+   auto apply_context  = python_interface::get().current_apply_context;
+   auto& ptrx = apply_context->get_pending_transaction(handle);
+
+   EOS_ASSERT(ptrx.messages.size() > 0, tx_unknown_argument,
+      "Attempting to send a transaction with no messages");
+
+   apply_context->deferred_transactions.emplace_back(ptrx);
+   apply_context->release_pending_transaction(handle);
+}
+
+
+void transactionDrop_(uint32_t handle) {
+   python_interface::get().current_apply_context->release_pending_transaction(handle);
+}
+
+
+uint32_t messageCreate_(string& code, string& type, string& data) {
+   auto& wasm  = python_interface::get();
+   auto  mem   = wasm.current_memory;
+
+   Bytes payload;
+   if (data.size() > 0) {
+      try {
+         // memoryArrayPtr checks that the entire array of bytes is valid and
+         // within the bounds of the memory segment so that transactions cannot pass
+         // bad values in attempts to read improper memory
+         payload.insert(payload.end(), data.c_str(), data.c_str()+data.size());
+      } catch( const Runtime::Exception& e ) {
+         FC_THROW_EXCEPTION(tx_unknown_argument, "Message data is not a valid memory range");
+      }
+   }
+
+   auto& pmsg = wasm.current_apply_context->create_pending_message(Name(code), Name(type), payload);
+   return pmsg.handle;
+}
+
+
+void messageRequirePermission_(uint32_t handle, string& account,string& permission) {
+   auto apply_context  = python_interface::get().current_apply_context;
+   // if this is not sent from the code account with the permission of "code" then we must
+   // presently have the permission to add it, otherwise its a failure
+   if (!(Name(account).value == apply_context->code.value && Name(permission) == Name("code"))) {
+      apply_context->require_authorization(Name(account), Name(permission));
+   }
+   auto& pmsg = apply_context->get_pending_message(handle);
+   pmsg.authorization.emplace_back(Name(account), Name(permission));
+}
+
+
+void messageSend_(uint32_t handle) {
+   auto apply_context  = python_interface::get().current_apply_context;
+   auto& pmsg = apply_context->get_pending_message(handle);
+
+   apply_context->inline_messages.emplace_back(pmsg);
+   apply_context->release_pending_message(handle);
+}
+
+
+void messageDrop_(uint32_t handle) {
+   python_interface::get().current_apply_context->release_pending_message(handle);
+}
+
+/**
+ * @} Transaction C API implementation
+ */
 
 }
 }

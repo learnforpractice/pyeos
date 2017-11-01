@@ -20,6 +20,9 @@ cdef extern object py_new_int(int n):
 cdef extern object py_new_int64(long long n):
     return n
 
+cdef extern object py_new_uint64(unsigned long long n):
+    return n
+
 cdef extern object py_new_float(double n):
     return float(n)
 

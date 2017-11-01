@@ -1,5 +1,19 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
+ */
 #include <eoslib/eos.hpp>
 #include "test_api.hpp"
+
+#include "test_chain.cpp"
+#include "test_crypto.cpp"
+#include "test_db.cpp"
+#include "test_math.cpp"
+#include "test_message.cpp"
+#include "test_print.cpp"
+#include "test_string.cpp"
+#include "test_transaction.cpp"
+#include "test_types.cpp"
 
 extern "C" {
 
@@ -73,9 +87,28 @@ extern "C" {
       WASM_TEST_HANDLER(test_transaction, send_transaction_empty);
       WASM_TEST_HANDLER(test_transaction, send_transaction_max);
       WASM_TEST_HANDLER(test_transaction, send_transaction_large);
-      
+
       //test chain
       WASM_TEST_HANDLER(test_chain, test_activeprods);
+
+      // test string
+      WASM_TEST_HANDLER(test_string, construct_with_size);
+      WASM_TEST_HANDLER(test_string, construct_with_data);
+      WASM_TEST_HANDLER(test_string, construct_with_data_copied);
+      WASM_TEST_HANDLER(test_string, construct_with_data_partially);
+      WASM_TEST_HANDLER(test_string, copy_constructor);
+      WASM_TEST_HANDLER(test_string, assignment_operator);
+      WASM_TEST_HANDLER(test_string, index_operator);
+      WASM_TEST_HANDLER(test_string, index_out_of_bound);
+      WASM_TEST_HANDLER(test_string, substring);
+      WASM_TEST_HANDLER(test_string, substring_out_of_bound);
+      WASM_TEST_HANDLER(test_string, concatenation_null_terminated);
+      WASM_TEST_HANDLER(test_string, concatenation_non_null_terminated);
+      WASM_TEST_HANDLER(test_string, assign);
+      WASM_TEST_HANDLER(test_string, comparison_operator);
+      WASM_TEST_HANDLER(test_string, print_null_terminated);
+      WASM_TEST_HANDLER(test_string, print_non_null_terminated);
+      WASM_TEST_HANDLER(test_string, print_unicode);
 
       //unhandled test call
       WASM_TEST_ERROR_CODE = WASM_TEST_FAIL;

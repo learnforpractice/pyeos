@@ -504,11 +504,9 @@ PyObject* push_message_(string& contract, string& action, string& args,
 
       vector<types::AccountPermission> accountPermissions;
       for (auto it = permissions.begin(); it != permissions.end(); it++) {
-         accountPermissions.push_back(
-             types::AccountPermission(Name(it->first), it->second));
+         accountPermissions.push_back(types::AccountPermission(Name(it->first), it->second));
       }
-      transaction_emplace_serialized_message(
-          trx, contract, action, accountPermissions, result.binargs);
+      transaction_emplace_serialized_message(trx, contract, action, accountPermissions, result.binargs);
       for (const auto& s : scopes) {
          trx.scope.emplace_back(s);
       }

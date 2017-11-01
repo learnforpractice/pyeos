@@ -13,3 +13,12 @@ def t():
             print(i)
         r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","amount":%d}'%(i,),['currency','inita'],{'currency':'active'})
 
+def test_db():
+    import eostest
+    eostest.start()
+    eostest.create_account_manually(b'hello')
+    eostest.get_account(b'hello')
+    eostest.end()
+    
+    
+    

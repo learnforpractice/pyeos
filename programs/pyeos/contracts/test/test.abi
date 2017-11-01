@@ -27,16 +27,6 @@
         "name": "Name",
         "balance": "UInt64[]"
       }
-    },{
-      "name": "game",
-      "base": "",
-      "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName",
-        "turn": "AccountName",
-        "winner": "AccountName",
-        "board": "UInt64[]"
-      }
     }
   ],
   "actions": [{
@@ -46,8 +36,14 @@
       "action": "test",
       "type": "test"
     },{
-      "action": "game",
-      "type": "game"
+      "action": "testdb",
+      "type": "test"
+    },{
+      "action": "testmsg",
+      "type": "Bytes"
+    },{
+      "action": "testts",
+      "type": "Bytes"
     }
   ],
   "tables": [{
@@ -62,12 +58,6 @@
       "indextype": "i64",
       "keynames" : ["name"],
       "keytypes" : ["Name"]
-    },{
-        "table": "game",
-        "type": "game",
-        "indextype": "i64",
-        "keynames" : ["challenger"],
-        "keytypes" : ["AccountName"]
-      }
+    }
   ]
 }

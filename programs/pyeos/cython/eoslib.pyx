@@ -34,6 +34,15 @@ cdef extern from "eoslib_.hpp":
 
 cdef extern from "<eos/chain/python_interface.hpp>" namespace "eos::chain":
     int wasm_call_function(uint64_t code, uint64_t function, vector[uint64_t] args);
+    uint32_t transactionCreate_();
+    void transactionRequireScope_(uint32_t handle, string& scope, uint32_t readOnly);
+    void transactionAddMessage_(uint32_t handle,uint32_t msg_handle);
+    void transactionSend_(uint32_t handle);
+    void transactionDrop_(uint32_t handle);
+    uint32_t messageCreate_(string& code, string& type, string& data);
+    void messageRequirePermission_(uint32_t handle, string& account,string& permission);
+    void messageSend_(uint32_t handle);
+    void messageDrop_(uint32_t handle);
 
 def pack(bytes bs):
     cdef string out
@@ -254,5 +263,36 @@ def call_wasm_function(uint64_t code, uint64_t function, args: list):
         args_.push_back(arg)
     return wasm_call_function(code, function, args_);
 
+
+def transactionCreate():
+    return transactionCreate_();
+
+def transactionRequireScope(uint32_t handle, string scope, readOnly=0):
+    if readOnly:
+        readOnly = 1
+    else:
+        readOnly = 0
+    transactionRequireScope_(handle, scope, readOnly);
+
+def transactionAddMessage(uint32_t handle,uint32_t msg_handle):
+    transactionAddMessage_(handle,msg_handle);
+
+def transactionSend(uint32_t handle):
+    transactionSend_(handle);
+
+def transactionDrop(uint32_t handle):
+    transactionDrop_(handle);
+
+def messageCreate(string code, string type, string data):
+    return messageCreate_(code, type, data);
+
+def messageRequirePermission(uint32_t handle, string& account,string& permission):
+    messageRequirePermission_(handle, account, permission);
+
+def messageSend(uint32_t handle):
+    messageSend_(handle);
+
+def messageDrop_(uint32_t handle):
+    messageDrop_(handle);
 
 
