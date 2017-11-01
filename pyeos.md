@@ -20,7 +20,7 @@ Python is one of the most powerfull language on the earth. It's easy to use and 
 # What Pyeos can do?
 
 1. call eos api with Python
-2. write simple contract in Python. You can find some demos in directory [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
+2. write simple contract in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
 
 <a name="buildingpyeos"></a>
 # Building Pyeos
@@ -314,10 +314,10 @@ info
 ```
 
 #### eosapi.set_contract
-Here comes the most exciting moment. Let's push a Python smart contract to the blockchain.You can find the source code in [contract](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract) directory
+Here comes the most exciting moment. Let's push a Python smart contract to the blockchain.You can find the source code in [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts) directory
 
 ```python
-r = eosapi.set_contract('currency','../../programs/pyeos/contract/currency/currency.py','../../contracts/currency/currency.abi',1,True)
+r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi',1,True)
 r
 ```
 
@@ -446,7 +446,7 @@ eosapi.get_table('inita','currency','account')
 <a name="playwithdex"></a>
 # Playing with DEX
 
-Before we can play with decentralized exchange,a few work need to be done. Open test.py in [program/pyeos/contract/exchang](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
+Before we can play with decentralized exchange,a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
 
 ```python
 def init():
@@ -462,7 +462,7 @@ def init():
 Now run the following commands to play with dex:
 
 ```python
-from contract.exchange import test
+from contracts.exchange import test
 test.init();
 test.test_deposit()
 test.test_withdraw()
@@ -475,7 +475,7 @@ You can always check the result with the following command
 eosapi.get_table('exchange','exchange','account')
 ```
 
-for more information on what test does,read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contract/exchange/test.py)
+for more information on what test does,read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange/test.py)
 
 <a name="sendingmsginline"></a>
 # Sending messages with smart contracts
