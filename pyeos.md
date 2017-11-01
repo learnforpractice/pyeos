@@ -25,7 +25,7 @@ Python is one of the most powerfull language on the earth. It's easy to use and 
 <a name="buildingpyeos"></a>
 # Building Pyeos
 
-You have to export two environment before build,one telling the compiler where to find the Python header file,the other telling the linker where to find the Python library.
+You have to export two environment before building pyeos, one telling the compiler where to find the Python header file, the other telling the linker where to find the Python library.
 
 ```bash
 export PYTHON_INC_DIR="~/anaconda/include/python3.6m"
@@ -33,7 +33,7 @@ export PYTHON_LIB="~/anaconda/lib/libpython3.6m.dylib"
 
 ```
 
-and in order to fix "fatal error: 'libintl.h' file not found",do the following command,change the gettext version as you want.
+and in order to fix "fatal error: 'libintl.h' file not found", do the following command,change the gettext version as you want.
 
 ```bash
 ln -s /usr/local/Cellar/gettext/0.19.8.1/include/libintl.h /usr/local/include/.
@@ -52,7 +52,7 @@ or
 pip install cython
 ```
 
-Now following the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
+Now follow the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
 
 Currently only test with Python 3.6 on macOS 10.12.6
 
@@ -62,7 +62,7 @@ Currently only test with Python 3.6 on macOS 10.12.6
 Bad code style will affect the cooperation between developers. So there must be some rule for developers to follow. Here is my recommendation: [google cpp guide](https://google.github.io/styleguide/cppguide.html) Who use eclipse as their IDE can use the following tool to format there cpp code.
 http://www.cppstyle.com/
 
-Also in order to compatible with eos source code, Change the tab with to 3 spaces.
+Also in order to compatible with eos source code, Change the tab width to 3 spaces.
 
 <a name="runningpyeos"></a>
 # Running Pyeos
@@ -75,7 +75,7 @@ $ export PYTHONPATH='~/dev/eos/programs/pyeos/'
 $ cd ~/dev/eos/build/programs/
 $ ./pyeos/pyeos -i
 ```
-The first three commands only need to run once. If everything is fine,a Python interactive console shall appeal.That's it. Next,let us see what Pyeos can do. For a better debug, replace 
+The first three commands only need to run once. If everything is fine, a Python interactive console shall appeal. That's it. Next, let us see what Pyeos can do. For a better debug, replace 
 
 ```
 ./pyeos/pyeos -i
@@ -122,7 +122,7 @@ info.head_block_num
 ```
 #### wallet.create
 
-Let's create a wallet first,PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password,save it in some safe place,if you forgot your wallet password or the password was compromised,you will lose everything in the wallet.Next time you unlock your wallet,a corrent password must be provided.
+Let's create a wallet first, PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb is wallet password, save it in some safe place, if you forgot your wallet password or the password was compromised, you will lose everything in the wallet. Next time you unlock your wallet, a corrent password must be provided.
 
 ```python
 psw = wallet.create('mywallet')
@@ -143,7 +143,7 @@ wallet.list_wallets()
 ```
 #### wallet.open wallet.unlock
 
-Next time you start Pyeos,you will need to type the following command to load and unlock your wallet.You will need to change the password below to the password you created before.
+Next time you start Pyeos, you will need to type the following command to load and unlock your wallet. You will need to change the password below to the password you created before.
 
 ```
 wallet.open('mywallet')
@@ -192,7 +192,7 @@ wallet.import_key('mywallet','5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uB
 ```
 
 #### eosapi.create_account
-It's time to create a account,key1 and key2 are the public key you created before.
+It's time to create a account, key1 and key2 are the public key you created before.
 
 ```
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
@@ -279,7 +279,7 @@ r
 
 #### eosapi.get_transaction
 
-we can test get_transaction now, replace 'c1b808dd82ad6f299bf0ceaffce36e3134ed533e055fec83930b9b7108b2f4fc' with the transcation id in the create_account output,you will notice the output is the same as the output of create_account command above.
+we can test get_transaction now, replace 'c1b808dd82ad6f299bf0ceaffce36e3134ed533e055fec83930b9b7108b2f4fc' with the transcation id in the create_account output, you will notice the output is the same as the output of create_account command above.
 
 ```python
 r = eosapi.get_transaction('c1b808dd82ad6f299bf0ceaffce36e3134ed533e055fec83930b9b7108b2f4fc')
@@ -314,7 +314,7 @@ info
 ```
 
 #### eosapi.set_contract
-Here comes the most exciting moment. Let's push a Python smart contract to the blockchain.You can find the source code in [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts) directory
+Here comes the most exciting moment. Let's push a Python smart contract to the blockchain. You can find the source code in [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts) directory
 
 ```python
 r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi',1,True)
@@ -446,7 +446,7 @@ eosapi.get_table('inita','currency','account')
 <a name="playwithdex"></a>
 # Playing with DEX
 
-Before we can play with decentralized exchange,a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
+Before we can play with decentralized exchange, a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
 
 ```python
 def init():
@@ -475,12 +475,12 @@ You can always check the result with the following command
 eosapi.get_table('exchange','exchange','account')
 ```
 
-for more information on what test does,read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange/test.py)
+for more information on what test does, read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange/test.py)
 
 <a name="sendingmsginline"></a>
 # Sending messages with smart contracts
 
-You can find the demo in  [contracts/test](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/contracts/test)
+You can find the demo in [contracts/test](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/contracts/test)
 
 Here is how to play with it.
 
@@ -554,7 +554,7 @@ in [test.abi](https://github.com/learnforpractice/pyeos/blob/master/programs/pye
     ],
 ```
 
-Ok,that's all, pretty easy, right?
+Ok, that's all, pretty easy, right?
 
 
 <a name="sendingtsinline"></a>
