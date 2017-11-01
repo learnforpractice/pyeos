@@ -20,7 +20,7 @@ Python is one of the most powerfull language on the earth. It's easy to use and 
 # What Pyeos can do?
 
 1. call eos api with Python
-2. write simple contract in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
+2. write contracts in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
 
 <a name="buildingpyeos"></a>
 # Building Pyeos
@@ -446,7 +446,7 @@ eosapi.get_table('inita','currency','account')
 <a name="playwithdex"></a>
 # Playing with DEX
 
-Before we can play with decentralized exchange, a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#lets-do-some-practices):
+Before we can play with decentralized exchange, a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#walletcreate):
 
 ```python
 def init():

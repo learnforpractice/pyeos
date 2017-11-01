@@ -8,41 +8,11 @@ import numpy as np
 import zlib
 try:
     import eosapi
+    producer = eosapi.Producer()
+    print('please make sure you are running the following command before test')
+    print('./pyeos/pyeos --manual_gen_block --debug -i')
 except Exception as e:
     print(e)
-
-print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual_gen_block --debug -i')
-
-class Wait(object):
-    def __init__(self):
-        pass
-    
-    def produce_block(self):
-        for i in range(5):
-            ret = eosapi.produce_block()
-            if ret == 0:
-                break
-            time.sleep(1.0)
-        count = 0
-        while self.num == eosapi.get_info().head_block_num:  # wait for finish of create account
-            time.sleep(0.2)
-            count += 1
-            if count >= 20:
-                print('time out')
-                return
-
-    def __call__(self):
-        self.num = eosapi.get_info().head_block_num
-        self.produce_block()
-
-    def __enter__(self):
-        self.num = eosapi.get_info().head_block_num
-    
-    def __exit__(self, type, value, traceback):
-        self.produce_block()
-        
-wait = Wait()
 
 def init():
     '''
@@ -54,10 +24,10 @@ def init():
     key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
     if not eosapi.get_account('mnist'):
-        with wait:
+        with producer:
             r = eosapi.create_account('inita', 'mnist', key1, key2)
             assert r
-    with wait:
+    with producer:
         r = eosapi.set_contract('mnist', '../../programs/pyeos/contracts/mnist/mnist.py', '../../programs/pyeos/contracts/mnist/mnist.abi', 1)
         assert r
 
@@ -71,7 +41,7 @@ def vectorized_result(j):
     return e    
     
 def test():
-    wait()
+    producer()
     p = os.path.join(os.getcwd(), '../../programs/pyeos/contracts/mnist')
     sys.path.insert(0, p)
     import mnist_loader
@@ -93,9 +63,9 @@ def test():
         counter += 1
         if counter % 50 == 0:
             print(counter)
-            with wait:
+            with producer:
                 pass
-    wait()
+    producer()
 
 if __name__ == '__main__':
     sys.path.insert(0, '..')

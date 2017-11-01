@@ -97,17 +97,17 @@ class Account(Object):
         self.load()
         
     def save(self):
-        keys = struct.pack("Q",self.owner)
-        print(self.eos_balance,self.currency_balance,self.open_orders)
-        values = struct.pack('QQI',self.eos_balance,self.currency_balance,self.open_orders)
-        eoslib.store(exchange,exchange,table_account,keys,0,values)
+        keys = struct.pack("Q", self.owner)
+        print(self.eos_balance, self.currency_balance, self.open_orders)
+        values = struct.pack('QQI', self.eos_balance, self.currency_balance, self.open_orders)
+        eoslib.store(exchange, exchange, table_account, keys, 0, values)
         
     def load(self):
-        keys = struct.pack("Q",self.owner)
+        keys = struct.pack("Q", self.owner)
         print(self.owner)
         values = bytes(20)
-        if eoslib.load(exchange,exchange,table_account,keys,0,0,values) > 0:
-            values = struct.unpack('QQI',values)
+        if eoslib.load(exchange, exchange, table_account, keys, 0, 0, values) > 0:
+            values = struct.unpack('QQI', values)
             print(values)
             self.eos_balance = values[0]
             self.currency_balance = values[1]
@@ -124,9 +124,9 @@ class Account(Object):
 '''
 class OrderID(Object):
     
-    def __init__(self,bs=None):
+    def __init__(self, bs=None):
         if bs:
-            result = struct.unpack('QQ',bs)
+            result = struct.unpack('QQ', bs)
             self.name = result[0]
             self.id = result[1]
         else:
@@ -135,7 +135,7 @@ class OrderID(Object):
         self.raw_data = None
         
     def __call__(self):
-        self.raw_data = struct.pack('QQ',self.name,self.id)
+        self.raw_data = struct.pack('QQ', self.name, self.id)
         return self.raw_data
  
 '''
@@ -611,6 +611,7 @@ def apply_currency_transfer():
     elif transfer.from_ == exchange:
         requireAuth(transfer.to_); # require the receiver of funds (account owner) to authorize this transfer
         account = Account(transfer.to_)
+        assert account.currency_balance >= transfer.amount
         account.currency_balance -= transfer.amount
         account.save()
     else:

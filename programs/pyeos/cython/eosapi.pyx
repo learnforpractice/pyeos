@@ -326,3 +326,31 @@ cdef extern set_args(int argc, char* argv[]):
         argv_.append(argv[i])
     sys.argv = argv_
 
+class Producer(object):
+    def __init__(self):
+        pass
+    
+    def produce_block(self):
+        for i in range(5):
+            ret = produce_block()
+            if ret == 0:
+                break
+            time.sleep(1.0)
+        count = 0
+        while self.num == get_info().head_block_num:  # wait for finish of create account
+            time.sleep(0.2)
+            count += 1
+            if count >= 20:
+                print('time out')
+                return
+
+    def __call__(self):
+        self.num = get_info().head_block_num
+        self.produce_block()
+
+    def __enter__(self):
+        self.num = get_info().head_block_num
+    
+    def __exit__(self, type, value, traceback):
+        self.produce_block()
+
