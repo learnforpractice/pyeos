@@ -3,24 +3,19 @@ import time
 import wallet
 import eosapi
 
-def wait():
-    num = eosapi.get_info().head_block_num
-    eosapi.produce_block()
-    count = 0
-    while num == eosapi.get_info().head_block_num:  # wait for finish of create account
-        time.sleep(0.2)
-        count += 1
-        if count >= 20:
-            print('time out')
-            return
+print('please make sure you are running the following command before test')
+print('./pyeos/pyeos --manual_gen_block --debug -i')
 
 class Wait(object):
     def __init__(self):
         pass
-    def __enter__(self):
-        self.num = eosapi.get_info().head_block_num
-    def __exit__(self, type, value, traceback):
-        eosapi.produce_block()
+    
+    def produce_block(self):
+        for i in range(5):
+            ret = eosapi.produce_block()
+            if ret == 0:
+                break
+            time.sleep(1.0)
         count = 0
         while self.num == eosapi.get_info().head_block_num:  # wait for finish of create account
             time.sleep(0.2)
@@ -29,6 +24,16 @@ class Wait(object):
                 print('time out')
                 return
 
+    def __call__(self):
+        self.num = eosapi.get_info().head_block_num
+        self.produce_block()
+
+    def __enter__(self):
+        self.num = eosapi.get_info().head_block_num
+    
+    def __exit__(self, type, value, traceback):
+        self.produce_block()
+        
 wait = Wait()
 
 def init():
@@ -102,7 +107,9 @@ def send_eos_inline():
     args = {"from":"inita", "to":"test", "amount":1000, "memo":"hello"}
     scopes = ['test', 'inita']
     permissions = {'inita':'active'}
-    r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
+    
+    with wait:
+        r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
 
 
     

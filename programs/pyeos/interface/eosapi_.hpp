@@ -80,7 +80,7 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign);
 
 #define INT_65 65
 
-void produce_block_();
+int produce_block_();
 
 PyObject* get_info_();
 PyObject* get_block_(char* num_or_id);

@@ -2,6 +2,39 @@ import time
 import wallet
 import eosapi
 
+print('please make sure you are running the following command before test')
+print('./pyeos/pyeos --manual_gen_block --debug -i')
+
+class Wait(object):
+    def __init__(self):
+        pass
+    
+    def produce_block(self):
+        for i in range(5):
+            ret = eosapi.produce_block()
+            if ret == 0:
+                break
+            time.sleep(1.0)
+        count = 0
+        while self.num == eosapi.get_info().head_block_num:  # wait for finish of create account
+            time.sleep(0.2)
+            count += 1
+            if count >= 20:
+                print('time out')
+                return
+
+    def __call__(self):
+        self.num = eosapi.get_info().head_block_num
+        self.produce_block()
+
+    def __enter__(self):
+        self.num = eosapi.get_info().head_block_num
+    
+    def __exit__(self, type, value, traceback):
+        self.produce_block()
+
+wait = Wait()
+
 def init():
     psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
     wallet.open('mywallet')
@@ -10,19 +43,20 @@ def init():
     key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
     if not eosapi.get_account('currency'):
-        r = eosapi.create_account('inita', 'currency', key1, key2)
-        assert r
+        with wait:
+            r = eosapi.create_account('inita', 'currency', key1, key2)
+            assert r
 
     if not eosapi.get_account('exchange'):
-        r = eosapi.create_account('inita', 'exchange', key1, key2)
+        with wait:
+            r = eosapi.create_account('inita', 'exchange', key1, key2)
+            assert r
+
+    with wait:
+        r = eosapi.set_contract('currency', '../../programs/pyeos/contracts/currency/currency.py', '../../contracts/currency/currency.abi', 1)
         assert r
-        num = eosapi.get_info().head_block_num
-        while num == eosapi.get_info().head_block_num:  # wait for finish of create account
-            time.sleep(0.2)
-    r = eosapi.set_contract('currency', '../../programs/pyeos/contracts/currency/currency.py', '../../contracts/currency/currency.abi', 1)
-    assert r
-    r = eosapi.set_contract('exchange', '../../programs/pyeos/contracts/exchange/exchange.py', '../../contracts/exchange/exchange.abi', 1)
-    assert r
+        r = eosapi.set_contract('exchange', '../../programs/pyeos/contracts/exchange/exchange.py', '../../contracts/exchange/exchange.abi', 1)
+        assert r
 
 def test_deposit():
     messages = [
@@ -42,7 +76,8 @@ def test_deposit():
     for msg in messages:
         args, scopes, permissions = msg
         r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
-
+    wait()
+    
 def test_withdraw():
     messages = [
                 [   
@@ -71,33 +106,41 @@ def test_withdraw():
     for msg in messages:
         args, scopes, permissions = msg
         r = eosapi.push_message('currency', 'transfer', args, scopes, permissions)
-
+    
+    wait()
+    
 def test_deadlock():
 # raise a "tx_missing_scope: missing required scope" exception
     r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "amount":1, "memo":"hello"}, ['inita'], {'currency':'active'})
 
 # raise a "tx_missing_auth: missing required authority" exception
     r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "amount":1, "memo":"hello"}, ['currency', 'inita'], {})
-
+    wait()
 
 def test_bs():
-    args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 4, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
-    scopes = ['exchange', 'inita']
-    permissions = {'inita':'active'}
-    r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
     
-    args = {"seller" : {"name":"initb", "id":1}, "price" : "2", "quantity" : 2, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
-    scopes = ['exchange', 'inita']
-    permissions = {'initb':'active'}
-    r = eosapi.push_message('exchange', 'sell', args, scopes, permissions)
+    with wait:
+        args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 4, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
+        scopes = ['exchange', 'inita']
+        permissions = {'inita':'active'}
+
+        r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
+        
+        args = {"seller" : {"name":"initb", "id":1}, "price" : "2", "quantity" : 2, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
+        scopes = ['exchange', 'inita']
+        permissions = {'initb':'active'}
+        r = eosapi.push_message('exchange', 'sell', args, scopes, permissions)
+
     r = eosapi.get_table('exchange', 'exchange', 'account')
     print(r)
-    
+
 def t2():
     args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 1, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":1}
     scopes = ['exchange', 'inita']
     permissions = {'inita':'active'}
-    r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
+    with wait:
+        r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
+        assert r
 
 
 '''

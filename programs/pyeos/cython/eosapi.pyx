@@ -16,7 +16,7 @@ cdef extern from "eosapi_.hpp":
     ctypedef unsigned int uint32_t
     void quit_app_()
     uint32_t now2_()
-    void produce_block_();
+    int produce_block_();
     object get_info_ ()
     object get_block_(char* num_or_id)
     object get_account_(char* name)
@@ -77,7 +77,7 @@ def now():
     return now2_()
 
 def produce_block():
-    produce_block_()
+    return produce_block_()
 
 def get_info():
     info = get_info_()

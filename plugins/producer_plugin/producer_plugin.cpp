@@ -176,13 +176,15 @@ void producer_plugin::plugin_startup()
    ilog("producer plugin:  plugin_startup() end");
    } FC_CAPTURE_AND_RETHROW() }
 
-void producer_plugin::produce_block() {
+int producer_plugin::produce_block() {
+   int ret = -1;
    if (my->_manual_gen_block) {
-      my->schedule_production_loop();
+      ret = my->block_production_loop();
+      ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
       ilog("not in manual generate block mode.");
    }
-
+   return ret;
 }
 
 void producer_plugin::plugin_shutdown() {

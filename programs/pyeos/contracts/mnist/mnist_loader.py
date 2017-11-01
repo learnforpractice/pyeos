@@ -36,7 +36,7 @@ def load_data():
     below.
     """
     import os
-    p = os.path.join(os.getcwd(),'../../programs/pyeos/contract/mnist/mnist.pkl.gz')
+    p = os.path.join(os.getcwd(),'../../programs/pyeos/contracts/mnist/mnist.pkl.gz')
     f = gzip.open(p, 'rb')
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
