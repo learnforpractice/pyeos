@@ -86,8 +86,8 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
-      ("manual_gen_block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
-      ("gen_empty_block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
+      ("manual-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
+      ("gen-empty-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
       ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("required-participation", boost::program_options::bool_switch()->notifier([this](int e){my->_required_producer_participation = uint32_t(e*config::Percent1);}), "Percent of producers (0-99) that must be participating in order to produce blocks")
          ("producer-name,p", boost::program_options::value<vector<string>>()->composing()->multitoken(),

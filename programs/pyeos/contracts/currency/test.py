@@ -5,7 +5,7 @@ import eosapi
 producer = eosapi.Producer()
 
 print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual_gen_block --debug -i')
+print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init():
     psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'

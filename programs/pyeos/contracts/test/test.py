@@ -4,7 +4,7 @@ import wallet
 import eosapi
 
 print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual_gen_block --debug -i')
+print('./pyeos/pyeos --manual-gen-block --debug -i')
 
         
 producer = eosapi.Producer()
