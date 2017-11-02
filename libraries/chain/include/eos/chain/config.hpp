@@ -28,7 +28,7 @@ const static PermissionName OwnerName = N(owner);
 
 const static ShareType InitialTokenSupply = Asset::fromString("90000000.0000 EOS").amount;
 
-const static int BlockIntervalSeconds = 3;
+const static int BlockIntervalSeconds = 1;
 
 /** Percentages are fixed point with a denominator of 10,000 */
 const static int Percent100 = 10000;

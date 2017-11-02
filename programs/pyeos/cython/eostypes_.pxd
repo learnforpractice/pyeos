@@ -4,6 +4,8 @@ from libcpp.vector cimport vector
 cdef extern from "":
     ctypedef int INT_65  # use to satisfy cython
     ctypedef unsigned int uint32_t
+    ctypedef unsigned long long uint64_t
+
 cdef extern from  "<eos/types/PublicKey.hpp>":
     pass
 
