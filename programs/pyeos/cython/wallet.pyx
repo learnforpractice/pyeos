@@ -24,6 +24,9 @@ cdef extern from "wallet_.h":
     object wallet_unlock_(string& name, string& password);
     object wallet_import_key_(string& name, string& wif_key);
 
+    object sign_transaction_(void *signed_trx)
+
+
 def create(name: str) -> str:
     if type(name) == str:
         name = bytes(name, 'utf8')
@@ -41,10 +44,6 @@ def set_dir(path_name: str) -> bool:
 
 def set_timeout(secs) -> bool:
     return wallet_set_timeout_(secs)
-
-def sign_transaction(txn, keys, id):
-#    const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys,const chain::chain_id_type& id
-    pass
 
 def list_wallets() -> List[bytes]:
     return wallet_list_wallets_();
@@ -78,8 +77,8 @@ def import_key(name: str, wif_key: str) -> bool:
     if type(wif_key) == str:
         wif_key = bytes(wif_key, 'utf8')
     return wallet_import_key_(name, wif_key)
-    
-    
-    
-    
 
+def sign_transaction(signed_trx):
+    cdef uint64_t ptr
+    ptr = signed_trx()
+    return  sign_transaction_(<void*>ptr)

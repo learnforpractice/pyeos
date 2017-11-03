@@ -5,6 +5,8 @@ from libcpp.vector cimport vector
 from libcpp.map cimport map
 from eostypes_ cimport * 
 
+import wallet
+
 # import eostypes_
 from typing import Dict, Tuple, List
 
@@ -359,5 +361,5 @@ class Producer(object):
 def push_transaction2(signed_trx,sign=True):
     cdef uint64_t ptr
     ptr = signed_trx()
-    return push_transaction2_(<void*>ptr, sign)
+    return push_transaction2_(<void*>ptr,sign)
 

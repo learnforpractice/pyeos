@@ -66,40 +66,9 @@ read_only::get_info_results get_info() {
            64.0};
 }
 
-string push_transaction_bk(SignedTransaction& trx, bool sign) {
-   auto info = get_info();
-   trx.expiration =
-       info.head_block_time + 100;  // chain.head_block_time() + 100;
-   //    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
-
-   trx.refBlockNum = fc::endian_reverse_u32(info.head_block_id._hash[0]);
-   trx.refBlockPrefix = info.head_block_id._hash[1];
-
-   //    transaction_set_reference_block(trx, info.head_block_id);
-   boost::sort(trx.scope);
-
-   if (sign) {
-      sign_transaction(trx);
-   }
-
-   auto v = fc::variant(trx);
-   //	ilog(fc::json::to_string( trx ));
-
-   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   auto result = fc::json::to_string(rw.push_transaction(v.get_object()));
-   //	ilog(result);
-   return result;
-
-   ProcessedTransaction pts = get_db().push_transaction(trx, sign);
-   return get_db().transaction_to_variant(pts).get_string();
-}
-
 PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    auto info = get_info();
-   trx.expiration =
-       info.head_block_time + 100;  // chain.head_block_time() + 100;
-   //    get_db().get_database().get<block_summary_object>((uint16_t)trx.refBlockNum).block_id;
-
+   trx.expiration = info.head_block_time + 100;
    trx.refBlockNum = fc::endian_reverse_u32(info.head_block_id._hash[0]);
    trx.refBlockPrefix = info.head_block_id._hash[1];
 
@@ -134,13 +103,49 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    return py_new_none();
 }
 
+
 PyObject* push_transaction2_(void* signed_trx, bool sign) {
+
    if (signed_trx == NULL) {
       return py_new_none();
    }
-   SignedTransaction& ts = *((SignedTransaction *)signed_trx);
-   return push_transaction(ts,sign);
+
+   SignedTransaction& trx = *((SignedTransaction *)signed_trx);
+
+   auto info = get_info();
+   trx.expiration = info.head_block_time + 100;
+   trx.refBlockNum = fc::endian_reverse_u32(info.head_block_id._hash[0]);
+   trx.refBlockPrefix = info.head_block_id._hash[1];
+   boost::sort(trx.scope);
+
+   if (sign) {
+      sign_transaction(trx);
+   }
+
+   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   chain_apis::read_write::push_transaction_results result;
+
+   bool success = false;
+   PyThreadState* state = PyEval_SaveThread();
+   try {
+      result = rw.push_transaction(fc::variant(trx).get_object());
+      success = true;
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+
+   PyEval_RestoreThread(state);
+
+   if (success) {
+      return python::json::to_string(result);
+   }
+   return py_new_none();
 }
+
 
 int produce_block_() {
    return app().get_plugin<producer_plugin>().produce_block();
@@ -174,12 +179,9 @@ PyObject* get_public_key_(string& wif_key) {
 PyObject* create_account_(string creator, string newaccount, string owner,
                           string active, int sign) {
    try {
-      auto owner_auth =
-          eos::chain::Authority{1, {{public_key_type(owner), 1}}, {}};
-      auto active_auth =
-          eos::chain::Authority{1, {{public_key_type(active), 1}}, {}};
-      auto recovery_auth =
-          eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
+      auto owner_auth = eos::chain::Authority{1, {{public_key_type(owner), 1}}, {}};
+      auto active_auth = eos::chain::Authority{1, {{public_key_type(active), 1}}, {}};
+      auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
 
       uint64_t deposit = 1;
       SignedTransaction trx;

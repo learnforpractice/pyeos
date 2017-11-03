@@ -76,7 +76,7 @@ cdef extern from "<eos/types/native.hpp>" namespace "eos::types":
 
     ctypedef vector Vector
     ctypedef string String
-    ctypedef Vector[char] Bytes
+    ctypedef Vector[unsigned char] Bytes
     cdef cppclass Name:        
         Name(const char * str) except +
         String toString() const

@@ -6,7 +6,6 @@ import eosapi
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-        
 producer = eosapi.Producer()
 
 def init():
@@ -90,8 +89,3 @@ def send_eos_inline():
         r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
 
 
-    
-
-
-
-    

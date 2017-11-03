@@ -33,13 +33,31 @@ wallet_manager& wm() {
 void sign_transaction(SignedTransaction& trx) {
    const auto& public_keys = wm().get_public_keys();
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-   eos::chain_apis::read_only::get_required_keys_params params = {
-       fc::variant(trx), public_keys};
-   eos::chain_apis::read_only::get_required_keys_result required_keys =
-       ro_api.get_required_keys(params);
-   trx =
-       wm().sign_transaction(trx, required_keys.required_keys, chain_id_type{});
+   eos::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
+   eos::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
+   trx = wm().sign_transaction(trx, required_keys.required_keys, chain_id_type{});
 }
+
+PyObject* sign_transaction_(void *signed_trx) {
+   if (signed_trx == NULL) {
+      return py_new_bool(false);
+   }
+
+   try {
+      SignedTransaction& trx = *((SignedTransaction*)signed_trx);
+      sign_transaction(trx);
+      return py_new_bool(true);
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+
+   return py_new_bool(false);
+}
+
 
 PyObject* wallet_create_(std::string& name) {
    string password = "";

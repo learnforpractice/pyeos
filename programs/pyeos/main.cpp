@@ -75,9 +75,9 @@ int main(int argc, char** argv) {
    //   set_args(argc,argv);
 
    PyRun_SimpleString("import readline");
+   PyInit_wallet();
    PyInit_eosapi();
    PyInit_eostypes();
-   PyInit_wallet();
    PyInit_python_contract();
    PyInit_eoslib();
    PyInit_eostest();

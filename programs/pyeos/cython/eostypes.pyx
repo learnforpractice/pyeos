@@ -13,6 +13,7 @@ cdef class PyTransaction:
         self._thisptr = new Transaction()
 
     def __dealloc__(self):
+        print('__dealloc__')
         if self._thisptr:
             del self._thisptr
             self._thisptr = NULL
@@ -33,11 +34,11 @@ cdef class PyTransaction:
             for msg in messages:
                 self.add_message(msg)
 
-    def reqire_scope(self, scope,read_only = False):
+    def reqire_scope(self, scope, read_only = False):
         if read_only:
-            emplace_scope(Name(scope),self._thisptr.readscope)
+            emplace_scope(Name(scope), self._thisptr.readscope)
         else:
-            emplace_scope(Name(scope),self._thisptr.scope)
+            emplace_scope(Name(scope), self._thisptr.scope)
 
     def add_message(self, msg: list):
         cdef uint64_t ptr = msg()
@@ -51,6 +52,7 @@ cdef class PyMessage:
         self._thisptr = new Message()
 
     def __dealloc__(self):
+        print('__dealloc__')
         if self._thisptr:
             del self._thisptr
             self._thisptr = NULL
@@ -66,8 +68,9 @@ cdef class PyMessage:
             self._thisptr.authorization.push_back(AccountPermission(Name(a[0]), Name(a[1])))
 
         if data:
-            self._thisptr.data = data
-    
+            for d in data:
+                self._thisptr.data.push_back(<unsigned char>d)
+
     def require_permission(self, account: bytes, permission: bytes):
         self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))
 
