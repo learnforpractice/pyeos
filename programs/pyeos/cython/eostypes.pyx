@@ -33,7 +33,7 @@ cdef class PyTransaction:
             for msg in messages:
                 self.add_message(msg)
 
-    def reqireScope(self, scope,read_only = False):
+    def reqire_scope(self, scope,read_only = False):
         if read_only:
             emplace_scope(Name(scope),self._thisptr.readscope)
         else:
@@ -64,7 +64,9 @@ cdef class PyMessage:
         
         for a in author:
             self._thisptr.authorization.push_back(AccountPermission(Name(a[0]), Name(a[1])))
-        self._thisptr.data = data
+
+        if data:
+            self._thisptr.data = data
     
     def require_permission(self, account: bytes, permission: bytes):
         self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))

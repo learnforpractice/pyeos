@@ -19,6 +19,15 @@ def test_db():
     eostest.create_account_manually(b'hello')
     eostest.get_account(b'hello')
     eostest.end()
+
+def test_ts():
+    from eostypes import PySignedTransaction, PyMessage
+    ts = PySignedTransaction()
+    ts.reqireScope(b'test')
     
+    msg = PyMessage(b'test', b'testts', [[b'test',b'active']], b'')
+    ts.add_message(msg)
+
+    eosapi.push_transaction2(ts, True)
     
     

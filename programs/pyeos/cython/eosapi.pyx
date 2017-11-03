@@ -356,6 +356,8 @@ class Producer(object):
     def __exit__(self, type, value, traceback):
         self.produce_block()
 
-def push_transaction(signed_trx,sign=True):
-    return push_transaction2_(<void*>signed_trx.ptr, sign)
+def push_transaction2(signed_trx,sign=True):
+    cdef uint64_t ptr
+    ptr = signed_trx()
+    return push_transaction2_(<void*>ptr, sign)
 
