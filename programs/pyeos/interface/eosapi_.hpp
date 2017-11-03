@@ -77,6 +77,7 @@ chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
 PyObject* push_transaction(SignedTransaction& trx, bool sign);
+PyObject* push_transaction2_(void* signed_trx, bool sign);
 
 #define INT_65 65
 

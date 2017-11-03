@@ -10,17 +10,17 @@ cdef class PyTransaction:
     cdef Transaction* _thisptr
 
     def __cinit__(self):
-        self._thisptr = NULL
+        self._thisptr = new Transaction()
 
     def __dealloc__(self):
         if self._thisptr:
             del self._thisptr
+            self._thisptr = NULL
 
     def __call__(self):
         return <uint64_t>self._thisptr
 
     def __init__(self, refBlocNum = 0, refBlockPrefix = 0, expiration = 0, scopes = None, messages = None):
-        self._thisptr = new Transaction()
         self._thisptr.refBlockNum = refBlocNum
         self._thisptr.refBlockPrefix = refBlockPrefix
         self._thisptr.expiration = time_point_sec(expiration)
@@ -48,17 +48,17 @@ cdef class PyMessage:
     cdef Message* _thisptr
 
     def __cinit__(self):
-        self._thisptr = NULL
+        self._thisptr = new Message()
 
     def __dealloc__(self):
         if self._thisptr:
             del self._thisptr
+            self._thisptr = NULL
 
     def __call__(self):
         return <uint64_t>self._thisptr
 
     def __init__(self, code: bytes, type: bytes, author: list, data: bytes):
-        self._thisptr = new Message()
         self._thisptr.code = Name(code)
         self._thisptr.type = Name(type)
         
@@ -69,5 +69,23 @@ cdef class PyMessage:
     def require_permission(self, account: bytes, permission: bytes):
         self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))
 
+cdef class PySignedTransaction(PyTransaction):
+    def __cinit__(self):
+        self._thisptr = <SignedTransaction*>new SignedTransaction()
 
+    def __dealloc__(self):
+        if self._thisptr:
+            temp = <SignedTransaction*>self._thisptr
+            del temp
+            self._thisptr = NULL
+
+'''
+    struct SignedTransaction : public Transaction { 
+        SignedTransaction() = default;
+        SignedTransaction(const Vector<Signature>& signatures)
+           : signatures(signatures) {}
+
+        Vector<Signature>                signatures;
+    };
+'''
 

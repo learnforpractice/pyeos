@@ -134,6 +134,14 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    return py_new_none();
 }
 
+PyObject* push_transaction2_(void* signed_trx, bool sign) {
+   if (signed_trx == NULL) {
+      return py_new_none();
+   }
+   SignedTransaction& ts = *((SignedTransaction *)signed_trx);
+   return push_transaction(ts,sign);
+}
+
 int produce_block_() {
    return app().get_plugin<producer_plugin>().produce_block();
 }

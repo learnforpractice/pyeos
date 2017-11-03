@@ -26,6 +26,8 @@ cdef extern from "eosapi_.hpp":
     object create_key_()
     object get_public_key_(string& wif_key)
 
+    object push_transaction2_(void* signed_trx, bool sign)
+
     int get_transaction_(string& id, string& result);
     int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
     
@@ -353,4 +355,7 @@ class Producer(object):
     
     def __exit__(self, type, value, traceback):
         self.produce_block()
+
+def push_transaction(signed_trx,sign=True):
+    return push_transaction2_(<void*>signed_trx.ptr, sign)
 
