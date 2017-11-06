@@ -64,12 +64,17 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx
+)
 
 add_executable( pyeos main.cpp api.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
-    interface/math_.cpp interface/eostest_.cpp
+    interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp
     wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
-    wrap/eostest.wrap.cpp wrap/database.wrap.cpp
+    wrap/eostest.wrap.cpp wrap/database.wrap.cpp wrap/blockchain.wrap.cpp
     wrap/pyobject.wrap.cpp)
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 

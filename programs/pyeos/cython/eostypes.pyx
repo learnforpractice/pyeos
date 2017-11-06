@@ -5,15 +5,35 @@ include "eostypes_.pxd"
 
 cdef extern from "common.hpp":
     void emplace_scope(const Name& scope, vector[Name]& scopes)
+    void vector_to_string(vector[char]& v, string& str);
+    void string_to_vector(string& str, vector[char]& v);
 
-cdef class PyTransaction:
-    cdef Transaction* _thisptr
+cdef class PyMessage:
+    cdef Message* _thisptr
+    cdef uint64_t _borrowptr
 
-    def __cinit__(self):
-        self._thisptr = new Transaction()
+    def __cinit__(self, native=None):
+        if native:
+            self._borrowptr = native
+            self._thisptr = <Message*><void *>self._borrowptr
+        else:
+            self._borrowptr = 0
+            self._thisptr = new Message()
+
+    def init(self, code: bytes, type: bytes, author: list, data: bytes):
+        self._thisptr.code = Name(code)
+        self._thisptr.type = Name(type)
+
+        for a in author:
+            self._thisptr.authorization.push_back(AccountPermission(Name(a[0]), Name(a[1])))
+
+        if data:
+            string_to_vector(data, self._thisptr.data)
 
     def __dealloc__(self):
-        print('__dealloc__')
+        print('__dealloc__ PyMessage', self._borrowptr, <uint64_t>self._thisptr)
+        if self._borrowptr:
+            return
         if self._thisptr:
             del self._thisptr
             self._thisptr = NULL
@@ -21,7 +41,49 @@ cdef class PyTransaction:
     def __call__(self):
         return <uint64_t>self._thisptr
 
-    def __init__(self, refBlocNum = 0, refBlockPrefix = 0, expiration = 0, scopes = None, messages = None):
+    def require_permission(self, account: bytes, permission: bytes):
+        self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))
+
+    @property
+    def code(self):
+        return self._thisptr.code.toString()
+
+    @property
+    def type(self):
+        return self._thisptr.type.toString()
+
+    @property
+    def data(self):
+        cdef string str
+        print("self._thisptr.data.size():", self._thisptr.data.size())
+        vector_to_string(self._thisptr.data, str)
+        return str
+
+cdef class PyTransaction:
+    cdef Transaction* _thisptr
+    cdef uint64_t _borrowptr
+
+    def __cinit__(self, native=None):
+        if native:
+            self._borrowptr = native
+            self._thisptr = <Transaction*><void *>self._borrowptr
+        else:
+            self._borrowptr = 0
+            self._thisptr = new Transaction()
+
+    def __dealloc__(self):
+        print('__dealloc__ PyTransaction', self._borrowptr, <uint64_t>self._thisptr)
+
+        if self._borrowptr:
+            return
+        if self._thisptr:
+            del self._thisptr
+            self._thisptr = NULL
+
+    def __call__(self):
+        return <uint64_t>self._thisptr
+
+    def init(self, refBlocNum = 0, refBlockPrefix = 0, expiration = 0, scopes = None, messages = None):
         self._thisptr.refBlockNum = refBlocNum
         self._thisptr.refBlockPrefix = refBlockPrefix
         self._thisptr.expiration = time_point_sec(expiration)
@@ -40,45 +102,42 @@ cdef class PyTransaction:
         else:
             emplace_scope(Name(scope), self._thisptr.scope)
 
-    def add_message(self, msg: list):
+    def add_message(self, msg):
+        cdef Message *msg_ptr
         cdef uint64_t ptr = msg()
+        msg_ptr = <Message*>ptr
         if msg:
-            self._thisptr.messages.push_back((<Message*>ptr)[0])
+            self._thisptr.messages.push_back(msg_ptr[0])
 
-cdef class PyMessage:
-    cdef Message* _thisptr
-
-    def __cinit__(self):
-        self._thisptr = new Message()
-
-    def __dealloc__(self):
-        print('__dealloc__')
-        if self._thisptr:
-            del self._thisptr
-            self._thisptr = NULL
-
-    def __call__(self):
-        return <uint64_t>self._thisptr
-
-    def __init__(self, code: bytes, type: bytes, author: list, data: bytes):
-        self._thisptr.code = Name(code)
-        self._thisptr.type = Name(type)
-        
-        for a in author:
-            self._thisptr.authorization.push_back(AccountPermission(Name(a[0]), Name(a[1])))
-
-        if data:
-            for d in data:
-                self._thisptr.data.push_back(<unsigned char>d)
-
-    def require_permission(self, account: bytes, permission: bytes):
-        self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))
+#    @property
+    def get_messages(self):
+        msgs = []
+        for i in range(self._thisptr.messages.size()):
+            msg = PyMessage(<uint64_t>&self._thisptr.messages[i])
+            msgs.append(msg)
+        '''bad code, local native_msg
+        for native_msg in self._thisptr.messages:
+            msg = PyMessage(<uint64_t>&native_msg)
+            print('---------++++----------:',msg.code)
+            msgs.append(msg)
+        '''
+        return msgs
 
 cdef class PySignedTransaction(PyTransaction):
-    def __cinit__(self):
-        self._thisptr = <SignedTransaction*>new SignedTransaction()
+
+    def __cinit__(self,native=None):
+        if native:
+            self._borrowptr = native
+            self._thisptr = <SignedTransaction*><void *>self._borrowptr
+        else:
+            self._borrowptr = 0
+            self._thisptr = <SignedTransaction*>new SignedTransaction()
 
     def __dealloc__(self):
+        print('__dealloc__ PySignedTransaction', self._borrowptr, <uint64_t>self._thisptr)
+
+        if self._borrowptr:
+            return
         if self._thisptr:
             temp = <SignedTransaction*>self._thisptr
             del temp

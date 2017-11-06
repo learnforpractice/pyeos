@@ -1,6 +1,7 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
+from database_object cimport *
 
 cdef extern from "":
     ctypedef unsigned long long uint64_t

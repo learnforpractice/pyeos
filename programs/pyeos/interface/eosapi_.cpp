@@ -362,8 +362,7 @@ PyObject* get_account_(char* name) {
       const auto& d = db.get_database();
       const auto& accnt = d.get<account_object, by_name>(params.name);
       const auto& balance = d.get<BalanceObject, byOwnerName>(params.name);
-      const auto& staked_balance =
-          d.get<StakedBalanceObject, byOwnerName>(params.name);
+      const auto& staked_balance = d.get<StakedBalanceObject, byOwnerName>(params.name);
       key = "name";
       value = name;
       dict.add(key, value);

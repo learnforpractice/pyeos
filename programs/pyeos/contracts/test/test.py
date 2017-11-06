@@ -88,4 +88,51 @@ def send_eos_inline():
     with producer:
         r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
 
+def lock_eos():
+#    args = {"from":"inita", "to":"test", "amount":1000, "memo":"hello"}
+#    scopes = ['test', 'inita', 'eos']
+    args = {"from":"inita", "to":"inita", "amount":50}
+    scopes = ['inita', 'eos']
+    permissions = {'inita':'active'}
+
+    with producer:
+        r = eosapi.push_message('eos', 'lock', args, scopes, permissions)
+
+    r = eosapi.get_account('inita')
+    print(r)
+    r = eosapi.get_account('test')
+    print(r)
+
+def unlock_eos():
+    args = {"account":"test", "amount":1000}
+    scopes = ['test', 'eos']
+    permissions = {'test':'active'}
+
+    with producer:
+        r = eosapi.push_message('eos', 'unlock', args, scopes, permissions)
+
+    r = eosapi.get_account('inita')
+    print(r)
+    r = eosapi.get_account('test')
+    print(r)
+
+def claim_eos():
+    args = {"account":"test", "amount":1000}
+    scopes = ['test', 'eos']
+    permissions = {'test':'active'}
+
+    with producer:
+        r = eosapi.push_message('eos', 'claim', args, scopes, permissions)
+
+    r = eosapi.get_account('inita')
+    print(r)
+    r = eosapi.get_account('test')
+    print(r)
+
+
+
+
+
+
+
 

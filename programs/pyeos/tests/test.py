@@ -55,11 +55,14 @@ def test_ts():
     ts = PySignedTransaction()
     ts.reqire_scope(b'test')
     ts.reqire_scope(b'currency')
-    
+
     data = struct.pack("QQQ", N(b'currency'), N(b'test'), 50)
 
-    msg = PyMessage(b'currency', b'transfer', [[b'currency',b'active']], data)
+    msg = PyMessage()
+    msg.init(b'currency', b'transfer', [[b'currency',b'active']], data)
     ts.add_message(msg)
+    
+    print('+++++++++++++:',ts.get_messages())
 
 #    ret = wallet.sign_transaction(ts)
 #    print('sign ts return',ret)
@@ -69,7 +72,7 @@ def test_ts():
 
     with producer:
         eosapi.push_transaction2(ts, True)
-    
+
     r = eosapi.get_table('test','currency','account')
     print(r)
 

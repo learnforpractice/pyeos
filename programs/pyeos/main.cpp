@@ -63,7 +63,7 @@ extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_eostest();
 extern "C" PyObject* PyInit_database();
-
+extern "C" PyObject* PyInit_blockchain();
 
 void set_args(int argc, char** argv);
 
@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
    PyInit_eoslib();
    PyInit_eostest();
    PyInit_database();
+   PyInit_blockchain();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
@@ -113,6 +114,7 @@ int main(int argc, char** argv) {
    }
 
    PyRun_SimpleString("import initeos");
+   PyRun_SimpleString("from main import chain_controller as ctrl");
 
    if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");

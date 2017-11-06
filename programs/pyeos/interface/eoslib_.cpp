@@ -44,6 +44,10 @@ static inline apply_context& get_validate_ctx() {
    return *python_interface::get().current_validate_context;
 }
 
+void new_apply_context() {
+
+}
+
 void requireAuth_(uint64_t account) {
    get_validate_ctx().require_authorization(Name(account));
 }

@@ -1,6 +1,7 @@
 # include <eos/types/generated.hpp>
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+
 cdef extern from "":
     ctypedef int INT_65  # use to satisfy cython
     ctypedef unsigned int uint32_t
@@ -35,6 +36,23 @@ cdef extern from "<fc/time.hpp>" namespace "fc":
         time_point_sec()
         time_point_sec(uint32_t seconds)
 
+cdef extern from "<eos/types/native.hpp>" namespace "eos::types":
+    ctypedef unsigned short UInt16  # fake type
+    ctypedef unsigned int   UInt32  # fake type
+
+    ctypedef time_point_sec Time
+    ctypedef compact_signature Signature
+    ctypedef sha256 generated_transaction_id_type
+
+    ctypedef vector Vector
+    ctypedef string String
+    ctypedef Vector[char] Bytes
+    cdef cppclass Name:        
+        Name(const char * str) except +
+        String toString() const
+        Name & operator = (const char * n)
+
+
 cdef extern from "" namespace "boost::container":
     cdef cppclass flat_set[T]:
         cppclass iterator:
@@ -66,21 +84,6 @@ cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
 cdef extern from "<eos/chain/Types.hpp>" namespace "eos::chain":
     ctypedef PublicKey public_key_type
     ctypedef sha256 chain_id_type
-
-cdef extern from "<eos/types/native.hpp>" namespace "eos::types":
-    ctypedef unsigned short UInt16  # fake type
-    ctypedef unsigned int   UInt32  # fake type
-    ctypedef time_point_sec Time
-    ctypedef compact_signature Signature
-    ctypedef sha256 generated_transaction_id_type
-
-    ctypedef vector Vector
-    ctypedef string String
-    ctypedef Vector[unsigned char] Bytes
-    cdef cppclass Name:        
-        Name(const char * str) except +
-        String toString() const
-        Name & operator = (const char * n)
 
 cdef extern from "<eos/types/generated.hpp>" namespace "eos::types":
     ctypedef Name AccountName

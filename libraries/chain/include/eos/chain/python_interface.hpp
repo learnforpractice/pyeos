@@ -38,6 +38,8 @@ public:
 
    int64_t current_execution_time();
 
+   void set_current_context(apply_context& c);
+
    apply_context* current_apply_context = nullptr;
    apply_context* current_validate_context = nullptr;
    apply_context* current_precondition_context = nullptr;

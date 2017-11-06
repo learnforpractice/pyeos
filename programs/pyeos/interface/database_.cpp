@@ -96,6 +96,14 @@ PyObject* database_get_recent_transaction(void* db, string& id)
    return py_new_none();
 }
 
+PyObject* database_get_code(void* db, string& code, int& type) {
+   assert(db);
+   chainbase::database& _db = *(chainbase::database*)db;
+
+   const auto& recipient = _db.get<account_object,by_name>(Name(code));
+   return py_new_none();
+}
+
 PyObject* database_flush(void* db, string& id) {
    assert(db);
    chainbase::database& _db = *(chainbase::database*)db;

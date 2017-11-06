@@ -212,6 +212,13 @@ void python_interface::load(const AccountName& name, const chainbase::database& 
    python_load_with_gil(module_name, code);
 }
 
+void python_interface::set_current_context(apply_context& c) {
+   current_validate_context = &c;
+   current_precondition_context = &c;
+   current_apply_context = &c;
+}
+
+
 uint32_t transactionCreate_() {
    auto& ptrx = python_interface::get().current_apply_context->create_pending_transaction();
    return ptrx.handle;
