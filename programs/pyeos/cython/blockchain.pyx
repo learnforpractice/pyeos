@@ -16,9 +16,9 @@ cdef class apply_context:
 
     def __call__(self):
         return <uint64_t>self._thisptr
-    
+
     def __dealloc__(self):
-        print('__dealloc__ apply_context', <uint64_t>self._thisptr)
+#        print('__dealloc__ apply_context', <uint64_t>self._thisptr)
 
         if self._thisptr:
             release_apply_context_(self._thisptr)

@@ -208,7 +208,7 @@ void python_interface::load(const AccountName& name, const chainbase::database& 
    string code = string((const char*) recipient.code.data(),
          recipient.code.size());
    current_module = module_name;
-   ilog("python_interface::load");
+//   ilog("python_interface::load");
    python_load_with_gil(module_name, code);
 }
 

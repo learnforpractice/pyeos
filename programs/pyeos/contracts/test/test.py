@@ -40,6 +40,7 @@ def init():
         r = eosapi.push_message('eos','transfer',{"from":"inita","to":"test","amount":1000,"memo":"hello"},['inita','test'],{'inita':'active'})
         assert r
 
+#r = eosapi.set_contract('currency','../../build/programs/pyeos/contracts/test/code.wast','../../build/programs/pyeos/contracts/test/test.abi',0)
 
 def send_message():
     r = eosapi.get_table('test','currency','account')

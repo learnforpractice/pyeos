@@ -251,6 +251,96 @@ void apply_eos_claim(apply_context& context) {
 }
 
 
+/**
+ *  Deduct the balance from the from account.
+ */
+void apply_eos_lock2(apply_context& context) {
+   auto lock = context.msg.as<types::lock>();
+
+   EOS_ASSERT(lock.amount > 0, message_validate_exception, "Locked amount must be positive");
+
+   context.require_scope(lock.to);
+   context.require_scope(lock.from);
+   context.require_scope(config::EosContractName);
+
+   context.require_authorization(lock.from);
+
+   context.require_recipient(lock.to);
+   context.require_recipient(lock.from);
+
+   const auto& locker = context.db.get<BalanceObject, byOwnerName>(lock.from);
+
+   EOS_ASSERT( locker.balance >= lock.amount, message_precondition_exception,
+              "Account ${a} lacks sufficient funds to lock ${amt} EOS", ("a", lock.from)("amt", lock.amount)("available",locker.balance) );
+
+   context.mutable_db.modify(locker, [&lock](BalanceObject& a) {
+      a.balance -= lock.amount;
+   });
+
+   const auto& balance = context.db.get<StakedBalanceObject, byOwnerName>(lock.to);
+   balance.stakeTokens(lock.amount, context.mutable_db);
+}
+
+void apply_eos_unlock2(apply_context& context) {
+   auto unlock = context.msg.as<types::lock>();
+
+   context.require_scope(unlock.from);
+   context.require_scope(unlock.to);
+   context.require_scope(config::EosContractName);
+
+   context.require_authorization(unlock.from);
+
+/*
+   template <typename IndexType, typename Scope>
+   int32_t load_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      require_scope( scope );
+*/
+//   context.load_record<key_value_index, by_scope_primary>( N(eos), N(eos), N(rent), keys, value, valuelen );
+
+   EOS_ASSERT(unlock.amount >= 0, message_validate_exception, "Unlock amount cannot be negative");
+
+   const auto& balance = context.db.get<StakedBalanceObject, byOwnerName>(unlock.to);
+
+   EOS_ASSERT(balance.stakedBalance  >= unlock.amount, message_precondition_exception,
+              "Insufficient locked funds to unlock ${a}", ("a", unlock.amount));
+
+   balance.beginUnstakingTokens(unlock.amount, context.mutable_db);
+}
+
+void apply_eos_claim2(apply_context& context) {
+   auto claim = context.msg.as<types::lock>();
+
+   EOS_ASSERT(claim.amount > 0, message_validate_exception, "Claim amount must be positive");
+
+   context.require_scope(claim.from);
+   context.require_scope(claim.to);
+   context.require_scope(config::EosContractName);
+
+   context.require_authorization(claim.from);
+
+   auto balance = context.db.find<StakedBalanceObject, byOwnerName>(claim.to);
+   EOS_ASSERT(balance != nullptr, message_precondition_exception,
+              "Could not find staked balance for ${name}", ("name", claim.to));
+   auto balanceReleaseTime = balance->lastUnstakingTime + config::StakedBalanceCooldownSeconds;
+   auto now = context.controller.head_block_time();
+#if 0
+   EOS_ASSERT(now >= balanceReleaseTime, message_precondition_exception,
+              "Cannot claim balance until ${releaseDate}", ("releaseDate", balanceReleaseTime));
+#endif
+   EOS_ASSERT(balance->unstakingBalance >= claim.amount, message_precondition_exception,
+              "Cannot claim ${claimAmount} as only ${available} is available for claim",
+              ("claimAmount", claim.amount)("available", balance->unstakingBalance));
+
+   const auto& stakedBalance = context.db.get<StakedBalanceObject, byOwnerName>(claim.to);
+   stakedBalance.finishUnstakingTokens(claim.amount, context.mutable_db);
+
+   const auto& liquidBalance = context.db.get<BalanceObject, byOwnerName>(claim.from);
+   context.mutable_db.modify(liquidBalance, [&claim](BalanceObject& a) {
+      a.balance += claim.amount;
+   });
+}
+
+
 void apply_eos_setproducer(apply_context& context) {
    auto update = context.msg.as<types::setproducer>();
    context.require_authorization(update.name);

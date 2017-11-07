@@ -12,7 +12,7 @@ code_map = {}
 def load(name, code):
     global code_map
     ret = 0
-    print('python_load:',name)
+#    print('python_load:',name)
     module = code_map.get(name)
 
     if not module or (module.__code != code):
@@ -29,7 +29,7 @@ def load(name, code):
 def call(name, func, args):
     global code_map
     ret = -1
-    print('python_call:',func)
+#    print('python_call:',func)
     try:
         module = code_map[name]
         func = getattr(module,func)
@@ -47,26 +47,33 @@ class chain_controller(object):
         for msg in trx.get_messages():
             code_info = eosapi.get_code(msg.code)
             if code_info:
-                ctx = blockchain.apply_context(msg.code, trx, msg)
-                blockchain.set_current_context(ctx)
-                load(msg.code, code_info[0])
-                call(msg.code, 'apply', [N(b'currency'), N(b'transfer')])
+                if code_info[-1] == 0:
+                    pass
+                elif code_info[-1] == 1:
+                    ctx = blockchain.apply_context(msg.code, trx, msg)
+                    blockchain.set_current_context(ctx)
+                    load(msg.code, code_info[0])
+                    call(msg.code, 'apply', [N(b'currency'), N(b'transfer')])
 
 def test():
     from eostypes import PySignedTransaction, PyMessage
+    import time
+    start = time.time()
     ts = PySignedTransaction()
     ts.reqire_scope(b'test')
     ts.reqire_scope(b'currency')
 
-    data = struct.pack("QQQ", N(b'currency'), N(b'test'), 50)
-    msg = PyMessage()
-    msg.init(b'currency', b'transfer', [[b'currency',b'active']], data)
-    ts.add_message(msg)
+    for i in range(10000):
+        data = struct.pack("QQQ", N(b'currency'), N(b'test'), 1)
+        msg = PyMessage()
+        msg.init(b'currency', b'transfer', [[b'currency',b'active']], data)
+        ts.add_message(msg)
         
     ctl = chain_controller()
     ctl.process_transaction(ts)
     r = eosapi.get_table(b'test', b'currency', b'account')
     print(r)
+    print('cost:',time.time()-start)
     
     
     

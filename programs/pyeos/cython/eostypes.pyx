@@ -31,7 +31,7 @@ cdef class PyMessage:
             string_to_vector(data, self._thisptr.data)
 
     def __dealloc__(self):
-        print('__dealloc__ PyMessage', self._borrowptr, <uint64_t>self._thisptr)
+#        print('__dealloc__ PyMessage', self._borrowptr, <uint64_t>self._thisptr)
         if self._borrowptr:
             return
         if self._thisptr:
@@ -55,7 +55,7 @@ cdef class PyMessage:
     @property
     def data(self):
         cdef string str
-        print("self._thisptr.data.size():", self._thisptr.data.size())
+#        print("self._thisptr.data.size():", self._thisptr.data.size())
         vector_to_string(self._thisptr.data, str)
         return str
 
@@ -72,7 +72,7 @@ cdef class PyTransaction:
             self._thisptr = new Transaction()
 
     def __dealloc__(self):
-        print('__dealloc__ PyTransaction', self._borrowptr, <uint64_t>self._thisptr)
+#        print('__dealloc__ PyTransaction', self._borrowptr, <uint64_t>self._thisptr)
 
         if self._borrowptr:
             return
@@ -134,7 +134,7 @@ cdef class PySignedTransaction(PyTransaction):
             self._thisptr = <SignedTransaction*>new SignedTransaction()
 
     def __dealloc__(self):
-        print('__dealloc__ PySignedTransaction', self._borrowptr, <uint64_t>self._thisptr)
+#        print('__dealloc__ PySignedTransaction', self._borrowptr, <uint64_t>self._thisptr)
 
         if self._borrowptr:
             return

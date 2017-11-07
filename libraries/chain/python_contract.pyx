@@ -13,7 +13,7 @@ cdef extern int python_load(string& name,string& code):
     global code_map
     cdef int ret
     ret = 0
-    print('python_load:',name)
+#    print('python_load:',name)
     module = code_map.get(name)
     cdef bytes code_ = code
     if not module or (module.__code != code_):
@@ -33,7 +33,7 @@ cdef extern python_call(string& name,string& function,vector[uint64_t] args):
     ret = -1
     func = function
     func = func.decode('utf8')
-    print('python_call:',func)
+#    print('python_call:',func)
     try:
         module = code_map[name]
         func = getattr(module,func)

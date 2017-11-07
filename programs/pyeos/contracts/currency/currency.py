@@ -58,4 +58,3 @@ if __name__ == '__main__':
 	apply(eoslib.N(b'python'), eoslib.N(b'transfer'))
 
 
-
