@@ -131,9 +131,20 @@ def test_message():
     eoslib.messageRequirePermission(msghandle, b'test', b'active')
     eoslib.messageSend(msghandle)
 
+def test_memory_limit():
+    msg = eoslib.readMessage()
+    print(msg,len(msg))
+    size = int.from_bytes(msg[:8],'little')
+    print('+++++++++++memory size:',size)
+    arr = []
+    for i in range(int(size/1024)):
+        a = bytes(1024)
+        if i%100 == 0:
+            print(i)
+        arr.append(a)
 
 def apply(code, action):
-    print(code,action)
+    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
         eoslib.requireAuth(test)
         if action == N(b'transfer'):
@@ -154,3 +165,5 @@ def apply(code, action):
             test_message()
         elif action == N(b'testts'):
             test_transaction()
+        elif action == N(b'testmem'):
+            test_memory_limit()
