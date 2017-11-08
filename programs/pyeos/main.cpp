@@ -58,17 +58,14 @@ int eos_thread(int argc, char** argv) {
 extern "C" void PyInit_eosapi();
 extern "C" PyObject* PyInit_eostypes();
 extern "C" PyObject* PyInit_wallet();
-extern "C" PyObject* PyInit_hello();
+//extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_eostest();
 extern "C" PyObject* PyInit_database();
 extern "C" PyObject* PyInit_blockchain();
 
-void set_args(int argc, char** argv);
-
 int main(int argc, char** argv) {
-
    //   Py_InitializeEx(0);
    Py_Initialize();
    PyEval_InitThreads();
@@ -76,10 +73,10 @@ int main(int argc, char** argv) {
 
    PyRun_SimpleString("import readline");
    PyInit_wallet();
+   PyInit_eoslib();
    PyInit_eosapi();
    PyInit_eostypes();
    PyInit_python_contract();
-   PyInit_eoslib();
    PyInit_eostest();
    PyInit_database();
    PyInit_blockchain();

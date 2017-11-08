@@ -2,6 +2,7 @@
 import time
 import wallet
 import eosapi
+import struct
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
@@ -130,10 +131,16 @@ def claim_eos():
     r = eosapi.get_account('test')
     print(r)
 
+def test_memory():
+    with producer:
+        size = 1024*1025 #should throw a exception
+        print(size)
+        r = eosapi.push_message('test', 'testmem', {'data':size}, ['test','inita'], {'test':'active'})
+        assert not r
 
-
-
-
-
-
+    with producer:
+        size = 1024
+        print(size)
+        r = eosapi.push_message('test', 'testmem', {'data':size}, ['test','inita'], {'test':'active'})
+        assert r
 

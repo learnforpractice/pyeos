@@ -27,6 +27,12 @@
         "name": "Name",
         "balance": "UInt64[]"
       }
+    },{
+      "name": "Data",
+      "base": "",
+      "fields": {
+        "data": "UInt64"
+      }
     }
   ],
   "actions": [{
@@ -44,6 +50,9 @@
     },{
       "action": "testts",
       "type": "Bytes"
+    },{
+      "action": "testmem",
+      "type": "Data"
     }
   ],
   "tables": [{

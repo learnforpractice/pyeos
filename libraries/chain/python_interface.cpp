@@ -16,8 +16,8 @@
 #include <chrono>
 
 using namespace std;
-int python_load(string& name, string& code);
-int python_call(std::string &name, std::string &function,std::vector<uint64_t> args);
+int python_load(string& name, string& code, string* error);
+int python_call(std::string &name, std::string &function,std::vector<uint64_t> args, string* error);
 
 
 namespace eos {
@@ -28,9 +28,10 @@ typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
 
 int python_load_with_gil(string& name, string& code) {
    int ret = 0;
+   string error;
    PyGILState_STATE save = PyGILState_Ensure();
    try {
-      ret = python_load(name, code);
+      ret = python_load(name, code, &error);
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {
@@ -41,15 +42,19 @@ int python_load_with_gil(string& name, string& code) {
       elog("unhandled exception!!!");
    }
    PyGILState_Release(save);
+   if (ret < 0) {
+      throw fc::exception(19, name, error);
+   }
    return ret;
 }
 
-int python_call_with_gil(std::string &name, std::string &function,
-      std::vector<uint64_t> args) {
+int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t> args) {
    int ret = 0;
+   string error;
+
    PyGILState_STATE save = PyGILState_Ensure();
    try {
-      ret = python_call(name, function, args);
+      ret = python_call(name, function, args, &error);
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {
@@ -60,6 +65,10 @@ int python_call_with_gil(std::string &name, std::string &function,
       elog("unhandled exception!!!");
    }
    PyGILState_Release(save);
+
+   if (ret < 0) {
+      throw fc::exception(19, name, error);
+   }
    return ret;
 }
 
