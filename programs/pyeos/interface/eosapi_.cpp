@@ -628,3 +628,36 @@ int get_table_(string& scope, string& code, string& table, string& result) {
    }
    return -1;
 }
+
+
+
+
+#include <frameobject.h>
+
+PyObject* traceback_()
+{
+    PyThreadState *tstate;
+    PyFrameObject *pyframe;
+    PyArray ret_arr;
+
+#ifdef WITH_THREAD
+    tstate = PyGILState_GetThisThreadState();
+#else
+    tstate = PyThreadState_Get();
+#endif
+
+    if (tstate == NULL) {
+        return py_new_none();
+    }
+
+    for (pyframe = tstate->frame; pyframe != NULL; pyframe = pyframe->f_back) {
+       PyArray arr;
+       arr.append(pyframe->f_code->co_name);
+       arr.append(pyframe->f_lineno);
+       ret_arr.append(arr.get());
+    }
+    return ret_arr.get();
+}
+
+
+

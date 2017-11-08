@@ -70,9 +70,9 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx
 )
 
-add_executable( pyeos main.cpp api.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
+add_executable( pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
-    interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp
+    interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp interface/common.cpp
     wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
     wrap/eostest.wrap.cpp wrap/database.wrap.cpp wrap/blockchain.wrap.cpp
     wrap/pyobject.wrap.cpp)
@@ -81,7 +81,7 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
     producer_plugin chain_plugin net_plugin http_plugin eos_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin intl
     eos_native_contract eos_chain chainbase eos_utilities eos_egenesis_none fc
-    python3.6m boost_python3-mt)
+    python3.6m)
 
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" $ENV{PYTHON_INC_DIR}

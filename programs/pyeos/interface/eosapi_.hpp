@@ -107,3 +107,8 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
 int get_code_(string& name, string& wast, string& abi, string& code_hash,
               int& vm_type);
 int get_table_(string& scope, string& code, string& table, string& result);
+
+PyObject* traceback_();
+
+
+

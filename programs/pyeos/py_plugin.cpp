@@ -71,7 +71,7 @@ extern "C" PyObject* PyInit_hello();
 extern "C" PyObject* PyInit_python_contract();
 
 void py_thread() {
-   PyImport_AppendInittab("hello", PyInit_hello);
+//   PyImport_AppendInittab("hello", PyInit_hello);
 
    Py_Initialize();
 #if 0
