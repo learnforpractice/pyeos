@@ -1,6 +1,9 @@
 import time
 import wallet
 import eosapi
+import tracemalloc
+
+tracemalloc.start()
 
 producer = eosapi.Producer()
 
@@ -70,12 +73,16 @@ def compare_performance():
     with producer:
         r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
         assert r
+
+    time.sleep(3.0)
     test_performance()
 
     info = eosapi.get_code('currency')
     with producer:
         r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi',1)
         assert r
+
+    time.sleep(3.0)
     test_performance()
 
 
