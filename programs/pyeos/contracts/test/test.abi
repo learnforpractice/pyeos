@@ -53,6 +53,9 @@
     },{
       "action": "testmem",
       "type": "Data"
+    },{
+      "action": "testtimeout",
+      "type": "Data"
     }
   ],
   "tables": [{

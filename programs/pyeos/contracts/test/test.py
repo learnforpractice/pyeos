@@ -41,7 +41,9 @@ def init():
         r = eosapi.push_message('eos','transfer',{"from":"inita","to":"test","amount":1000,"memo":"hello"},['inita','test'],{'inita':'active'})
         assert r
 
-#r = eosapi.set_contract('currency','../../build/programs/pyeos/contracts/test/code.wast','../../build/programs/pyeos/contracts/test/test.abi',0)
+def deploy_wasm_code():
+    with producer:
+        r = eosapi.set_contract('test','../../build/programs/pyeos/contracts/test/code.wast','../../build/programs/pyeos/contracts/test/test.abi',0)
 
 def send_message():
     r = eosapi.get_table('test','currency','account')
@@ -144,3 +146,7 @@ def test_memory():
         r = eosapi.push_message('test', 'testmem', {'data':size}, ['test','inita'], {'test':'active'})
         assert r
 
+def test_time_out():
+    with producer:
+        r = eosapi.push_message('test', 'testtimeout', {'data':0}, ['test','inita'], {'test':'active'})
+        assert not r

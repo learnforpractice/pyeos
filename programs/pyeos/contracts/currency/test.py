@@ -1,9 +1,6 @@
 import time
 import wallet
 import eosapi
-import tracemalloc
-
-tracemalloc.start()
 
 producer = eosapi.Producer()
 

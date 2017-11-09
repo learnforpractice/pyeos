@@ -143,8 +143,12 @@ def test_memory_limit():
             print(i)
         arr.append(a)
 
+def test_time_out():
+    while True:
+        pass
+
 def apply(code, action):
-    print(eoslib.n2s(code),eoslib.n2s(action))
+#    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
         eoslib.requireAuth(test)
         if action == N(b'transfer'):
@@ -167,3 +171,7 @@ def apply(code, action):
             test_transaction()
         elif action == N(b'testmem'):
             test_memory_limit()
+        elif action == N(b'testtimeout'):
+            test_time_out()
+
+            
