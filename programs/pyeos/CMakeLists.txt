@@ -73,6 +73,7 @@ add_custom_command(
 add_executable( pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
     interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp interface/common.cpp
+    interface/codelimit.c
     wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
     wrap/eostest.wrap.cpp wrap/database.wrap.cpp wrap/blockchain.wrap.cpp
     wrap/pyobject.wrap.cpp)
