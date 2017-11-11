@@ -25,6 +25,7 @@ using namespace eos;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
+
 int eos_thread(int argc, char** argv) {
    try {
       app().register_plugin<net_plugin>();
@@ -67,6 +68,7 @@ extern "C" PyObject* PyInit_blockchain();
 
 int main(int argc, char** argv) {
    //   Py_InitializeEx(0);
+   _PyGILState_check_enabled = 0;
    Py_Initialize();
    PyEval_InitThreads();
    //   set_args(argc,argv);
@@ -81,6 +83,7 @@ int main(int argc, char** argv) {
    PyInit_database();
    PyInit_blockchain();
 
+   PyRun_SimpleString("import numpy");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
