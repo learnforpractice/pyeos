@@ -10,15 +10,11 @@ cdef extern from "common.hpp":
 
 cdef class PyMessage:
     cdef Message* _thisptr
-    cdef uint64_t _borrowptr
 
-    def __cinit__(self, native=None):
-        if native:
-            self._borrowptr = native
-            self._thisptr = <Message*><void *>self._borrowptr
-        else:
-            self._borrowptr = 0
-            self._thisptr = new Message()
+    def __cinit__(self, uint64_t ptr = 0):
+        self._thisptr = new Message()
+        if ptr:
+            self._thisptr[0] = (<Message*><void *>ptr)[0]
 
     def init(self, code: bytes, type: bytes, author: list, data: bytes):
         self._thisptr.code = Name(code)
@@ -32,8 +28,6 @@ cdef class PyMessage:
 
     def __dealloc__(self):
 #        print('__dealloc__ PyMessage', self._borrowptr, <uint64_t>self._thisptr)
-        if self._borrowptr:
-            return
         if self._thisptr:
             del self._thisptr
             self._thisptr = NULL
@@ -61,21 +55,14 @@ cdef class PyMessage:
 
 cdef class PyTransaction:
     cdef Transaction* _thisptr
-    cdef uint64_t _borrowptr
 
-    def __cinit__(self, native=None):
-        if native:
-            self._borrowptr = native
-            self._thisptr = <Transaction*><void *>self._borrowptr
-        else:
-            self._borrowptr = 0
-            self._thisptr = new Transaction()
+    def __cinit__(self, uint64_t ptr = 0):
+        self._thisptr = new Transaction()
+        if ptr:
+            self._thisptr[0] = (<Transaction*><void *>ptr)[0]
 
     def __dealloc__(self):
 #        print('__dealloc__ PyTransaction', self._borrowptr, <uint64_t>self._thisptr)
-
-        if self._borrowptr:
-            return
         if self._thisptr:
             del self._thisptr
             self._thisptr = NULL
@@ -125,19 +112,13 @@ cdef class PyTransaction:
 
 cdef class PySignedTransaction(PyTransaction):
 
-    def __cinit__(self,native=None):
-        if native:
-            self._borrowptr = native
-            self._thisptr = <SignedTransaction*><void *>self._borrowptr
-        else:
-            self._borrowptr = 0
-            self._thisptr = <SignedTransaction*>new SignedTransaction()
+    def __cinit__(self,uint64_t ptr = 0):
+        self._thisptr = <SignedTransaction*>new SignedTransaction()
+        if ptr:
+            self._thisptr[0] = (<SignedTransaction*><void *>ptr)[0]
 
     def __dealloc__(self):
 #        print('__dealloc__ PySignedTransaction', self._borrowptr, <uint64_t>self._thisptr)
-
-        if self._borrowptr:
-            return
         if self._thisptr:
             temp = <SignedTransaction*>self._thisptr
             del temp
