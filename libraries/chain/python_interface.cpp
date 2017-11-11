@@ -1,5 +1,6 @@
 #include <boost/function.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
+#include <boost/thread/thread.hpp>
 #include <eos/chain/python_interface.hpp>
 #include <eos/chain/wasm_interface.hpp>
 #include <eos/chain/chain_controller.hpp>
@@ -14,11 +15,11 @@
 #include <eos/chain/key_value_object.hpp>
 #include <eos/chain/account_object.hpp>
 #include <chrono>
+#include <appbase/application.hpp>
 
 using namespace std;
 int python_load(string& name, string& code, string* error);
 int python_call(std::string &name, std::string &function,std::vector<uint64_t> args, string* error);
-
 
 namespace eos {
 namespace chain {
@@ -26,10 +27,19 @@ using namespace IR;
 using namespace Runtime;
 typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
 
+
 int python_load_with_gil(string& name, string& code) {
    int ret = 0;
    string error;
-   PyGILState_STATE save = PyGILState_Ensure();
+   bool need_hold_gil;
+   PyGILState_STATE save;
+
+   need_hold_gil = boost::this_thread::get_id() == appbase::app().get_thread_id();
+
+   if (need_hold_gil) {
+      save = PyGILState_Ensure();
+   }
+
    try {
       ret = python_load(name, code, &error);
    } catch (fc::assert_exception& e) {
@@ -41,7 +51,11 @@ int python_load_with_gil(string& name, string& code) {
    } catch (...) {
       elog("unhandled exception!!!");
    }
-   PyGILState_Release(save);
+
+   if (need_hold_gil) {
+      PyGILState_Release(save);
+   }
+
    if (ret < 0) {
       throw fc::exception(19, name, error);
    }
@@ -51,8 +65,16 @@ int python_load_with_gil(string& name, string& code) {
 int python_call_with_gil(std::string &name, std::string &function, std::vector<uint64_t> args) {
    int ret = 0;
    string error;
+   PyGILState_STATE save;
+   bool need_hold_gil;
+   boost::this_thread::get_id();
 
-   PyGILState_STATE save = PyGILState_Ensure();
+   need_hold_gil = boost::this_thread::get_id() == appbase::app().get_thread_id();
+
+   if (need_hold_gil) {
+      save = PyGILState_Ensure();
+   }
+
    try {
       ret = python_call(name, function, args, &error);
    } catch (fc::assert_exception& e) {
@@ -64,7 +86,10 @@ int python_call_with_gil(std::string &name, std::string &function, std::vector<u
    } catch (...) {
       elog("unhandled exception!!!");
    }
-   PyGILState_Release(save);
+
+   if (need_hold_gil) {
+      PyGILState_Release(save);
+   }
 
    if (ret < 0) {
       throw fc::exception(19, name, error);
@@ -113,23 +138,6 @@ python_interface& python_interface::get() {
    }
    return *python;
 }
-
-struct RootResolver: Runtime::Resolver {
-   std::map<std::string, Resolver*> moduleNameToResolverMap;
-
-   bool resolve(const std::string& moduleName, const std::string& exportName,
-         ObjectType type, ObjectInstance*& outObject) override
-         {
-      // Try to resolve an intrinsic first.
-      if (IntrinsicResolver::singleton.resolve(moduleName, exportName, type,
-            outObject)) {
-         return true;
-      }
-      FC_ASSERT(!"unresolvable", "${module}.${export}",
-            ("module",moduleName)("export",exportName));
-      return false;
-   }
-};
 
 int64_t python_interface::current_execution_time() {
    return (fc::time_point::now() - checktimeStart).count();

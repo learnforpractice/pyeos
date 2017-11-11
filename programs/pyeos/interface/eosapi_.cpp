@@ -83,7 +83,7 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
    chain_apis::read_write::push_transaction_results result;
 
    bool success = false;
-   PyThreadState* state = PyEval_SaveThread();
+//   PyThreadState* state = PyEval_SaveThread();
    try {
       result = rw.push_transaction(fc::variant(trx).get_object());
       success = true;
@@ -95,7 +95,7 @@ PyObject* push_transaction(SignedTransaction& trx, bool sign) {
       elog(boost::diagnostic_information(ex));
    }
 
-   PyEval_RestoreThread(state);
+//   PyEval_RestoreThread(state);
 
    if (success) {
       return python::json::to_string(result);
@@ -126,7 +126,7 @@ PyObject* push_transaction2_(void* signed_trx, bool sign) {
    chain_apis::read_write::push_transaction_results result;
 
    bool success = false;
-   PyThreadState* state = PyEval_SaveThread();
+//   PyThreadState* state = PyEval_SaveThread();
    try {
       result = rw.push_transaction(fc::variant(trx).get_object());
       success = true;
@@ -138,7 +138,7 @@ PyObject* push_transaction2_(void* signed_trx, bool sign) {
       elog(boost::diagnostic_information(ex));
    }
 
-   PyEval_RestoreThread(state);
+//   PyEval_RestoreThread(state);
 
    if (success) {
       return python::json::to_string(result);
