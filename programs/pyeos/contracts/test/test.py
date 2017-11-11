@@ -135,8 +135,9 @@ def claim_eos():
 
 def test_memory():
     with producer:
-        size = 1024*1025 #should throw a exception
+        size = 1024*1025 
         print(size)
+        #should throw an exception
         r = eosapi.push_message('test', 'testmem', {'data':size}, ['test','inita'], {'test':'active'})
         assert not r
 

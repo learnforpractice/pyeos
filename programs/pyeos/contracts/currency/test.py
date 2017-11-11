@@ -20,9 +20,9 @@ def init():
                 r = eosapi.create_account('inita', 'currency', key1, key2)
                 assert r
         if not eosapi.get_account('test'):
-                if not eosapi.get_account('test'):
-                    r = eosapi.create_account('inita', 'test', key1, key2)
-                    assert r
+            if not eosapi.get_account('test'):
+                r = eosapi.create_account('inita', 'test', key1, key2)
+                assert r
 
     with producer:
         r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi',1)
