@@ -15,7 +15,7 @@ public:
 void* new_apply_context_(char* code, void* trx, void* message);
 int release_apply_context_(void* apply_ctx);
 void set_current_context_(void* context_ptr);
-
+void apply_message_(void* context_ptr);
 
 }
 

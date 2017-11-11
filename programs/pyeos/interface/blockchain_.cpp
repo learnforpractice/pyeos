@@ -10,6 +10,9 @@
 #include <appbase/application.hpp>
 #include <eos/chain_plugin/chain_plugin.hpp>
 #include <eos/chain/python_interface.hpp>
+#include <eos/chain/wasm_interface.hpp>
+
+#include <eos/chain/account_object.hpp>
 
 #include "blockchain_.hpp"
 
@@ -60,6 +63,30 @@ namespace python {
       python_interface::get().set_current_context(*ctx);
    }
 
+   void apply_message_(void* context_ptr)
+   {
+      apply_context *ctx;
+      if (context_ptr == NULL) {
+         return;
+      }
+      ctx = (apply_context*)context_ptr;
+
+      try {
+
+       const auto& recipient = get_db().get_database().get<account_object,by_name>(ctx->code);
+
+       if (recipient.code.size()) {
+          //idump((context.code)(context.msg.type));
+          const uint32_t execution_time = 1000*200; //200 ms
+          if (recipient.vm_type == 0){
+             wasm_interface::get().apply(*ctx, execution_time, false);
+          } else if (recipient.vm_type == 1) {
+             ilog("python_interface::get().apply(*ctx);");
+              python_interface::get().apply(*ctx);
+          }
+       }
+
+   } FC_CAPTURE_AND_RETHROW((ctx->msg)) }
 }
 
 

@@ -4,6 +4,7 @@ cdef extern from "blockchain_.hpp" namespace "python":
     void* new_apply_context_(char* code, void* trx, void* message);
     int release_apply_context_(void* apply_ctx);
     void set_current_context_(void* context_ptr);
+    void apply_message_(void* context_ptr)
 
 cdef class apply_context:
     cdef void* _thisptr
@@ -28,4 +29,11 @@ def set_current_context(ctx: apply_context):
     cdef uint64_t ptr
     ptr = ctx()
     set_current_context_(<void*>ptr)
+
+def apply_message(ctx: apply_context):
+    cdef uint64_t ptr
+    ptr = ctx()
+    apply_message_(<void*>ptr)
+
+
 
