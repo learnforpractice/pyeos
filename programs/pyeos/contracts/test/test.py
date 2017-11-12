@@ -264,3 +264,15 @@ def test_rent2():
         r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
         assert  not r
 
+def test_util():
+    import util
+    from eoslib import N
+    keys = struct.pack('Q', N('currency'))
+    values = bytes(16)
+    eos = N('eos')
+    ret = util.load(eos, eos, N('test'), keys, 0, 0, values)
+    print('+++++++eoslib.load return:',ret)
+    print(values)
+    results = struct.unpack('QQ', values)
+    print(results)
+

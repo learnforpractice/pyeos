@@ -1,0 +1,56 @@
+/*
+ * util_.hpp
+ *
+ *  Created on: Nov 12, 2017
+ *      Author: newworld
+ */
+
+#ifndef PROGRAMS_PYEOS_INTERFACE_UTIL__HPP_
+#define PROGRAMS_PYEOS_INTERFACE_UTIL__HPP_
+
+#include <eos/types/native.hpp>
+#include <string>
+
+using namespace std;
+using namespace eos::types;
+using namespace eos;
+
+namespace python {
+
+
+int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
+               char* value, uint32_t valuelen);
+
+int32_t update_(Name scope, Name code, Name table, void* keys, int key_type,
+                char* value, uint32_t valuelen);
+
+int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type,
+                char* value, uint32_t valuelen);
+
+int32_t load_(Name scope, Name code, Name table, void* keys, int key_type,
+              int scope_index, char* value, uint32_t valuelen);
+
+int32_t front_(Name scope, Name code, Name table, void* keys, int key_type,
+               int scope_index, char* value, uint32_t valuelen);
+
+int32_t back_(Name scope, Name code, Name table, void* keys, int key_type,
+              int scope_index, char* value, uint32_t valuelen);
+
+int32_t next_(Name scope, Name code, Name table, void* keys, int key_type,
+              int scope_index, char* value, uint32_t valuelen);
+
+int32_t previous_(Name scope, Name code, Name table, void* keys, int key_type,
+                  int scope_index, char* value, uint32_t valuelen);
+
+int32_t lower_bound_(Name scope, Name code, Name table, void* keys,
+                     int key_type, int scope_index, char* value,
+                     uint32_t valuelen);
+
+int32_t upper_bound_(Name scope, Name code, Name table, void* keys,
+                     int key_type, int scope_index, char* value,
+                     uint32_t valuelen);
+
+}
+
+
+#endif /* PROGRAMS_PYEOS_INTERFACE_UTIL__HPP_ */

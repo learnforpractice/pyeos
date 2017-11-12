@@ -65,6 +65,7 @@ extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_eostest();
 extern "C" PyObject* PyInit_database();
 extern "C" PyObject* PyInit_blockchain();
+extern "C" PyObject* PyInit_util();
 
 int main(int argc, char** argv) {
    //   Py_InitializeEx(0);
@@ -82,6 +83,7 @@ int main(int argc, char** argv) {
    PyInit_eostest();
    PyInit_database();
    PyInit_blockchain();
+   PyInit_util();
 
    PyRun_SimpleString("import numpy");
    PyRun_SimpleString("import wallet");
