@@ -44,7 +44,6 @@ def test_performance():
     from eoslib import N
     from eostypes import PySignedTransaction, PyMessage
     import time
-    print('hello')
     
     ts = PySignedTransaction()
     ts.reqire_scope(b'test')
@@ -57,10 +56,12 @@ def test_performance():
         msg.init(b'currency', b'transfer', [[b'currency',b'active']], data)
         ts.add_message(msg)
 
+    print('++++ push_transaction2')
     start = time.time()
     eosapi.push_transaction2(ts, True)
     print('cost:',time.time() - start)
 
+    print('++++ produce_block')
     start = time.time()
     with producer:
         pass
