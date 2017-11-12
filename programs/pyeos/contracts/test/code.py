@@ -10,9 +10,66 @@ test = N(b'test')
 def test_call_wasm_function():
     eoslib.call_wasm_function(N('test2'), N(b'hello'), [1,2])
 
+def test_rw_db():
+    keys = struct.pack('Q', N('currency'))
+    values = bytes(16)
+    eos = N('eos')
+    ret = eoslib.load(eos, eos, N('test'), keys, 0, 0, values)
+    print('+++++++eoslib.load return:',ret)
+    print(values)
+    results = struct.unpack('QQ', values)
+    print(results)
+
+    print('--------------------------------')
+    keys = struct.pack('Q', N('currency'))
+    values = struct.pack('QQ', 77, 88)
+    ret = eoslib.store(test, eos, N('test'), keys, 0, values)
+    print('++++++++eoslib.store return:',ret)
+
+    values = bytes(16)
+    ret = eoslib.load(test, eos, N('test'), keys, 0, 0, values)
+    print('+++++++eoslib.load return:',ret)
+    print(values)
+    results = struct.unpack('QQ', values)
+    print(results)
+
+    print('--------------------------------')
+
+    keys = struct.pack('Q', N('currency'))
+    values = struct.pack('QQ', 44, 33)
+    ret = eoslib.store(test, test, N('test'), keys, 0, values)
+    print('++++++++eoslib.store return:',ret)
+
+    values = bytes(16)
+    ret = eoslib.load(test, test, N('test'), keys, 0, 0, values)
+    print('+++++++eoslib.load return:',ret)
+    print(values)
+    results = struct.unpack('QQ', values)
+    print(results)
+
+
 def test_db1():
     msg = eoslib.readMessage()
     print(len(msg))
+    test = N(b'eos')
+    result = int.from_bytes(msg[:8], 'little')
+    size = msg[8]
+    for i in range(size):
+        result = int.from_bytes(msg[9 + i * 8:9 + i * 8 + 8], 'little')
+        print(result)
+
+    keys = msg[:8]
+    values = msg[8:]
+    eoslib.store(test, test, test, keys, 0, values)
+    keys = msg[:8]
+    values = msg[8:]
+    eoslib.load(test, test, test, keys, 0, 0, values)
+    print(values)
+    
+def test_db2():
+    msg = eoslib.readMessage()
+    print(len(msg))
+    test = N(b'eos')
     result = int.from_bytes(msg[:8], 'little')
     size = msg[8]
     for i in range(size):
@@ -159,7 +216,7 @@ def apply(code, action):
             to_ = result[1]
             amount = result[2]
         elif action == N(b'test'):
-            test_db2()
+            test_rw_db()
         elif action == N(b'testdb'):
             test_db()
         elif action == N(b'callwasm'):
