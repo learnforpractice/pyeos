@@ -17,17 +17,16 @@ db_handling& get_db_handling() {
    }
    return *handling;
 }
-
 #define RETURN_UPDATE_RECORD(NAME, VALUE_OBJECT)       \
    return ctx.NAME##_record<VALUE_OBJECT>(             \
-       Name(scope), Name(code), Name(table), \
+       scope, code, table, \
        (VALUE_OBJECT::key_type*)keys, value, valuelen)
 
 #define RETURN_READ_RECORD(NAME)                                        \
    FC_ASSERT(key_value_index::value_type::number_of_keys > scope_index, \
              "scope index out off bound");                              \
    return ctx.NAME##_record<key_value_index, by_scope_primary>(         \
-       Name(scope), Name(code), Name(table),                            \
+       scope, code, table,                            \
        (key_value_index::value_type::key_type*)keys, value, valuelen);
 
 #define RETURN_READ_RECORD_KEY128x128(NAME)                                    \
@@ -35,12 +34,12 @@ db_handling& get_db_handling() {
              "scope index out off bound");                                     \
    if (scope_index == 0) {                                                     \
       return ctx.NAME##_record<key128x128_value_index, by_scope_primary>(      \
-          Name(scope), Name(code), Name(table),                                \
+          scope, code, table,                                \
           (key128x128_value_index::value_type::key_type*)keys, value,          \
           valuelen);                                                           \
    } else if (scope_index == 1) {                                              \
       return ctx.NAME##_record<key128x128_value_index, by_scope_secondary>(    \
-          Name(scope), Name(code), Name(table),                                \
+          scope, code, table,                                \
           (key128x128_value_index::value_type::key_type*)keys, value,          \
           valuelen);                                                           \
    }
@@ -51,17 +50,17 @@ db_handling& get_db_handling() {
        "scope index out off bound");                                         \
    if (scope_index == 0) {                                                   \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_primary>(   \
-          Name(scope), Name(code), Name(table),                              \
+          scope, code, table,                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    } else if (scope_index == 1) {                                            \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_secondary>( \
-          Name(scope), Name(code), Name(table),                              \
+          scope, code, table,                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    } else if (scope_index == 2) {                                            \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_tertiary>(  \
-          Name(scope), Name(code), Name(table),                              \
+          scope, code, table,                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    }
