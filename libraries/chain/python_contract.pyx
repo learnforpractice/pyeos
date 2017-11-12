@@ -13,6 +13,9 @@ cdef extern from "<fc/log/logger.hpp>":
 
 code_map = {}
 
+cdef extern void stop_tracemalloc():
+    tracemalloc.stop()
+
 cdef extern int python_load(string& name, string& code, string* error):
     global code_map
     cdef int ret

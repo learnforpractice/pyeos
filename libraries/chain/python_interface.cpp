@@ -20,6 +20,7 @@
 using namespace std;
 int python_load(string& name, string& code, string* error);
 int python_call(std::string &name, std::string &function,std::vector<uint64_t> args, string* error);
+void stop_tracemalloc();
 
 namespace eos {
 namespace chain {
@@ -29,7 +30,7 @@ typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
 
 
 int python_load_with_gil(string& name, string& code) {
-   int ret = 0;
+   int ret = -1;
    string error;
    bool need_hold_gil;
    PyGILState_STATE save;
@@ -42,14 +43,12 @@ int python_load_with_gil(string& name, string& code) {
 
    try {
       ret = python_load(name, code, &error);
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
    } catch (...) {
-      elog("unhandled exception!!!");
+      if (need_hold_gil) {
+         PyGILState_Release(save);
+      }
+      stop_tracemalloc();
+      throw;
    }
 
    if (need_hold_gil) {
@@ -77,14 +76,12 @@ int python_call_with_gil(std::string &name, std::string &function, std::vector<u
 
    try {
       ret = python_call(name, function, args, &error);
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
    } catch (...) {
-      elog("unhandled exception!!!");
+      if (need_hold_gil) {
+         PyGILState_Release(save);
+      }
+      stop_tracemalloc();
+      throw;
    }
 
    if (need_hold_gil) {
