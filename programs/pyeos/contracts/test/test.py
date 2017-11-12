@@ -45,6 +45,12 @@ def deploy_wasm_code():
     with producer:
         r = eosapi.set_contract('test','../../build/programs/pyeos/contracts/test/code.wast','../../build/programs/pyeos/contracts/test/test.abi',0)
 
+def test_db():
+    with producer:
+        test = {'name':'test', 'balance':[1,2,3]}
+        r = eosapi.push_message('test','test',test,['test', 'eos'],{'test':'active'})
+        assert r
+
 def send_message():
     r = eosapi.get_table('test','currency','account')
     print(r)
@@ -151,3 +157,110 @@ def test_time_out():
     with producer:
         r = eosapi.push_message('test', 'testtimeout', {'data':0}, ['test','inita'], {'test':'active'})
         assert not r
+
+def show_result():
+    r = eosapi.get_account('test')
+
+    print('r.balance:',r.balance)
+    print('r.stakedBalance:',r.stakedBalance)
+    print('r.unstakingBalance:',r.unstakingBalance)
+
+    r = eosapi.get_account('currency')
+    print('r.stakedBalance:',r.stakedBalance)
+    print('r.unstakingBalance:',r.unstakingBalance)
+
+
+def test_stake():
+    with producer:
+        stake = {'from':'test','to':'currency','amount':1}
+        r = eosapi.push_message('eos', 'stake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+    show_result()
+
+def test_unstake():
+    with producer:
+        stake = {'from':'test','to':'currency','amount':1}
+        r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+    show_result()
+
+def test_release():
+    with producer:
+        stake = {'from':'test','to':'currency','amount':1}
+        r = eosapi.push_message('eos', 'release', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+    show_result()
+
+def test_rent():
+    balance_test1 = eosapi.get_account('test')
+    balance_currency1 = eosapi.get_account('currency')
+    amount = 1
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'stake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    balance_test2 = eosapi.get_account('test')
+    balance_currency2 = eosapi.get_account('currency')
+
+    assert balance_test1.balance == balance_test2.balance + amount
+    assert balance_currency1.balance == balance_currency2.balance
+    assert balance_currency1.stakedBalance + amount == balance_currency2.stakedBalance
+
+
+    balance_test1 = balance_test2
+    balance_currency1 = balance_currency2
+
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    balance_test2 = eosapi.get_account('test')
+    balance_currency2 = eosapi.get_account('currency')
+
+    assert balance_test1.balance == balance_test2.balance
+    assert balance_currency1.balance == balance_currency2.balance
+    assert balance_currency1.stakedBalance == balance_currency2.stakedBalance + amount
+    assert balance_currency1.unstakingBalance == balance_currency2.unstakingBalance - amount
+
+    balance_test1 = balance_test2
+    balance_currency1 = balance_currency2
+
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'release', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    balance_test2 = eosapi.get_account('test')
+    balance_currency2 = eosapi.get_account('currency')
+
+    print(balance_test1.balance, balance_test2.balance)
+
+    assert balance_test1.balance + amount == balance_test2.balance
+    assert balance_currency1.balance == balance_currency2.balance
+    assert balance_currency1.stakedBalance == balance_currency2.stakedBalance
+    assert balance_currency1.unstakingBalance == balance_currency2.unstakingBalance + amount
+
+def test_rent2():
+    balance_test1 = eosapi.get_account('test')
+    balance_currency1 = eosapi.get_account('currency')
+    amount = 1
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'stake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    amount = 2
+    with producer:
+        stake = {'from':'inita','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'stake', stake, ['eos', 'inita', 'currency'], {'inita':'active'})
+        assert r
+
+    #try to unstake 1000 eos from test
+    amount = 1000
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert  not r
+

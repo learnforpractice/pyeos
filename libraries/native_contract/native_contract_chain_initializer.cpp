@@ -48,6 +48,11 @@ void native_contract_chain_initializer::register_types(chain_controller& chain, 
    SET_APP_HANDLER( eos, eos, lock );
    SET_APP_HANDLER( eos, eos, claim );
    SET_APP_HANDLER( eos, eos, unlock );
+
+   SET_APP_HANDLER( eos, eos, stake );
+   SET_APP_HANDLER( eos, eos, unstake );
+   SET_APP_HANDLER( eos, eos, release );
+
    SET_APP_HANDLER( eos, eos, okproducer );
    SET_APP_HANDLER( eos, eos, setproducer );
    SET_APP_HANDLER( eos, eos, setproxy );
@@ -64,9 +69,15 @@ types::Abi native_contract_chain_initializer::eos_contract_abi()
    eos_abi.types.push_back( types::TypeDef{"AccountName","Name"} );
    eos_abi.types.push_back( types::TypeDef{"ShareType","Int64"} );
    eos_abi.actions.push_back( types::Action{Name("transfer"), "transfer"} );
+
    eos_abi.actions.push_back( types::Action{Name("lock"), "lock"} );
    eos_abi.actions.push_back( types::Action{Name("unlock"), "unlock"} );
    eos_abi.actions.push_back( types::Action{Name("claim"), "claim"} );
+
+   eos_abi.actions.push_back( types::Action{Name("stake"), "lock"} );
+   eos_abi.actions.push_back( types::Action{Name("unstake"), "lock"} );
+   eos_abi.actions.push_back( types::Action{Name("release"), "lock"} );
+
    eos_abi.actions.push_back( types::Action{Name("okproducer"), "okproducer"} );
    eos_abi.actions.push_back( types::Action{Name("setproducer"), "setproducer"} );
    eos_abi.actions.push_back( types::Action{Name("setproxy"), "setproxy"} );
