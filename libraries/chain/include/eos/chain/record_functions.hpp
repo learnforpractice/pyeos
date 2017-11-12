@@ -2,6 +2,8 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
+#pragma once
+
 #include <eos/chain/key_value_object.hpp>
 
 namespace eos { namespace chain {
@@ -339,3 +341,4 @@ struct upper_bound_tuple<key64x64x64_value_object, by_scope_tertiary> {
 };
 
 } } // eos::chain
+
