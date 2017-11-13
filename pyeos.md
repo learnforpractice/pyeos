@@ -8,6 +8,7 @@ Hack on Eos. Have fun!
 6. [Playing with DEX](#playwithdex)
 7. [Sending messages with smart contracts](#sendingmsginline)
 8. [Sending transactions with smart contracts](#sendingtsinline)
+9. [About memory and CPU used by smart contracts](#memoryandcpu)
 
 
 <a name="projectfor"></a>
@@ -52,6 +53,17 @@ or
 pip install cython
 ```
 
+Pyeos depend on a custom build of cpython, run the following commands to build it
+
+```
+git submodule add -b v3.6.3-for-pyeos https://github.com/learnforpractice/cpython libraries/python
+cd libraries/python
+./configure --prefix=$(pwd)/dist
+./make -j4
+make install
+```
+
+
 Now follow the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
 
 Currently only test with Python 3.6 on macOS 10.12.6
@@ -70,10 +82,10 @@ Also in order to compatible with eos source code, Change the tab width to 3 spac
 After successful build of project,run the following commands to start Pyeos.
 
 ```
-$ export PYTHONHOME=~/anaconda/
-$ export PYTHONPATH='~/dev/eos/programs/pyeos/'
-$ cd ~/dev/eos/build/programs/
-$ ./pyeos/pyeos -i
+cd ~/dev/eos/build/programs/
+export PYTHONHOME=../../libraries/python
+export PYTHONPATH=../../libraries/python/Lib
+./pyeos/pyeos -i
 ```
 The first three commands only need to run once. If everything is fine, a Python interactive console shall appeal. That's it. Next, let us see what Pyeos can do. For a better debug, replace 
 
@@ -604,6 +616,15 @@ r = eosapi.get_table('test','currency','account')
 print(r)
 r = eosapi.get_table('inita','currency','account')
 print(r)
-```    
+```
+
+
+
+
+<a name="memoryandcpu"></a>
+# About memory and CPU used by smart contracts
+
+Now memory and CPU are limited in python smart contracts, the maximum memory used by single smart contract is limited to 1MB and maximum execution time is limited to 100ms. Please be aware of these when you write a smart contracts in python.
+
 
 to be continued...

@@ -5,3 +5,7 @@
 [submodule "programs/snapshot"]
 	path = programs/snapshot
 	url = https://github.com/EOSIO/genesis.git
+[submodule "libraries/python"]
+	path = libraries/python
+	url = https://github.com/learnforpractice/cpython
+	branch = v3.6.3-for-pyeos

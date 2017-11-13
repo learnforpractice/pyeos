@@ -4,13 +4,6 @@ if( UNIX AND NOT APPLE )
   set(rt_library rt )
 endif()
 
-if( "$ENV{PYTHON_INC_DIR}" STREQUAL "" )
-  message( FATAL_ERROR "PYTHON_INC_DIR env not found." )
-endif()
-
-if( "$ENV{PYTHON_LIB}" STREQUAL "")
-  message( FATAL_ERROR "PYTHON_LIB env not found." )
-endif()
 
 find_package( Gperftools QUIET )
 if( GPERFTOOLS_FOUND )
@@ -20,7 +13,7 @@ endif()
 
 
 add_library(python3.6m SHARED IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
+set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
@@ -92,7 +85,9 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
     python3.6m)
  
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
-                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" $ENV{PYTHON_INC_DIR}
+                                  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
+                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/interface"

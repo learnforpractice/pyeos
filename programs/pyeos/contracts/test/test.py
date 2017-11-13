@@ -2,7 +2,12 @@
 import time
 import wallet
 import eosapi
+from eoslib import N
+import util
+
 import struct
+import logging
+print = logging.info
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
@@ -262,7 +267,49 @@ def test_rent2():
     with producer:
         stake = {'from':'test','to':'currency','amount':amount}
         r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
-        assert  not r
+        assert not r
+
+def show_rent_result(from_, to_):
+    balance = eosapi.get_account(from_).balance
+    
+    eos = N(b'eos')
+    keys = struct.pack('Q', N(to_))
+    values = bytes(16)
+    ret = util.load(eos, eos, N(from_), keys, 0, 0, values)
+
+    result = struct.unpack('QQ', values)
+    print(ret, balance, result)
+
+def test_rent3():
+    balance_test1 = eosapi.get_account('test')
+    balance_currency1 = eosapi.get_account('currency')
+    amount = 1
+
+    show_rent_result(b'test', b'currency')
+
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'stake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    show_rent_result(b'test', b'currency')
+
+    amount = 1
+    #try to unstake 1000 eos from test
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'unstake', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    show_rent_result(b'test', b'currency')
+
+    amount = 1
+    with producer:
+        stake = {'from':'test','to':'currency','amount':amount}
+        r = eosapi.push_message('eos', 'release', stake, ['eos', 'test', 'currency'], {'test':'active'})
+        assert r
+
+    show_rent_result(b'test', b'currency')
 
 def test_util():
     import util

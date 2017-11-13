@@ -31,7 +31,7 @@ add_library( eos_chain
              ${HEADERS}
            )
 add_library(python3.6m SHARED IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
+set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
 target_link_libraries( eos_chain fc chainbase appbase eos_types Logging 
     IR WAST WASM Runtime 
     python3.6m
@@ -40,7 +40,8 @@ target_link_libraries( eos_chain fc chainbase appbase eos_types Logging
 target_include_directories( eos_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
-                                   "$ENV{PYTHON_INC_DIR}"
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             )
 
 if(MSVC)
