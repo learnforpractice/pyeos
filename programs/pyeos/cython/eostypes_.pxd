@@ -81,7 +81,7 @@ cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
     void to_variant(const PublicKey & var, variant & vo);
 
 
-cdef extern from "<eos/chain/Types.hpp>" namespace "eos::chain":
+cdef extern from "<eos/chain/types.hpp>" namespace "eos::chain":
     ctypedef PublicKey public_key_type
     ctypedef sha256 chain_id_type
 
