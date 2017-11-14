@@ -1,3 +1,5 @@
+add_subdirectory( python )
+
 add_subdirectory( fc )
 add_subdirectory( chainbase )
 add_subdirectory( wasm-jit )
@@ -9,4 +11,3 @@ add_subdirectory( utilities )
 add_subdirectory( appbase )
 add_subdirectory( native_contract )
 
-add_subdirectory( python )
