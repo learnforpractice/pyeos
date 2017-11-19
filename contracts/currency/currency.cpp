@@ -39,7 +39,12 @@ using namespace currency;
 
 extern "C" {
     void init()  {
-       storeAccount( N(currency), Account( CurrencyTokens(1000ll*1000ll*1000ll) ) );
+       Account account;
+       if (Accounts::get( account, N(currency) )) {
+          //value already exist,do nothing
+       } else {
+          storeAccount( N(currency), Account( CurrencyTokens(1000ll*1000ll*1000ll) ) );
+       }
     }
 
     /// The apply method implements the dispatch of events to this contract
