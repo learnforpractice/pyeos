@@ -1,4 +1,5 @@
 add_subdirectory( python )
+add_subdirectory( tinypy )
 
 add_subdirectory( fc )
 add_subdirectory( chainbase )

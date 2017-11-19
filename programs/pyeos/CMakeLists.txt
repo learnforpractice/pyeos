@@ -12,7 +12,7 @@ if( GPERFTOOLS_FOUND )
 endif()
 
 
-add_library(python3.6m SHARED IMPORTED)
+add_library(python3.6m STATIC IMPORTED)
 set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
 
 add_custom_command(
@@ -31,12 +31,6 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
-    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx
 )
 
 add_custom_command(
@@ -70,19 +64,19 @@ add_custom_command(
 )
 
 add_executable( pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
-    interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp interface/eoslib_.cpp 
+    interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
     interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp interface/common.cpp
     interface/codelimit.c interface/util_.cpp
     util/db_handling.cpp
-    wrap/eoslib.wrap.cpp wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
+    wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
     wrap/eostest.wrap.cpp wrap/database.wrap.cpp wrap/blockchain.wrap.cpp wrap/util.wrap.cpp
     wrap/pyobject.wrap.cpp)
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
-    producer_plugin chain_plugin net_plugin http_plugin eos_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
+    producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin intl
-    eos_native_contract eos_chain chainbase eos_utilities eos_egenesis_none fc
-    python3.6m)
+    eos_native_contract chainbase eos_utilities eos_egenesis_none fc
+    python3.6m eos_chain)
  
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"

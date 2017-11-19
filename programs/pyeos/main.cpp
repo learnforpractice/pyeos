@@ -18,6 +18,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/thread/thread.hpp>
 
+
 #include <Python.h>
 
 using namespace appbase;
@@ -26,8 +27,11 @@ using namespace eos;
 static bool init_finished = false;
 static bool shutdown_finished = false;
 
+void init_smart_contract();
+
 int eos_thread(int argc, char** argv) {
    try {
+
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
@@ -40,6 +44,7 @@ int eos_thread(int argc, char** argv) {
          shutdown_finished = true;
          return -1;
       }
+
       app().startup();
       init_finished = true;
       app().exec();
@@ -60,26 +65,24 @@ extern "C" void PyInit_eosapi();
 extern "C" PyObject* PyInit_eostypes();
 extern "C" PyObject* PyInit_wallet();
 //extern "C" PyObject* PyInit_hello();
-extern "C" PyObject* PyInit_python_contract();
-extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_eostest();
 extern "C" PyObject* PyInit_database();
 extern "C" PyObject* PyInit_blockchain();
 extern "C" PyObject* PyInit_util();
 
+extern "C" PyThreadState *tiny_PyEval_SaveThread(void);
+extern "C" void tiny_PyEval_RestoreThread(PyThreadState *tstate);
+
 int main(int argc, char** argv) {
-   //   Py_InitializeEx(0);
+   init_smart_contract();
    _PyGILState_check_enabled = 0;
    Py_Initialize();
    PyEval_InitThreads();
-   //   set_args(argc,argv);
 
    PyRun_SimpleString("import readline");
    PyInit_wallet();
-   PyInit_eoslib();
    PyInit_eosapi();
    PyInit_eostypes();
-   PyInit_python_contract();
    PyInit_eostest();
    PyInit_database();
    PyInit_blockchain();
@@ -87,7 +90,6 @@ int main(int argc, char** argv) {
 
    PyRun_SimpleString("import numpy");
    PyRun_SimpleString("import wallet");
-   PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import eostest;");
    PyRun_SimpleString("import database;");
@@ -98,18 +100,14 @@ int main(int argc, char** argv) {
         "sys.path.append('../../programs/pyeos');"
         "sys.path.append('../../programs/pyeos/contracts');"
    );
-   //   PyRun_SimpleString("from initeos import *");
-#if 0
-   PyRun_InteractiveLoop(stdin, "<stdin>");
-   return 0;
-#endif
 
-   PyThreadState* state = PyEval_SaveThread();
+   //Let replay python smart contract get execution
+   PyThreadState* state = tiny_PyEval_SaveThread();
    auto thread_ = boost::thread(eos_thread, argc, argv);
    while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
-   PyEval_RestoreThread(state);
+   tiny_PyEval_RestoreThread(state);
    if (shutdown_finished) {
       Py_Finalize();
       return 0;

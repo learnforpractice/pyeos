@@ -336,3 +336,24 @@ void messageDrop_(uint32_t handle) {
 
 }
 }
+
+typedef void (*fn_init_modules)(void);
+extern "C" int init_tinypy(fn_init_modules init_modules);
+
+extern "C" PyObject* PyInit_eoslib();
+extern "C" PyObject* PyInit_python_contract();
+
+void init_modules(void) {
+   ilog("+++++777\n");
+   PyInit_eoslib();
+   ilog("888\n");
+   PyInit_python_contract();
+   ilog("999\n");
+   PyRun_SimpleString("import eoslib");
+}
+
+void init_smart_contract() {
+   ilog("++++++++++init_smart_contract");
+   init_tinypy(init_modules);
+}
+

@@ -2,7 +2,7 @@
 import time
 import wallet
 import eosapi
-from eoslib import N
+from eosapi import N
 import util
 
 import struct
@@ -146,7 +146,7 @@ def claim_eos():
 
 def test_memory():
     with producer:
-        size = 1024*1025 
+        size = 2024*1025 
         print(size)
         #should throw an exception
         r = eosapi.push_message('test', 'testmem', {'data':size}, ['test','inita'], {'test':'active'})
@@ -313,7 +313,6 @@ def test_rent3():
 
 def test_util():
     import util
-    from eoslib import N
     keys = struct.pack('Q', N('currency'))
     values = bytes(16)
     eos = N('eos')

@@ -2,7 +2,7 @@ import imp
 import struct
 import eosapi
 import eostypes
-from eoslib import N
+from eosapi import N
 import blockchain
 
 import logging as log

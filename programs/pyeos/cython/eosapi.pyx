@@ -13,9 +13,15 @@ from typing import Dict, Tuple, List
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(char* log)
 
+    
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
     ctypedef unsigned int uint32_t
+    ctypedef unsigned long long uint64_t
+
+    uint64_t string_to_uint64_(string str);
+    string uint64_to_string_(uint64_t n);
+
     void quit_app_()
     uint32_t now2_()
     int produce_block_();
@@ -69,6 +75,20 @@ class JsonStruct(object):
 #        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+
+cdef uint64_t toname(name):
+    if isinstance(name, int):
+        return name
+    if isinstance(name, str):
+        name = bytes(name, 'utf8')
+    return string_to_uint64_(name)
+
+def s2n(name):
+    return toname(name)
+
+def N(name):
+    return s2n(name)
+
 
 def toobject(bstr):
     return JsonStruct(bstr)

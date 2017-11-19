@@ -111,4 +111,5 @@ int get_table_(string& scope, string& code, string& table, string& result);
 PyObject* traceback_();
 
 
+uint64_t string_to_uint64_(string str);
 

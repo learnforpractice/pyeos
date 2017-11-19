@@ -6,6 +6,12 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
+    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx
+)
+
 ## SORT .cpp by most likely to change / break compile
 add_library( eos_chain
              wast_to_wasm.cpp
@@ -28,20 +34,21 @@ add_library( eos_chain
              chain_administration_interface.cpp
              message_handling_contexts.cpp
              python_contract.wrap.cpp
+             eoslib/eoslib.wrap.cpp
+             eoslib/eoslib_.cpp
              ${HEADERS}
            )
-add_library(python3.6m SHARED IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
+
 target_link_libraries( eos_chain fc chainbase appbase eos_types Logging 
     IR WAST WASM Runtime 
-    python3.6m
+    tinypy
 )
 
 target_include_directories( eos_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy/Include
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy
                             )
 
 if(MSVC)
