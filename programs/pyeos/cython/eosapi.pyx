@@ -1,4 +1,7 @@
 import os
+import sys
+import signal
+import time
 import json
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -283,27 +286,13 @@ def exec_func(code_:str, action_:str, json_:str, scope_:str, authorization_:str)
 def quit_app():
     quit_app_();
 
-import signal
-import sys
-import time
-app_quit = False
 def signal_handler(signal, frame):
-    global app_quit
-    if app_quit:
-        sys.exit(0)
-        return
-    print('shutting down... you should wait for database closed successfully,\nthen press Ctrl+C again to exit application!sorry about that.')
     quit_app()
-    app_quit = True
-    
-#    while not app_isshutdown_():
-#        time.sleep(0.2) # wait for app shutdown
-#    sys.exit(0)
+    sys.exit(0);
 
 def register_signal_handler():
     signal.signal(signal.SIGINT, signal_handler)
 
-import sys
 from importlib.abc import Loader, MetaPathFinder
 from importlib.util import spec_from_file_location
 

@@ -7,7 +7,7 @@
 #include "pyobject.hpp"
 #include "wallet_.h"
 
-void quit_app_() { app().quit(); }
+
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
 chain_controller& get_db() { return app().get_plugin<chain_plugin>().chain(); }

@@ -9,6 +9,7 @@ Hack on Eos. Have fun!
 7. [Sending messages with smart contracts](#sendingmsginline)
 8. [Sending transactions with smart contracts](#sendingtsinline)
 9. [About memory and CPU used by smart contracts](#memoryandcpu)
+10.[Q&A](#questionandanswer)
 
 
 <a name="projectfor"></a>
@@ -625,6 +626,9 @@ print(r)
 # About memory and CPU used by smart contracts
 
 Now memory and CPU are limited in python smart contracts, the maximum memory used by single smart contract is limited to 1MB and maximum execution time is limited to 100ms. Please be aware of these when you write a smart contracts in python.
+
+<a name="questionandanswer"></a>
+# Q&A
 
 
 to be continued...

@@ -29,7 +29,7 @@ static bool shutdown_finished = false;
 
 void init_smart_contract();
 
-int eos_thread(int argc, char** argv) {
+int eos_main(int argc, char** argv) {
    try {
 
       app().register_plugin<net_plugin>();
@@ -59,6 +59,13 @@ int eos_thread(int argc, char** argv) {
    }
    init_finished = true;
    shutdown_finished = true;
+}
+
+void quit_app_() {
+   app().quit();
+   while (!shutdown_finished) {
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
 }
 
 extern "C" void PyInit_eosapi();
@@ -103,7 +110,7 @@ int main(int argc, char** argv) {
 
    //Let replay python smart contract get execution
    PyThreadState* state = tiny_PyEval_SaveThread();
-   auto thread_ = boost::thread(eos_thread, argc, argv);
+   auto thread_ = boost::thread(eos_main, argc, argv);
    while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
