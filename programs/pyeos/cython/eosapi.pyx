@@ -1,6 +1,8 @@
 import os
 import sys
 import signal
+import atexit
+
 import time
 import json
 from libcpp.string cimport string
@@ -283,16 +285,6 @@ def get_table(scope, code, table):
 def exec_func(code_:str, action_:str, json_:str, scope_:str, authorization_:str) -> str:
     pass
 
-def quit_app():
-    quit_app_();
-
-def signal_handler(signal, frame):
-    quit_app()
-    sys.exit(0);
-
-def register_signal_handler():
-    signal.signal(signal.SIGINT, signal_handler)
-
 from importlib.abc import Loader, MetaPathFinder
 from importlib.util import spec_from_file_location
 
@@ -360,4 +352,19 @@ def push_transaction2(signed_trx,sign=True):
 def traceback():
     return traceback_();
 
+
+def quit_app():
+    quit_app_();
+
+def signal_handler(signal, frame):
+    quit_app()
+    sys.exit(0);
+
+def register_signal_handler():
+    signal.signal(signal.SIGINT, signal_handler)
+
+def on_python_exit():
+    quit_app_()
+    
+atexit.register(on_python_exit)
 
