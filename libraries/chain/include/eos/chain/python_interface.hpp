@@ -83,3 +83,4 @@ void messageDrop_(uint32_t handle);
 }
 } // eos::chain
 
+extern "C" void Py_EnableCodeExecution(int enable, int _only_once);

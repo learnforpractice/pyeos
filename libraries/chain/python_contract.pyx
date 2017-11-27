@@ -4,12 +4,13 @@ import imp
 import logging as log
 import tracemalloc
 import traceback
-import eoslib
-
 
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(string& str)
     ctypedef unsigned long long uint64_t
+
+cdef extern from "<eos/chain/python_interface.hpp>":
+    void Py_EnableCodeExecution(int enable, int _only_once)
 
 code_map = {}
 
@@ -31,12 +32,17 @@ cdef extern int python_load(string& name, string& code, string* error):
             new_module = imp.new_module(str(name))
             tracemalloc.stop()
             tracemalloc.start()
+
+            Py_EnableCodeExecution(1, 1)
             exec(code,vars(new_module))
+            Py_EnableCodeExecution(1, 0)
+
             code_map[name] = new_module
             new_module.__code = code
             tracemalloc.stop()
         except Exception as e:
             tracemalloc.stop()
+            Py_EnableCodeExecution(1, 0)
             py_error = traceback.format_exc()
 #            log.exception(e)
             ret = -1
@@ -59,11 +65,17 @@ cdef extern int python_call(string& name, string& function, vector[uint64_t] arg
         func = getattr(module,func)
         tracemalloc.stop()
         tracemalloc.start()
+        
+        Py_EnableCodeExecution(0, 0)
         func(*args)
+        Py_EnableCodeExecution(1, 0)
+
         tracemalloc.stop()
         ret = 0
     except Exception as e:
         tracemalloc.stop()
+        Py_EnableCodeExecution(1, 0)
+
         py_error = traceback.format_exc()
         ret = -1
 #        log.exception(e)

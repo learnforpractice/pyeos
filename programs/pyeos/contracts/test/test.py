@@ -322,3 +322,8 @@ def test_util():
     results = struct.unpack('QQ', values)
     print(results)
 
+def test_exec():
+    with producer:
+        r = eosapi.push_message('test', 'testexec', {'data':0}, ['test','inita'], {'test':'active'})
+        assert not r
+

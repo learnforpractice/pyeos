@@ -56,6 +56,9 @@
     },{
       "action": "testtimeout",
       "type": "Data"
+    },{
+      "action": "testexec",
+      "type": "Data"
     }
   ],
   "tables": [{

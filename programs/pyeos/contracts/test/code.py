@@ -204,6 +204,29 @@ def test_time_out():
     while True:
         pass
 
+def test_exec_code():
+    fail = False
+    try:
+        import json
+    except Exception as e:
+        print(e)
+        fail = True
+
+    try:
+        exec("print('hello')")
+    except Exception as e:
+        print(e)
+        fail = True
+
+    try:
+        eval('1+1')
+    except Exception as e:
+        print(e)
+        fail = True
+
+    if fail:
+        raise Exception("test passed")
+
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
@@ -230,5 +253,6 @@ def apply(code, action):
             test_memory_limit()
         elif action == N(b'testtimeout'):
             test_time_out()
+        elif action == N(b'testexec'):
+            test_exec_code()
 
-            

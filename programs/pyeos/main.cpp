@@ -68,17 +68,19 @@ void quit_app_() {
    }
 }
 
-extern "C" void PyInit_eosapi();
-extern "C" PyObject* PyInit_eostypes();
-extern "C" PyObject* PyInit_wallet();
-//extern "C" PyObject* PyInit_hello();
-extern "C" PyObject* PyInit_eostest();
-extern "C" PyObject* PyInit_database();
-extern "C" PyObject* PyInit_blockchain();
-extern "C" PyObject* PyInit_util();
+extern "C" {
+   void PyInit_eosapi();
+   PyObject* PyInit_eostypes();
+   PyObject* PyInit_wallet();
+   //extern "C" PyObject* PyInit_hello();
+   PyObject* PyInit_eostest();
+   PyObject* PyInit_database();
+   PyObject* PyInit_blockchain();
+   PyObject* PyInit_util();
 
-extern "C" PyThreadState *tiny_PyEval_SaveThread(void);
-extern "C" void tiny_PyEval_RestoreThread(PyThreadState *tstate);
+   PyThreadState *tiny_PyEval_SaveThread(void);
+   void tiny_PyEval_RestoreThread(PyThreadState *tstate);
+}
 
 int main(int argc, char** argv) {
    init_smart_contract();

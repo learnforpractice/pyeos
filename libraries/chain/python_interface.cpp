@@ -350,6 +350,8 @@ void init_modules(void) {
    PyInit_python_contract();
    ilog("999\n");
    PyRun_SimpleString("import eoslib");
+   PyRun_SimpleString("import struct");
+
 }
 
 void init_smart_contract() {
