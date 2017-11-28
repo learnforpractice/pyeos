@@ -9,7 +9,7 @@
 #include <eoslib/print.hpp>
 
 
-namespace eos {
+namespace eosio {
   /**
   *  @defgroup tokens Token API
   *  @brief Defines the ABI for interfacing with standard-compatible token messages and database tables.
@@ -22,7 +22,7 @@ namespace eos {
   *
   *  @brief a uint64_t wrapper with checks for proper types and over/underflows.
   *  @tparam NumberType - numeric type of the token
-  *  @tparam CurrencyType - type of the currency (e.g. eos) represented as an unsigned 64 bit integer
+  *  @tparam currency - type of the currency (e.g. eos) represented as an unsigned 64 bit integer
   *  @ingroup tokens
   *
   *  @details Base token structure with checks for proper types and over/underflows.
@@ -30,7 +30,7 @@ namespace eos {
   *
   *  Example:
   *  @code
-  *  typedef eos::token<uint32_t, N(MyToken)> MyToken;
+  *  typedef eosio::token<uint32_t, N(MyToken)> MyToken;
   *  MyToken  a(128);
   *  a.print(); // Output: 128 MyToken
   *  MyToken b(64);
@@ -56,13 +56,13 @@ namespace eos {
   *
   *  @{
   */
-  template<typename NumberType, uint64_t CurrencyType = N(eos) >
+  template<typename NumberType, uint64_t currency = N(eos) >
   struct token {
     /**
     * Type of the currency (e.g. eos) represented as an unsigned 64 bit integer
     * @brief  Type of the currency
     */
-    static const uint64_t currency_type = CurrencyType;
+    static const uint64_t currency_type = currency;
 
     /**
     * Default constructor
@@ -202,7 +202,7 @@ namespace eos {
     * @brief Print as string
     */
     inline void print() {
-      eos::print( quantity, " ", Name(CurrencyType) );
+      eosio::print( quantity, " ", name(currency_type) );
     }
   };
   /// @}
@@ -220,8 +220,8 @@ namespace eos {
   *
   *  Example:
   *  @code
-  *  typedef eos::token<uint64_t, N(MyBaseToken)> MyBaseToken;
-  *  typedef eos::token<uint64_t, N(MyQuoteToken)> MyQuoteToken;
+  *  typedef eosio::token<uint64_t, N(MyBaseToken)> MyBaseToken;
+  *  typedef eosio::token<uint64_t, N(MyQuoteToken)> MyQuoteToken;
   *  typedef price<MyBaseToken, MyQuoteToken> MyBaseToQuotePrice;
   *  MyBaseToken zeroBaseToken;
   *  MyQuoteToken zeroQuoteToken;
@@ -289,7 +289,7 @@ namespace eos {
     * @return quote token
     */
     friend QuoteToken operator / ( BaseToken b, const price& q ) {
-      eos::print( "operator/ ", uint128(b.quantity), " * ", uint128( precision ), " / ", q.base_per_quote, "\n" );
+      eosio::print( "operator/ ", uint128(b.quantity), " * ", uint128( precision ), " / ", q.base_per_quote, "\n" );
       return QuoteToken( uint64_t((uint128(b.quantity) * uint128(precision)   / q.base_per_quote)) );
     }
 
@@ -301,8 +301,8 @@ namespace eos {
     * @return base token
     */
     friend BaseToken operator * ( const QuoteToken& b, const price& q ) {
-      eos::print( "b: ", b, " \n" );
-      eos::print( "operator* ", uint128(b.quantity), " * ", uint128( q.base_per_quote ), " / ", precision, "\n" );
+      eosio::print( "b: ", b, " \n" );
+      eosio::print( "operator* ", uint128(b.quantity), " * ", uint128( q.base_per_quote ), " / ", precision, "\n" );
       //return QuoteToken( uint64_t( mult_div_i128( b.quantity, q.base_per_quote, precision ) ) );
       return BaseToken( uint64_t((b.quantity * q.base_per_quote) / precision) );
     }
@@ -366,41 +366,41 @@ namespace eos {
     * @brief Prints as string.
     */
     inline void print() {
-      eos::print( base_per_quote, ".", " ", Name(base_token_type::currency_type), "/", Name(quote_token_type::currency_type)  );
+      eosio::print( base_per_quote, ".", " ", name(base_token_type::currency_type), "/", name(quote_token_type::currency_type)  );
     }
   private:
     /**
     * Represents as number of base tokens to purchase 1 quote token.
     * @brief Represents number of base tokens to purchase 1 quote token.
     */
-    eos::uint128 base_per_quote;
+    eosio::uint128 base_per_quote;
   };
 
   /// @}
 
   /**
-  * @typedef Tokens
+  * @typedef tokens
   * @brief Defines eos tokens
   * @details Defines eos tokens
   */
-  typedef eos::token<uint64_t,N(eos)>   Tokens;
+  typedef eosio::token<uint64_t,N(eos)>   tokens;
 
   /**
-  *  @struct eos::Transfer
+  *  @struct eosio::transfer
   *  @brief The binary structure of the `transfer` message type for the `eos` contract.
   *  @ingroup tokens
   *
   *  @details
   *  Example:
   *  @code
-  *  Transfer MeToYou;
+  *  transfer MeToYou;
   *  MeToYou.from = N(Me);
   *  MeToYou.to = N(You);
-  *  MeToYou.quantity = Tokens(100);
+  *  MeToYou.quantity = tokens(100);
   *  @endcode
   *  @{
   */
-  struct PACKED (Transfer) {
+  struct PACKED (transfer) {
     /**
     * Defines transfer action type
     * @brief Defines transfer action type
@@ -411,17 +411,17 @@ namespace eos {
     * Name of the account who sends the token
     * @brief Name of the account who sends the token
     */
-    AccountName  from;
+    account_name  from;
     /**
     * Name of the account who receives the token
     * @brief Name of the account who receives the token
     */
-    AccountName  to;
+    account_name  to;
     /**
     * Quantity of token to be transferred
     * @brief Quantity of token to be transferred
     */
-    Tokens       quantity;
+    tokens        quantity;
 
     /**
     * Length of the memo field, included for binary compatibility

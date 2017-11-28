@@ -6,12 +6,18 @@
 
 #include <eos/net_plugin/net_plugin.hpp>
 #include <eos/net_plugin/protocol.hpp>
+#include <eos/net_plugin/message_buffer.hpp>
 #include <eos/chain/chain_controller.hpp>
 #include <eos/chain/exceptions.hpp>
 #include <eos/chain/block.hpp>
+#include <eos/chain/producer_object.hpp>
+#include <eos/producer_plugin/producer_plugin.hpp>
+#include <eos/utilities/key_conversion.hpp>
 
 #include <fc/network/ip.hpp>
+#include <fc/io/json.hpp>
 #include <fc/io/raw.hpp>
+#include <fc/log/appender.hpp>
 #include <fc/container/flat.hpp>
 #include <fc/reflect/variant.hpp>
 #include <fc/crypto/rand.hpp>
@@ -22,7 +28,11 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/intrusive/set.hpp>
 
-namespace eos {
+namespace fc {
+  extern std::unordered_map<std::string,logger>& get_logger_map();
+}
+
+namespace eosio {
   using std::vector;
 
   using boost::asio::ip::tcp;
@@ -32,7 +42,7 @@ namespace eos {
 
   using fc::time_point;
   using fc::time_point_sec;
-  using eos::chain::transaction_id_type;
+  using eosio::chain::transaction_id_type;
   namespace bip = boost::interprocess;
 
   class connection;
@@ -56,16 +66,16 @@ namespace eos {
   };
 
   struct update_block_num {
-    UInt16 new_bnum;
-    update_block_num (UInt16 bnum) : new_bnum(bnum) {}
+    uint16 new_bnum;
+    update_block_num (uint16 bnum) : new_bnum(bnum) {}
     void operator() (node_transaction_state& nts) {
         nts.block_num = static_cast<uint32_t>(new_bnum);
     }
   };
 
   struct update_entry {
-    const SignedTransaction &txn;
-    update_entry (const SignedTransaction &msg) : txn(msg) {}
+    const signed_transaction &txn;
+    update_entry (const signed_transaction &msg) : txn(msg) {}
 
     void operator() (node_transaction_state& nts) {
       nts.received = fc::time_point::now();
@@ -106,17 +116,28 @@ namespace eos {
 
   class net_plugin_impl {
   public:
-    unique_ptr<tcp::acceptor>     acceptor;
-    tcp::endpoint                 listen_endpoint;
-    string                        p2p_address;
-    uint32_t                      max_client_count;
-    uint32_t                      num_clients;
+    unique_ptr<tcp::acceptor>        acceptor;
+    tcp::endpoint                    listen_endpoint;
+    string                           p2p_address;
+    uint32_t                         max_client_count;
+    uint32_t                         num_clients;
 
-    vector<string>                supplied_peers;
+    vector<string>                   supplied_peers;
+    vector<chain::public_key_type>   allowed_peers; ///< peer keys allowed to connect
+    std::map<chain::public_key_type,
+             fc::ecc::private_key>   private_keys; ///< overlapping with producer keys, also authenticating non-producing nodes
 
-    std::set< connection_ptr >    connections;
-    bool                          done = false;
-    unique_ptr< sync_manager >    sync_master;
+    enum possible_connections : char {
+      None = 0,
+      Producers = 1 << 0,
+      Specified = 1 << 1,
+      Any = 1 << 2
+    };
+    possible_connections             allowed_connections{None};
+
+    std::set< connection_ptr >       connections;
+    bool                             done = false;
+    unique_ptr< sync_manager >       sync_master;
 
     unique_ptr<boost::asio::steady_timer> connector_check;
     unique_ptr<boost::asio::steady_timer> transaction_check;
@@ -126,6 +147,8 @@ namespace eos {
     boost::asio::steady_timer::duration   resp_expected_period;
     boost::asio::steady_timer::duration   keepalive_interval{std::chrono::seconds{32}};
 
+    const std::chrono::system_clock::duration peer_authentication_interval{std::chrono::seconds{1}}; ///< Peer clock may be no more than 1 second skewed from our clock, including network latency.
+
     int16_t                       network_version;
     chain_id_type                 chain_id;
     fc::sha256                    node_id;
@@ -134,6 +157,7 @@ namespace eos {
     chain_plugin*                 chain_plug;
     size_t                        just_send_it_max;
     bool                          send_whole_blocks;
+    int                           started_sessions;
 
     node_transaction_index        local_txns;
     ordered_txn_ids               pending_notify;
@@ -145,19 +169,19 @@ namespace eos {
     void start_session( connection_ptr c );
     void start_listen_loop( );
     void start_read_message( connection_ptr c);
-    void start_reading_pending_buffer( connection_ptr c);
 
     void close( connection_ptr c );
+    size_t count_open_sockets () const;
 
     template<typename VerifierFunc>
     void send_all (const net_message &msg, VerifierFunc verify);
     //    template<typename VerifierFunc>
     //    void send_all (net_message_ptr msg, VerifierFunc verify);
-    void send_all_txn (const SignedTransaction& txn);
-    static void transaction_ready( const SignedTransaction& txn);
+    void send_all_txn (const signed_transaction& txn);
+    static void transaction_ready( const signed_transaction& txn);
     void broadcast_block_impl( const signed_block &sb);
 
-    size_t cache_txn ( const transaction_id_type, const SignedTransaction &txn);
+    size_t cache_txn ( const transaction_id_type, const signed_transaction &txn);
 
     void handle_message( connection_ptr c, const handshake_message &msg);
     void handle_message( connection_ptr c, const go_away_message &msg );
@@ -180,7 +204,7 @@ namespace eos {
     void handle_message( connection_ptr c, const request_message &msg);
     void handle_message( connection_ptr c, const sync_request_message &msg);
     void handle_message( connection_ptr c, const block_summary_message &msg);
-    void handle_message( connection_ptr c, const SignedTransaction &msg);
+    void handle_message( connection_ptr c, const signed_transaction &msg);
     void handle_message( connection_ptr c, const signed_block &msg);
 
     void start_conn_timer( );
@@ -197,23 +221,58 @@ namespace eos {
      */
     void ticker();
     /** @} */
+    /** \brief Determine if a peer is allowed to connect.
+     *
+     * Checks current connection mode and key authentication.
+     *
+     * \return False if the peer should not connect, true otherwise.
+     */
+    bool authenticate_peer(const handshake_message& msg) const;
+    /** \brief Retrieve public key used to authenticate with peers.
+     *
+     * Finds a key to use for authentication.  If this node is a producer, use
+     * the front of the producer key map.  If the node is not a producer but has
+     * a configured private key, use it.  If the node is neither a producer nor has
+     * a private key, returns an empty key.
+     *
+     * \note On a node with multiple private keys configured, the key with the first
+     *       numerically smaller byte will always be used.
+     */
+    chain::public_key_type get_authentication_key() const;
+    /** \brief Returns a signature of the digest using the corresponding private key of the signer.
+     *
+     * If there are no configured private keys, returns an empty signature.
+     */
+    fc::ecc::compact_signature sign_compact(const chain::public_key_type& signer, const fc::sha256& digest) const;
+    static const fc::string logger_name;
+    static fc::logger logger;
   };
 
+  template<class enum_type, class=typename std::enable_if<std::is_enum<enum_type>::value>::type>
+  inline enum_type& operator|=(enum_type& lhs, const enum_type& rhs)
+  {
+    using T = std::underlying_type_t <enum_type>;
+    return lhs = static_cast<enum_type>(static_cast<T>(lhs) | static_cast<T>(rhs));
+  }
+
   static net_plugin_impl *my_impl;
+  const fc::string net_plugin_impl::logger_name("net_plugin_impl");
+  fc::logger net_plugin_impl::logger(net_plugin_impl::logger_name);
 
   /**
    * default value initializers
    */
-  constexpr auto     def_buffer_size_mb = 4;
-  constexpr auto     def_buffer_size = 1024*1024*def_buffer_size_mb;
-  constexpr auto     def_max_clients = 20; // 0 for unlimited clients
-  constexpr auto     def_conn_retry_wait = std::chrono::seconds (30);
+  constexpr auto     def_send_buffer_size_mb = 4;
+  constexpr auto     def_send_buffer_size = 1024*1024*def_send_buffer_size_mb;
+  constexpr auto     def_max_clients = 25; // 0 for unlimited clients
+  constexpr auto     def_conn_retry_wait = 30;
   constexpr auto     def_txn_expire_wait = std::chrono::seconds (3);
   constexpr auto     def_resp_expected_wait = std::chrono::seconds (1);
-  constexpr auto     def_network_version = 0;
   constexpr auto     def_sync_rec_span = 10;
   constexpr auto     def_max_just_send = 1300 * 3; // "mtu" * 3
   constexpr auto     def_send_whole_blocks = true;
+
+  constexpr auto     message_header_size = 4;
 
   /**
    *  Index by id
@@ -286,12 +345,10 @@ namespace eos {
   class connection : public std::enable_shared_from_this<connection> {
   public:
     connection( string endpoint,
-                size_t send_buf_size = def_buffer_size,
-                size_t recv_buf_size = def_buffer_size );
+                size_t send_buf_size = def_send_buffer_size );
 
     connection( socket_ptr s,
-                size_t send_buf_size = def_buffer_size,
-                size_t recv_buf_size = def_buffer_size );
+                size_t send_buf_size = def_send_buffer_size );
     ~connection();
     void initialize ();
 
@@ -301,21 +358,9 @@ namespace eos {
     sync_state_ptr          sync_requested;  // this peer is requesting info from us
     socket_ptr              socket;
 
-    //#warning ("TODO: Rework Message Caching for efficiency")
-    // WHat I mean here is that incoming data should be read in chunks that are as
-    // large as possible. We can query the recv buffer size. When using async_read_some(),
-    // we will frequently end a read in the middle of a message. That could happen with
-    // small messages, in which a simple "normalize" call could reset the buffer and allow a
-    // subsequent read to pick up the rest. In the case of very large messages, we should allow
-    // for the creation of a secondary buffer big enough to hold the entire message. Better
-    // still would be to have a mempool class that has a series of fixed size blocks that can
-    // be used scatter-gather style.
-
-    uint32_t                expected_size;
-    vector<char>            pending_message_buffer;
+    message_buffer<4096>    pending_message_buffer;
     vector<char>            send_buffer;
     vector<char>            blk_buffer;
-    size_t                  actual_size;
 
     deque< vector<char> >   txn_queue;
     size_t                  txn_in_flight;
@@ -400,10 +445,39 @@ namespace eos {
     void fetch_wait ();
     void sync_timeout (boost::system::error_code ec);
     void fetch_timeout (boost::system::error_code ec);
+
+    /** \brief Process the next message from the pending message buffer
+     *
+     * Process the next message from the pending_message_buffer.
+     * message_length is the already determined length of the data
+     * part of the message and impl in the net plugin implementation
+     * that will handle the message.
+     * Returns true is successful. Returns false if an error was
+     * encountered unpacking or processing the message.
+     */
+    bool process_next_message(net_plugin_impl& impl, uint32_t message_length);
+
+    static const fc::string logger_name;
+    static fc::logger logger;
   };
 
+  const fc::string connection::logger_name("connection");
+  fc::logger connection::logger(connection::logger_name);
+
+  struct msgHandler : public fc::visitor<void> {
+    net_plugin_impl &impl;
+    connection_ptr c;
+    msgHandler( net_plugin_impl &imp, connection_ptr conn) : impl(imp), c(conn) {}
+
+    template <typename T>
+    void operator()(const T &msg) const
+    {
+      impl.handle_message( c, msg);
+    }
+  };
 
   class sync_manager {
+  public:
     uint32_t            sync_known_lib_num;
     uint32_t            sync_last_requested_num;
     uint32_t            sync_req_span;
@@ -416,6 +490,7 @@ namespace eos {
   public:
     sync_manager (uint32_t span);
     bool syncing ();
+    void request_next_chunk ();
     void assign_chunk (connection_ptr c);
     void apply_chunk (sync_state_ptr ss);
     void take_chunk (connection_ptr c);
@@ -424,20 +499,23 @@ namespace eos {
     void set_blocks_to_fetch (vector<block_id_type>);
     void assign_fectch (connection_ptr c);
     void reassign_fetch (connection_ptr c);
+
+    static const fc::string logger_name;
+    static fc::logger logger;
   };
+
+  const fc::string sync_manager::logger_name("sync_manager");
+  fc::logger sync_manager::logger(sync_manager::logger_name);
 
   //---------------------------------------------------------------------------
 
   connection::connection( string endpoint,
-                          size_t send_buf_size,
-                          size_t recv_buf_size )
+                          size_t send_buf_size )
       : block_state(),
         trx_state(),
         sync_receiving(),
         sync_requested(),
         socket( std::make_shared<tcp::socket>( std::ref( app().get_io_service() ))),
-        expected_size(0),
-        pending_message_buffer(recv_buf_size),
         send_buffer(send_buf_size),
         node_id(),
         last_handshake(),
@@ -455,15 +533,12 @@ namespace eos {
     }
 
   connection::connection( socket_ptr s,
-                          size_t send_buf_size,
-                          size_t recv_buf_size )
+                          size_t send_buf_size )
       : block_state(),
         trx_state(),
         sync_receiving(),
         sync_requested(),
         socket( s ),
-        expected_size(0),
-        pending_message_buffer(recv_buf_size),
         send_buffer(send_buf_size),
         node_id(),
         last_handshake(),
@@ -499,11 +574,11 @@ namespace eos {
 
   bool connection::current () {
     if( syncing ) {
-      // dlog( "skipping connection ${n} due to syncing", ("n",peer_name()));
+      fc_dlog(logger, "skipping connection ${n} due to syncing", ("n",peer_name()));
     } else if (!connected()) {
-      // dlog( "skipping connection ${n} due to not connected", ("n",peer_name()));
+      fc_dlog(logger, "skipping connection ${n} due to not connected", ("n",peer_name()));
     } else {
-      // dlog( "connection ${n} is current", ("n",peer_name()));
+      fc_dlog(logger, "connection ${n} is current", ("n",peer_name()));
     }
     return (connected() && !syncing);
   }
@@ -572,15 +647,15 @@ namespace eos {
             optional<signed_block> pb = cc.fetch_block_by_id (prev);
             block_id_type pprev;
             if (!pb ) {
-              // dlog( "no block for prev");
+              fc_dlog(logger, "no block for prev");
             } else {
               pprev = pb->previous;
             }
-            // dlog( "irr = ${irr} lib_nim = ${ln} pnum = ${pn}", ("irr",irr)("ln",lib_num)("pn",pnum));
-            // dlog( "prev = ${p}", ("p",prev));
-            // dlog( "lib  = ${p}", ("p",lib_id));
-            // dlog( "bid  = ${p}", ("p",bid));
-            // dlog( "ppre = ${p}", ("p",pprev));
+            fc_dlog(logger, "irr = ${irr} lib_nim = ${ln} pnum = ${pn}", ("irr",irr)("ln",lib_num)("pn",pnum));
+            fc_dlog(logger, "prev = ${p}", ("p",prev));
+            fc_dlog(logger, "lib  = ${p}", ("p",lib_id));
+            fc_dlog(logger, "bid  = ${p}", ("p",bid));
+            fc_dlog(logger, "ppre = ${p}", ("p",pprev));
           }
           else {
             ++dbg_depth;
@@ -606,7 +681,7 @@ namespace eos {
     notice_message note;
     note.known_blocks.mode = normal;
     note.known_blocks.pending = 0;
-    // dlog ("head_num = ${h}",("h",head_num));
+    fc_dlog(logger, "head_num = ${h}",("h",head_num));
     if (head_num == 0) {
       enqueue (note);
       return;
@@ -616,11 +691,12 @@ namespace eos {
     uint32_t lib_num;
     try {
       lib_num = cc.last_irreversible_block_num();
-      lib_id = cc.get_block_id_for_num(lib_num);
+      if( lib_num != 0 )
+        lib_id = cc.get_block_id_for_num(lib_num);
       head_id = cc.get_block_id_for_num (head_num);
     }
     catch (const assert_exception &ex) {
-      // dlog ("caught assert ${x}",("x",ex.what()));
+      fc_dlog(logger, "caught assert ${x}",("x",ex.what()));
       enqueue (note);
       return;
     }
@@ -633,7 +709,7 @@ namespace eos {
     }
 #endif
     uint32_t count = send_branch (cc, head_id, lib_num, lib_id);
-    // dlog( "Sent ${n} blocks on my fork",("n",count));
+    fc_dlog(logger, "Sent ${n} blocks on my fork",("n",count));
     syncing = false;
   }
 
@@ -670,13 +746,13 @@ namespace eos {
       handshake_message hello;
       handshake_initializer::populate(hello);
       hello.generation = ++sent_handshake_count;
-      // dlog( "Sending handshake to ${ep}", ("ep", peer_addr));
+      fc_dlog(logger, "Sending handshake to ${ep}", ("ep", peer_addr));
       enqueue (hello);
     }
 
   char* connection::convert_tstamp(const tstamp& t)
   {
-    const long NsecPerSec{1000000000};
+    const long long NsecPerSec{1000000000};
     time_t seconds = t / NsecPerSec;
     strftime(ts, ts_buffer_size, "%F %T", localtime(&seconds));
     snprintf(ts+19, ts_buffer_size-19, ".%lld", t % NsecPerSec);
@@ -852,7 +928,7 @@ namespace eos {
     }
     else if( ec == boost::asio::error::operation_aborted ) {
       if( !connected( ) ) {
-        // dlog ("fetch timeout was cancelled due to dead connection");
+        fc_dlog(logger, "fetch timeout was cancelled due to dead connection");
         my_impl->sync_master->reassign_fetch( shared_from_this( ) );
       }
     }
@@ -860,6 +936,33 @@ namespace eos {
       elog( "setting timer for fetch request got error ${ec}", ("ec", ec.message( ) ) );
     }
   }
+
+  bool connection::process_next_message(net_plugin_impl& impl, uint32_t message_length) {
+    try {
+      // If it is a signed_block, then save the raw message for the cache
+      // This must be done before we unpack the message.
+      unsigned_int which;
+      auto index = pending_message_buffer.read_index();
+      pending_message_buffer.peek(&which, sizeof(unsigned_int), index);
+      if (which == uint32_t(net_message::tag<signed_block>::value)) {
+        blk_buffer.resize(message_length);
+        auto index = pending_message_buffer.read_index();
+        pending_message_buffer.peek(blk_buffer.data(), message_length, index);
+      }
+      auto ds = pending_message_buffer.create_datastream();
+      net_message msg;
+      fc::raw::unpack(ds, msg);
+      msgHandler m(impl, shared_from_this() );
+      msg.visit(m);
+    } catch(  const fc::exception& e ) {
+      edump((e.to_detail_string() ));
+      impl.close( shared_from_this() );
+      return false;
+    }
+    return true;
+  }
+
+
   //-----------------------------------------------------------
 
   sync_manager::sync_manager( uint32_t span )
@@ -871,9 +974,20 @@ namespace eos {
   }
 
   bool sync_manager::syncing( ) {
-    // dlog( "ours = ${ours} known = ${known} head = ${head}",("ours",sync_last_requested_num)("known",sync_known_lib_num)("head",chain_plug->chain( ).head_block_num( )));
+    fc_dlog(logger, "ours = ${ours} known = ${known} head = ${head}",("ours",sync_last_requested_num)("known",sync_known_lib_num)("head",chain_plug->chain( ).head_block_num( )));
     return( sync_last_requested_num != sync_known_lib_num ||
             chain_plug->chain( ).head_block_num( ) < sync_last_requested_num );
+  }
+
+  void sync_manager::request_next_chunk () {
+    uint32_t head_block = chain_plug->chain().head_block_num();
+    for (auto &c : my_impl->connections ) {
+      if (c->sync_receiving && c->sync_receiving->start_block == head_block + 1) {
+        c->enqueue( (sync_request_message){c->sync_receiving->start_block,
+              c->sync_receiving->end_block});
+        sync_last_requested_num = c->sync_receiving->end_block;
+      }
+    }
   }
 
   void sync_manager::assign_chunk( connection_ptr c ) {
@@ -892,18 +1006,20 @@ namespace eos {
       if( end > sync_known_lib_num )
         end = sync_known_lib_num;
       if( end > 0 && end >= start ) {
-        // dlog( "conn ${n} recv blks ${s} to ${e}",("n",c->peer_name() )("s",start)("e",end));
+        fc_dlog(logger, "conn ${n} recv blks ${s} to ${e}",("n",c->peer_name() )("s",start)("e",end));
         c->sync_receiving.reset(new sync_state( start, end, sync_last_requested_num ) );
       }
     }
     else {
-      // dlog( "conn ${n} resetting sync recv",("n",c->peer_name() ));
+      fc_dlog(logger, "conn ${n} resetting sync recv",("n",c->peer_name() ));
       c->sync_receiving.reset ( );
     }
+#if 0
     if( end > 0 && end >= start ) {
       c->enqueue( (sync_request_message){start, end} );
       sync_last_requested_num = end;
     }
+#endif
   }
 
     struct postcache : public fc::visitor<void> {
@@ -917,7 +1033,7 @@ namespace eos {
         } catch( const unlinkable_block_exception &ex ) {
           elog( "post cache: unlinkable_block_exception accept block #${n}",("n",block.block_num()));
         } catch (const assert_exception &ex) {
-          elog ("post cache: unable to accept block on assert exception ${n}",("n",ex.what()));
+          elog ("post cache: unable to accept block on assert exception ${n}",("n",ex.to_string()));
         } catch (const fc::exception &ex) {
           elog ("post cache: accept_block threw a non-assert exception ${x}", ("x",ex.what()));
         } catch (...) {
@@ -943,7 +1059,7 @@ namespace eos {
       }
       sync_state_ptr ss;
       c->sync_receiving.swap(ss);
-      // dlog( "conn ${n} losing recv blks ${s} to ${e}",("n",c->peer_name() )("s",ss->start_block)("e",ss->end_block));
+      fc_dlog(logger, "conn ${n} losing recv blks ${s} to ${e}",("n",c->peer_name() )("s",ss->start_block)("e",ss->end_block));
 
       if( !ss->block_cache.empty()) {
         if( ss->last < ss->end_block) {
@@ -986,11 +1102,11 @@ namespace eos {
       if( chain_plug->chain().head_block_num() == sync_known_lib_num ) {
         handshake_message hello;
         handshake_initializer::populate(hello);
-        // dlog( "All caught up with last known last irreversible block resending handshake");
+        fc_dlog(logger, "All caught up with last known last irreversible block resending handshake");
         for( auto &ci : my_impl->connections) {
           if( ci->current()) {
             hello.generation = ++ci->sent_handshake_count;
-            // dlog( "send to ${p}", ("p",ci->peer_name()));
+            fc_dlog(logger, "send to ${p}", ("p",ci->peer_name()));
             ci->enqueue( hello );
           }
         }
@@ -998,6 +1114,7 @@ namespace eos {
       if( c->connected()) {
         assign_chunk( c);
       }
+      request_next_chunk();
     }
 
     void sync_manager::start_sync( connection_ptr c, uint32_t target) {
@@ -1013,6 +1130,7 @@ namespace eos {
         return;
       }
       assign_chunk( c);
+      request_next_chunk();
     }
 
   void sync_manager::reassign_fetch( connection_ptr c) {
@@ -1023,7 +1141,7 @@ namespace eos {
 
   void net_plugin_impl::connect( connection_ptr c ) {
     if( c->no_retry != go_away_reason::no_reason) {
-      // dlog( "Skipping connect due to go_away reason ${r}",("r", reason_str( c->no_retry )));
+      fc_dlog( logger, "Skipping connect due to go_away reason ${r}",("r", reason_str( c->no_retry )));
       return;
     }
       auto host = c->peer_addr.substr( 0, c->peer_addr.find(':') );
@@ -1067,6 +1185,9 @@ namespace eos {
                                        ( "peer", c->peer_name())("error",err.message()));
                                  c->connecting = false;
                                  c->close();
+                                 if (started_sessions == 0) {
+                                   connect (c);
+                                 }
                                }
                              }
                            } );
@@ -1076,6 +1197,7 @@ namespace eos {
       boost::asio::ip::tcp::no_delay option( true );
       con->socket->set_option( option );
       start_read_message( con );
+      ++started_sessions;
       con->send_handshake( );
 
       // for now, we can just use the application main loop.
@@ -1106,30 +1228,54 @@ namespace eos {
     }
 
     void net_plugin_impl::start_read_message( connection_ptr conn ) {
-      conn->expected_size = 0;
       connection_wptr c( conn);
-      uint32_t *buff = &(conn.get()->expected_size);
-
-      boost::asio::async_read( *conn->socket,
-                               boost::asio::buffer((char *)buff, sizeof(conn->expected_size)),
-                               [this,c]( boost::system::error_code ec, std::size_t read_size ) {
-                                 //ilog( "read size handler..." );
-                                 if( !ec ) {
-                                   connection_ptr conn = c.lock();
-                                   if( conn->expected_size <= conn->pending_message_buffer.size() ) {
-                                     start_reading_pending_buffer( conn );
-                                     return;
-                                   } else {
-                                     elog( "expected_size = ${es}, pmb_size = ${pmb}, readsize = ${rs}",
-                                           ("es",conn->expected_size)("pmb",conn->pending_message_buffer.size())("rs", read_size));
-                                   }
-                                 } else {
-                                   elog( "Error reading message from connection: ${m}",( "m", ec.message() ) );
-                                 }
-                                 close( c.lock() );
-                               }
-                               );
+      conn->socket->async_read_some(
+        conn->pending_message_buffer.get_buffer_sequence_for_boost_async_read(),
+        [this,c]( boost::system::error_code ec, std::size_t bytes_transferred ) {
+          if( !ec ) {
+            connection_ptr conn = c.lock();
+            if (!conn) {
+              return;
+            }
+            conn->pending_message_buffer.advance_write_ptr(bytes_transferred);
+            while (conn->pending_message_buffer.bytes_to_read() > 0) {
+              uint32_t bytes_in_buffer = conn->pending_message_buffer.bytes_to_read();
+              if (bytes_in_buffer < message_header_size) {
+                break;
+              } else {
+                uint32_t message_length;
+                auto index = conn->pending_message_buffer.read_index();
+                conn->pending_message_buffer.peek(&message_length, sizeof(message_length), index);
+                if (bytes_in_buffer >= message_length + message_header_size) {
+                  conn->pending_message_buffer.advance_read_ptr(message_header_size);
+                  if (!conn->process_next_message(*this, message_length)) {
+                    return;
+                  }
+                } else {
+                  conn->pending_message_buffer.add_space(message_length - bytes_in_buffer);
+                  break;
+                }
+              }
+            }
+            start_read_message(conn);
+          } else {
+            elog( "Error reading message from connection: ${m}",( "m", ec.message() ) );
+            close( c.lock() );
+          }
+        }
+      );
     }
+
+  size_t net_plugin_impl::count_open_sockets () const
+  {
+    size_t count = 0;
+    for( auto &c : connections) {
+      if (c->socket->is_open())
+        ++count;
+    }
+    return count;
+  }
+
 
     template<typename VerifierFunc>
     void net_plugin_impl::send_all( const net_message &msg, VerifierFunc verify) {
@@ -1141,7 +1287,7 @@ namespace eos {
     }
 
     void net_plugin_impl::handle_message( connection_ptr c, const handshake_message &msg) {
-      // dlog ("got a handshake_message from ${p}", ("p",c->peer_name()));
+      fc_dlog(logger, "got a handshake_message from ${p}", ("p",c->peer_name()));
       if( c->connecting ) {
         c->connecting = false;
 
@@ -1152,13 +1298,13 @@ namespace eos {
         }
 
         if ( c->peer_addr.empty() || c->last_handshake.node_id == fc::sha256()) {
-          // dlog( "checking for duplicate" );
+          fc_dlog(logger, "checking for duplicate" );
           for (const auto &check : connections) {
             if (check == c)
               continue;
             if (check->connected() &&
                 check->peer_name() == msg.p2p_address) {
-              // dlog( "sending go_away duplicate to ${ep}", ("ep",msg.p2p_address) );
+              fc_dlog(logger, "sending go_away duplicate to ${ep}", ("ep",msg.p2p_address) );
               go_away_message gam (go_away_reason::duplicate);
               gam.node_id = node_id;
               c->enqueue (gam);
@@ -1168,7 +1314,7 @@ namespace eos {
           }
         }
         else {
-          // dlog ("skipping duplicate check, addr == ${pa}, id = ${ni}",("pa",c->peer_addr)("ni",c->last_handshake.node_id));
+          fc_dlog(logger, "skipping duplicate check, addr == ${pa}, id = ${ni}",("pa",c->peer_addr)("ni",c->last_handshake.node_id));
         }
 
         if( msg.chain_id != chain_id) {
@@ -1186,13 +1332,19 @@ namespace eos {
         if(  c->node_id != msg.node_id) {
           c->node_id = msg.node_id;
         }
+
+        if(!authenticate_peer(msg)) {
+          dlog("Peer not authenticated.  Closing connection.");
+          close(c);
+          return;
+        }
       }
 
       chain_controller& cc = chain_plug->chain();
       uint32_t lib_num = cc.last_irreversible_block_num( );
       uint32_t peer_lib = msg.last_irreversible_block_num;
       bool on_fork = false;
-      // dlog( "lib_num = ${ln} peer_lib = ${pl}",("ln",lib_num)("pl",peer_lib));
+      fc_dlog(logger, "lib_num = ${ln} peer_lib = ${pl}",("ln",lib_num)("pl",peer_lib));
 
       if( peer_lib <= lib_num && peer_lib > 0) {
         try {
@@ -1216,22 +1368,26 @@ namespace eos {
       uint32_t head = cc.head_block_num( );
       block_id_type head_id = cc.head_block_id();
 
-      if( msg.last_irreversible_block_num  > head || sync_master->syncing() ) {
+      if( peer_lib > head || sync_master->syncing() ) {
         sync_master->start_sync( c, peer_lib );
       }
-      else if( msg.head_id != head_id && msg.head_id != block_id_type( )) {
-        // dlog ("msg.head_id = ${m} our head = ${h}",("m",msg.head_id)("h",head_id));
+      else if( msg.head_id != head_id ) {
+        fc_dlog(logger, "msg.head_id = ${m} our head = ${h}",("m",msg.head_id)("h",head_id));
 
         notice_message note;
-        // dlog( "msg head = ${mh} msg lib = ${ml} my head = ${h} my lib = ${l}",("mh",msg.head_num)("ml",msg.last_irreversible_block_num)("h",head)("l",lib_num));
+        note.known_blocks.mode = id_list_modes::none;
+        fc_dlog(logger, "msg head = ${mh} msg lib = ${ml} my head = ${h} my lib = ${l}",("mh",msg.head_num)("ml",msg.last_irreversible_block_num)("h",head)("l",lib_num));
         if( msg.head_num >= lib_num ) {
           note.known_blocks.mode = id_list_modes::catch_up;
           note.known_blocks.pending = head - lib_num;
+        } else {
+          note.known_blocks.mode = id_list_modes::last_irr_catch_up;
+          note.known_blocks.pending = lib_num;
         }
         note.known_trx.mode = id_list_modes::catch_up;
         note.known_trx.pending = local_txns.size(); // cc.pending().size();
         if( note.known_trx.pending > 0 || note.known_blocks.pending > 0) {
-          // dlog( "sending catchup notice to ${n} about ${t} txns and ${b} blocks",("n",c->peer_name())("t",note.known_trx.pending)("b",note.known_blocks.pending));
+          fc_dlog(logger, "sending ${m} notice to ${n} about ${t} txns and ${b} blocks",("m",modes_str(note.known_blocks.mode))("n",c->peer_name())("t",note.known_trx.pending)("b",note.known_blocks.pending));
           c->enqueue( note );
           c->syncing = true;
         }
@@ -1271,9 +1427,10 @@ namespace eos {
       }
 
       c->offset = (double(c->rec - c->org) + double(msg.xmt - c->dst)) / 2;
-      //  double NsecPerUsec{1000};
-      //
-      //  // dlog("Clock offset is ${o}ns (${us}us)", ("o", c->offset)("us", c->offset/NsecPerUsec));
+      double NsecPerUsec{1000};
+
+      if(logger.is_enabled(fc::log_level::all))
+        logger.log(FC_LOG_MESSAGE(all, "Clock offset is ${o}ns (${us}us)", ("o", c->offset)("us", c->offset/NsecPerUsec)));
       c->org = 0;
       c->rec = 0;
     }
@@ -1282,7 +1439,7 @@ namespace eos {
       // peer tells us about one or more blocks or txns. When done syncing, forward on
       // notices of previously unknown blocks or txns,
       //
-      // dlog ("got a notice_message from ${p}", ("p",c->peer_name()));
+      fc_dlog(logger, "got a notice_message from ${p}", ("p",c->peer_name()));
       notice_message fwd;
       request_message req;
       bool send_req = false;
@@ -1316,8 +1473,13 @@ namespace eos {
         }
       }
 
-      if( msg.known_blocks.mode == id_list_modes::catch_up )
-        {
+      fc_dlog(logger,"this is a ${m} notice with ${n} blocks", ("m",modes_str(msg.known_blocks.mode))("n",msg.known_blocks.pending));
+
+
+      if( msg.known_blocks.mode == id_list_modes::last_irr_catch_up ) {
+        sync_master->start_sync (c, msg.known_blocks.pending);
+      }
+      else if( msg.known_blocks.mode == id_list_modes::catch_up ) {
           req.req_blocks.mode = id_list_modes::catch_up;
           req.req_blocks.pending = msg.known_blocks.pending;
           send_req = true;
@@ -1348,19 +1510,20 @@ namespace eos {
             return cptr != c;
           });
       }
-      // dlog ("send req = ${sr}", ("sr",send_req));
+      fc_dlog(logger, "send req = ${sr}", ("sr",send_req));
       if ( send_req) {
         c->enqueue(req);
       }
     }
 
     void net_plugin_impl::handle_message( connection_ptr c, const request_message &msg) {
-      // dlog ("got a request_message from ${p}", ("p",c->peer_name()));
       switch (msg.req_blocks.mode) {
       case id_list_modes::catch_up :
+        fc_dlog(logger, "got a catch_up request_message from ${p}", ("p",c->peer_name()));
         c->blk_send_branch( msg.req_trx.ids );
         break;
       case id_list_modes::normal :
+        fc_dlog(logger, "got a normal request_message from ${p}", ("p",c->peer_name()));
         c->blk_send(msg.req_blocks.ids);
         break;
       default:;
@@ -1384,7 +1547,7 @@ namespace eos {
     }
 
     void net_plugin_impl::handle_message( connection_ptr c, const sync_request_message &msg) {
-      // dlog ("got a sync_request_message from ${p}", ("p",c->peer_name()));
+      fc_dlog(logger, "got a sync_request_message from ${p}", ("p",c->peer_name()));
       if( msg.end_block == 0) {
         c->sync_requested.reset();
       } else {
@@ -1394,9 +1557,9 @@ namespace eos {
     }
 
     void net_plugin_impl::handle_message( connection_ptr c, const block_summary_message &msg) {
-      // dlog ("got a block_summary_message from ${p}", ("p",c->peer_name()));
-      // dlog( "bsm header = ${h}",("h",msg.block_header));
-      // dlog( "txn count = ${c}", ("c",msg.trx_ids.size()));
+      fc_dlog(logger, "got a block_summary_message from ${p}", ("p",c->peer_name()));
+      fc_dlog(logger, "bsm header = ${h}",("h",msg.block_header));
+      fc_dlog(logger, "txn count = ${c}", ("c",msg.trx_ids.size()));
 
       const auto& itr = c->block_state.get<by_id>();
       auto bs = itr.find(msg.block_header.id());
@@ -1426,24 +1589,24 @@ namespace eos {
         sb.producer_signature = msg.block_header.producer_signature;
 
         for( auto &cyc : msg.trx_ids ) {
-          // dlog( "cycle count = ${c}", ("c",cyc.size()));
+          fc_dlog(logger, "cycle count = ${c}", ("c",cyc.size()));
           if( cyc.size() == 0 ) {
             continue;
           }
-          sb.cycles.emplace_back( eos::chain::cycle( ) );
-          eos::chain::cycle &sbcycle = sb.cycles.back( );
+          sb.cycles.emplace_back( eosio::chain::cycle( ) );
+          eosio::chain::cycle &sbcycle = sb.cycles.back( );
           for( auto &cyc_thr_id : cyc ) {
-            // dlog( "cycle user theads count = ${c}", ("c",cyc_thr_id.user_trx.size()));
+            fc_dlog(logger, "cycle user theads count = ${c}", ("c",cyc_thr_id.user_trx.size()));
             if (cyc_thr_id.user_trx.size() == 0) {
               continue;
             }
-            sbcycle.emplace_back( eos::chain::thread( ) );
-            eos::chain::thread &cyc_thr = sbcycle.back();
+            sbcycle.emplace_back( eosio::chain::thread( ) );
+            eosio::chain::thread &cyc_thr = sbcycle.back();
             /*
             for( auto &gt : cyc_thr_id.gen_trx ) {
               try {
                 auto gen = cc.get_generated_transaction( gt );
-                cyc_thr.generated_input.push_back( ProcessedGeneratedTransaction( gen ) );
+                cyc_thr.generated_input.push_back( processed_generated_transaction( gen ) );
               } catch ( const exception &ex) {
                 fetch_error = true;
                 elog( "unable to retieve generated transaction, caught {ex}", ("ex",ex) );
@@ -1455,15 +1618,17 @@ namespace eos {
               }
             }
             */
+            /* Commented out when signed_transaction removed from transaction_object.
+               This code needs to be re-evaluated when block summaries are reworked.
             for( auto &ut : cyc_thr_id.user_trx ) {
               // auto ltxn = local_txns.get<by_id>().find(ut);
 
               try {
-                ProcessedTransaction pt(cc.get_recent_transaction(ut.id));
+                processed_transaction pt(cc.get_recent_transaction(ut.id));
                 pt.output = ut.outmsgs;
                 cyc_thr.user_input.emplace_back(pt);
 
-                // dlog ("Found the transaction");
+                fc_dlog(logger, "Found the transaction");
               } catch ( const exception &ex) {
                 fetch_error = true;
                 elog( "unable to retieve user transaction, caught {ex}", ("ex",ex) );
@@ -1474,6 +1639,7 @@ namespace eos {
                 break;
               }
             }
+            */
             if( fetch_error ){
               break;
             }
@@ -1484,7 +1650,7 @@ namespace eos {
         }
 
         try {
-          // dlog( "calling accept block, fetcherror = ${fe}",("fe",fetch_error));
+          fc_dlog(logger, "calling accept block, fetcherror = ${fe}",("fe",fetch_error));
           if( !fetch_error )
             chain_plug->accept_block( sb, false );
         } catch( const unlinkable_block_exception &ex) {
@@ -1500,13 +1666,14 @@ namespace eos {
       }
     }
 
-    void net_plugin_impl::handle_message( connection_ptr c, const SignedTransaction &msg) {
-      // dlog ("got a signed transaction from ${p}", ("p",c->peer_name()));
+
+    void net_plugin_impl::handle_message( connection_ptr c, const signed_transaction &msg) {
+      fc_dlog(logger, "got a signed transaction from ${p}", ("p",c->peer_name()));
       transaction_id_type txnid = msg.id();
       auto entry = local_txns.get<by_id>().find( txnid );
       if (entry != local_txns.end( ) ) {
         if( entry->validated ) {
-          // dlog( "the txnid is known and validated, so short circuit" );
+          fc_dlog(logger, "the txnid is known and validated, so short circuit" );
           return;
         }
       }
@@ -1529,23 +1696,23 @@ namespace eos {
 
       auto tx = c->trx_state.find(txnid);
       if( tx == c->trx_state.end()) {
-        c->trx_state.insert((transaction_state){txnid,true,true,(uint32_t)msg.refBlockNum,
+        c->trx_state.insert((transaction_state){txnid,true,true,(uint32_t)msg.ref_block_num,
               fc::time_point(),fc::time_point()});
       } else {
         struct trx_mod {
-          UInt16 block;
-          trx_mod( UInt16 bn) : block(bn) {}
+          uint16 block;
+          trx_mod( uint16 bn) : block(bn) {}
           void operator( )( transaction_state &t) {
             t.is_known_by_peer = true;
             t.block_num = static_cast<uint32_t>(block);
           }
         };
-        c->trx_state.modify(tx,trx_mod(msg.refBlockNum));
+        c->trx_state.modify(tx,trx_mod(msg.ref_block_num));
       }
 
       try {
         chain_plug->accept_transaction( msg );
-        // dlog(  "chain accepted transaction" );
+        fc_dlog(logger, "chain accepted transaction" );
       } catch( const fc::exception &ex) {
         // received a block due to out of sequence
         elog( "accept txn threw  ${m}",("m",ex.what()));
@@ -1557,7 +1724,7 @@ namespace eos {
     }
 
   void net_plugin_impl::handle_message( connection_ptr c, const signed_block &msg) {
-    // dlog ("got signed_block #${n} from ${p}", ("n",msg.block_num())("p",c->peer_name()));
+    fc_dlog(logger, "got signed_block #${n} from ${p}", ("n",msg.block_num())("p",c->peer_name()));
     chain_controller &cc = chain_plug->chain();
     block_id_type blk_id = msg.id();
     try {
@@ -1570,7 +1737,7 @@ namespace eos {
       elog( "received forking block #${n}",( "n",msg.block_num()));
     }
     fc::microseconds age( fc::time_point::now() - msg.timestamp);
-    // dlog( "got signed_block #${n} from ${p} block age in secs = ${age}",("n",msg.block_num())("p",c->peer_name())("age",age.to_seconds()));
+    fc_dlog(logger, "got signed_block #${n} from ${p} block age in secs = ${age}",("n",msg.block_num())("p",c->peer_name())("age",age.to_seconds()));
 
     bool has_chunk = false;
     uint32_t num = msg.block_num();
@@ -1580,7 +1747,7 @@ namespace eos {
 
       if( !has_chunk) {
         if (c->sync_receiving)
-          elog("got a block while syncing but sync_receiving end block == 0set #${n}",
+          elog("got a block while syncing but sync_receiving end block == 0 #${n}",
              ( "n",num));
         else
           elog("got a block while syncing but no sync_receiving set #${n}",
@@ -1588,14 +1755,15 @@ namespace eos {
       }
       else {
         if( c->sync_receiving->last + 1 != num) {
-          elog( "expected block ${next} but got ${num}",("next",c->sync_receiving->last+1)("num",num));
+          wlog( "expected block ${next} but got ${num}",("next",c->sync_receiving->last+1)("num",num));
+          return;
         }
         c->sync_receiving->last = num;
       }
     }
     bool accepted = false;
-    // dlog ("last irrevesible block = ${lib}", ("lib", cc.last_irreversible_block_num()));
-    if( !syncing || num == cc.head_block_num()+1 ){ //  || num > cc.last_irreversible_block_num()) {
+    fc_dlog(logger, "last irreversible block = ${lib}", ("lib", cc.last_irreversible_block_num()));
+    if( !syncing || num == cc.head_block_num()+1 ) {
       try {
         chain_plug->accept_block(msg, syncing);
         accepted = true;
@@ -1623,11 +1791,11 @@ namespace eos {
       }
     }
     else {
-      // dlog ("forwarding the signed block");
-      if (age < fc::seconds(3) && fc::raw::pack_size(msg) < just_send_it_max && !c->syncing) {
+      if (age < fc::seconds(3) && fc::raw::pack_size(msg) < just_send_it_max && !c->syncing ) {
+        fc_dlog(logger, "forwarding the signed block");
         send_all( msg, [c, blk_id, num](connection_ptr conn) -> bool {
             bool sendit = false;
-            if ( c != conn ) {
+            if ( c != conn && !conn->syncing ) {
               auto b = conn->block_state.get<by_id>().find(blk_id);
               if (b == conn->block_state.end()) {
                 conn->block_state.insert( (block_state){blk_id,true,true,fc::time_point()});
@@ -1637,67 +1805,12 @@ namespace eos {
                 sendit = true;
               }
             }
-            // dlog( "${action} block ${num} to ${c}",("action", sendit ? "sending " : "skipping ")("num",num)("c", conn->peer_name() ));
+            fc_dlog(logger, "${action} block ${num} to ${c}",("action", sendit ? "sending " : "skipping ")("num",num)("c", conn->peer_name() ));
             return sendit;
           });
       }
     }
   }
-
-    struct precache : public fc::visitor<void> {
-      connection_ptr c;
-      precache( connection_ptr conn) : c(conn) {}
-
-      void operator()(const signed_block &msg) const
-      {
-        c->blk_buffer.resize(c->actual_size);
-        memcpy(c->blk_buffer.data(),c->pending_message_buffer.data(), c->actual_size);
-      }
-
-      template <typename T>
-      void operator()(const T &msg) const
-      {
-        //no-op
-      }
-
-    };
-
-    struct msgHandler : public fc::visitor<void> {
-      net_plugin_impl &impl;
-      connection_ptr c;
-      msgHandler( net_plugin_impl &imp, connection_ptr conn) : impl(imp), c(conn) {}
-
-      template <typename T>
-      void operator()(const T &msg) const
-      {
-        impl.handle_message( c, msg);
-      }
-    };
-
-
-    void net_plugin_impl::start_reading_pending_buffer( connection_ptr c ) {
-      boost::asio::async_read( *c->socket,
-        boost::asio::buffer(c->pending_message_buffer.data(), c->expected_size ),
-          [this,c]( boost::system::error_code ec, std::size_t bytes_transferred ) {
-            if( !ec ) {
-              try {
-                c->actual_size = bytes_transferred;
-                auto msg = fc::raw::unpack<net_message>( c->pending_message_buffer );
-                precache pc( c );
-                msg.visit( pc );
-                start_read_message( c );
-
-                msgHandler m( *this, c );
-                msg.visit( m );
-                return;
-              } catch(  const fc::exception& e ) {
-                edump((e.to_detail_string() ));
-              }
-            } else {
-              elog( "Error reading message from connection: ${m}",( "m", ec.message() ) );            }
-            close( c );
-          });
-    }
 
     void net_plugin_impl::start_conn_timer( ) {
       connector_check->expires_from_now( connector_period);
@@ -1798,7 +1911,7 @@ namespace eos {
 
 
   size_t net_plugin_impl::cache_txn (const transaction_id_type txnid,
-                                     const SignedTransaction& txn ) {
+                                     const signed_transaction& txn ) {
       size_t packsiz = fc::raw::pack_size(txn);
       size_t bufsiz = packsiz + sizeof(packsiz);
       vector<char> buff(bufsiz);
@@ -1807,7 +1920,7 @@ namespace eos {
 
       fc::raw::pack( ds, txn );
 
-      uint16_t bn = static_cast<uint16_t>(txn.refBlockNum);
+      uint16_t bn = static_cast<uint16_t>(txn.ref_block_num);
       node_transaction_state nts = {txnid,time_point::now(),
                                     txn.expiration,
                                     buff,
@@ -1816,15 +1929,15 @@ namespace eos {
       return bufsiz;
     }
 
-    void net_plugin_impl::send_all_txn( const SignedTransaction& txn) {
+    void net_plugin_impl::send_all_txn( const signed_transaction& txn) {
       transaction_id_type txnid = txn.id();
       if( local_txns.get<by_id>().find( txnid ) != local_txns.end( ) ) { //found
-        // dlog( "found txnid in local_txns" );
+        fc_dlog(logger, "found txnid in local_txns" );
         return;
       }
 
       size_t bufsiz = cache_txn (txnid, txn);
-      // dlog( "bufsiz = ${bs} max = ${max}",("bs", (uint32_t)bufsiz)("max", just_send_it_max));
+      fc_dlog(logger, "bufsiz = ${bs} max = ${max}",("bs", (uint32_t)bufsiz)("max", just_send_it_max));
 
       if( bufsiz <= just_send_it_max) {
         send_all( txn, [txn, txnid](connection_ptr c) -> bool {
@@ -1833,20 +1946,20 @@ namespace eos {
             if( unknown) {
               c->trx_state.insert(transaction_state({txnid,true,true,(uint32_t)-1,
                       fc::time_point(),fc::time_point() }));
-              // dlog( "sending whole txn to ${n}", ("n",c->peer_name() ) );
+              fc_dlog(logger, "sending whole txn to ${n}", ("n",c->peer_name() ) );
             }
             return unknown;
           });
       }
       else {
-        // dlog ("pending_notify, mode = ${m}, pending count = ${p}",("m",modes_str(pending_notify.mode))("p",pending_notify.pending));
+        fc_dlog(logger, "pending_notify, mode = ${m}, pending count = ${p}",("m",modes_str(pending_notify.mode))("p",pending_notify.pending));
         pending_notify.ids.push_back( txnid );
         notice_message nm = { pending_notify, ordered_blk_ids( ) };
         send_all( nm, [txn, txnid](connection_ptr c) -> bool {
             const auto& bs = c->trx_state.find(txnid);
             bool unknown = bs == c->trx_state.end();
             if( unknown) {
-              // dlog( "sending notice to ${n}", ("n",c->peer_name() ) );
+              fc_dlog(logger, "sending notice to ${n}", ("n",c->peer_name() ) );
               c->trx_state.insert(transaction_state({txnid,false,true,(uint32_t)-1,
                       fc::time_point(),fc::time_point() }));
             }
@@ -1859,7 +1972,7 @@ namespace eos {
     /**
      * This one is necessary to hook into the boost notifier api
      **/
-    void net_plugin_impl::transaction_ready( const SignedTransaction& txn) {
+    void net_plugin_impl::transaction_ready( const signed_transaction& txn) {
       my_impl->send_all_txn( txn );
     }
 
@@ -1873,15 +1986,15 @@ namespace eos {
       vector<cycle_ids> &trxs = bsm.trx_ids;
       if( !sb.cycles.empty()) {
         for( const auto& cyc : sb.cycles) {
-          // dlog( "cyc.size = ${cs}",( "cs", cyc.size()));
+          fc_dlog(logger, "cyc.size = ${cs}",( "cs", cyc.size()));
           if( cyc.empty() ) {
             continue;
           }
           trxs.emplace_back (cycle_ids());
           cycle_ids &cycs = trxs.back();
-          // dlog( "trxs.size = ${ts} cycles.size = ${cs}",("ts", trxs.size())("cs", cycs.size()));
+          fc_dlog(logger, "trxs.size = ${ts} cycles.size = ${cs}",("ts", trxs.size())("cs", cycs.size()));
           for( const auto& thr : cyc) {
-            // dlog( "user txns = ${ui} generated = ${gi}",("ui",thr.user_input.size( ))("gi",thr.generated_input.size( )));
+            fc_dlog(logger, "user txns = ${ui} generated = ${gi}",("ui",thr.user_input.size( ))("gi",thr.generated_input.size( )));
             if( thr.user_input.size( ) == 0 ) {
               continue;
             }
@@ -1895,16 +2008,16 @@ namespace eos {
             for( auto &ui : thr.user_input) {
               processed_trans_summary pts ({ui.id( ),ui.output });
               thd_ids.user_trx.emplace_back( pts );
-              // dlog ("user txn has ${m} messages, summary has ${ms}", ("m",ui.output.size())("ms",pts.outmsgs.size()));
+              fc_dlog(logger, "user txn has ${m} messages, summary has ${ms}", ("m",ui.output.size())("ms",pts.outmsgs.size()));
             }
           }
         }
       }
 
-      // dlog ("sending bsm with ${c} transactions",("c",trxs.size()));
-      // dlog( "bsm header = ${h} txns = ${t}",("h",bsm.block_header)("t",bsm.trx_ids.size()));
+      fc_dlog(logger, "sending bsm with ${c} transactions",("c",trxs.size()));
+      fc_dlog(logger, "bsm header = ${h} txns = ${t}",("h",bsm.block_header)("t",bsm.trx_ids.size()));
       if (bsm.trx_ids.size() > 0) {
-        // dlog( "cycles.size = ${cs}",("cs", bsm.trx_ids[0].size()));
+        fc_dlog(logger, "cycles.size = ${cs}",("cs", bsm.trx_ids[0].size()));
         if (bsm.trx_ids[0].size()) {
         }
       }
@@ -1918,11 +2031,97 @@ namespace eos {
         });
     }
 
+    bool net_plugin_impl::authenticate_peer(const handshake_message& msg) const {
+      if(allowed_connections == None)
+        return false;
+
+      if(allowed_connections == Any)
+        return true;
+
+      if(allowed_connections & (Producers | Specified)) {
+        auto allowed_it = std::find(allowed_peers.begin(), allowed_peers.end(), msg.key);
+        auto private_it = private_keys.find(msg.key);
+        bool found_producer_key = false;
+        producer_plugin* pp = app().find_plugin<producer_plugin>();
+        if(pp != nullptr)
+          found_producer_key = pp->is_producer_key(msg.key);
+        if( allowed_it == allowed_peers.end() && private_it == private_keys.end() && !found_producer_key) {
+          elog( "Peer ${peer} sent a handshake with an unauthorized key: ${key}.",
+                ("peer", msg.p2p_address)("key", msg.key));
+          return false;
+        }
+      }
+
+      namespace sc = std::chrono;
+      sc::system_clock::duration msg_time(msg.time);
+      auto time = sc::system_clock::now().time_since_epoch();
+      if(time - msg_time > peer_authentication_interval) {
+        elog( "Peer ${peer} sent a handshake with a timestamp skewed by more than ${time}.",
+              ("peer", msg.p2p_address)("time", "1 second")); // TODO Add to_variant for std::chrono::system_clock::duration
+        return false;
+      }
+
+      if(msg.sig != ecc::compact_signature() && msg.token != sha256()) {
+        sha256 hash = fc::sha256::hash(msg.time);
+        if(hash != msg.token) {
+          elog( "Peer ${peer} sent a handshake with an invalid token.",
+                ("peer", msg.p2p_address));
+          return false;
+        }
+        types::public_key peer_key;
+        try {
+          peer_key = ecc::public_key(msg.sig, msg.token, true);
+        }
+        catch (fc::exception& /*e*/) {
+          elog( "Peer ${peer} sent a handshake with an unrecoverable key.",
+                ("peer", msg.p2p_address));
+          return false;
+        }
+        if((allowed_connections & (Producers | Specified)) && peer_key != msg.key) {
+          elog( "Peer ${peer} sent a handshake with an unauthenticated key.",
+                ("peer", msg.p2p_address));
+          return false;
+        }
+      }
+      else if(allowed_connections & (Producers | Specified)) {
+        dlog( "Peer sent a handshake with blank signature and token, but this node accepts only authenticated connections.");
+        return false;
+      }
+      return true;
+    }
+
+    chain::public_key_type net_plugin_impl::get_authentication_key() const {
+      if(!private_keys.empty())
+        return private_keys.begin()->first;
+      producer_plugin* pp = app().find_plugin<producer_plugin>();
+      if(pp != nullptr)
+        return pp->first_producer_public_key();
+      return chain::public_key_type();
+    }
+
+    fc::ecc::compact_signature net_plugin_impl::sign_compact(const chain::public_key_type& signer, const fc::sha256& digest) const
+    {
+      auto private_key_itr = private_keys.find(signer);
+      if(private_key_itr != private_keys.end())
+        return private_key_itr->second.sign_compact(digest);
+      producer_plugin* pp = app().find_plugin<producer_plugin>();
+      if(pp != nullptr)
+        return pp->sign_compact(signer, digest);
+      return ecc::compact_signature();
+    }
+
   void
   handshake_initializer::populate( handshake_message &hello) {
     hello.network_version = my_impl->network_version;
     hello.chain_id = my_impl->chain_id;
     hello.node_id = my_impl->node_id;
+    hello.key = my_impl->get_authentication_key();
+    hello.time = std::chrono::system_clock::now().time_since_epoch().count();
+    hello.token = fc::sha256::hash(hello.time);
+    hello.sig = my_impl->sign_compact(hello.key, hello.token);
+    // If we couldn't sign, don't send a token.
+    if(hello.sig == ecc::compact_signature())
+      hello.token = sha256();
     hello.p2p_address = my_impl->p2p_address;
 #if defined( __APPLE__ )
     hello.os = "osx";
@@ -1968,34 +2167,73 @@ namespace eos {
   net_plugin::~net_plugin() {
   }
 
-  void net_plugin::set_program_options( options_description& cli, options_description& cfg )
+  void net_plugin::set_program_options( options_description& /*cli*/, options_description& cfg )
   {
     cfg.add_options()
-     ( "listen-endpoint", bpo::value<string>()->default_value( "0.0.0.0:9876" ), "The local IP address and port to listen for incoming connections.")
-     ( "remote-endpoint", bpo::value< vector<string> >()->composing(), "The IP address and port of a remote peer to sync with.")
-     ( "public-endpoint", bpo::value<string>(), "Overrides the advertised listen endpointlisten ip address.")
-     ( "agent-name", bpo::value<string>()->default_value("EOS Test Agent"), "The name supplied to identify this node amongst the peers.")
-      ( "send-whole-blocks", bpo::value<bool>()->default_value(def_send_whole_blocks), "True to always send full blocks, false to send block summaries" )
-      ;
+     ( "listen-endpoint", bpo::value<string>()->default_value( "0.0.0.0:9876" ), "The actual host:port used to listen for incoming p2p connections.")
+     ( "public-endpoint", bpo::value<string>(), "An externally accessible host:port for identifying this node. Defaults to listen-endpoint.")
+     ( "remote-endpoint", bpo::value< vector<string> >()->composing(), "The public endpoint of a peer node to connect to. Use multiple remote-endpoint options as needed to compose a network.")
+     ( "agent-name", bpo::value<string>()->default_value("\"EOS Test Agent\""), "The name supplied to identify this node amongst the peers.")
+     ( "send-whole-blocks", bpo::value<bool>()->default_value(def_send_whole_blocks), "True to always send full blocks, false to send block summaries" )
+     ( "allowed-connection", bpo::value<vector<string>>()->multitoken()->default_value({"none"}, "none"), "Can be 'any' or 'producers' or 'specified' or 'none'. If 'specified', peer-key must be specified at least once. If only 'producers', peer-key is not required. 'producers' and 'specified' may be combined.")
+     ( "peer-key", bpo::value<vector<string>>()->composing()->multitoken(), "Optional public key of peer allowed to connect.  May be used multiple times.")
+     ( "peer-private-key", boost::program_options::value<vector<string>>()->composing()->multitoken(),
+       "Tuple of [PublicKey, WIF private key] (may specify multiple times)")
+     ( "log-level-net-plugin", bpo::value<string>()->default_value("info"), "Log level: one of 'all', 'debug', 'info', 'warn', 'error', or 'off'")
+      ( "max-clients", bpo::value<int>()->default_value(def_max_clients), "Maximum number of clients from which connections are accepted, use 0 for no limit")
+      ( "connection-cleanup-period", bpo::value<int>()->default_value(def_conn_retry_wait), "number of seconds to wait before cleaning up dead connections")
+     ;
+  }
+
+  template<typename T>
+  T dejsonify(const string& s) {
+     return fc::json::from_string(s).as<T>();
   }
 
   void net_plugin::plugin_initialize( const variables_map& options ) {
     ilog("Initialize net plugin");
 
-    my->network_version = def_network_version;
+    // Housekeeping so fc::logger::get() will work as expected
+    fc::get_logger_map()[connection::logger_name] = connection::logger;
+    fc::get_logger_map()[net_plugin_impl::logger_name] = net_plugin_impl::logger;
+    fc::get_logger_map()[sync_manager::logger_name] = sync_manager::logger;
+
+    // Setting a parent would in theory get us the default appenders for free but
+    // a) the parent's log level overrides our own in that case; and
+    // b) fc library's logger was never finished - the _additivity flag tested is never true.
+    for(fc::shared_ptr<fc::appender>& appender : fc::logger::get().get_appenders()) {
+      connection::logger.add_appender(appender);
+      net_plugin_impl::logger.add_appender(appender);
+      sync_manager::logger.add_appender(appender);
+    }
+
+    if( options.count( "log-level-net-plugin" ) ) {
+      fc::log_level logl;
+
+      fc::from_variant(options.at("log-level-net-plugin").as<string>(), logl);
+      ilog("Setting net_plugin logging level to ${level}", ("level", logl));
+      connection::logger.set_log_level(logl);
+      net_plugin_impl::logger.set_log_level(logl);
+      sync_manager::logger.set_log_level(logl);
+    }
+
+    my->network_version = (uint16_t)app().version_int();
     my->send_whole_blocks = def_send_whole_blocks;
 
     my->sync_master.reset( new sync_manager( def_sync_rec_span ) );
 
-    my->connector_period = def_conn_retry_wait;
+    my->connector_period = std::chrono::seconds(options.at("connection-cleanup-period").as<int>());
     my->txn_exp_period = def_txn_expire_wait;
     my->resp_expected_period = def_resp_expected_wait;
     my->just_send_it_max = def_max_just_send;
+    my->max_client_count = options.at("max-clients").as<int>();
+
     my->max_client_count = def_max_clients;
     my->num_clients = 0;
+    my->started_sessions = 0;
 
     my->resolver = std::make_shared<tcp::resolver>( std::ref( app().get_io_service() ) );
-    if( options.count( "listen-endpoint" ) ) {
+    if(options.count("listen-endpoint")) {
       my->p2p_address = options.at("listen-endpoint").as< string >();
       auto host = my->p2p_address.substr( 0, my->p2p_address.find(':') );
       auto port = my->p2p_address.substr( host.size()+1, my->p2p_address.size() );
@@ -2007,11 +2245,11 @@ namespace eos {
 
       my->acceptor.reset( new tcp::acceptor( app().get_io_service() ) );
     }
-    if( options.count( "public-endpoint") ) {
+    if(options.count("public-endpoint")) {
       my->p2p_address = options.at("public-endpoint").as< string >();
     }
     else {
-      if( my->listen_endpoint.address().to_v4() == address_v4::any()) {
+      if(my->listen_endpoint.address().to_v4() == address_v4::any()) {
         boost::system::error_code ec;
         auto host = host_name(ec);
         if( ec.value() != boost::system::errc::success) {
@@ -2025,12 +2263,52 @@ namespace eos {
       }
     }
 
-    if( options.count( "remote-endpoint" ) ) {
-      my->supplied_peers = options.at( "remote-endpoint" ).as< vector<string> >();
+    if(options.count("remote-endpoint")) {
+      my->supplied_peers = options.at("remote-endpoint").as<vector<string> >();
     }
-    if( options.count("agent-name")) {
-      my->user_agent_name = options.at( "agent-name").as< string >( );
+    if(options.count("agent-name")) {
+      my->user_agent_name = options.at("agent-name").as<string>();
     }
+
+    if(options.count("allowed-connection")) {
+      const std::vector<std::string> allowed_remotes = options["allowed-connection"].as<std::vector<std::string>>();
+      for(const std::string& allowed_remote : allowed_remotes)
+      {
+        if(allowed_remote == "any")
+          my->allowed_connections |= net_plugin_impl::Any;
+        else if(allowed_remote == "producers")
+          my->allowed_connections |= net_plugin_impl::Producers;
+        else if(allowed_remote == "specified")
+          my->allowed_connections |= net_plugin_impl::Specified;
+        else if(allowed_remote == "none")
+          my->allowed_connections = net_plugin_impl::None;
+      }
+    }
+
+    if(my->allowed_connections & net_plugin_impl::Specified)
+      FC_ASSERT(options.count("peer-key"), "At least one peer-key must accompany 'allowed-connection=specified'");
+
+    if(options.count("peer-key")) {
+      const std::vector<std::string> key_strings = options["peer-key"].as<std::vector<std::string>>();
+      for(const std::string& key_string : key_strings)
+      {
+        my->allowed_peers.push_back(dejsonify<chain::public_key_type>(key_string));
+      }
+    }
+
+    if(options.count("peer-private-key"))
+    {
+      const std::vector<std::string> key_id_to_wif_pair_strings = options["peer-private-key"].as<std::vector<std::string>>();
+      for(const std::string& key_id_to_wif_pair_string : key_id_to_wif_pair_strings)
+      {
+         auto key_id_to_wif_pair = dejsonify<std::pair<chain::public_key_type, std::string>>(key_id_to_wif_pair_string);
+         fc::optional<fc::ecc::private_key> private_key = eosio::utilities::wif_to_key(key_id_to_wif_pair.second);
+         FC_ASSERT(private_key, "Invalid WIF-format private key ${key_string}",
+                   ("key_string", key_id_to_wif_pair.second));
+         my->private_keys[key_id_to_wif_pair.first] = *private_key;
+      }
+    }
+
     if( options.count( "send-whole-blocks")) {
       my->send_whole_blocks = options.at( "send-whole-blocks" ).as<bool>();
     }
@@ -2087,7 +2365,12 @@ namespace eos {
     } FC_CAPTURE_AND_RETHROW() }
 
     void net_plugin::broadcast_block( const chain::signed_block &sb) {
-      // dlog( "broadcasting block #${num}",("num",sb.block_num()) );
+      fc_dlog(my->logger, "broadcasting block #${num}",("num",sb.block_num()) );
       my->broadcast_block_impl( sb);
     }
+
+  size_t net_plugin::num_peers( ) const {
+    return my->count_open_sockets();
+  }
+
 }

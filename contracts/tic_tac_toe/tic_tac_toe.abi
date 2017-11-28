@@ -1,79 +1,79 @@
 {
   "types": [{
-      "newTypeName": "AccountName",
-      "type": "Name"
+      "new_type_name": "account_name",
+      "type": "name"
     }
   ],
   "structs": [{
       "name": "game",
       "base": "",
       "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName",
-        "turn": "AccountName",
-        "winner": "AccountName",
-        "board": "UInt8[]"      
+        "challenger": "account_name",
+        "host": "account_name",
+        "turn": "account_name",
+        "winner": "account_name",
+        "board": "uint8[]"
       }
     },{
       "name": "create",
       "base": "",
       "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName"
+        "challenger": "account_name",
+        "host": "account_name"
       }
     },{
       "name": "restart",
       "base": "",
       "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName",
-        "by": "AccountName"
+        "challenger": "account_name",
+        "host": "account_name",
+        "by": "account_name"
       }
     },{
       "name": "close",
       "base": "",
       "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName"
+        "challenger": "account_name",
+        "host": "account_name"
       }
     },{
       "name": "movement",
       "base": "",
       "fields": {
-        "row": "UInt32",
-        "column": "UInt32"
+        "row": "uint32",
+        "column": "uint32"
       }
     },{
       "name": "move",
       "base": "",
       "fields": {
-        "challenger": "AccountName",
-        "host": "AccountName",
-        "by": "AccountName",
+        "challenger": "account_name",
+        "host": "account_name",
+        "by": "account_name",
         "movement": "movement"
       }
     }
   ],
   "actions": [{
-      "action": "create",
+      "action_name": "create",
       "type": "create"
     },{
-      "action": "restart",
+      "action_name": "restart",
       "type": "restart"
     },{
-      "action": "close",
+      "action_name": "close",
       "type": "close"
     },{
-      "action": "move",
+      "action_name": "move",
       "type": "move"
     }
   ],
   "tables": [{
-        "table": "games",
+        "table_name": "games",
         "type": "game",
-        "indextype": "i64",
-        "keynames" : ["challenger"],
-        "keytypes" : ["AccountName"]
+        "index_type": "i64",
+        "key_names" : ["challenger"],
+        "key_types" : ["account_name"]
       }
   ]
 }

@@ -45,7 +45,7 @@
     { c(*this); }
 #define OBJECT_CTOR(...) BOOST_PP_OVERLOAD(OBJECT_CTOR, __VA_ARGS__)(__VA_ARGS__)
 
-namespace eos { namespace chain {
+namespace eosio { namespace chain {
    using                               std::map;
    using                               std::vector;
    using                               std::unordered_map;
@@ -88,37 +88,37 @@ namespace eos { namespace chain {
    using private_key_type = fc::ecc::private_key;
    using chain_id_type = fc::sha256;
 
-   using eos::types::Name;
-   using ActionName = Name;
-   using eos::types::AccountName;
-   using eos::types::PermissionName;
-   using eos::types::Asset;
-   using eos::types::ShareType;
-   using eos::types::Authority;
-   using eos::types::PublicKey;
-   using eos::types::Transaction;
-   using eos::types::PermissionName;
-   using eos::types::TypeName;
-   using eos::types::FuncName;
-   using eos::types::Time;
-   using eos::types::Field;
-   using eos::types::String;
-   using eos::types::UInt8;
-   using eos::types::UInt16;
-   using eos::types::UInt32;
-   using eos::types::UInt64;
-   using eos::types::UInt128;
-   using eos::types::UInt256;
-   using eos::types::Int8;
-   using eos::types::Int16;
-   using eos::types::Int32;
-   using eos::types::Int64;
-   using eos::types::Int128;
-   using eos::types::Int256;
-   using eos::types::uint128_t;
+   using eosio::types::name;
+   using action_name = name;
+   using eosio::types::account_name;
+   using eosio::types::permission_name;
+   using eosio::types::asset;
+   using eosio::types::share_type;
+   using eosio::types::authority;
+   using eosio::types::public_key;
+   using eosio::types::transaction;
+   using eosio::types::permission_name;
+   using eosio::types::type_name;
+   using eosio::types::func_name;
+   using eosio::types::time;
+   using eosio::types::field;
+   using eosio::types::string;
+   using eosio::types::uint8;
+   using eosio::types::uint16;
+   using eosio::types::uint32;
+   using eosio::types::uint64;
+   using eosio::types::uint128;
+   using eosio::types::uint256;
+   using eosio::types::int8;
+   using eosio::types::int16;
+   using eosio::types::int32;
+   using eosio::types::int64;
+   using eosio::types::int128;
+   using eosio::types::int256;
+   using eosio::types::uint128_t;
 
-   using ProducerRound = std::array<AccountName, config::BlocksPerRound>;
-   using RoundChanges = std::map<AccountName, AccountName>;
+   using producer_round = std::array<account_name, config::blocks_per_round>;
+   using round_changes = std::map<account_name, account_name>;
 
    /**
     * @brief Calculates the difference between two @ref ProducerRound objects
@@ -129,7 +129,7 @@ namespace eos { namespace chain {
     * Calculates the difference between two rounds of producers, returning a @ref RoundChanges object. The returned
     * changes are sorted in the order defined by @ref block_header
     */
-   RoundChanges operator-(ProducerRound a, ProducerRound b);
+   round_changes operator-(producer_round a, producer_round b);
 
    /**
     * List all object types from all namespaces here so they can
@@ -180,20 +180,20 @@ namespace eos { namespace chain {
    using generated_transaction_id_type = fc::sha256;
    using signature_type = fc::ecc::compact_signature;
    using weight_type = uint16_t;
-   using Bytes = types::Bytes;
+   using bytes = types::bytes;
 
-   using public_key_type = eos::types::PublicKey;
+   using public_key_type = eosio::types::public_key;
    
-} }  // eos::chain
+} }  // eosio::chain
 
 namespace fc {
-  void to_variant(const eos::chain::shared_vector<eos::types::Field>& c, fc::variant& v);
-  void from_variant(const fc::variant& v, eos::chain::shared_vector<eos::types::Field>& fields);
-  void to_variant(const eos::chain::ProducerRound& r, fc::variant& v);
-  void from_variant(const fc::variant& v, eos::chain::ProducerRound& r);
+  void to_variant(const eosio::chain::shared_vector<eosio::types::field>& c, fc::variant& v);
+  void from_variant(const fc::variant& v, eosio::chain::shared_vector<eosio::types::field>& fields);
+  void to_variant(const eosio::chain::producer_round& r, fc::variant& v);
+  void from_variant(const fc::variant& v, eosio::chain::producer_round& r);
 }
 
-FC_REFLECT_ENUM(eos::chain::object_type,
+FC_REFLECT_ENUM(eosio::chain::object_type,
                 (null_object_type)
                 (account_object_type)
                 (permission_object_type)
@@ -223,4 +223,4 @@ FC_REFLECT_ENUM(eos::chain::object_type,
                 (keystr_value_object_type)
                 (OBJECT_TYPE_COUNT)
                )
-FC_REFLECT( eos::chain::void_t, )
+FC_REFLECT( eosio::chain::void_t, )

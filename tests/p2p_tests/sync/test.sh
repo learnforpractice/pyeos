@@ -1,22 +1,57 @@
 #!/bin/bash
 
+###############################################################
+# -p <producing nodes count>
+# -n <total nodes>
+# -s <topology>
+# -d <delay between nodes startup>
+###############################################################
+
 pnodes=10
-npnodes=0
 topo=star
-if [ -n "$1" ]; then
-    pnodes=$1
-    if [ -n "$2" ]; then
-        topo=$2
-        if [ -n "$3" ]; then
-            npnodes=$3
+delay=0
+
+args=`getopt p:n:s:d: $*`
+if [ $? == 0 ]; then
+
+    set -- $args
+    for i; do
+        case "$i"
+        in
+            -p) pnodes=$2;
+                shift; shift;;
+            -n) total_nodes=$2;
+                shift; shift;;
+            -d) delay=$2;
+                shift; shift;;
+            -s) topo="$2";
+                shift; shift;;
+            --) shift;
+                break;;
+        esac
+    done
+else
+    echo "huh we got err $?"
+    if [ -n "$1" ]; then
+        pnodes=$1
+        if [ -n "$2" ]; then
+            topo=$2
+            if [ -n "$3" ]; then
+		total_nodes=$3
+            fi
         fi
     fi
 fi
 
-total_nodes=`expr $pnodes + $npnodes`
+total_nodes="${total_nodes:-`echo $pnodes`}"
 
 rm -rf tn_data_*
-programs/launcher/launcher -p $pnodes -n $total_nodes -s $topo
+if [ "$delay" == 0 ]; then
+    programs/launcher/launcher -p $pnodes -n $total_nodes -s $topo
+else
+    programs/launcher/launcher -p $pnodes -n $total_nodes -s $topo -d $delay
+fi
+
 sleep 7
 echo "start" > test.out
 port=8888
@@ -62,4 +97,11 @@ if [ $lines -eq $total_nodes -a $prodsfound -eq 1 ]; then
     exit
 fi
 echo ERROR: $lines reports out of $total_nodes and prods = $prodsfound
+programs/launcher/launcher -k 15
+echo =================================================================
+echo Contents of tn_data_00/config.ini:
+cat tn_data_00/config.ini
+echo =================================================================
+echo Contents of tn_data_00/stderr.txt:
+cat tn_data_00/stderr.txt
 exit 1

@@ -7,19 +7,19 @@
 #include <eos/chain/config.hpp>
 #include <eos/chain/types.hpp>
 
-namespace eos { namespace chain {
+namespace eosio { namespace chain {
 
 fc::variant_object get_config()
 {
    fc::mutable_variant_object result;
 
-   result["KeyPrefix"] = config::KeyPrefix;
-   result["BlockIntervalSeconds"] = config::BlockIntervalSeconds;
-   result["MaxBlockSize"] = config::DefaultMaxBlockSize;
-   result["MaxSecondsUntilExpiration"] = config::DefaultMaxTrxLifetime;
-   result["ProducerCount"] = config::BlocksPerRound;
-   result["IrreversibleThresholdPercent"] = config::IrreversibleThresholdPercent;
+   result["key_prefix"] = config::key_prefix;
+   result["default_block_interval_seconds"] = config::default_block_interval_seconds;
+   result["MaxBlockSize"] = config::default_max_block_size;
+   result["MaxSecondsUntilExpiration"] = config::default_max_trx_lifetime;
+   result["ProducerCount"] = config::blocks_per_round;
+   result["irreversible_threshold_percent"] = config::irreversible_threshold_percent;
    return result;
 }
 
-} } // eos::chain
+} } // eosio::chain

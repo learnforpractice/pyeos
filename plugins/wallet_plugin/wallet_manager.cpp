@@ -5,7 +5,7 @@
 #include <eos/wallet_plugin/wallet_manager.hpp>
 #include <eos/utilities/key_conversion.hpp>
 
-namespace eos {
+namespace eosio {
 namespace wallet {
 
 constexpr auto file_ext = ".wallet";
@@ -168,10 +168,10 @@ void wallet_manager::import_key(const std::string& name, const std::string& wif_
    w->import_key(wif_key);
 }
 
-chain::SignedTransaction
-wallet_manager::sign_transaction(const chain::SignedTransaction& txn, const flat_set<public_key_type>& keys, const chain::chain_id_type& id) {
+chain::signed_transaction
+wallet_manager::sign_transaction(const chain::signed_transaction& txn, const flat_set<public_key_type>& keys, const chain::chain_id_type& id) {
    check_timeout();
-   chain::SignedTransaction stxn(txn);
+   chain::signed_transaction stxn(txn);
 
    for (const auto& pk : keys) {
       bool found = false;
@@ -194,4 +194,4 @@ wallet_manager::sign_transaction(const chain::SignedTransaction& txn, const flat
 }
 
 } // namespace wallet
-} // namespace eos
+} // namespace eosio

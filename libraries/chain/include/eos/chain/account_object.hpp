@@ -8,21 +8,21 @@
 
 #include "multi_index_includes.hpp"
 
-namespace eos { namespace chain {
+namespace eosio { namespace chain {
 
    class account_object : public chainbase::object<account_object_type, account_object> {
       OBJECT_CTOR(account_object,(code)(abi))
 
       id_type             id;
-      AccountName         name;
+      account_name        name;
       uint8_t             vm_type      = 0;
       uint8_t             vm_version   = 0;
       fc::sha256          code_version;
-      Time                creation_date;
+      time                creation_date;
       shared_vector<char> code;
       shared_vector<char> abi;
 
-      void set_abi( const eos::types::Abi& _abi ) {
+      void set_abi( const eosio::types::abi& _abi ) {
          abi.resize( fc::raw::pack_size( _abi ) );
          fc::datastream<char*> ds( abi.data(), abi.size() );
          fc::raw::pack( ds, _abi );
@@ -35,14 +35,14 @@ namespace eos { namespace chain {
       account_object,
       indexed_by<
          ordered_unique<tag<by_id>, member<account_object, account_object::id_type, &account_object::id>>,
-         ordered_unique<tag<by_name>, member<account_object, AccountName, &account_object::name>>
+         ordered_unique<tag<by_name>, member<account_object, account_name, &account_object::name>>
       >
    >;
 
-} } // eos::chain
+} } // eosio::chain
 
-CHAINBASE_SET_INDEX_TYPE(eos::chain::account_object, eos::chain::account_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::account_object, eosio::chain::account_index)
 
-FC_REFLECT(chainbase::oid<eos::chain::account_object>, (_id))
+FC_REFLECT(chainbase::oid<eosio::chain::account_object>, (_id))
 
-FC_REFLECT(eos::chain::account_object, (id)(name)(vm_type)(vm_version)(code_version)(code)(creation_date))
+FC_REFLECT(eosio::chain::account_object, (id)(name)(vm_type)(vm_version)(code_version)(code)(creation_date))

@@ -7,14 +7,14 @@
 
 #include "multi_index_includes.hpp"
 
-namespace eos { namespace chain {
+namespace eosio { namespace chain {
    class permission_object : public chainbase::object<permission_object_type, permission_object> {
       OBJECT_CTOR(permission_object, (auth) )
 
       id_type           id;
-      AccountName       owner; ///< the account this permission belongs to
+      account_name      owner; ///< the account this permission belongs to
       id_type           parent; ///< parent permission 
-      PermissionName    name; ///< human-readable name for the permission
+      permission_name    name; ///< human-readable name for the permission
       shared_authority  auth; ///< authority required to execute this permission
 
       /**
@@ -64,22 +64,22 @@ namespace eos { namespace chain {
          >,
          ordered_unique<tag<by_owner>,
             composite_key<permission_object,
-               member<permission_object, AccountName, &permission_object::owner>,
-               member<permission_object, PermissionName, &permission_object::name>
+               member<permission_object, account_name, &permission_object::owner>,
+               member<permission_object, permission_name, &permission_object::name>
             >
          >,
          ordered_unique<tag<by_name>,
             composite_key<permission_object,
-               member<permission_object, PermissionName, &permission_object::name>,
+               member<permission_object, permission_name, &permission_object::name>,
                member<permission_object, permission_object::id_type, &permission_object::id>
             >
          >
       >
    >;
 
-} } // eos::chain
+} } // eosio::chain
 
-CHAINBASE_SET_INDEX_TYPE(eos::chain::permission_object, eos::chain::permission_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::permission_object, eosio::chain::permission_index)
 
-FC_REFLECT(chainbase::oid<eos::chain::permission_object>, (_id))
-FC_REFLECT(eos::chain::permission_object, (id)(owner)(parent)(name)(auth))
+FC_REFLECT(chainbase::oid<eosio::chain::permission_object>, (_id))
+FC_REFLECT(eosio::chain::permission_object, (id)(owner)(parent)(name)(auth))

@@ -8,7 +8,7 @@
 
 #include "multi_index_includes.hpp"
 
-namespace eos { namespace chain {
+namespace eosio { namespace chain {
 
    /**
     *  @brief tracks message rates associated with an account
@@ -22,9 +22,12 @@ namespace eos { namespace chain {
    class rate_limiting_object : public chainbase::object<rate_limiting_object_type, rate_limiting_object> {
       OBJECT_CTOR(rate_limiting_object)
       id_type             id;
-      AccountName         name;
-      uint32_t            last_update_sec                   = 0;
-      uint32_t            trans_msg_rate_per_account        = 0;
+      account_name        name;
+      fc::time_point_sec  per_auth_account_txn_msg_rate_last_update_sec;
+      uint32_t            per_auth_account_txn_msg_rate = 0;
+      fc::time_point_sec  per_code_account_txn_msg_rate_last_update_sec;
+      uint32_t            per_code_account_txn_msg_rate = 0;
+      int64_t             per_code_account_db_bytes = 0;
    };
    using rate_limiting_id_type = rate_limiting_object::id_type;
 
@@ -33,14 +36,14 @@ namespace eos { namespace chain {
       rate_limiting_object,
       indexed_by<
          ordered_unique<tag<by_id>, member<rate_limiting_object, rate_limiting_object::id_type, &rate_limiting_object::id>>,
-         ordered_unique<tag<by_name>, member<rate_limiting_object, AccountName, &rate_limiting_object::name>>
+         ordered_unique<tag<by_name>, member<rate_limiting_object, account_name, &rate_limiting_object::name>>
       >
    >;
 
-} } // eos::chain
+} } // eosio::chain
 
-CHAINBASE_SET_INDEX_TYPE(eos::chain::rate_limiting_object, eos::chain::rate_limiting_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::rate_limiting_object, eosio::chain::rate_limiting_index)
 
-FC_REFLECT(chainbase::oid<eos::chain::rate_limiting_object>, (_id))
+FC_REFLECT(chainbase::oid<eosio::chain::rate_limiting_object>, (_id))
 
-FC_REFLECT(eos::chain::rate_limiting_object, (id)(name)(last_update_sec)(trans_msg_rate_per_account))
+FC_REFLECT(eosio::chain::rate_limiting_object, (id)(name)(per_auth_account_txn_msg_rate_last_update_sec)(per_auth_account_txn_msg_rate)(per_code_account_txn_msg_rate_last_update_sec)(per_code_account_txn_msg_rate))
