@@ -57,17 +57,17 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 
 #include <eos/chain/wast_to_wasm.hpp>
 #include <eos/chain_plugin/chain_plugin.hpp>
-#include <eos/native_contract/balance_object.hpp>
-#include <eos/native_contract/staked_balance_objects.hpp>
+#include <eos/chain/balance_object.hpp>
+#include <eos/chain/staked_balance_objects.hpp>
 #include <eos/wallet_plugin/wallet_manager.hpp>
 #include <eos/wallet_plugin/wallet_plugin.hpp>
 
 using namespace std;
-using namespace eos;
-using namespace eos::chain;
-using namespace eos::utilities;
-using namespace eos::wallet;
-using namespace eos::chain_apis;
+using namespace eosio;
+using namespace eosio::chain;
+using namespace eosio::utilities;
+using namespace eosio::wallet;
+using namespace eosio::chain_apis;
 
 void quit_app_();
 bool app_isshutdown_();
@@ -76,7 +76,7 @@ uint32_t now2_();
 chain_controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
-PyObject* push_transaction(SignedTransaction& trx, bool sign);
+PyObject* push_transaction(signed_transaction& trx, bool sign);
 PyObject* push_transaction2_(void* signed_trx, bool sign);
 
 #define INT_65 65

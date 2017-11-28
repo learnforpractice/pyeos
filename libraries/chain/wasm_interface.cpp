@@ -659,25 +659,25 @@ DEFINE_INTRINSIC_FUNCTION2(env,read_message,read_message,i32,i32,destptr,i32,des
    return minlen;
 }
 
-DEFINE_INTRINSIC_FUNCTION3(env,pythonLoad,pythonLoad,i32,i64,name,i32,codeptr,i32,codesize) {
+DEFINE_INTRINSIC_FUNCTION3(env,pythonLoad,pythonLoad,i32,i64,_name,i32,codeptr,i32,codesize) {
    FC_ASSERT( codesize > 0 );
 
    wasm_interface& wasm = wasm_interface::get();
    auto  mem   = wasm.current_memory;
    char* codebegin = memoryArrayPtr<char>( mem, codeptr, uint32_t(codesize) );
-   std::string name_ = std::string(Name(name));
+   std::string name_ = std::string(name(_name));
    std::string code(codebegin,codesize);
    ilog("python_load_with_gil");
    return python_load_with_gil(name_,code);
 }
 
-DEFINE_INTRINSIC_FUNCTION4(env,pythonCall,pythonCall,i32,i64,name,i64,func,i32,argsptr,i32,argssize) {
+DEFINE_INTRINSIC_FUNCTION4(env,pythonCall,pythonCall,i32,i64,_name,i64,func,i32,argsptr,i32,argssize) {
 
    wasm_interface& wasm = wasm_interface::get();
    auto  mem   = wasm.current_memory;
    uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
-   std::string name_ = std::string(Name(name));
-   std::string func_ = std::string(Name(func));
+   std::string name_ = std::string(name(_name));
+   std::string func_ = std::string(name(func));
    std::vector<uint64_t> args;
    for(int i=0;i<argssize;i++){
       args.push_back(argsbegin[i]);
@@ -691,8 +691,8 @@ DEFINE_INTRINSIC_FUNCTION4(env,wasmCall,wasmCall,i32,i64,code,i64,func,i32,argsp
    wasm_interface& wasm = wasm_interface::get();
    auto  mem   = wasm.current_memory;
    uint64_t* argsbegin = (uint64_t*)memoryArrayPtr<char>( mem, argsptr, uint32_t(argssize) );
-   std::string name_ = std::string(Name(code));
-   std::string func_ = std::string(Name(func));
+   std::string name_ = std::string(name(code));
+   std::string func_ = std::string(name(func));
    std::vector<uint64_t> args;
    for(int i=0;i<argssize;i++){
       args.push_back(argsbegin[i]);
@@ -1001,8 +1001,8 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
       current_validate_context = &c;
       current_precondition_context = &c;
       current_apply_context = &c;
-      ilog("call_function ${n}",("n",std::string(Name(code))));
-      load(Name(code), c.db);
+      ilog("call_function ${n}",("n",std::string(name(code))));
+      load(name(code), c.db);
 
       std::unique_ptr<wasm_memory> wasm_memory_mgmt;
       try {
@@ -1012,9 +1012,9 @@ int wasm_interface::call_function(apply_context& c, uint64_t code,
           */
          /// TODO: cache this somehow
          FunctionInstance* call = asFunctionNullable(
-               getInstanceExport(current_module, std::string(Name(function))));
+               getInstanceExport(current_module, std::string(name(function))));
          if (!call) {
-            wlog( "unable to find call ${name}", ("name",string(Name(code))));
+            wlog( "unable to find call ${name}", ("name",string(name(code))));
             return -1;
          }
          //FC_ASSERT( apply, "no entry point found for ${call}", ("call", std::string(name))  );

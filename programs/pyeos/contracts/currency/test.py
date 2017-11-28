@@ -34,7 +34,7 @@ def init():
 
 def test():
     with producer:
-        r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","amount":1000}',['currency','inita'],{'currency':'active'})
+        r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","quantity":1000}',['currency','inita'],{'currency':'active'})
         assert r
     r = eosapi.get_table('inita','currency','account')
     print(r)

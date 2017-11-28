@@ -14,7 +14,7 @@ int strlen(char *code){
    return length;
 }
 
-using namespace eos;
+using namespace eosio;
 
 void read_length(char *raw_array,int& length,int& length_size){
    uint64_t v = 0; char b = 0; uint8_t by = 0;
@@ -40,14 +40,14 @@ extern "C" {
 
     void test(int size)  {
        int a[size];
-       readMessage(a,sizeof(a));
+       read_message(a,sizeof(a));
     }
 
     /// The apply method implements the dispatch of events to this contract
     void apply( uint64_t code, uint64_t action ) {
        if( code == N(test) ) {
           if( action == N(test) ) {
-             requireAuth(N(test));
+             require_auth(N(test));
              char *code = "def hello():\n" \
                           "    print('hello,world')";
              pythonLoad(N(hello),code,strlen(code));

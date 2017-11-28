@@ -229,17 +229,10 @@ bool chain_controller::_push_block(const signed_block& new_block)
  * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending
  * queues.
  */
-<<<<<<< HEAD
-ProcessedTransaction chain_controller::push_transaction(const SignedTransaction& trx, uint32_t skip)
-{
-   ilog("+++++++++++++++++chain_controller::push_transaction begin");
-   try {
-   auto ret = with_skip_flags(skip, [&]() {
-=======
 processed_transaction chain_controller::push_transaction(const signed_transaction& trx, uint32_t skip)
 { try {
-   return with_skip_flags(skip, [&]() {
->>>>>>> origin/master
+   ilog("+++++++++++++++++chain_controller::push_transaction begin");
+   auto ret = with_skip_flags(skip, [&]() {
       return _db.with_write_lock([&]() {
          return _push_transaction(trx);
       });
@@ -279,15 +272,10 @@ signed_block chain_controller::generate_block(
    block_schedule::factory scheduler, /* = block_schedule::by_threading_conflits */
    uint32_t skip /* = 0 */
    )
-<<<<<<< HEAD
-{
-   ilog("+++++++++++++++++chain_controller::generate_block begin");
-   try {
-   auto ret = with_skip_flags( skip, [&](){
-=======
 { try {
-   return with_skip_flags( skip | created_block, [&](){
->>>>>>> origin/master
+   ilog("+++++++++++++++++chain_controller::generate_block begin");
+
+   auto ret = with_skip_flags( skip | created_block, [&](){
       auto b = _db.with_write_lock( [&](){
          return _generate_block( when, producer, block_signing_private_key, scheduler );
       });
@@ -948,13 +936,8 @@ void chain_controller::process_message(const transaction& trx, account_name code
       fc::raw::pack( enc, trx );
       fc::raw::pack( enc, asynctrx );
       auto id = enc.result();
-<<<<<<< HEAD
-      auto gtrx = GeneratedTransaction(id, asynctrx);
-      wlog("_db.create<generated_transaction_object>");
-=======
-      auto gtrx = generated_transaction(id, asynctrx);
 
->>>>>>> origin/master
+      auto gtrx = generated_transaction(id, asynctrx);
       _db.create<generated_transaction_object>([&](generated_transaction_object& transaction) {
          transaction.trx = gtrx;
          transaction.status = generated_transaction_object::PENDING;
@@ -1457,19 +1440,8 @@ void chain_controller::clear_expired_transactions()
    //Transactions must have expired by at least two forking windows in order to be removed.
    auto& transaction_idx = _db.get_mutable_index<transaction_multi_index>();
    const auto& dedupe_index = transaction_idx.indices().get<by_expiration>();
-<<<<<<< HEAD
-   while( (!dedupe_index.empty()) && (head_block_time() > dedupe_index.rbegin()->trx.expiration) ) {
-      if (appbase::app().is_debug_mode()) {
-         wlog("dedupe transaction is not removed in order to ignore pointer double free problem, dedupe_index.size() ${n}",("n",dedupe_index.size()));
-         break;
-      } else {
-         transaction_idx.remove(*dedupe_index.rbegin());
-      }
-   }
-=======
    while( (!dedupe_index.empty()) && (head_block_time() > dedupe_index.rbegin()->expiration) )
       transaction_idx.remove(*dedupe_index.rbegin());
->>>>>>> origin/master
 
    //Look for expired transactions in the pending generated list, and remove them.
    //Transactions must have expired by at least two forking windows in order to be removed.

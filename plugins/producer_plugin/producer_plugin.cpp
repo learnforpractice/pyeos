@@ -369,7 +369,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
    //      ilog("begin db.get_index");
          if (!foundpending) {
             auto& _db = chain.get_database();
-            const auto& generated = _db.get_index<eos::chain::generated_transaction_multi_index, eos::chain::generated_transaction_object::by_status>().equal_range(eos::chain::generated_transaction_object::PENDING);
+            const auto& generated = _db.get_index<eosio::chain::generated_transaction_multi_index, eosio::chain::generated_transaction_object::by_status>().equal_range(eosio::chain::generated_transaction_object::PENDING);
             if (generated.first != generated.second) {//inline transaction empty?
                foundpending = true;
                ilog("found generated transactions");

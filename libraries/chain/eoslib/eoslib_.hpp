@@ -11,7 +11,7 @@
 #include <string>
 
 using namespace std;
-using namespace eos::types;
+using namespace eosio::types;
 
 void requireAuth_(uint64_t account);
 int readMessage_(string& buffer);
@@ -22,6 +22,8 @@ uint32_t now_();
 
 uint64_t string_to_uint64_(string str);
 string uint64_to_string_(uint64_t n);
+
+#define Name name
 
 int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
                char* value, uint32_t valuelen);

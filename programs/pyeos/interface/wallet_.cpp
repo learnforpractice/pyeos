@@ -14,8 +14,8 @@
 #include <fc/io/json.hpp>
 
 #include <eos/chain_plugin/chain_plugin.hpp>
-#include <eos/native_contract/balance_object.hpp>
-#include <eos/native_contract/staked_balance_objects.hpp>
+#include <eos/chain/balance_object.hpp>
+#include <eos/chain/staked_balance_objects.hpp>
 #include <eos/wallet_plugin/wallet_manager.hpp>
 #include <eos/wallet_plugin/wallet_plugin.hpp>
 
@@ -23,18 +23,18 @@
 #include "pyobject.hpp"
 
 using namespace std;
-using namespace eos;
-using namespace eos::chain;
+using namespace eosio;
+using namespace eosio::chain;
 
 wallet_manager& wm() {
    return app().get_plugin<wallet_plugin>().get_wallet_manager();
 }
 
-void sign_transaction(SignedTransaction& trx) {
+void sign_transaction(signed_transaction& trx) {
    const auto& public_keys = wm().get_public_keys();
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-   eos::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
-   eos::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
+   eosio::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
+   eosio::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
    trx = wm().sign_transaction(trx, required_keys.required_keys, chain_id_type{});
 }
 
@@ -44,7 +44,7 @@ PyObject* sign_transaction_(void *signed_trx) {
    }
 
    try {
-      SignedTransaction& trx = *((SignedTransaction*)signed_trx);
+      signed_transaction& trx = *((signed_transaction*)signed_trx);
       sign_transaction(trx);
       return py_new_bool(true);
    } catch (fc::assert_exception& e) {
@@ -108,7 +108,7 @@ PyObject* wallet_set_timeout_(int secs) {
 
 /*
  string sign_transaction(txn,keys,id){
- #    const chain::SignedTransaction& txn, const flat_set<public_key_type>&
+ #    const chain::signed_transaction& txn, const flat_set<public_key_type>&
  keys,const chain::chain_id_type& id
  }
  */

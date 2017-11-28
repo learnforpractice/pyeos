@@ -32,7 +32,7 @@
 
 using namespace chainbase;
 using namespace fc;
-using namespace eos::chain;
+using namespace eosio::chain;
 
 namespace python {
 namespace database {
@@ -100,7 +100,7 @@ PyObject* database_get_code(void* db, string& code, int& type) {
    assert(db);
    chainbase::database& _db = *(chainbase::database*)db;
 
-   const auto& recipient = _db.get<account_object,by_name>(Name(code));
+   const auto& recipient = _db.get<account_object,by_name>(name(code));
    return py_new_none();
 }
 

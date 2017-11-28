@@ -95,9 +95,9 @@ types::abi native_contract_chain_initializer::eos_contract_abi()
    eos_abi.structs.push_back( eosio::types::get_struct<eosio::types::deleteauth>::type() );
    eos_abi.structs.push_back( eosio::types::get_struct<eosio::types::newaccount>::type() );
 
-   eos_abi.actions.push_back( types::Action{Name("stake"), "lock"} );
-   eos_abi.actions.push_back( types::Action{Name("unstake"), "lock"} );
-   eos_abi.actions.push_back( types::Action{Name("release"), "lock"} );
+   eos_abi.actions.push_back( types::action{name("stake"), "lock"} );
+   eos_abi.actions.push_back( types::action{name("unstake"), "lock"} );
+   eos_abi.actions.push_back( types::action{name("release"), "lock"} );
 
    return eos_abi;
 }

@@ -22,7 +22,9 @@
 
 #include <eos/chain/python_interface.hpp>
 
-#include <eos/types/AbiSerializer.hpp>
+#include <eos/types/abi_serializer.hpp>
+
+#define Name name
 
 namespace native {
 namespace eosio {
@@ -195,8 +197,8 @@ void apply_eos_setcode(apply_context& context) {
 
    context.require_authorization(msg.account);
 
-//   FC_ASSERT( msg.vmtype == 0 );
-   FC_ASSERT( msg.vmversion == 0 );
+//   FC_ASSERT( msg.vm_type == 0 );
+   FC_ASSERT( msg.vm_version == 0 );
 
    /// if an ABI is specified make sure it is well formed and doesn't
    /// reference any undefined types
@@ -208,7 +210,7 @@ void apply_eos_setcode(apply_context& context) {
    db.modify( account, [&]( auto& a ) {
       /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
       #warning TODO: update setcode message to include the hash, then validate it in validate 
-      a.vm_type = int(msg.vmtype);
+      a.vm_type = int(msg.vm_type);
       a.code_version = fc::sha256::hash( msg.code.data(), msg.code.size() );
       a.code.resize( msg.code.size() );
       memcpy( a.code.data(), msg.code.data(), msg.code.size() );
@@ -218,9 +220,9 @@ void apply_eos_setcode(apply_context& context) {
 
    apply_context init_context( context.mutable_controller, context.mutable_db, context.trx, context.msg, msg.account );
 
-   if (msg.vmtype == 0) {
+   if (msg.vm_type == 0) {
       wasm_interface::get().init( init_context );
-   } else if (msg.vmtype == 1) {
+   } else if (msg.vm_type == 1) {
       python_interface::get().init( init_context );
    }
 }
@@ -243,8 +245,8 @@ void apply_eos_claim(apply_context& context) {
               "Cannot claim ${claimAmount} as only ${available} is available for claim",
               ("claimAmount", claim.amount)("available", balance->unstaking_balance));
 
-   const auto& stakedBalance = context.db.get<staked_balance_object, by_owner_name>(claim.account);
-   stakedBalance.finish_unstaking_tokens(claim.amount, context.mutable_db);
+   const auto& staked_balance = context.db.get<staked_balance_object, by_owner_name>(claim.account);
+   staked_balance.finish_unstaking_tokens(claim.amount, context.mutable_db);
 
    const auto& liquidBalance = context.db.get<balance_object, by_owner_name>(claim.account);
    context.mutable_db.modify(liquidBalance, [&claim](balance_object& a) {
@@ -255,8 +257,8 @@ void apply_eos_claim(apply_context& context) {
 
 struct Stake {
    Name to;
-   types::ShareType stakedBalance = 0;
-   types::ShareType unstakingBalance = 0;
+   types::share_type staked_balance = 0;
+   types::share_type unstaking_balance = 0;
 };
 
 /**
@@ -269,7 +271,7 @@ void apply_eos_stake(apply_context& context) {
 
    context.require_scope(lock.to);
    context.require_scope(lock.from);
-   context.require_scope(config::EosContractName);
+   context.require_scope(config::eos_contract_name);
 
    context.require_authorization(lock.from);
 
@@ -280,29 +282,29 @@ void apply_eos_stake(apply_context& context) {
          require_scope( scope );
 */
 
-   const auto& locker = context.db.get<BalanceObject, byOwnerName>(lock.from);
+   const auto& locker = context.db.get<balance_object, by_owner_name>(lock.from);
 
    EOS_ASSERT( locker.balance >= lock.amount, message_precondition_exception,
               "Account ${a} lacks sufficient funds to lock ${amt} EOS", ("a", lock.from)("amt", lock.amount)("available",locker.balance) );
 
-   context.mutable_db.modify(locker, [&lock](BalanceObject& a) {
+   context.mutable_db.modify(locker, [&lock](balance_object& a) {
       a.balance -= lock.amount;
    });
 
-   const auto& balance = context.db.get<StakedBalanceObject, byOwnerName>(lock.to);
-   balance.stakeTokens(lock.amount, context.mutable_db);
+   const auto& balance = context.db.get<staked_balance_object, by_owner_name>(lock.to);
+   balance.stake_tokens(lock.amount, context.mutable_db);
 
    Stake stake = {lock.to, 0, 0};
 
    auto ret = context.load_record<key_value_index, by_scope_primary>(N(eos), N(eos), lock.from,
-         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
-   stake.stakedBalance += lock.amount;
+         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
+   stake.staked_balance += lock.amount;
    if (ret < 0) {
       context.store_record<key_value_object>(N(eos), N(eos), lock.from,
-               (key_value_object::key_type*)&stake.to.value, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+               (key_value_object::key_type*)&stake.to.value, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
    } else {
       context.update_record<key_value_object>(N(eos), N(eos), lock.from,
-               (key_value_object::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+               (key_value_object::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
    }
 
 }
@@ -312,7 +314,7 @@ void apply_eos_unstake(apply_context& context) {
 
    context.require_scope(unlock.from);
    context.require_scope(unlock.to);
-   context.require_scope(config::EosContractName);
+   context.require_scope(config::eos_contract_name);
 
    context.require_authorization(unlock.from);
 
@@ -327,28 +329,28 @@ void apply_eos_unstake(apply_context& context) {
    Stake stake = {unlock.to, 0, 0};
 
    auto ret = context.load_record<key_value_index, by_scope_primary>(N(eos), N(eos), unlock.from,
-         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
 
-   EOS_ASSERT(ret > 0 && stake.stakedBalance >= unlock.amount, message_precondition_exception,
-              "Founds locked from ${n} insufficient, require ${a}, exist ${b}", ("n", unlock.from)("a", unlock.amount)("b", stake.stakedBalance));
+   EOS_ASSERT(ret > 0 && stake.staked_balance >= unlock.amount, message_precondition_exception,
+              "Founds locked from ${n} insufficient, require ${a}, exist ${b}", ("n", unlock.from)("a", unlock.amount)("b", stake.staked_balance));
 
 
-   const auto& balance = context.db.get<StakedBalanceObject, byOwnerName>(unlock.to);
+   const auto& balance = context.db.get<staked_balance_object, by_owner_name>(unlock.to);
 
-   EOS_ASSERT(balance.stakedBalance  >= unlock.amount, message_precondition_exception,
+   EOS_ASSERT(balance.staked_balance  >= unlock.amount, message_precondition_exception,
               "Insufficient locked funds to unlock ${a}", ("a", unlock.amount));
 
 
-   balance.beginUnstakingTokens(unlock.amount, context.mutable_db);
+   balance.begin_unstaking_tokens(unlock.amount, context.mutable_db);
 
-   stake.stakedBalance -= unlock.amount;
-   stake.unstakingBalance += unlock.amount;
+   stake.staked_balance -= unlock.amount;
+   stake.unstaking_balance += unlock.amount;
 
-   wlog("++++++++++stake.stakedBalance : ${n}",("n",stake.stakedBalance));
-   wlog("++++++++++stake.unstakingBalance : ${n}",("n",stake.unstakingBalance));
+   wlog("++++++++++stake.staked_balance : ${n}",("n",stake.staked_balance));
+   wlog("++++++++++stake.unstaking_balance : ${n}",("n",stake.unstaking_balance));
 
    context.update_record<key_value_object>(N(eos), N(eos), unlock.from,
-            (key_value_object::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+            (key_value_object::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
 
 }
 
@@ -359,47 +361,47 @@ void apply_eos_release(apply_context& context) {
 
    context.require_scope(claim.from);
    context.require_scope(claim.to);
-   context.require_scope(config::EosContractName);
+   context.require_scope(config::eos_contract_name);
 
    context.require_authorization(claim.from);
 
    Stake stake = {claim.to, 0, 0};
    auto ret = context.load_record<key_value_index, by_scope_primary>(N(eos), N(eos), claim.from,
-         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+         (key_value_index::value_type::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
    EOS_ASSERT(ret > 0, message_precondition_exception, "Record not found");
-   EOS_ASSERT(stake.unstakingBalance >= claim.amount, message_precondition_exception,
+   EOS_ASSERT(stake.unstaking_balance >= claim.amount, message_precondition_exception,
               "Cannot release ${claimAmount} as only ${available} is available for release",
-              ("claimAmount", claim.amount)("available", stake.unstakingBalance));
+              ("claimAmount", claim.amount)("available", stake.unstaking_balance));
 
 
-   auto balance = context.db.find<StakedBalanceObject, byOwnerName>(claim.to);
+   auto balance = context.db.find<staked_balance_object, by_owner_name>(claim.to);
    EOS_ASSERT(balance != nullptr, message_precondition_exception,
               "Could not find staked balance for ${name}", ("name", claim.to));
 
-   auto balanceReleaseTime = balance->lastUnstakingTime + config::StakedBalanceCooldownSeconds;
+   auto balanceReleaseTime = balance->last_unstaking_time + config::staked_balance_cooldown_seconds;
    auto now = context.controller.head_block_time();
 #if 0
    EOS_ASSERT(now >= balanceReleaseTime, message_precondition_exception,
               "Cannot claim balance until ${releaseDate}", ("releaseDate", balanceReleaseTime));
 #endif
-   EOS_ASSERT(balance->unstakingBalance >= claim.amount, message_precondition_exception,
+   EOS_ASSERT(balance->unstaking_balance >= claim.amount, message_precondition_exception,
               "Cannot claim ${claimAmount} as only ${available} is available for claim",
-              ("claimAmount", claim.amount)("available", balance->unstakingBalance));
+              ("claimAmount", claim.amount)("available", balance->unstaking_balance));
 
-   const auto& stakedBalance = context.db.get<StakedBalanceObject, byOwnerName>(claim.to);
-   stakedBalance.finishUnstakingTokens(claim.amount, context.mutable_db);
+   const auto& staked_balance = context.db.get<staked_balance_object, by_owner_name>(claim.to);
+   staked_balance.finish_unstaking_tokens(claim.amount, context.mutable_db);
 
-   if (stake.stakedBalance == 0 && stake.unstakingBalance - claim.amount == 0) {
+   if (stake.staked_balance == 0 && stake.unstaking_balance - claim.amount == 0) {
       context.remove_record<key_value_object>(N(eos), N(eos), claim.from,
-               (key_value_object::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+               (key_value_object::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
    } else {
-      stake.unstakingBalance -= claim.amount;
+      stake.unstaking_balance -= claim.amount;
       context.update_record<key_value_object>(N(eos), N(eos), claim.from,
-               (key_value_object::key_type*)&stake.to, (char*)&stake.stakedBalance, sizeof(stake)-sizeof(stake.to));
+               (key_value_object::key_type*)&stake.to, (char*)&stake.staked_balance, sizeof(stake)-sizeof(stake.to));
    }
 
-   const auto& liquidBalance = context.db.get<BalanceObject, byOwnerName>(claim.from);
-   context.mutable_db.modify(liquidBalance, [&claim](BalanceObject& a) {
+   const auto& liquidBalance = context.db.get<balance_object, by_owner_name>(claim.from);
+   context.mutable_db.modify(liquidBalance, [&claim](balance_object& a) {
       a.balance += claim.amount;
    });
 

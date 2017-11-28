@@ -1,5 +1,5 @@
-#include "util_.hpp"
 #include "db_handling.hpp"
+#include "util_.hpp"
 
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
@@ -12,7 +12,7 @@ namespace python {
 db_handling& get_db_handling() {
    static db_handling *handling = NULL;
    if (handling == NULL) {
-      auto& ctrl = appbase::app().get_plugin<eos::chain_plugin>().chain();
+      auto& ctrl = appbase::app().get_plugin<eosio::chain_plugin>().chain();
       handling = new db_handling(*(database*)(&ctrl.get_database()));
    }
    return *handling;

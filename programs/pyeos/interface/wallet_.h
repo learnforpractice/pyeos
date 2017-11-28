@@ -7,13 +7,13 @@
 
 #include <eos/chain/transaction.hpp>
 
-void sign_transaction(eos::chain::SignedTransaction &trx);
+void sign_transaction(eosio::chain::signed_transaction &trx);
 
 int set_timeout_(int secs);
 
 /*
  string sign_transaction(txn,keys,id){
- #    const chain::SignedTransaction& txn, const flat_set<public_key_type>&
+ #    const chain::signed_transaction& txn, const flat_set<public_key_type>&
  keys,const chain::chain_id_type& id
  }
  */

@@ -33,9 +33,9 @@
 
 
 using namespace std;
-using namespace eos;
-using namespace eos::chain;
-using namespace eos::utilities;
+using namespace eosio;
+using namespace eosio::chain;
+using namespace eosio::utilities;
 
 
 inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
@@ -92,7 +92,7 @@ auto get_info(){
    return ro_api.get_info(params);
 }
 
-int push_transaction( SignedTransaction& trx ,char *ts_result,int length) {
+int push_transaction( signed_transaction& trx ,char *ts_result,int length) {
     auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
     auto info = get_info();
     trx.expiration = info.head_block_time + 100; //chain.head_block_time() + 100;
@@ -173,13 +173,13 @@ extern "C" int create_account_( char* creator_,char* newaccount_,char* owner_key
     public_key_type owner_key(owner_key_);
     public_key_type active_key(active_key_);
 
-    auto owner_auth   = eos::chain::Authority{1, {{owner_key, 1}}, {}};
-    auto active_auth  = eos::chain::Authority{1, {{active_key, 1}}, {}};
-    auto recovery_auth = eos::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
+    auto owner_auth   = eosio::chain::Authority{1, {{owner_key, 1}}, {}};
+    auto active_auth  = eosio::chain::Authority{1, {{active_key, 1}}, {}};
+    auto recovery_auth = eosio::chain::Authority{1, {}, {{{creator, "active"}, 1}}};
 
     uint64_t deposit = 1;
 
-    SignedTransaction trx;
+    signed_transaction trx;
     trx.scope = sort_names({creator,eosaccnt});
 
     transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{creator,"active"}}, "newaccount",
@@ -187,11 +187,11 @@ extern "C" int create_account_( char* creator_,char* newaccount_,char* owner_key
                                                          active_auth, recovery_auth, deposit});
     if (creator == "inita")
     {
-        fc::optional<fc::ecc::private_key> private_key = eos::utilities::wif_to_key("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3");
+        fc::optional<fc::ecc::private_key> private_key = eosio::utilities::wif_to_key("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3");
         if (private_key)
         {
             wlog("public key ${k}",("k", private_key->get_public_key()));
-            trx.sign(*private_key, eos::chain::chain_id_type{});
+            trx.sign(*private_key, eosio::chain::chain_id_type{});
         }
     }
 
@@ -255,7 +255,7 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
    //   uint64_t amount = fc::variant().as_uint64();
 #if 0
 
-      SignedTransaction trx;
+      signed_transaction trx;
       trx.scope = sort_names({sender,recipient});
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{sender,"active"}}, "transfer",
                          types::transfer{sender, recipient, amount});
@@ -269,7 +269,7 @@ extern "C" int transfer_(char *sender_,char* recipient_,int amount,char *ts_resu
       return push_transaction(trx,ts_result,length);
 #endif
       string memo;
-      SignedTransaction trx;
+      signed_transaction trx;
       trx.scope = sort_names({sender,recipient});
       transaction_emplace_message(trx, config::EosContractName,
                                            vector<types::AccountPermission>{{sender,"active"}},
@@ -303,7 +303,7 @@ extern "C" int setcode_(char *account_,char *wast_file,char *abi_file,char *ts_b
 
     handler.abi = fc::json::from_file( abi_file ).as<types::Abi>();
 
-    SignedTransaction trx;
+    signed_transaction trx;
     trx.scope = { config::EosContractName, account };
     transaction_emplace_message(trx,  config::EosContractName, vector<types::AccountPermission>{{account,"active"}},
                         "setcode", handler );
@@ -336,7 +336,7 @@ extern "C" int exec_func_(char *code_,char *action_,char *json_,char *scope,char
 #endif
 
 #if 0
-        SignedTransaction trx;
+        signed_transaction trx;
         trx.messages.resize(1);
         auto& msg = trx.messages.back();
         msg.code = code;
@@ -346,7 +346,7 @@ extern "C" int exec_func_(char *code_,char *action_,char *json_,char *scope,char
         msg.data = result.binargs;
         trx.scope = fc::json::from_string(scope).as<vector<Name>>();
 #endif
-      SignedTransaction trx;
+      signed_transaction trx;
 #if 0
       transaction_emplace_serialized_message(trx, code, action,
                                                       vector<types::AccountPermission>{{"currency","active"}},
@@ -365,7 +365,7 @@ extern "C" int exec_func_(char *code_,char *action_,char *json_,char *scope,char
 }
 
 
-namespace eos {
+namespace eosio {
 
 class py_plugin_impl {
    public:

@@ -20,9 +20,9 @@
 
 namespace chainbase { class database; }
 
-using namespace eos;
-using namespace eos::types;
-using namespace eos::chain;
+using namespace eosio;
+using namespace eosio::types;
+using namespace eosio::chain;
 
 namespace python {
    class db_handling {
@@ -30,7 +30,7 @@ namespace python {
       db_handling(chainbase::database& db);
 
       template <typename ObjectType>
-      int32_t store_record( Name scope, Name code, Name table, typename ObjectType::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t store_record( name scope, name code, name table, typename ObjectType::key_type* keys, char* value, uint32_t valuelen ) {
 
          auto tuple = find_tuple<ObjectType>::get(scope, code, table, keys);
          const auto* obj = db.find<ObjectType, by_scope_primary>(tuple);
@@ -55,7 +55,7 @@ namespace python {
       }
 
       template <typename ObjectType>
-      int32_t update_record( Name scope, Name code, Name table, typename ObjectType::key_type *keys, char* value, uint32_t valuelen ) {
+      int32_t update_record( name scope, name code, name table, typename ObjectType::key_type *keys, char* value, uint32_t valuelen ) {
 
          auto tuple = find_tuple<ObjectType>::get(scope, code, table, keys);
          const auto* obj = db.find<ObjectType, by_scope_primary>(tuple);
@@ -75,7 +75,7 @@ namespace python {
       }
 
       template <typename ObjectType>
-      int32_t remove_record( Name scope, Name code, Name table, typename ObjectType::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t remove_record( name scope, name code, name table, typename ObjectType::key_type* keys, char* value, uint32_t valuelen ) {
 
          auto tuple = find_tuple<ObjectType>::get(scope, code, table, keys);
          const auto* obj = db.find<ObjectType, by_scope_primary>(tuple);
@@ -87,7 +87,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t load_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t load_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& idx = db.get_index<IndexType, Scope>();
          auto tuple = load_record_tuple<typename IndexType::value_type, Scope>::get(scope, code, table, keys);
@@ -109,7 +109,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t front_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t front_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& idx = db.get_index<IndexType, Scope>();
          auto tuple = front_record_tuple<typename IndexType::value_type>::get(scope, code, table);
@@ -130,10 +130,10 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t back_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t back_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& idx = db.get_index<IndexType, Scope>();
-         auto tuple = boost::make_tuple( AccountName(scope), AccountName(code), AccountName(uint64_t(table)+1) );
+         auto tuple = boost::make_tuple( account_name(scope), account_name(code), account_name(uint64_t(table)+1) );
          auto itr = idx.lower_bound(tuple);
 
          if( std::distance(idx.begin(), itr) == 0 ) return -1;
@@ -154,7 +154,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t next_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t next_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& pidx = db.get_index<IndexType, by_scope_primary>();
 
@@ -196,7 +196,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t previous_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t previous_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& pidx = db.get_index<IndexType, by_scope_primary>();
 
@@ -234,7 +234,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t lower_bound_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t lower_bound_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& idx = db.get_index<IndexType, Scope>();
          auto tuple = lower_bound_tuple<typename IndexType::value_type, Scope>::get(scope, code, table, keys);
@@ -255,7 +255,7 @@ namespace python {
       }
 
       template <typename IndexType, typename Scope>
-      int32_t upper_bound_record( Name scope, Name code, Name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
+      int32_t upper_bound_record( name scope, name code, name table, typename IndexType::value_type::key_type* keys, char* value, uint32_t valuelen ) {
 
          const auto& idx = db.get_index<IndexType, Scope>();
          auto tuple = upper_bound_tuple<typename IndexType::value_type, Scope>::get(scope, code, table, keys);

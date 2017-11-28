@@ -9,8 +9,8 @@
 #include <numeric>
 
 using namespace boost::python;
-// using namespace eos::chain;
-using namespace eos::types;
+// using namespace eosio::chain;
+using namespace eosio::types;
 
 struct World {
    void set(std::string msg) { this->msg = msg; }

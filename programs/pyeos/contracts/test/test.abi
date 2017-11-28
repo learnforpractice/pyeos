@@ -1,55 +1,52 @@
 {
   "types": [{
-      "newTypeName": "AccountName",
-      "type": "Name"
+      "newTypeName": "account_name",
+      "type": "name"
     }
   ],
   "structs": [{
       "name": "transfer",
       "base": "",
       "fields": {
-        "key": "AccountName",
-        "from": "UInt64",
-        "to": "UInt64",
-        "amount": "UInt64"
+        "key": "account_name",
+        "from": "uint64",
+        "to": "uint64",
+        "amount": "uint64"
       }
     },{
       "name": "account",
       "base": "",
       "fields": {
-        "account": "Name",
-        "balance": "UInt64"
+        "account": "name",
+        "balance": "uint64"
       }
     },{
-      "name": "test",
+      "name": "test_t",
       "base": "",
       "fields": {
-        "name": "Name",
-        "balance": "UInt64[]"
+        "account_name": "name",
+        "balance": "uint64[]"
       }
     },{
       "name": "Data",
       "base": "",
       "fields": {
-        "data": "UInt64"
+        "data": "uint64"
       }
     }
   ],
   "actions": [{
-      "action": "transfer",
-      "type": "transfer"
-    },{
       "action": "test",
-      "type": "test"
+      "type": "test_t"
     },{
       "action": "testdb",
-      "type": "test"
+      "type": "test_t"
     },{
       "action": "testmsg",
-      "type": "Bytes"
+      "type": "bytes"
     },{
       "action": "testts",
-      "type": "Bytes"
+      "type": "bytes"
     },{
       "action": "testmem",
       "type": "Data"
@@ -64,15 +61,16 @@
   "tables": [{
       "table": "transfer",
       "type": "transfer",
-      "indextype": "i64",
+      "indextype": "uint64",
       "keynames" : ["key"],
-      "keytypes" : ["AccountName"]
+      "keytypes" : ["account_name"]
     },{
       "table": "test",
-      "type": "test",
+      "type": "test_t",
       "indextype": "i64",
-      "keynames" : ["name"],
-      "keytypes" : ["Name"]
+      "keynames" : ["account_name"],
+      "keytypes" : ["name"]
     }
   ]
+
 }
