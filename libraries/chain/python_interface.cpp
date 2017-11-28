@@ -337,12 +337,6 @@ void messageDrop_(uint32_t handle) {
 }
 }
 
-typedef void (*fn_init_modules)(void);
-
-static wchar_t env_home[MAXPATHLEN+1];
-
-typedef void (*fn_init_modules)(void);
-extern "C" int init_tinypy(fn_init_modules init_modules);
 
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_python_contract();
@@ -361,11 +355,6 @@ void init_modules(void) {
 
 void init_smart_contract() {
 //   Py_NoSiteFlag = 1;
-#if 0
-   const char *chome = "../../libraries/tinypy/dist";
-   mbstowcs(env_home, chome, sizeof(env_home)/sizeof(env_home[0]));
-   Py_SetPythonHome(env_home);
-#endif
    Py_InitializeEx(0);
    PyEval_InitThreads();
    init_modules();
