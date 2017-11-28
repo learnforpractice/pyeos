@@ -23,7 +23,7 @@ class Account(object):
         self.balance = eoslib.load_u64(self.scope, code, table, Account.key)
 
 def init():
-    print('hello from init')
+    print('hello from currency.init')
     a = Account(code)
     # avoid overwrite balance already exists.
     if a.balance == 0:

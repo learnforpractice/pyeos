@@ -67,7 +67,7 @@ def test_withdraw():
         args, scopes, permissions = msg
         r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
         
-    
+
     messages = [
                 [{"from":"exchange", "to":"inita", "amount":1, "memo":"hello"}, ['exchange', 'inita'], {'exchange':'active', 'inita':'active'}],
                 [{"from":"exchange", "to":"initb", "amount":1, "memo":"hello"}, ['exchange', 'initb'], {'exchange':'active', 'initb':'active'}]
@@ -92,13 +92,13 @@ def test_deadlock():
 def test_bs():
     
     with producer:
-        args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 4, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
+        args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 4, "expiration" : "2018-11-11T13:12:28", "fill_or_kill":0}
         scopes = ['exchange', 'inita']
         permissions = {'inita':'active'}
 
         r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
         
-        args = {"seller" : {"name":"initb", "id":1}, "price" : "2", "quantity" : 2, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":0}
+        args = {"seller" : {"name":"initb", "id":1}, "price" : "2", "quantity" : 2, "expiration" : "2018-11-11T13:12:28", "fill_or_kill":0}
         scopes = ['exchange', 'inita']
         permissions = {'initb':'active'}
         r = eosapi.push_message('exchange', 'sell', args, scopes, permissions)
@@ -107,7 +107,7 @@ def test_bs():
     print(r)
 
 def t2():
-    args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 1, "expiration" : "2017-11-11T13:12:28", "fill_or_kill":1}
+    args = {"buyer" : {"name":"inita", "id":1}, "price" : "2", "quantity" : 1, "expiration" : "2018-11-11T13:12:28", "fill_or_kill":1}
     scopes = ['exchange', 'inita']
     permissions = {'inita':'active'}
     with producer:
@@ -172,3 +172,4 @@ if __name__ == '__main__':
     writeMessage(msg)
     apply(N(b'eos'), N(b'transfer'))
     print('done!')
+

@@ -338,24 +338,46 @@ void messageDrop_(uint32_t handle) {
 }
 
 typedef void (*fn_init_modules)(void);
+
+static wchar_t env_home[MAXPATHLEN+1];
+
+typedef void (*fn_init_modules)(void);
 extern "C" int init_tinypy(fn_init_modules init_modules);
 
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_python_contract();
 
 void init_modules(void) {
-   ilog("+++++777\n");
    PyInit_eoslib();
-   ilog("888\n");
    PyInit_python_contract();
-   ilog("999\n");
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import struct");
-
+   PyRun_SimpleString("import logging");
+   PyRun_SimpleString("import pickle");
+   PyRun_SimpleString("import numpy");
+   PyRun_SimpleString("import tracemalloc");
+   PyRun_SimpleString("tracemalloc.set_max_malloc_size(2000*1024)");
 }
 
 void init_smart_contract() {
-   ilog("++++++++++init_smart_contract");
-   init_tinypy(init_modules);
+//   Py_NoSiteFlag = 1;
+#if 0
+   const char *chome = "../../libraries/tinypy/dist";
+   mbstowcs(env_home, chome, sizeof(env_home)/sizeof(env_home[0]));
+   Py_SetPythonHome(env_home);
+#endif
+   Py_InitializeEx(0);
+   PyEval_InitThreads();
+   init_modules();
+
+}
+
+
+extern "C" PyThreadState *tiny_PyEval_SaveThread(void) {
+    return PyEval_SaveThread();
+}
+
+extern "C" void tiny_PyEval_RestoreThread(PyThreadState *tstate) {
+    PyEval_RestoreThread(tstate);
 }
 

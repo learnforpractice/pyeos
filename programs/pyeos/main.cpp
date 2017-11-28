@@ -97,7 +97,6 @@ int main(int argc, char** argv) {
    PyInit_blockchain();
    PyInit_util();
 
-   PyRun_SimpleString("import numpy");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import eostest;");

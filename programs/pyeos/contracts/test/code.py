@@ -1,8 +1,9 @@
 import eoslib
 import struct
+import pickle
 from eoslib import N
 def init():
-    print('hello from init')
+    print('hello from test.init')
 #    eoslib.call_wasm_function(N('test2'), N(b'hello'), [1,2])
 
 test = N(b'test')

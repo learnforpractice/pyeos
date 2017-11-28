@@ -4,7 +4,7 @@ import sys
     
 import pickle
 import gzip
-import numpy as np
+#import numpy as np
 import zlib
 try:
     import eosapi
