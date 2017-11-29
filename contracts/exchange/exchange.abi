@@ -46,12 +46,6 @@
       "fields" : {
          "fill_or_kill" : "uint8"
        }
-    },{
-      "name" : "Id",
-      "fields" : {
-        "name"  : "AccountName",
-         "n" : "UInt64"
-       }
     }
   ],
   "actions": [{

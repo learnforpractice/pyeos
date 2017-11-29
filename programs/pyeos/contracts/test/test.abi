@@ -21,10 +21,10 @@
         "balance": "uint64"
       }
     },{
-      "name": "test_t",
+      "name": "test",
       "base": "",
       "fields": {
-        "account_name": "name",
+        "name": "account_name",
         "balance": "uint64[]"
       }
     },{
@@ -36,37 +36,37 @@
     }
   ],
   "actions": [{
-      "action": "test",
-      "type": "test_t"
+      "action_name": "test",
+      "type": "test"
     },{
-      "action": "testdb",
-      "type": "test_t"
+      "action_name": "testdb",
+      "type": "test"
     },{
-      "action": "testmsg",
+      "action_name": "testmsg",
       "type": "bytes"
     },{
-      "action": "testts",
+      "action_name": "testts",
       "type": "bytes"
     },{
-      "action": "testmem",
+      "action_name": "testmem",
       "type": "Data"
     },{
-      "action": "testtimeout",
+      "action_name": "testtimeout",
       "type": "Data"
     },{
-      "action": "testexec",
+      "action_name": "testexec",
       "type": "Data"
     }
   ],
   "tables": [{
-      "table": "transfer",
+      "table_name": "transfer",
       "type": "transfer",
       "indextype": "uint64",
       "keynames" : ["key"],
       "keytypes" : ["account_name"]
     },{
-      "table": "test",
-      "type": "test_t",
+      "table_name": "test",
+      "type": "test",
       "indextype": "i64",
       "keynames" : ["account_name"],
       "keytypes" : ["name"]

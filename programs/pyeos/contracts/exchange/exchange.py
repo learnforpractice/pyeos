@@ -2,7 +2,6 @@ import eoslib
 
 from eoslib import N,readMessage,requireAuth,now
 import struct
-import time
 import logging
 print = logging.info
 
