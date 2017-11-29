@@ -16,10 +16,10 @@
 
 #include "blockchain_.hpp"
 
-using namespace eos;
-using namespace eos::chain;
-using namespace eos::types;
-using namespace eos::chain_apis;
+using namespace eosio;
+using namespace eosio::chain;
+using namespace eosio::types;
+using namespace eosio::chain_apis;
 using namespace appbase;
 
 namespace python {
@@ -34,13 +34,13 @@ namespace python {
          return 0;
       }
 
-      eos::types::Transaction *mytrx = (eos::types::Transaction*)trx;
-      eos::types::Message *mymsg = (eos::types::Message*)message;
+      eosio::types::transaction *mytrx = (eosio::types::transaction*)trx;
+      eosio::types::message *mymsg = (eosio::types::message*)message;
 
       auto& ctrl = get_db();
 
       apply_context* apply_ctx = new apply_context(ctrl, *(database*)(&ctrl.get_database()),
-            *(chain::Transaction*)mytrx, *(chain::Message*)message, Name(code));
+            *(chain::transaction*)mytrx, *(chain::message*)message, name(code));
 
       return apply_ctx;
    }
@@ -59,7 +59,7 @@ namespace python {
          return;
       }
       ctx = (apply_context*)context_ptr;
-      auto code = ctx->msg.code.toString();
+      auto code = ctx->msg.code.to_string();
       python_interface::get().set_current_context(*ctx);
    }
 

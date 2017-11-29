@@ -1,7 +1,7 @@
 #pragma once
 #include <appbase/application.hpp>
 
-namespace eos {
+namespace eosio {
 
 using namespace appbase;
 

@@ -5,7 +5,7 @@
 
 #include <fc/bitutil.hpp>
 
-using namespace eos::chain;
+using namespace eosio::chain;
 
 namespace python {
    db_handling::db_handling(chainbase::database& db) : db(db), mutable_db(db){

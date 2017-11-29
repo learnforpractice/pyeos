@@ -153,7 +153,7 @@ EOS comes with a number of programs you can find in `~/eos/build/programs`. They
 
 After successfully building the project, the `eosd` binary should be present in the `build/programs/eosd` directory. Go ahead and run `eosd` -- it will probably exit with an error, but if not, close it immediately with <kbd>Ctrl-C</kbd>. Note that `eosd` created a directory named `data-dir` containing the default configuration (`config.ini`) and some other internals. This default data storage path can be overridden by passing `--data-dir /path/to/data` to `eosd`.
 
-Edit the `config.ini` file, adding the following settings to the defaults already in place:
+Edit the `config.ini` file, adding/updating the following settings to the defaults already in place:
 
 ```
 # Load the testnet genesis state, which creates some initial block producers with the default key
@@ -183,12 +183,12 @@ producer-name = inits
 producer-name = initt
 producer-name = initu
 # Load the block producer plugin, so you can produce blocks
-plugin = eos::producer_plugin
+plugin = eosio::producer_plugin
 # Wallet plugin
-plugin = eos::wallet_api_plugin
+plugin = eosio::wallet_api_plugin
 # As well as API and HTTP plugins
-plugin = eos::chain_api_plugin
-plugin = eos::http_plugin
+plugin = eosio::chain_api_plugin
+plugin = eosio::http_plugin
 ```
 
 Now it should be possible to run `eosd` and see it begin producing blocks.
@@ -221,7 +221,7 @@ cd ~/eos/build/programs/eosd/
 <a name="walletimport"></a>
 ### Setting up a wallet and importing account key 
 
-As you've previously added `plugin = eos::wallet_api_plugin` into `config.ini`, EOS wallet will be running as a part of `eosd` process. Every contract requires an associated account, so first, create a wallet.
+As you've previously added `plugin = eosio::wallet_api_plugin` into `config.ini`, EOS wallet will be running as a part of `eosd` process. Every contract requires an associated account, so first, create a wallet.
 
 ```bash
 cd ~/eos/build/programs/eosc/
@@ -249,7 +249,7 @@ This will output two pairs of public and private keys
 
 ```
 Private key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-Public key:  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Public key: EOSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 **Important:**
@@ -273,11 +273,15 @@ If all went well, you will receive output similar to the following
 
 ```json
 {
-  "name": "currency",
-  "eos_balance": 0,
-  "staked_balance": 1,
-  "unstaking_balance": 0,
-  "last_unstaking_time": "2106-02-07T06:28:15"
+  "account_name": "currency",
+  "eos_balance": "0.0000 EOS",
+  "staked_balance": "0.0001 EOS",
+  "unstaking_balance": "0.0000 EOS",
+  "last_unstaking_time": "1969-12-31T23:59:59",
+  "permissions": [{
+    ...
+    }
+  ]
 }
 ```
 
@@ -322,7 +326,7 @@ Next verify the currency contract has the proper initial balance:
 ./eosc get table currency currency account
 {
   "rows": [{
-     "account": "account",
+     "key": "account",
      "balance": 1000000000
      }
   ],
@@ -337,18 +341,18 @@ Anyone can send any message to any contract at any time, but the contracts may r
 sent "from" anyone, they are sent "with permission of" one or more accounts and permission levels. The following commands shows a "transfer" message being
 sent to the "currency" contract.  
 
-The content of the message is `'{"from":"currency","to":"inita","amount":50}'`. In this case we are asking the currency contract to transfer funds from itself to
+The content of the message is `'{"from":"currency","to":"inita","quantity":50}'`. In this case we are asking the currency contract to transfer funds from itself to
 someone else.  This requires the permission of the currency contract.
 
 
 ```bash
-./eosc push message currency transfer '{"from":"currency","to":"inita","amount":50}' --scope currency,inita --permission currency@active
+./eosc push message currency transfer '{"from":"currency","to":"inita","quantity":50}' --scope currency,inita --permission currency@active
 ```
 
 Below is a generalization that shows the `currency` account is only referenced once, to specify which contract to deliver the `transfer` message to.
 
 ```bash
-./eosc push message currency transfer '{"from":"${usera}","to":"${userb}","amount":50}' --scope ${usera},${userb} --permission ${usera}@active
+./eosc push message currency transfer '{"from":"${usera}","to":"${userb}","quantity":50}' --scope ${usera},${userb} --permission ${usera}@active
 ```
 
 We specify the `--scope ...` argument to give the currency contract read/write permission to those users so it can modify their balances.  In a future release scope
@@ -365,7 +369,7 @@ So now check the state of both of the accounts involved in the previous transact
 ./eosc get table inita currency account
 {
   "rows": [{
-      "account": "account",
+      "key": "account",
       "balance": 50 
        }
     ],
@@ -374,7 +378,7 @@ So now check the state of both of the accounts involved in the previous transact
 ./eosc get table currency currency account
 {
   "rows": [{
-      "account": "account",
+      "key": "account",
       "balance": 999999950
     }
   ],
@@ -457,7 +461,7 @@ Install the development toolkit:
 ```bash
 sudo apt-get update
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-sudo apt-get install clang-4.0 lldb-4.0 cmake make \
+sudo apt-get install clang-4.0 lldb-4.0 libclang-4.0-dev cmake make \
                      libbz2-dev libssl-dev libgmp3-dev \
                      autotools-dev build-essential \
                      libbz2-dev libicu-dev python-dev \
@@ -549,7 +553,8 @@ Install the dependencies:
 
 ```bash
 brew update
-brew install git automake libtool boost openssl llvm@4 gmp
+brew install git automake libtool boost openssl llvm@4 gmp ninja gettext
+brew link gettext --force
 ```
 
 Install [secp256k1-zkp (Cryptonomex branch)](https://github.com/cryptonomex/secp256k1-zkp.git):

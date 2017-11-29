@@ -14,6 +14,27 @@ namespace appbase {
       public:
          ~application();
 
+            /** @brief Sets version string
+           *
+           * @param version Version string output verbatim with -v/--version
+           */
+          void set_version(string version);
+          /** @overload
+           *
+           * @param version Integer version independent of the string output with -v/--version
+           */
+          void set_version(uint64_t version);
+          /** @brief Gets version string
+           *
+           * @return Version string output with -v/--version
+           */
+          string version() const;
+          /** @brief Gets version integer
+           *
+           * @return Version integer independent of the string output with -v/--version
+           */
+          uint64_t version_int() const;
+
          /**
           * @brief Looks for the --plugin commandline / config option and calls initialize on those plugins
           *

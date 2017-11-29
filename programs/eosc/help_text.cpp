@@ -6,7 +6,7 @@
 #include "localize.hpp"
 #include <regex>
 
-using namespace eos::client::localize;
+using namespace eosio::client::localize;
 
 const char* transaction_help_text_header = _("An error occurred while submitting the transaction for this command!");
 
@@ -79,7 +79,7 @@ const std::vector<std::pair<const char*, std::vector<const char *>>> error_help_
    {"AES error[^\\x00]*wallet/unlock.*postdata\":\\[\"([^\"]*)\"", {bad_wallet_password_help_text}},
    {"Wallet is locked: ([\\S]*)", {locked_wallet_help_text}},
    {"Key already in wallet[^\\x00]*wallet/import_key.*postdata\":\\[\"([^\"]*)\"", {duplicate_key_import_help_text}},
-   {"Abi does not define table[^\\x00]*get_table_rows.*code\":\"([^\"]*)\",\"table\":\"([^\"]*)\"", {unknown_abi_table_help_text}}
+   {"ABI does not define table[^\\x00]*get_table_rows.*code\":\"([^\"]*)\",\"table\":\"([^\"]*)\"", {unknown_abi_table_help_text}}
 };
 
 auto smatch_to_variant(const std::smatch& smatch) {
@@ -96,7 +96,7 @@ auto smatch_to_variant(const std::smatch& smatch) {
    return result;
 };
 
-namespace eos { namespace client { namespace help {
+namespace eosio { namespace client { namespace help {
 
 bool print_help_text(const fc::exception& e) {
    bool result = false;

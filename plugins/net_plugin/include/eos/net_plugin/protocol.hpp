@@ -1,24 +1,35 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE.txt
+ */
 #pragma once
 #include <eos/chain/block.hpp>
-#include <eos/chain/types.hpp>
+#include <eos/net_plugin/protocol.hpp>
 #include <chrono>
 
-namespace eos {
+namespace eosio {
    using namespace chain;
    using namespace fc;
 
-  struct handshake_message {
-      int16_t         network_version = 0;
-      chain_id_type   chain_id; ///< used to identify chain
-      fc::sha256      node_id; ///< used to identify peers and prevent self-connect
-      string          p2p_address;
-      uint32_t        last_irreversible_block_num = 0;
-      block_id_type   last_irreversible_block_id;
-      uint32_t        head_num = 0;
-      block_id_type   head_id;
-      string          os;
-      string          agent;
-    int16_t           generation;
+   static_assert(sizeof(std::chrono::system_clock::duration::rep) >= 8, "system_clock is expected to be at least 64 bits");
+   typedef std::chrono::system_clock::duration::rep tstamp;
+
+   struct handshake_message {
+      int16_t                    network_version = 0; ///< derived from git commit hash, not sequential
+      chain_id_type              chain_id; ///< used to identify chain
+      fc::sha256                 node_id; ///< used to identify peers and prevent self-connect
+      chain::public_key_type     key; ///< authentication key; may be a producer or peer key, or empty
+      tstamp                     time;
+      fc::sha256                 token; ///< digest of time to prove we own the private key of the key above
+      fc::ecc::compact_signature sig; ///< signature for the digest
+      string                     p2p_address;
+      uint32_t                   last_irreversible_block_num = 0;
+      block_id_type              last_irreversible_block_id;
+      uint32_t                   head_num = 0;
+      block_id_type              head_id;
+      string                     os;
+      string                     agent;
+      int16_t                    generation;
    };
 
   enum go_away_reason {
@@ -32,7 +43,7 @@ namespace eos {
     bad_transaction ///< the peer sent a transaction that failed verification
   };
 
-  const string reason_str( go_away_reason rsn ) {
+  constexpr auto reason_str( go_away_reason rsn ) {
     switch (rsn ) {
     case no_reason : return "no reason";
     case self : return "self connect";
@@ -67,13 +78,15 @@ namespace eos {
   enum id_list_modes {
     none,
     catch_up,
+    last_irr_catch_up,
     normal
   };
 
-  const string modes_str( id_list_modes m ) {
+  constexpr auto modes_str( id_list_modes m ) {
     switch( m ) {
     case none : return "none";
     case catch_up : return "catch up";
+    case last_irr_catch_up : return "last irreversible";
     case normal : return "normal";
     default: return "undefined mode";
     }
@@ -102,7 +115,7 @@ namespace eos {
 
   struct processed_trans_summary {
     transaction_id_type id;
-    vector<MessageOutput> outmsgs;
+    vector<message_output> outmsgs;
   };
 
   struct thread_ids {
@@ -128,26 +141,26 @@ namespace eos {
                                       request_message,
                                       sync_request_message,
                                       block_summary_message,
-                                      SignedTransaction,
+                                      signed_transaction,
                                       signed_block>;
 
-} // namespace eos
+} // namespace eosio
 
-FC_REFLECT( eos::select_ids<fc::sha256>, (mode)(pending)(ids) )
-FC_REFLECT( eos::handshake_message,
-            (network_version)(chain_id)(node_id)
-            (p2p_address)
+FC_REFLECT( eosio::select_ids<fc::sha256>, (mode)(pending)(ids) )
+FC_REFLECT( eosio::handshake_message,
+            (network_version)(chain_id)(node_id)(key)
+            (time)(token)(sig)(p2p_address)
             (last_irreversible_block_num)(last_irreversible_block_id)
             (head_num)(head_id)
             (os)(agent)(generation) )
-FC_REFLECT( eos::go_away_message, (reason)(node_id) )
-FC_REFLECT( eos::time_message, (org)(rec)(xmt)(dst) )
-FC_REFLECT( eos::processed_trans_summary, (id)(outmsgs) )
-FC_REFLECT( eos::thread_ids, (gen_trx)(user_trx) )
-FC_REFLECT( eos::block_summary_message, (block_header)(trx_ids) )
-FC_REFLECT( eos::notice_message, (known_trx)(known_blocks) )
-FC_REFLECT( eos::request_message, (req_trx)(req_blocks) )
-FC_REFLECT( eos::sync_request_message, (start_block)(end_block) )
+FC_REFLECT( eosio::go_away_message, (reason)(node_id) )
+FC_REFLECT( eosio::time_message, (org)(rec)(xmt)(dst) )
+FC_REFLECT( eosio::processed_trans_summary, (id)(outmsgs) )
+FC_REFLECT( eosio::thread_ids, (gen_trx)(user_trx) )
+FC_REFLECT( eosio::block_summary_message, (block_header)(trx_ids) )
+FC_REFLECT( eosio::notice_message, (known_trx)(known_blocks) )
+FC_REFLECT( eosio::request_message, (req_trx)(req_blocks) )
+FC_REFLECT( eosio::sync_request_message, (start_block)(end_block) )
 
 /**
  *

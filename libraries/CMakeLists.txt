@@ -11,4 +11,4 @@ add_subdirectory( egenesis )
 add_subdirectory( utilities )
 add_subdirectory( appbase )
 add_subdirectory( native_contract )
-
+add_subdirectory( abi_generator )

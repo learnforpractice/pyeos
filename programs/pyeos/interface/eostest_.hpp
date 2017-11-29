@@ -69,7 +69,7 @@
 
 #include <iostream>
 
-using namespace eos::chain;
+using namespace eosio::chain;
 
 extern uint32_t EOS_TESTING_GENESIS_TIMESTAMP;
 
@@ -125,7 +125,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define MKACCT_IMPL(chain_, name, creator, active, owner, recovery, deposit) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names({ #creator, config::EosContractName }); \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#creator, "active"}}, \
@@ -157,11 +157,11 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define SETCODE3(chain, acct, wast) \
    { \
-      auto wasm = eos::chain::wast_to_wasm(wast); \
+      auto wasm = eosio::chain::wast_to_wasm(wast); \
       types::setcode handler; \
       handler.account = #acct; \
       handler.code.assign(wasm.begin(), wasm.end()); \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names({config::EosContractName, #acct}); \
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{#acct,"active"}}, \
                                   "setcode", handler); \
@@ -169,7 +169,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define SETAUTH5(chain, account, authname, parentname, auth) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = {#account}; \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#account,"active"}}, \
@@ -182,7 +182,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define DELAUTH3(chain, account, authname) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = {#account}; \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#account,"active"}}, \
@@ -195,7 +195,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define LINKAUTH5(chain, account, authname, codeacct, messagetype) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = {#account}; \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#account,"active"}}, \
@@ -210,7 +210,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define UNLINKAUTH4(chain, account, codeacct, messagetype) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = {#account}; \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#account,"active"}}, \
@@ -224,7 +224,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define XFER5(chain, sender, recipient, Amount, memo) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names({#sender,#recipient}); \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{ {#sender,"active"} }, \
@@ -238,7 +238,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define STAKE4(chain, sender, recipient, amount) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( { #sender, #recipient, config::EosContractName } ); \
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{#sender, "active"}}, \
                         "lock", types::lock{#sender, #recipient, amount}); \
@@ -251,7 +251,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define BEGIN_UNSTAKE3(chain, account, amount) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( { config::EosContractName } ); \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#account, "active"}}, \
@@ -264,7 +264,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define FINISH_UNSTAKE3(chain, account, amount) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( { config::EosContractName, #account } ); \
       transaction_emplace_message(trx, config::EosContractName, vector<types::AccountPermission>{{#account, "active"}}, \
                          "claim", types::claim{#account, amount}); \
@@ -276,7 +276,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define MKPDCR4(chain, owner, key, cfg) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( {#owner, config::EosContractName} ); \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{{#owner, "active"}}, \
@@ -293,7 +293,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define APPDCR4(chain, voter, producer, approved) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( {#voter, config::EosContractName} ); \
       transaction_emplace_message(trx, config::EosContractName,  \
                          vector<types::AccountPermission>{{#voter, "active"}}, \
@@ -306,7 +306,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 #define UPPDCR4(chain, owner, key, cfg) \
    { \
-      eos::chain::SignedTransaction trx; \
+      eosio::chain::SignedTransaction trx; \
       trx.scope = sort_names( {owner, config::EosContractName} ); \
       transaction_emplace_message(trx, config::EosContractName,  \
                          vector<types::AccountPermission>{{owner, "active"}}, \
@@ -525,7 +525,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
  * @brief Shorthand way to link named authority with a contract/message type
  *
  * @code{.cpp}
- * // Link alice's "money" authority with eos::transfer
+ * // Link alice's "money" authority with eosio::transfer
  * Link_Authority(chain, alice, "money", eos, "transfer");
  * // Set alice's "native" authority as default for eos contract
  * Link_Authority(chain, alice, "money", eos);
@@ -536,7 +536,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
  * @brief Shorthand way to unlink named authority from a contract/message type
  *
  * @code{.cpp}
- * // Unlink alice's authority for eos::transfer
+ * // Unlink alice's authority for eosio::transfer
  * Unlink_Authority(chain, alice, eos, "transfer");
  * // Unset alice's default authority for eos contract
  * Unlink_Authority(chain, alice, eos);
@@ -614,7 +614,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
  */
 #define Set_Proxy(chain, stakeholder, proxy) \
 { \
-   eos::chain::SignedTransaction trx; \
+   eosio::chain::SignedTransaction trx; \
    if (std::string(#stakeholder) != std::string(#proxy)) \
       transaction_emplace_message(trx, config::EosContractName, \
                          vector<types::AccountPermission>{ {#stakeholder,"active"} }, "setproxy", types::setproxy{#stakeholder, #proxy}); \
@@ -726,7 +726,7 @@ inline std::vector<Name> sort_names( std::vector<Name>&& names ) {
 
 namespace eos { namespace chain {
 FC_DECLARE_EXCEPTION(testing_exception, 6000000, "test framework exception")
-FC_DECLARE_DERIVED_EXCEPTION(missing_key_exception, eos::chain::testing_exception, 6010000, "key could not be found")
+FC_DECLARE_DERIVED_EXCEPTION(missing_key_exception, eosio::chain::testing_exception, 6010000, "key could not be found")
 
 class testing_blockchain;
 

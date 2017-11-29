@@ -7,7 +7,7 @@ cdef extern from "":
     ctypedef unsigned int uint32_t
     ctypedef unsigned long long uint64_t
 
-cdef extern from  "<eos/types/PublicKey.hpp>":
+cdef extern from  "<eos/types/public_key.hpp>":
     pass
 
 cdef extern from  "<eos/types/Asset.hpp>":
@@ -36,21 +36,21 @@ cdef extern from "<fc/time.hpp>" namespace "fc":
         time_point_sec()
         time_point_sec(uint32_t seconds)
 
-cdef extern from "<eos/types/native.hpp>" namespace "eos::types":
-    ctypedef unsigned short UInt16  # fake type
-    ctypedef unsigned int   UInt32  # fake type
+cdef extern from "<eos/types/native.hpp>" namespace "eosio::types":
+    ctypedef unsigned short uint16  # fake type
+    ctypedef unsigned int   uint32  # fake type
 
     ctypedef time_point_sec Time
-    ctypedef compact_signature Signature
+    ctypedef compact_signature signature
     ctypedef sha256 generated_transaction_id_type
 
     ctypedef vector Vector
     ctypedef string String
     ctypedef Vector[char] Bytes
-    cdef cppclass Name:        
-        Name(const char * str) except +
-        String toString() const
-        Name & operator = (const char * n)
+    cdef cppclass name:        
+        name(const char * str) except +
+        string to_string() const
+        name & operator = (const char * n)
 
 
 cdef extern from "" namespace "boost::container":
@@ -67,72 +67,72 @@ cdef extern from "" namespace "boost::container":
         iterator begin()
         iterator end()
 
-cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
+cdef extern from "<eos/types/public_key.hpp>" namespace "fc":
     cdef cppclass variant:
         variant()
         string as_string()
 
-cdef extern from "<eos/types/PublicKey.hpp>" namespace "eos::types":
-    cdef struct PublicKey:
-        PublicKey(const string & base58str)
+cdef extern from "<eos/types/public_key.hpp>" namespace "eosio::types":
+    cdef struct public_key:
+        public_key(const string & base58str)
 #        operator string() const
 
-cdef extern from "<eos/types/PublicKey.hpp>" namespace "fc":
-    void to_variant(const PublicKey & var, variant & vo);
+cdef extern from "<eos/types/public_key.hpp>" namespace "fc":
+    void to_variant(const public_key & var, variant & vo);
 
 
-cdef extern from "<eos/chain/types.hpp>" namespace "eos::chain":
-    ctypedef PublicKey public_key_type
+cdef extern from "<eos/chain/types.hpp>" namespace "eosio::chain":
+    ctypedef public_key public_key_type
     ctypedef sha256 chain_id_type
 
-cdef extern from "<eos/types/generated.hpp>" namespace "eos::types":
-    ctypedef Name AccountName
-    ctypedef Name PermissionName
-    ctypedef Name FuncName
+cdef extern from "<eos/types/generated.hpp>" namespace "eosio::types":
+    ctypedef name account_name
+    ctypedef name permission_name
+    ctypedef name func_name
 
-    cdef cppclass AccountPermission:
-        AccountPermission();
-        AccountPermission(const AccountName & account, const PermissionName & permission)
-        AccountName                      account;
-        PermissionName                   permission;
+    cdef cppclass account_permission:
+        account_permission();
+        account_permission(const account_name & account, const permission_name & permission)
+        account_name                      account;
+        permission_name                   permission;
 
-    cdef cppclass Message:
-        Message()
-        Message(const AccountName & code, const FuncName & type, const Vector[AccountPermission] & authorization, const Bytes & data)
-        AccountName                      code;
-        FuncName                         type;
-        Vector[AccountPermission]        authorization;
+    cdef cppclass message:
+        message()
+        message(const account_name & code, const func_name & type, const Vector[account_permission] & authorization, const Bytes & data)
+        account_name                      code;
+        func_name                         type;
+        Vector[account_permission]        authorization;
         Bytes                            data;
 
-    cdef cppclass Transaction:
-        UInt16                           refBlockNum;
-        UInt32                           refBlockPrefix;
+    cdef cppclass transaction:
+        uint16                           ref_block_num;
+        uint32                           ref_block_prefix;
         Time                             expiration;
-        Vector[AccountName]              scope;
-        Vector[AccountName]              readscope;
-        Vector[Message]                  messages;
+        Vector[account_name]              scope;
+        Vector[account_name]              read_scope;
+        Vector[message]                  messages;
 
-    cdef cppclass SignedTransaction(Transaction):
-        Vector[Signature]                signatures;
+    cdef cppclass signed_transaction(transaction):
+        Vector[signature]                signatures;
 
-    cdef cppclass ProcessedSyncTransaction(Transaction):
-        vector[MessageOutput] output;
+    cdef cppclass ProcessedSyncTransaction(transaction):
+        vector[message_output] output;
 
-    cdef cppclass ProcessedSyncTransaction(Transaction):
-        vector[MessageOutput] output;
+    cdef cppclass ProcessedSyncTransaction(transaction):
+        vector[message_output] output;
 
-    cdef cppclass GeneratedTransaction(Transaction):
+    cdef cppclass GeneratedTransaction(transaction):
         generated_transaction_id_type id;
 
-cdef extern from "<eos/chain/transaction.hpp>" namespace "eos::chain":
-    cdef struct MessageOutput:
+cdef extern from "<eos/chain/transaction.hpp>" namespace "eosio::chain":
+    cdef struct message_output:
         pass
 
     cdef struct NotifyOutput:
-        AccountName   name;
-        MessageOutput output;
+        account_name   name;
+        message_output output;
 
-    cdef struct MessageOutput:
+    cdef struct message_output:
         vector[NotifyOutput]             notify;  # ///< accounts to notify, may only be notified once
         vector[ProcessedSyncTransaction] sync_transactions;  # ///< transactions generated and applied after notify
         vector[GeneratedTransaction]     async_transactions;  # ///< transactions generated but not applied

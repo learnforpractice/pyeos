@@ -1,69 +1,69 @@
 {
     "types": [{
-        "newTypeName": "AccountName",
-        "type": "Name"
+        "new_type_name": "account_name",
+        "type": "name"
         }
     ],
     "structs": [{
-        "name": "Transfer",
+        "name": "transfer",
         "base": "",
         "fields": {
-            "from": "AccountName",
-            "to": "AccountName",
-            "amount": "UInt64"
+            "from": "account_name",
+            "to": "account_name",
+            "amount": "uint64"
         } 
     },{
-        "name": "Account",
+        "name": "account",
         "base": "",
         "fields": {
-            "account": "AccountName",
-            "tokbalance": "UInt64",
-            "quotausage": "UInt64"
+            "account": "account_name",
+            "tokbalance": "uint64",
+            "quotausage": "uint64"
         }
     },{ 
-        "name": "Link",
+        "name": "link",
         "base": "",
         "fields": {
-            "owner"  : "AccountName",
-            "eospath" : "String",
-            "ipfspath" : "String",
-            "size"  : "UInt32",
-            "store" : "UInt8",
-            "accept": "UInt8",
-            "stake" : "UInt64",
-            "producer": "AccountName"
+            "owner"  : "account_name",
+            "eospath" : "string",
+            "ipfspath" : "string",
+            "size"  : "uint32",
+            "store" : "uint8",
+            "accept": "uint8",
+            "stake" : "uint64",
+            "producer": "account_name"
         }
     }
   ],
     "actions": [{
-         "action": "transfer",
-         "type": "Transfer"
+         "action_name": "transfer",
+         "type": "transfer"
     },{
-         "action": "setlink",
-         "type": "Link"
+         "action_name": "setlink",
+         "type": "link"
     },{
-         "action": "removelink",
-         "type": "String"
+         "action_name": "removelink",
+         "type": "string"
     },{
-         "action": "acceptstore",
-         "type": "String"
+         "action_name": "acceptstore",
+         "type": "string"
     },{
-         "action": "rejectstore",
-         "type": "String"
+         "action_name": "rejectstore",
+         "type": "string"
     }
   ],
     "tables": [{
-         "table": "account",
+         "table_name": "account",
          "type": "account",
-         "indextype": "i64",
-         "keynames" : ["account"],
-         "keytypes" : ["AccountName"]
+         "index_type": "i64",
+         "key_names" : ["account"],
+         "key_types" : ["account_name"]
     },{
-         "table": "links",
-         "type" : "Link",
-         "indextype": "str",
-         "keynames" : ["eospath"]
-         "keytypes" : ["String"]
+         "table_name": "links",
+         "type" : "link",
+         "index_type": "str",
+         "key_names" : ["eospath"]
+         "key_types" : ["string"]
     }
   ]
 }

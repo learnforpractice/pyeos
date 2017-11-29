@@ -12,11 +12,12 @@
 #include <string>
 
 using namespace std;
-using namespace eos::types;
-using namespace eos;
+using namespace eosio::types;
+using namespace eosio;
 
 namespace python {
 
+#define Name name
 
 int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
                char* value, uint32_t valuelen);

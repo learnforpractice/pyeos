@@ -17,12 +17,11 @@
 #include <chrono>
 #include <appbase/application.hpp>
 
-using namespace std;
 int python_load(string& name, string& code, string* error);
 int python_call(std::string &name, std::string &function,std::vector<uint64_t> args, string* error);
 void stop_tracemalloc();
 
-namespace eos {
+namespace eosio {
 namespace chain {
 using namespace IR;
 using namespace Runtime;
@@ -216,9 +215,9 @@ void python_interface::init(apply_context& c) {
    }FC_CAPTURE_AND_RETHROW()
 }
 
-void python_interface::load(const AccountName& name, const chainbase::database& db) {
-   const auto& recipient = db.get<account_object, by_name>(name);
-   string module_name = string(name);
+void python_interface::load(const account_name& _name, const chainbase::database& db) {
+   const auto& recipient = db.get<account_object, by_name>(_name);
+   string module_name = string(name(_name));
    string code = string((const char*) recipient.code.data(),
          recipient.code.size());
    current_module = module_name;
@@ -238,7 +237,7 @@ uint32_t transactionCreate_() {
    return ptrx.handle;
 }
 
-static void emplace_scope(const Name& scope, std::vector<Name>& scopes) {
+static void emplace_scope(const name& scope, std::vector<name>& scopes) {
    auto i = std::upper_bound( scopes.begin(), scopes.end(), scope);
    if (i == scopes.begin() || *(i - 1) != scope ) {
      scopes.insert(i, scope);
@@ -248,9 +247,9 @@ static void emplace_scope(const Name& scope, std::vector<Name>& scopes) {
 void transactionRequireScope_(uint32_t handle, string& scope, uint32_t readOnly) {
    auto& ptrx = python_interface::get().current_apply_context->get_pending_transaction(handle);
    if(readOnly == 0) {
-      emplace_scope(Name(scope), ptrx.scope);
+      emplace_scope(name(scope), ptrx.scope);
    } else {
-      emplace_scope(Name(scope), ptrx.readscope);
+      emplace_scope(name(scope), ptrx.read_scope);
    }
 
    ptrx.check_size();
@@ -288,7 +287,7 @@ uint32_t messageCreate_(string& code, string& type, string& data) {
    auto& wasm  = python_interface::get();
    auto  mem   = wasm.current_memory;
 
-   Bytes payload;
+   bytes payload;
    if (data.size() > 0) {
       try {
          // memoryArrayPtr checks that the entire array of bytes is valid and
@@ -300,7 +299,7 @@ uint32_t messageCreate_(string& code, string& type, string& data) {
       }
    }
 
-   auto& pmsg = wasm.current_apply_context->create_pending_message(Name(code), Name(type), payload);
+   auto& pmsg = wasm.current_apply_context->create_pending_message(name(code), name(type), payload);
    return pmsg.handle;
 }
 
@@ -309,11 +308,11 @@ void messageRequirePermission_(uint32_t handle, string& account,string& permissi
    auto apply_context  = python_interface::get().current_apply_context;
    // if this is not sent from the code account with the permission of "code" then we must
    // presently have the permission to add it, otherwise its a failure
-   if (!(Name(account).value == apply_context->code.value && Name(permission) == Name("code"))) {
-      apply_context->require_authorization(Name(account), Name(permission));
+   if (!(name(account).value == apply_context->code.value && name(permission) == name("code"))) {
+      apply_context->require_authorization(name(account), name(permission));
    }
    auto& pmsg = apply_context->get_pending_message(handle);
-   pmsg.authorization.emplace_back(Name(account), Name(permission));
+   pmsg.authorization.emplace_back(name(account), name(permission));
 }
 
 
@@ -341,32 +340,29 @@ void messageDrop_(uint32_t handle) {
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_python_contract();
 
-void init_modules(void) {
+
+void init_smart_contract() {
+   ilog("++++++++++init_smart_contract+++++++++");
+   Py_InitializeEx(0);
+   PyEval_InitThreads();
+
    PyInit_eoslib();
    PyInit_python_contract();
    PyRun_SimpleString("import eoslib");
    PyRun_SimpleString("import struct");
-   PyRun_SimpleString("import logging");
    PyRun_SimpleString("import pickle");
    PyRun_SimpleString("import numpy");
+   PyRun_SimpleString("import logging");
    PyRun_SimpleString("import tracemalloc");
    PyRun_SimpleString("tracemalloc.set_max_malloc_size(2000*1024)");
-}
-
-void init_smart_contract() {
-//   Py_NoSiteFlag = 1;
-   Py_InitializeEx(0);
-   PyEval_InitThreads();
-   init_modules();
 
 }
-
-
-extern "C" PyThreadState *tiny_PyEval_SaveThread(void) {
-    return PyEval_SaveThread();
-}
-
-extern "C" void tiny_PyEval_RestoreThread(PyThreadState *tstate) {
-    PyEval_RestoreThread(tstate);
+extern "C" {
+   PyThreadState *tiny_PyEval_SaveThread(void) {
+      return PyEval_SaveThread();
+   }
+   void tiny_PyEval_RestoreThread(PyThreadState *tstate) {
+      PyEval_RestoreThread(tstate);
+   }
 }
 

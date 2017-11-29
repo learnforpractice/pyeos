@@ -22,7 +22,7 @@
 #include <Python.h>
 
 using namespace appbase;
-using namespace eos;
+using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
@@ -73,7 +73,6 @@ extern "C" {
    PyObject* PyInit_eostypes();
    PyObject* PyInit_wallet();
    //extern "C" PyObject* PyInit_hello();
-   PyObject* PyInit_eostest();
    PyObject* PyInit_database();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
@@ -92,14 +91,12 @@ int main(int argc, char** argv) {
    PyInit_wallet();
    PyInit_eosapi();
    PyInit_eostypes();
-   PyInit_eostest();
    PyInit_database();
    PyInit_blockchain();
    PyInit_util();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
-   PyRun_SimpleString("import eostest;");
    PyRun_SimpleString("import database;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");

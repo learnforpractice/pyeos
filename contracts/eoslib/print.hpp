@@ -7,7 +7,7 @@
 #include <eoslib/types.hpp>
 #include <eoslib/math.hpp>
 
-namespace eos {
+namespace eosio {
 
    static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
 
@@ -79,7 +79,7 @@ namespace eos {
     * @brief Prints a 64 bit names as base32 encoded string
     * @param Value of 64 bit names to be printed
     */
-   inline void print( Name name ) {
+   inline void print( name name ) {
       printn(name.value);
    }
 

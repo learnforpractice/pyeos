@@ -18,19 +18,19 @@ set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/li
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/wallet.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/wallet.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/wallet.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/wallet.pyx
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/wallet.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
@@ -40,21 +40,15 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostest.wrap.cpp
-    COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostest.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostest.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostest.pyx
-)
-
-add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     COMMAND cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
@@ -65,11 +59,11 @@ add_custom_command(
 
 add_executable( pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
-    interface/math_.cpp interface/eostest_.cpp interface/blockchain_.cpp interface/common.cpp
+    interface/math_.cpp interface/blockchain_.cpp interface/common.cpp
     interface/codelimit.c interface/util_.cpp
     util/db_handling.cpp
     wrap/eosapi.wrap.cpp wrap/eostypes.wrap.cpp wrap/wallet.wrap.cpp 
-    wrap/eostest.wrap.cpp wrap/database.wrap.cpp wrap/blockchain.wrap.cpp wrap/util.wrap.cpp
+    wrap/database.wrap.cpp wrap/blockchain.wrap.cpp wrap/util.wrap.cpp
     wrap/pyobject.wrap.cpp)
 
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 

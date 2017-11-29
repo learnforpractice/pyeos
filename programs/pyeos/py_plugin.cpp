@@ -34,11 +34,11 @@
 #include <fc/io/json.hpp>
 
 using namespace std;
-using namespace eos;
-using namespace eos::chain;
-using namespace eos::utilities;
+using namespace eosio;
+using namespace eosio::chain;
+using namespace eosio::utilities;
 
-namespace eos {
+namespace eosio {
 
 class py_plugin_impl {
   public:

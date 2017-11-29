@@ -32,10 +32,10 @@ def init():
 
 def test_deposit():
     messages = [
-                [{"from":"currency", "to":"inita", "amount":1000}, ['currency', 'inita'], {'currency':'active'}],
-                [{"from":"currency", "to":"initb", "amount":1000}, ['currency', 'initb'], {'currency':'active'}],
-                [{"from":"inita", "to":"exchange", "amount":1000}, ['exchange', 'inita'], {'inita':'active'}],
-                [{"from":"initb", "to":"exchange", "amount":1000}, ['exchange', 'initb'], {'initb':'active'}],
+                [{"from":"currency", "to":"inita", "quantity":1000}, ['currency', 'inita'], {'currency':'active'}],
+                [{"from":"currency", "to":"initb", "quantity":1000}, ['currency', 'initb'], {'currency':'active'}],
+                [{"from":"inita", "to":"exchange", "quantity":1000}, ['exchange', 'inita'], {'inita':'active'}],
+                [{"from":"initb", "to":"exchange", "quantity":1000}, ['exchange', 'initb'], {'initb':'active'}],
                 ]
     for msg in messages:
         args, scopes, permissions = msg
@@ -69,8 +69,8 @@ def test_withdraw():
         
 
     messages = [
-                [{"from":"exchange", "to":"inita", "amount":1, "memo":"hello"}, ['exchange', 'inita'], {'exchange':'active', 'inita':'active'}],
-                [{"from":"exchange", "to":"initb", "amount":1, "memo":"hello"}, ['exchange', 'initb'], {'exchange':'active', 'initb':'active'}]
+                [{"from":"exchange", "to":"inita", "quantity":1, "memo":"hello"}, ['exchange', 'inita'], {'exchange':'active', 'inita':'active'}],
+                [{"from":"exchange", "to":"initb", "quantity":1, "memo":"hello"}, ['exchange', 'initb'], {'exchange':'active', 'initb':'active'}]
                ]
 
 # r = eosapi.push_message('currency','transfer',{"from":"exchange","to":"initb","amount":1,"memo":"hello"},['exchange','initb'],{'exchange':'active','initb':'active'})
@@ -83,10 +83,10 @@ def test_withdraw():
     
 def test_deadlock():
 # raise a "tx_missing_scope: missing required scope" exception
-    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "amount":1, "memo":"hello"}, ['inita'], {'currency':'active'})
+    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['inita'], {'currency':'active'})
 
 # raise a "tx_missing_auth: missing required authority" exception
-    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "amount":1, "memo":"hello"}, ['currency', 'inita'], {})
+    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['currency', 'inita'], {})
     producer()
 
 def test_bs():

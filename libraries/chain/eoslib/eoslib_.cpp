@@ -1,10 +1,13 @@
-#include "eoslib_.hpp"
 #include <eos/chain/chain_controller.hpp>
 #include <eos/chain/python_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
-using namespace eos;
-using namespace eos::chain;
+
+#include "eoslib_.hpp"
+
+
+using namespace eosio;
+using namespace eosio::chain;
 
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
@@ -13,7 +16,7 @@ typedef uint64_t TableName;
 
 uint64_t string_to_uint64_(string str) {
    try {
-      return Name(str).value;
+      return name(str).value;
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {
@@ -24,7 +27,7 @@ uint64_t string_to_uint64_(string str) {
    return 0;
 }
 
-string uint64_to_string_(uint64_t n) { return Name(n).toString(); }
+string uint64_to_string_(uint64_t n) { return name(n).to_string(); }
 
 void pack_(string& raw, string& out) {
    std::vector<char> o = fc::raw::pack<string>(raw);
@@ -49,11 +52,12 @@ void new_apply_context() {
 }
 
 void requireAuth_(uint64_t account) {
-   get_validate_ctx().require_authorization(Name(account));
+   get_validate_ctx().require_authorization(name(account));
 }
 
 uint32_t now_() {
-   return get_validate_ctx().controller.head_block_time().sec_since_epoch();
+   auto& ctrl = get_validate_ctx().controller;
+   return ctrl.head_block_time().sec_since_epoch();
 }
 
 uint64_t currentCode_() { return get_validate_ctx().code.value; }
@@ -65,11 +69,11 @@ int readMessage_(string& buffer) {
 }
 
 void requireScope_(uint64_t account) {
-   get_validate_ctx().require_scope(Name(account));
+   get_validate_ctx().require_scope(name(account));
 }
 
 void requireNotice_(uint64_t account) {
-   get_validate_ctx().require_recipient(Name(account));
+   get_validate_ctx().require_recipient(name(account));
 }
 
 #define RETURN_UPDATE_RECORD(NAME, VALUE_OBJECT)       \
@@ -123,12 +127,12 @@ void requireNotice_(uint64_t account) {
 //      FC_ASSERT(VALUE_INDEX::value_type::number_of_keys<scope_index,"scope
 //      index out off bound");
 
-int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t store_(name scope, name code, name table, void* keys, int key_type,
                char* value, uint32_t valuelen) {
    //   key128x128_value_index
    apply_context& ctx = get_apply_ctx();
-   //   return ctx.store_record<key_value_object>(Name(scope),
-   //   Name(ctx.code.value),Name(table), (key_value_object::key_type*)keys,
+   //   return ctx.store_record<key_value_object>(name(scope),
+   //   name(ctx.code.value),name(table), (key_value_object::key_type*)keys,
    //   data, valuelen);
 
    if (key_type == 0) {
@@ -146,7 +150,7 @@ int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
     */
 }
 
-int32_t update_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t update_(name scope, name code, name table, void* keys, int key_type,
                 char* value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
@@ -160,7 +164,7 @@ int32_t update_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t remove_(name scope, name code, name table, void* keys, int key_type,
                 char* value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
@@ -173,7 +177,7 @@ int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t load_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t load_(name scope, name code, name table, void* keys, int key_type,
               int scope_index, char* value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -189,7 +193,7 @@ int32_t load_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t front_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t front_(name scope, name code, name table, void* keys, int key_type,
                int scope_index, char* value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -205,7 +209,7 @@ int32_t front_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t back_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t back_(name scope, name code, name table, void* keys, int key_type,
               int scope_index, char* value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -221,7 +225,7 @@ int32_t back_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t next_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t next_(name scope, name code, name table, void* keys, int key_type,
               int scope_index, char* value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
@@ -237,7 +241,7 @@ int32_t next_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t previous_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t previous_(name scope, name code, name table, void* keys, int key_type,
                   int scope_index, char* value, uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
    apply_context& ctx = get_apply_ctx();
@@ -251,7 +255,7 @@ int32_t previous_(Name scope, Name code, Name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t lower_bound_(Name scope, Name code, Name table, void* keys,
+int32_t lower_bound_(name scope, name code, name table, void* keys,
                      int key_type, int scope_index, char* value,
                      uint32_t valuelen) {
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
@@ -266,7 +270,7 @@ int32_t lower_bound_(Name scope, Name code, Name table, void* keys,
    return 0;
 }
 
-int32_t upper_bound_(Name scope, Name code, Name table, void* keys,
+int32_t upper_bound_(name scope, name code, name table, void* keys,
                      int key_type, int scope_index, char* value,
                      uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();

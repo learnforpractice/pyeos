@@ -24,6 +24,9 @@ class application_impl {
 
       bfs::path                _data_dir;
 
+      string                  _version;
+      uint64_t                _version_int;
+
       bool _debug = false;
 };
 
@@ -34,6 +37,23 @@ application::application()
 }
 
 application::~application() { }
+
+
+void application::set_version(string version) {
+  my->_version = version;
+}
+
+void application::set_version(uint64_t version) {
+  my->_version_int = version;
+}
+
+string application::version() const {
+  return my->_version;
+}
+
+uint64_t application::version_int() const {
+  return my->_version_int;
+}
 
 void application::startup() {
    for (auto plugin : initialized_plugins)

@@ -1,78 +1,76 @@
 {
   "types": [{
-      "newTypeName": "AccountName",
-      "type": "Name"
+      "newTypeName": "account_name",
+      "type": "name"
     }
   ],
   "structs": [{
       "name": "transfer",
       "base": "",
       "fields": {
-        "key": "AccountName",
-        "from": "UInt64",
-        "to": "UInt64",
-        "amount": "UInt64"
+        "key": "account_name",
+        "from": "uint64",
+        "to": "uint64",
+        "amount": "uint64"
       }
     },{
       "name": "account",
       "base": "",
       "fields": {
-        "account": "Name",
-        "balance": "UInt64"
+        "account": "name",
+        "balance": "uint64"
       }
     },{
       "name": "test",
       "base": "",
       "fields": {
-        "name": "Name",
-        "balance": "UInt64[]"
+        "name": "account_name",
+        "balance": "uint64[]"
       }
     },{
       "name": "Data",
       "base": "",
       "fields": {
-        "data": "UInt64"
+        "data": "uint64"
       }
     }
   ],
   "actions": [{
-      "action": "transfer",
-      "type": "transfer"
-    },{
-      "action": "test",
+      "action_name": "test",
       "type": "test"
     },{
-      "action": "testdb",
+      "action_name": "testdb",
       "type": "test"
     },{
-      "action": "testmsg",
-      "type": "Bytes"
+      "action_name": "testmsg",
+      "type": "bytes"
     },{
-      "action": "testts",
-      "type": "Bytes"
+      "action_name": "testts",
+      "type": "bytes"
     },{
-      "action": "testmem",
+      "action_name": "testmem",
       "type": "Data"
     },{
-      "action": "testtimeout",
+      "action_name": "testtimeout",
       "type": "Data"
     },{
-      "action": "testexec",
+      "action_name": "testexec",
       "type": "Data"
     }
   ],
   "tables": [{
-      "table": "transfer",
+      "table_name": "transfer",
       "type": "transfer",
-      "indextype": "i64",
+      "indextype": "uint64",
       "keynames" : ["key"],
-      "keytypes" : ["AccountName"]
+      "keytypes" : ["account_name"]
     },{
-      "table": "test",
+      "table_name": "test",
       "type": "test",
       "indextype": "i64",
-      "keynames" : ["name"],
-      "keytypes" : ["Name"]
+      "keynames" : ["account_name"],
+      "keytypes" : ["name"]
     }
   ]
+
 }

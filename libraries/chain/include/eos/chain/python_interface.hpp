@@ -6,7 +6,9 @@
 #include "IR/Module.h"
 #include <Python.h>
 
-namespace eos {
+using namespace std;
+
+namespace eosio {
 namespace chain {
 
 class chain_controller;
@@ -50,7 +52,7 @@ public:
    ModuleState* current_state = nullptr;
 
 private:
-   void load(const AccountName& name, const chainbase::database& db);
+   void load(const account_name& name, const chainbase::database& db);
 
    char* vm_allocate(int bytes);
    void vm_call(const char* name);
@@ -60,7 +62,7 @@ private:
    void vm_onInit();
    U32 vm_pointer_to_offset(char*);
 
-   map<AccountName, ModuleState> instances;
+   map<account_name, ModuleState> instances;
    fc::time_point checktimeStart;
 
    python_interface();

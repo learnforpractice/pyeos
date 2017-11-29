@@ -4,24 +4,24 @@ from libcpp.string cimport string
 include "eostypes_.pxd"
 
 cdef extern from "common.hpp":
-    void emplace_scope(const Name& scope, vector[Name]& scopes)
+    void emplace_scope(const name& scope, vector[name]& scopes)
     void vector_to_string(vector[char]& v, string& str);
     void string_to_vector(string& str, vector[char]& v);
 
 cdef class PyMessage:
-    cdef Message* _thisptr
+    cdef message* _thisptr
 
     def __cinit__(self, uint64_t ptr = 0):
-        self._thisptr = new Message()
+        self._thisptr = new message()
         if ptr:
-            self._thisptr[0] = (<Message*><void *>ptr)[0]
+            self._thisptr[0] = (<message*><void *>ptr)[0]
 
     def init(self, code: bytes, type: bytes, author: list, data: bytes):
-        self._thisptr.code = Name(code)
-        self._thisptr.type = Name(type)
+        self._thisptr.code = name(code)
+        self._thisptr.type = name(type)
 
         for a in author:
-            self._thisptr.authorization.push_back(AccountPermission(Name(a[0]), Name(a[1])))
+            self._thisptr.authorization.push_back(account_permission(name(a[0]), name(a[1])))
 
         if data:
             string_to_vector(data, self._thisptr.data)
@@ -36,15 +36,15 @@ cdef class PyMessage:
         return <uint64_t>self._thisptr
 
     def require_permission(self, account: bytes, permission: bytes):
-        self._thisptr.authorization.push_back(AccountPermission(Name(account), Name(permission)))
+        self._thisptr.authorization.push_back(account_permission(name(account), name(permission)))
 
     @property
     def code(self):
-        return self._thisptr.code.toString()
+        return self._thisptr.code.to_string()
 
     @property
     def type(self):
-        return self._thisptr.type.toString()
+        return self._thisptr.type.to_string()
 
     @property
     def data(self):
@@ -54,12 +54,12 @@ cdef class PyMessage:
         return str
 
 cdef class PyTransaction:
-    cdef Transaction* _thisptr
+    cdef transaction* _thisptr
 
     def __cinit__(self, uint64_t ptr = 0):
-        self._thisptr = new Transaction()
+        self._thisptr = new transaction()
         if ptr:
-            self._thisptr[0] = (<Transaction*><void *>ptr)[0]
+            self._thisptr[0] = (<transaction*><void *>ptr)[0]
 
     def __dealloc__(self):
 #        print('__dealloc__ PyTransaction', self._borrowptr, <uint64_t>self._thisptr)
@@ -71,13 +71,13 @@ cdef class PyTransaction:
         return <uint64_t>self._thisptr
 
     def init(self, refBlocNum = 0, refBlockPrefix = 0, expiration = 0, scopes = None, messages = None):
-        self._thisptr.refBlockNum = refBlocNum
-        self._thisptr.refBlockPrefix = refBlockPrefix
+        self._thisptr.ref_block_num = refBlocNum
+        self._thisptr.ref_block_prefix = refBlockPrefix
         self._thisptr.expiration = time_point_sec(expiration)
         
         if scopes:
             for scope in scopes:
-                emplace_scope(Name(scope),self._thisptr.scope)
+                emplace_scope(name(scope),self._thisptr.scope)
 
         if messages:
             for msg in messages:
@@ -85,14 +85,14 @@ cdef class PyTransaction:
 
     def reqire_scope(self, scope, read_only = False):
         if read_only:
-            emplace_scope(Name(scope), self._thisptr.readscope)
+            emplace_scope(name(scope), self._thisptr.read_scope)
         else:
-            emplace_scope(Name(scope), self._thisptr.scope)
+            emplace_scope(name(scope), self._thisptr.scope)
 
     def add_message(self, msg):
-        cdef Message *msg_ptr
+        cdef message *msg_ptr
         cdef uint64_t ptr = msg()
-        msg_ptr = <Message*>ptr
+        msg_ptr = <message*>ptr
         if msg:
             self._thisptr.messages.push_back(msg_ptr[0])
 
@@ -113,21 +113,21 @@ cdef class PyTransaction:
 cdef class PySignedTransaction(PyTransaction):
 
     def __cinit__(self,uint64_t ptr = 0):
-        self._thisptr = <SignedTransaction*>new SignedTransaction()
+        self._thisptr = <signed_transaction*>new signed_transaction()
         if ptr:
-            self._thisptr[0] = (<SignedTransaction*><void *>ptr)[0]
+            self._thisptr[0] = (<signed_transaction*><void *>ptr)[0]
 
     def __dealloc__(self):
 #        print('__dealloc__ PySignedTransaction', self._borrowptr, <uint64_t>self._thisptr)
         if self._thisptr:
-            temp = <SignedTransaction*>self._thisptr
+            temp = <signed_transaction*>self._thisptr
             del temp
             self._thisptr = NULL
 
 '''
-    struct SignedTransaction : public Transaction { 
-        SignedTransaction() = default;
-        SignedTransaction(const Vector<Signature>& signatures)
+    struct signed_transaction : public transaction { 
+        signed_transaction() = default;
+        signed_transaction(const Vector<Signature>& signatures)
            : signatures(signatures) {}
 
         Vector<Signature>                signatures;

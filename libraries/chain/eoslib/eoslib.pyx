@@ -32,7 +32,7 @@ cdef extern from "eoslib_.hpp":
     void unpack_(string& raw, string& out)
     void pack_(string& raw, string& out)
 
-cdef extern from "<eos/chain/python_interface.hpp>" namespace "eos::chain":
+cdef extern from "<eos/chain/python_interface.hpp>" namespace "eosio::chain":
     int wasm_call_function(uint64_t code, uint64_t function, vector[uint64_t] args);
     uint32_t transactionCreate_();
     void transactionRequireScope_(uint32_t handle, string& scope, uint32_t readOnly);

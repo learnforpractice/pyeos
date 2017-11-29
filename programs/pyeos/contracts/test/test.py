@@ -38,7 +38,7 @@ def init():
 
     #transfer some "money" to test account for test
     with producer:
-        r = eosapi.push_message('currency','transfer','{"from":"currency","to":"test","amount":1000}',['currency','test'],{'currency':'active'})
+        r = eosapi.push_message('currency','transfer','{"from":"currency","to":"test","quantity":1000}',['currency','test'],{'currency':'active'})
         assert r
 
     #transfer some "money" to test account for test

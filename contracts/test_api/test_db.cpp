@@ -1,7 +1,8 @@
 #include <eoslib/types.hpp>
-#include <eoslib/message.hpp>
 #include <eoslib/db.h>
 #include <eoslib/db.hpp>
+#include <eoslib/message.hpp>
+#include <eoslib/memory.hpp>
 #include "test_api.hpp"
 
 int primary[11]      = {0,1,2,3,4,5,6,7,8,9,10};
@@ -17,18 +18,18 @@ int secondary_ub[11] = {10,10,8,10,8,8,10,0,-1,10,8};
 int tertiary_ub[11]  = {1,2,3,5,3,6,7,8,9,-1,1};
 
 #pragma pack(push, 1)
-struct TestModel {
-   AccountName   name;
+struct test_model {
+   account_name  name;
    unsigned char age;
    uint64_t      phone;
 };
 
-struct TestModelV2 : TestModel {
-  TestModelV2() : new_field(0) {}
+struct test_model_v2 : test_model {
+  test_model_v2() : new_field(0) {}
   uint64_t new_field;
 };
 
-struct TestModelV3 : TestModelV2 {
+struct test_model_v3 : test_model_v2 {
   uint64_t another_field;
 };
 
@@ -75,9 +76,9 @@ unsigned int test_db::key_str_table() {
     const char* atr[]  = { "atr", "atr", "atr", "atr" };
     const char* ztr[]  = { "ztr", "ztr", "ztr", "ztr" };
     
-    VarTable<N(tester), N(tester), N(atr), char*> StringTableAtr;
-    VarTable<N(tester), N(tester), N(ztr), char*> StringTableZtr;
-    VarTable<N(tester), N(tester), N(str), char*> StringTableStr;
+    eosio::var_table<N(tester), N(tester), N(atr), char*> StringTableAtr;
+    eosio::var_table<N(tester), N(tester), N(ztr), char*> StringTableZtr;
+    eosio::var_table<N(tester), N(tester), N(str), char*> StringTableStr;
 
     uint32_t res = 0;
 
@@ -176,82 +177,82 @@ unsigned int test_db::key_str_general() {
 
   //fill some data in contiguous tables
   for(int i=0; i < 4; ++i) {
-    res = store_str(currentCode(),  N(atr), (char *)keys[i], STRLEN(keys[i]), (char *)atr[i], STRLEN(atr[i]) );
+    res = store_str(current_code(),  N(atr), (char *)keys[i], STRLEN(keys[i]), (char *)atr[i], STRLEN(atr[i]) );
     WASM_ASSERT(res != 0, "atr" );
 
-    res = store_str(currentCode(),  N(ztr), (char *)keys[i], STRLEN(keys[i]), (char *)ztr[i], STRLEN(ztr[i]) );
+    res = store_str(current_code(),  N(ztr), (char *)keys[i], STRLEN(keys[i]), (char *)ztr[i], STRLEN(ztr[i]) );
     WASM_ASSERT(res != 0, "ztr" );
   }
 
   char tmp[64];
 
-  res = store_str(currentCode(),  N(str), (char *)keys[0], STRLEN(keys[0]), (char *)vals[0], STRLEN(vals[0]) );
+  res = store_str(current_code(),  N(str), (char *)keys[0], STRLEN(keys[0]), (char *)vals[0], STRLEN(vals[0]) );
   WASM_ASSERT(res != 0, "store alice" );
 
-  res = store_str(currentCode(),  N(str), (char *)keys[1], STRLEN(keys[1]), (char *)vals[1], STRLEN(vals[1]) );
+  res = store_str(current_code(),  N(str), (char *)keys[1], STRLEN(keys[1]), (char *)vals[1], STRLEN(vals[1]) );
   WASM_ASSERT(res != 0, "store bob" );
 
-  res = store_str(currentCode(),  N(str), (char *)keys[2], STRLEN(keys[2]), (char *)vals[2], STRLEN(vals[2]) );
+  res = store_str(current_code(),  N(str), (char *)keys[2], STRLEN(keys[2]), (char *)vals[2], STRLEN(vals[2]) );
   WASM_ASSERT(res != 0, "store carol" );
 
-  res = store_str(currentCode(),  N(str), (char *)keys[3], STRLEN(keys[3]), (char *)vals[3], STRLEN(vals[3]) );
+  res = store_str(current_code(),  N(str), (char *)keys[3], STRLEN(keys[3]), (char *)vals[3], STRLEN(vals[3]) );
   WASM_ASSERT(res != 0, "store dave" );
 
-  res = load_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
+  res = load_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[0]) && my_memcmp((void *)vals[0], (void *)tmp, res), "load alice");
 
-  res = load_str(currentCode(), currentCode(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
+  res = load_str(current_code(), current_code(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[1]) && my_memcmp((void *)vals[1], (void *)tmp, res), "load bob");
 
-  res = load_str(currentCode(), currentCode(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
+  res = load_str(current_code(), current_code(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[2]) && my_memcmp((void *)vals[2], (void *)tmp, res), "load carol");
 
-  res = load_str(currentCode(), currentCode(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
+  res = load_str(current_code(), current_code(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[3]) && my_memcmp((void *)vals[3], (void *)tmp, res), "load dave");
 
-  res = previous_str(currentCode(), currentCode(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
+  res = previous_str(current_code(), current_code(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[2]) && my_memcmp((void *)vals[2], (void *)tmp, res), "back carol");
 
-  res = previous_str(currentCode(), currentCode(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
+  res = previous_str(current_code(), current_code(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[1]) && my_memcmp((void *)vals[1], (void *)tmp, res), "back dave");
 
-  res = previous_str(currentCode(), currentCode(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
+  res = previous_str(current_code(), current_code(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[0]) && my_memcmp((void *)vals[0], (void *)tmp, res), "back alice");
 
-  res = previous_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
+  res = previous_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
   WASM_ASSERT(res == -1, "no prev");
 
-  res = next_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
+  res = next_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[1]) && my_memcmp((void *)vals[1], (void *)tmp, res), "next bob");
 
-  res = next_str(currentCode(), currentCode(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
+  res = next_str(current_code(), current_code(), N(str), (char *)keys[1], STRLEN(keys[1]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[2]) && my_memcmp((void *)vals[2], (void *)tmp, res), "next carol");
 
-  res = next_str(currentCode(), currentCode(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
+  res = next_str(current_code(), current_code(), N(str), (char *)keys[2], STRLEN(keys[2]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[3]) && my_memcmp((void *)vals[3], (void *)tmp, res), "next dave");
 
-  res = next_str(currentCode(), currentCode(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
+  res = next_str(current_code(), current_code(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
   WASM_ASSERT(res == -1, "no next");
 
-  res = next_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 0);
+  res = next_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 0);
   WASM_ASSERT(res == 0, "next 0");
 
-  res = front_str(currentCode(), currentCode(), N(str), tmp, 64);
+  res = front_str(current_code(), current_code(), N(str), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[0]) && my_memcmp((void *)vals[0], (void *)tmp, res), "front alice");
 
-  res = back_str(currentCode(), currentCode(), N(str), tmp, 64);
+  res = back_str(current_code(), current_code(), N(str), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[3]) && my_memcmp((void *)vals[3], (void *)tmp, res), "back dave");
 
-  res = lower_bound_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
+  res = lower_bound_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[0]) && my_memcmp((void *)vals[0], (void *)tmp, res), "lowerbound alice");
 
-  res = upper_bound_str(currentCode(), currentCode(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
+  res = upper_bound_str(current_code(), current_code(), N(str), (char *)keys[0], STRLEN(keys[0]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[1]) && my_memcmp((void *)vals[1], (void *)tmp, res), "upperbound bob");
 
-  res = lower_bound_str(currentCode(), currentCode(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
+  res = lower_bound_str(current_code(), current_code(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
   WASM_ASSERT(res == STRLEN(vals[3]) && my_memcmp((void *)vals[3], (void *)tmp, res), "upperbound dave");
 
-  res = upper_bound_str(currentCode(), currentCode(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
+  res = upper_bound_str(current_code(), current_code(), N(str), (char *)keys[3], STRLEN(keys[3]), tmp, 64);
   WASM_ASSERT(res == -1, "no upper_bound");
 
   return WASM_TEST_PASS;
@@ -261,174 +262,174 @@ unsigned int test_db::key_i64_general() {
 
   uint32_t res = 0;
 
-  TestModel alice{ N(alice), 20, 4234622};
-  TestModel bob  { N(bob),   15, 11932435};
-  TestModel carol{ N(carol), 30, 545342453};
-  TestModel dave { N(dave),  46, 6535354};
+  test_model alice{ N(alice), 20, 4234622};
+  test_model bob  { N(bob),   15, 11932435};
+  test_model carol{ N(carol), 30, 545342453};
+  test_model dave { N(dave),  46, 6535354};
 
-  res = store_i64(currentCode(),  N(test_table), &dave,  sizeof(TestModel));
+  res = store_i64(current_code(),  N(test_table), &dave,  sizeof(test_model));
   WASM_ASSERT(res != 0, "store dave" );
 
-  res = store_i64(currentCode(), N(test_table), &carol, sizeof(TestModel));
+  res = store_i64(current_code(), N(test_table), &carol, sizeof(test_model));
   WASM_ASSERT(res != 0, "store carol" );
 
-  res = store_i64(currentCode(),   N(test_table), &bob,   sizeof(TestModel));
+  res = store_i64(current_code(),   N(test_table), &bob,   sizeof(test_model));
   WASM_ASSERT(res != 0, "store bob" );
 
-  res = store_i64(currentCode(), N(test_table), &alice, sizeof(TestModel));
+  res = store_i64(current_code(), N(test_table), &alice, sizeof(test_model));
   WASM_ASSERT(res != 0, "store alice" );
 
   //fill with different ages in adjacent tables
-  dave.age=123;  store_i64(currentCode(), N(test_tabld), &dave,  sizeof(TestModel));
-  dave.age=124;  store_i64(currentCode(), N(test_tablf), &dave,  sizeof(TestModel));
-  carol.age=125; store_i64(currentCode(), N(test_tabld), &carol, sizeof(TestModel));
-  carol.age=126; store_i64(currentCode(), N(test_tablf), &carol, sizeof(TestModel));
-  bob.age=127;   store_i64(currentCode(), N(test_tabld), &bob,   sizeof(TestModel));
-  bob.age=128;   store_i64(currentCode(), N(test_tablf), &bob,   sizeof(TestModel));
-  alice.age=129; store_i64(currentCode(), N(test_tabld), &alice, sizeof(TestModel));
-  alice.age=130; store_i64(currentCode(), N(test_tablf), &alice, sizeof(TestModel));
+  dave.age=123;  store_i64(current_code(), N(test_tabld), &dave,  sizeof(test_model));
+  dave.age=124;  store_i64(current_code(), N(test_tablf), &dave,  sizeof(test_model));
+  carol.age=125; store_i64(current_code(), N(test_tabld), &carol, sizeof(test_model));
+  carol.age=126; store_i64(current_code(), N(test_tablf), &carol, sizeof(test_model));
+  bob.age=127;   store_i64(current_code(), N(test_tabld), &bob,   sizeof(test_model));
+  bob.age=128;   store_i64(current_code(), N(test_tablf), &bob,   sizeof(test_model));
+  alice.age=129; store_i64(current_code(), N(test_tabld), &alice, sizeof(test_model));
+  alice.age=130; store_i64(current_code(), N(test_tablf), &alice, sizeof(test_model));
 
-  TestModel tmp;
+  test_model tmp;
 
-  res = front_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "front_i64 1");
-  my_memset(&tmp, 0, sizeof(TestModel));
+  res = front_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "front_i64 1");
+  my_memset(&tmp, 0, sizeof(test_model));
 
-  res = back_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "front_i64 2");
+  res = back_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "front_i64 2");
 
-  res = previous_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "carol previous");
+  res = previous_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "carol previous");
   
-  res = previous_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "bob previous");
+  res = previous_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "bob previous");
 
-  res = previous_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "alice previous");
+  res = previous_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "alice previous");
 
-  res = previous_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
+  res = previous_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "previous null");
 
-  res = next_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "bob next");
+  res = next_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "bob next");
 
-  res = next_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "carol next");
+  res = next_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "carol next");
 
-  res = next_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "dave next");
+  res = next_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "dave next");
 
-  res = next_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
+  res = next_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "next null");
 
-  my_memset(&alice, 0, sizeof(TestModel));
+  my_memset(&alice, 0, sizeof(test_model));
 
   WASM_ASSERT(alice.name == 0 && alice.age == 0 && alice.phone == 0, "my_memset");
 
   alice.name = N(alice);
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &alice, sizeof(TestModel));
-  WASM_ASSERT(res == sizeof(TestModel) && alice.age == 20 && alice.phone == 4234622, "alice error 1");
+  res = load_i64(current_code(), current_code(), N(test_table), &alice, sizeof(test_model));
+  WASM_ASSERT(res == sizeof(test_model) && alice.age == 20 && alice.phone == 4234622, "alice error 1");
 
   alice.age = 21;
   alice.phone = 1234;
   
-  res = store_i64(currentCode(), N(test_table), &alice, sizeof(TestModel));
+  res = store_i64(current_code(), N(test_table), &alice, sizeof(test_model));
   WASM_ASSERT(res == 0, "store alice 2" );
 
-  my_memset(&alice, 0, sizeof(TestModel));
+  my_memset(&alice, 0, sizeof(test_model));
   alice.name = N(alice);
   
-  res = load_i64(currentCode(), currentCode(), N(test_table), &alice, sizeof(TestModel));
-  WASM_ASSERT(res == sizeof(TestModel) && alice.age == 21 && alice.phone == 1234, "alice error 2");
+  res = load_i64(current_code(), current_code(), N(test_table), &alice, sizeof(test_model));
+  WASM_ASSERT(res == sizeof(test_model) && alice.age == 21 && alice.phone == 1234, "alice error 2");
 
-  my_memset(&bob, 0, sizeof(TestModel));
+  my_memset(&bob, 0, sizeof(test_model));
   bob.name = N(bob);
 
-  my_memset(&carol, 0, sizeof(TestModel));
+  my_memset(&carol, 0, sizeof(test_model));
   carol.name = N(carol);
 
-  my_memset(&dave, 0, sizeof(TestModel));
+  my_memset(&dave, 0, sizeof(test_model));
   dave.name = N(dave);
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &bob, sizeof(TestModel));
-  WASM_ASSERT(res == sizeof(TestModel) && bob.age == 15 && bob.phone == 11932435, "bob error 1");
+  res = load_i64(current_code(), current_code(), N(test_table), &bob, sizeof(test_model));
+  WASM_ASSERT(res == sizeof(test_model) && bob.age == 15 && bob.phone == 11932435, "bob error 1");
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &carol, sizeof(TestModel));
-  WASM_ASSERT(res == sizeof(TestModel) && carol.age == 30 && carol.phone == 545342453, "carol error 1");
+  res = load_i64(current_code(), current_code(), N(test_table), &carol, sizeof(test_model));
+  WASM_ASSERT(res == sizeof(test_model) && carol.age == 30 && carol.phone == 545342453, "carol error 1");
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &dave, sizeof(TestModel));
-  WASM_ASSERT(res == sizeof(TestModel) && dave.age == 46 && dave.phone == 6535354, "dave error 1");
+  res = load_i64(current_code(), current_code(), N(test_table), &dave, sizeof(test_model));
+  WASM_ASSERT(res == sizeof(test_model) && dave.age == 46 && dave.phone == 6535354, "dave error 1");
 
-  res = load_i64(currentCode(), N(other_code), N(test_table), &alice, sizeof(TestModel));
+  res = load_i64(current_code(), N(other_code), N(test_table), &alice, sizeof(test_model));
   WASM_ASSERT(res == -1, "other_code");
 
-  res = load_i64(currentCode(), currentCode(), N(other_table), &alice, sizeof(TestModel));
+  res = load_i64(current_code(), current_code(), N(other_table), &alice, sizeof(test_model));
   WASM_ASSERT(res == -1, "other_table");
 
 
-  TestModelV2 alicev2;
+  test_model_v2 alicev2;
   alicev2.name = N(alice);
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &alicev2, sizeof(TestModelV2));
-  WASM_ASSERT(res == sizeof(TestModel) && alicev2.age == 21 && alicev2.phone == 1234, "alicev2 load");
+  res = load_i64(current_code(), current_code(), N(test_table), &alicev2, sizeof(test_model_v2));
+  WASM_ASSERT(res == sizeof(test_model) && alicev2.age == 21 && alicev2.phone == 1234, "alicev2 load");
 
   alicev2.new_field = 66655444;
-  res = store_i64(currentCode(), N(test_table), &alicev2, sizeof(TestModelV2));
+  res = store_i64(current_code(), N(test_table), &alicev2, sizeof(test_model_v2));
   WASM_ASSERT(res == 0, "store alice 3" );
 
-  my_memset(&alicev2, 0, sizeof(TestModelV2));
+  my_memset(&alicev2, 0, sizeof(test_model_v2));
   alicev2.name = N(alice);
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &alicev2, sizeof(TestModelV2));
-  WASM_ASSERT(res == sizeof(TestModelV2) && alicev2.age == 21 && alicev2.phone == 1234 && alicev2.new_field == 66655444, "alice model v2");
+  res = load_i64(current_code(), current_code(), N(test_table), &alicev2, sizeof(test_model_v2));
+  WASM_ASSERT(res == sizeof(test_model_v2) && alicev2.age == 21 && alicev2.phone == 1234 && alicev2.new_field == 66655444, "alice model v2");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(bob);
-  res = lower_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(bob), "lower_bound_i64 bob" );
+  res = lower_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(bob), "lower_bound_i64 bob" );
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(boc);
-  res = lower_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(carol), "lower_bound_i64 carol" );
+  res = lower_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(carol), "lower_bound_i64 carol" );
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(dave);
-  res = lower_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(uint64_t) );
+  res = lower_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(uint64_t) );
   WASM_ASSERT(res == sizeof(uint64_t) && tmp.name == N(dave), "lower_bound_i64 dave" );
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(davf);
-  res = lower_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(uint64_t) );
+  res = lower_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(uint64_t) );
   WASM_ASSERT(res == -1, "lower_bound_i64 fail" );
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(alice);
-  res = upper_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.age == 15 && tmp.name == N(bob), "upper_bound_i64 bob" );
+  res = upper_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.age == 15 && tmp.name == N(bob), "upper_bound_i64 bob" );
 
-  my_memset(&tmp, 0, sizeof(TestModel));
+  my_memset(&tmp, 0, sizeof(test_model));
   tmp.name = N(dave);
-  res = upper_bound_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
+  res = upper_bound_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "upper_bound_i64 dave" );
 
-  TestModelV3 tmp2;
+  test_model_v3 tmp2;
   tmp2.name = N(alice);
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &tmp2, sizeof(TestModelV3));
-  WASM_ASSERT(res == sizeof(TestModelV2) && 
+  res = load_i64(current_code(), current_code(), N(test_table), &tmp2, sizeof(test_model_v3));
+  WASM_ASSERT(res == sizeof(test_model_v2) &&
               tmp2.age == 21 && 
               tmp2.phone == 1234 &&
               tmp2.new_field == 66655444,
               "load4update");
 
   tmp2.another_field = 221122;
-  res = update_i64(currentCode(), N(test_table), &tmp2, sizeof(TestModelV3));
+  res = update_i64(current_code(), N(test_table), &tmp2, sizeof(test_model_v3));
   WASM_ASSERT(res == 1, "update_i64");
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &tmp2, sizeof(TestModelV3));
-  WASM_ASSERT(res == sizeof(TestModelV3) && 
+  res = load_i64(current_code(), current_code(), N(test_table), &tmp2, sizeof(test_model_v3));
+  WASM_ASSERT(res == sizeof(test_model_v3) &&
               tmp2.age == 21 && 
               tmp2.phone == 1234 &&
               tmp2.new_field == 66655444 &&
@@ -436,11 +437,11 @@ unsigned int test_db::key_i64_general() {
               "load4update");
 
   tmp2.age = 11;
-  res = update_i64(currentCode(), N(test_table), &tmp2,  sizeof(uint64_t)+1 );
+  res = update_i64(current_code(), N(test_table), &tmp2,  sizeof(uint64_t)+1 );
   WASM_ASSERT(res == 1, "update_i64 small");
 
-  res = load_i64(currentCode(), currentCode(), N(test_table), &tmp2, sizeof(TestModelV3));
-  WASM_ASSERT(res == sizeof(TestModelV3) && 
+  res = load_i64(current_code(), current_code(), N(test_table), &tmp2, sizeof(test_model_v3));
+  WASM_ASSERT(res == sizeof(test_model_v3) &&
               tmp2.age == 11 && 
               tmp2.phone == 1234 &&
               tmp2.new_field == 66655444 &&
@@ -451,8 +452,8 @@ unsigned int test_db::key_i64_general() {
   //Remove dummy records
   uint64_t tables[] { N(test_tabld), N(test_tablf) };
   for(auto& t : tables) {
-    while( front_i64( currentCode(), currentCode(), t, &tmp, sizeof(TestModel) ) != -1 ) {
-      remove_i64(currentCode(), t, &tmp);
+    while( front_i64( current_code(), current_code(), t, &tmp, sizeof(test_model) ) != -1 ) {
+      remove_i64(current_code(), t, &tmp);
     }
   }
 
@@ -465,42 +466,42 @@ unsigned int test_db::key_i64_remove_all() {
   uint64_t key;
 
   key = N(alice);
-  res = remove_i64(currentCode(), N(test_table), &key);
+  res = remove_i64(current_code(), N(test_table), &key);
   WASM_ASSERT(res == 1, "remove alice");
   
   key = N(bob);
-  res = remove_i64(currentCode(),   N(test_table), &key);
+  res = remove_i64(current_code(),   N(test_table), &key);
   WASM_ASSERT(res == 1, "remove bob");
   
   key = N(carol);
-  res = remove_i64(currentCode(), N(test_table), &key);
+  res = remove_i64(current_code(), N(test_table), &key);
   WASM_ASSERT(res == 1, "remove carol");
   
   key = N(dave);
-  res = remove_i64(currentCode(),  N(test_table), &key);
+  res = remove_i64(current_code(),  N(test_table), &key);
   WASM_ASSERT(res == 1, "remove dave");
 
-  TestModel tmp;
-  res = front_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
+  test_model tmp;
+  res = front_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "front_i64 remove");
 
-  res = back_i64( currentCode(), currentCode(), N(test_table), &tmp, sizeof(TestModel) );
+  res = back_i64( current_code(), current_code(), N(test_table), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "back_i64_i64 remove");
   
   key = N(alice);
-  res = remove_i64(currentCode(), N(test_table), &key);
+  res = remove_i64(current_code(), N(test_table), &key);
   WASM_ASSERT(res == 0, "remove alice 1");
   
   key = N(bob);
-  res = remove_i64(currentCode(),   N(test_table), &key);
+  res = remove_i64(current_code(),   N(test_table), &key);
   WASM_ASSERT(res == 0, "remove bob 1");
   
   key = N(carol);
-  res = remove_i64(currentCode(), N(test_table), &key);
+  res = remove_i64(current_code(), N(test_table), &key);
   WASM_ASSERT(res == 0, "remove carol 1");
   
   key = N(dave);
-  res = remove_i64(currentCode(),  N(test_table), &key);
+  res = remove_i64(current_code(),  N(test_table), &key);
   WASM_ASSERT(res == 0, "remove dave 1");
 
  
@@ -509,35 +510,35 @@ unsigned int test_db::key_i64_remove_all() {
 
 unsigned int test_db::key_i64_small_load() {
   uint64_t dummy = 0;
-  load_i64(currentCode(), currentCode(), N(just_uint64), &dummy, sizeof(uint64_t)-1);
+  load_i64(current_code(), current_code(), N(just_uint64), &dummy, sizeof(uint64_t)-1);
   return WASM_TEST_PASS;
 }
 
 unsigned int test_db::key_i64_small_store() {
   uint64_t dummy = 0;
-  store_i64(currentCode(), N(just_uint64), &dummy, sizeof(uint64_t)-1);
+  store_i64(current_code(), N(just_uint64), &dummy, sizeof(uint64_t)-1);
   return WASM_TEST_PASS;
 }
 
 unsigned int test_db::key_i64_store_scope() {
   uint64_t dummy = 0;
-  store_i64(currentCode(), N(just_uint64), &dummy, sizeof(uint64_t));
+  store_i64(current_code(), N(just_uint64), &dummy, sizeof(uint64_t));
   return WASM_TEST_PASS;
 }
 
 unsigned int test_db::key_i64_remove_scope() {
   uint64_t dummy = 0;
-  store_i64(currentCode(), N(just_uint64), &dummy, sizeof(uint64_t));
+  store_i64(current_code(), N(just_uint64), &dummy, sizeof(uint64_t));
   return WASM_TEST_PASS;
 }
 
 unsigned int test_db::key_i64_not_found() {
   uint64_t dummy = 1000;
 
-  auto res = load_i64(currentCode(), currentCode(), N(just_uint64), &dummy, sizeof(uint64_t));
+  auto res = load_i64(current_code(), current_code(), N(just_uint64), &dummy, sizeof(uint64_t));
   WASM_ASSERT(res == -1, "i64_not_found load");
 
-  res = remove_i64(currentCode(),  N(just_uint64), &dummy);
+  res = remove_i64(current_code(),  N(just_uint64), &dummy);
   WASM_ASSERT(res == 0, "i64_not_found remove");
   return WASM_TEST_PASS;
 }
@@ -546,78 +547,78 @@ unsigned int test_db::key_i64_front_back() {
   
   uint32_t res = 0;
 
-  TestModel dave { N(dave),  46, 6535354};
-  TestModel carol{ N(carol), 30, 545342453};
-  store_i64(currentCode(), N(b), &dave,  sizeof(TestModel));
-  store_i64(currentCode(), N(b), &carol, sizeof(TestModel));
+  test_model dave { N(dave),  46, 6535354};
+  test_model carol{ N(carol), 30, 545342453};
+  store_i64(current_code(), N(b), &dave,  sizeof(test_model));
+  store_i64(current_code(), N(b), &carol, sizeof(test_model));
 
-  TestModel bob  { N(bob),   15, 11932435};
-  TestModel alice{ N(alice), 20, 4234622};
-  store_i64(currentCode(), N(a), &bob, sizeof(TestModel));
-  store_i64(currentCode(), N(a), &alice,  sizeof(TestModel));
+  test_model bob  { N(bob),   15, 11932435};
+  test_model alice{ N(alice), 20, 4234622};
+  store_i64(current_code(), N(a), &bob, sizeof(test_model));
+  store_i64(current_code(), N(a), &alice,  sizeof(test_model));
 
-  TestModel tmp;
+  test_model tmp;
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = front_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 1");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = front_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 1");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = back_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "key_i64_front 2");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = back_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "key_i64_front 2");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = front_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "key_i64_front 3");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = front_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(carol) && tmp.age == 30 && tmp.phone == 545342453, "key_i64_front 3");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = back_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 4");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = back_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 4");
 
   uint64_t key = N(carol);
-  remove_i64(currentCode(), N(b), &key);
+  remove_i64(current_code(), N(b), &key);
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = front_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 5");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = front_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 5");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = back_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 6");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = back_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(dave) && tmp.age == 46 && tmp.phone == 6535354, "key_i64_front 6");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = front_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 7");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = front_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 7");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = back_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "key_i64_front 8");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = back_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(bob) && tmp.age == 15 && tmp.phone == 11932435, "key_i64_front 8");
 
   key = N(dave);
-  remove_i64(currentCode(), N(b), &key);
+  remove_i64(current_code(), N(b), &key);
   
-  res = front_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
+  res = front_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "key_i64_front 9");
-  res = back_i64( currentCode(), currentCode(), N(b), &tmp, sizeof(TestModel) );
+  res = back_i64( current_code(), current_code(), N(b), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "key_i64_front 10");
 
   key = N(bob);
-  remove_i64(currentCode(), N(a), &key);
+  remove_i64(current_code(), N(a), &key);
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = front_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 11");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = front_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 11");
 
-  my_memset(&tmp, 0, sizeof(TestModel));
-  res = back_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
-  WASM_ASSERT(res == sizeof(TestModel) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 12");
+  my_memset(&tmp, 0, sizeof(test_model));
+  res = back_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
+  WASM_ASSERT(res == sizeof(test_model) && tmp.name == N(alice) && tmp.age == 20 && tmp.phone == 4234622, "key_i64_front 12");
 
   key = N(alice);
-  remove_i64(currentCode(), N(a), &key);
+  remove_i64(current_code(), N(a), &key);
 
-  res = front_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
+  res = front_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "key_i64_front 13");
-  res = back_i64( currentCode(), currentCode(), N(a), &tmp, sizeof(TestModel) );
+  res = back_i64( current_code(), current_code(), N(a), &tmp, sizeof(test_model) );
   WASM_ASSERT(res == -1, "key_i64_front 14");
 
   return WASM_TEST_PASS;
@@ -633,16 +634,16 @@ unsigned int store_set_in_table(uint64_t table_name)
   TestModel128x2 alice2{2, 300, N(alice2), table_name};
   TestModel128x2 alice22{2, 200, N(alice22), table_name};
 
-  res = store_i128i128(currentCode(),  table_name, &alice0,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &alice0,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store alice0" );
 
-  res = store_i128i128(currentCode(),  table_name, &alice1,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &alice1,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store alice1" );
 
-  res = store_i128i128(currentCode(),  table_name, &alice2,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &alice2,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store alice2" );
 
-  res = store_i128i128(currentCode(),  table_name, &alice22,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &alice22,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store alice22" );
 
   TestModel128x2 bob0{10, 1, N(bob0), table_name};
@@ -650,16 +651,16 @@ unsigned int store_set_in_table(uint64_t table_name)
   TestModel128x2 bob2{12, 3, N(bob2), table_name};
   TestModel128x2 bob3{13, 4, N(bob3), table_name};
 
-  res = store_i128i128(currentCode(),  table_name, &bob0,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &bob0,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store bob0" );
 
-  res = store_i128i128(currentCode(),  table_name, &bob1,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &bob1,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store bob1" );
 
-  res = store_i128i128(currentCode(),  table_name, &bob2,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &bob2,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store bob2" );
 
-  res = store_i128i128(currentCode(),  table_name, &bob3,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &bob3,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store bob3" );
 
   TestModel128x2 carol0{20, 900, N(carol0), table_name};
@@ -667,16 +668,16 @@ unsigned int store_set_in_table(uint64_t table_name)
   TestModel128x2 carol2{22, 700, N(carol2), table_name};
   TestModel128x2 carol3{23, 600, N(carol3), table_name};
 
-  res = store_i128i128(currentCode(),  table_name, &carol0,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &carol0,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store carol0" );
 
-  res = store_i128i128(currentCode(),  table_name, &carol1,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &carol1,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store carol1" );
 
-  res = store_i128i128(currentCode(),  table_name, &carol2,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &carol2,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store carol2" );
 
-  res = store_i128i128(currentCode(),  table_name, &carol3,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &carol3,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store carol3" );
 
   TestModel128x2 dave0{30, 8, N(dave0), table_name};
@@ -684,16 +685,16 @@ unsigned int store_set_in_table(uint64_t table_name)
   TestModel128x2 dave2{32, 5, N(dave2), table_name};
   TestModel128x2 dave3{33, 4, N(dave3), table_name};
 
-  res = store_i128i128(currentCode(),  table_name, &dave0,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &dave0,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store dave0" );
 
-  res = store_i128i128(currentCode(),  table_name, &dave1,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &dave1,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store dave1" );
 
-  res = store_i128i128(currentCode(),  table_name, &dave2,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &dave2,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store dave2" );
 
-  res = store_i128i128(currentCode(),  table_name, &dave3,  sizeof(TestModel128x2));
+  res = store_i128i128(current_code(),  table_name, &dave3,  sizeof(TestModel128x2));
   WASM_ASSERT(res == 1, "store dave3" );
 
   return WASM_TEST_PASS;
@@ -704,7 +705,7 @@ unsigned int store_set_in_table(TestModel3xi64* records, int len, uint64_t table
   for( int i = 0; i < len; ++i ) {
     TestModel3xi64 *tmp = records+i;
     tmp->table = table_name;
-    res = store_i64i64i64(currentCode(),  table_name, tmp,  sizeof(TestModel3xi64));
+    res = store_i64i64i64(current_code(),  table_name, tmp,  sizeof(TestModel3xi64));
     WASM_ASSERT(res == 1, "store_set_in_table" );
   }
   return res;
@@ -732,7 +733,7 @@ unsigned int test_db::key_i64i64i64_general() {
   store_set_in_table(records, sizeof(records)/sizeof(records[0]), N(table2));
   store_set_in_table(records, sizeof(records)/sizeof(records[0]), N(table3));
 
-  #define CALL(F, O, I, T, V) F##_##I##_##O(currentCode(), currentCode(), T, &V, sizeof(V))
+  #define CALL(F, O, I, T, V) F##_##I##_##O(current_code(), current_code(), T, &V, sizeof(V))
 
   #define LOAD(I, O, T, V) CALL(load, O, I, T, V)
   #define FRONT(I, O, T, V) CALL(front, O, I, T, V)
@@ -746,29 +747,29 @@ unsigned int test_db::key_i64i64i64_general() {
   #define BS(X) ((X) ? "true" : "false")
   #define TABLE1_ASSERT(I, V, msg) \
     if(LOGME) {\
-      eos::print(msg, " : ", res, " a:", V.a, " b:", V.b, " c:", V.c, " t:", V.table, "inx:", uint64_t(I), " ("); \
-      eos::print(BS(res == sizeof(V)), " ", BS(records[I].a == V.a), " ", BS(records[I].b == V.b), " ", BS(records[I].c == V.c), " => ", N(table2), ")\n"); \
+      eosio::print(msg, " : ", res, " a:", V.a, " b:", V.b, " c:", V.c, " t:", V.table, "inx:", uint64_t(I), " ("); \
+      eosio::print(BS(res == sizeof(V)), " ", BS(records[I].a == V.a), " ", BS(records[I].b == V.b), " ", BS(records[I].c == V.c), " => ", N(table2), ")\n"); \
     } \
     WASM_ASSERT( res == sizeof(V) && records[I].a == V.a && records[I].b == V.b && \
      records[I].c == V.c /*&& records[I].table == uint64_t(N(table2))*/, msg);
 
   #define LOAD_OK(I, O, T, INX, MSG) \
-    {eos::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
+    {eosio::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
     res = LOAD(I, O, T, tmp); \
     TABLE1_ASSERT(INX, tmp, MSG)}
 
   #define LOAD_ER(I, O, T, MSG) \
-    {eos::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
+    {eosio::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
     res = LOAD(I, O, T, tmp); \
     WASM_ASSERT(res == -1, MSG)}
 
   #define FRONT_OK(I, O, T, INX, MSG) \
-    {eos::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
+    {eosio::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
     res = FRONT(I, O, T, tmp); \
     TABLE1_ASSERT(INX, tmp, MSG)}
 
   #define BACK_OK(I, O, T, INX, MSG) \
-    {eos::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
+    {eosio::remove_reference<decltype(V)>::type tmp; my_memset(&tmp, 0, sizeof(tmp));tmp = V; \
     res = BACK(I, O, T, tmp); \
     TABLE1_ASSERT(INX, tmp, MSG)}
 
@@ -808,7 +809,7 @@ unsigned int test_db::key_i64i64i64_general() {
     auto n = sizeof(I)/sizeof(I[0]); \
     auto j = 0; \
     do { \
-      eos::remove_reference<decltype(records[0])>::type tmp = records[I[j]]; \
+      eosio::remove_reference<decltype(records[0])>::type tmp = records[I[j]]; \
       res = NEXT(I, i64i64i64, N(table2), tmp);\
       if(j+1<n){ TABLE1_ASSERT(I[j+1], tmp, "i64x3 NEXT " #I " ok "); } \
       else { WASM_ASSERT(res == -1, "i64x3 NEXT " #I " fail "); }\
@@ -820,7 +821,7 @@ unsigned int test_db::key_i64i64i64_general() {
     auto n = sizeof(I)/sizeof(I[0]); \
     auto j = n-1; \
     do { \
-      eos::remove_reference<decltype(records[0])>::type tmp = records[I[j]]; \
+      eosio::remove_reference<decltype(records[0])>::type tmp = records[I[j]]; \
       res = PREV(I, i64i64i64, N(table2), tmp);\
       if(j>0){ TABLE1_ASSERT(I[j-1], tmp, "i64x3 PREV " #I " ok "); } \
       else { WASM_ASSERT(res == -1, "i64x3 PREV " #I " fail "); }\
@@ -848,7 +849,7 @@ unsigned int test_db::key_i64i64i64_general() {
     auto n = sizeof(I##_lb)/sizeof(I##_lb[0]); \
     auto j = 0; \
     do { \
-      eos::remove_reference<decltype(records[0])>::type tmp = records[j]; \
+      eosio::remove_reference<decltype(records[0])>::type tmp = records[j]; \
       res = LOWER(I, i64i64i64, N(table2), tmp);\
       TABLE1_ASSERT(I##_lb[j], tmp, "i64x3 LOWER " #I " ok ");\
     } while(++j<n); \
@@ -863,7 +864,7 @@ unsigned int test_db::key_i64i64i64_general() {
     auto n = sizeof(I##_ub)/sizeof(I##_ub[0]); \
     auto j = 0; \
     do { \
-      eos::remove_reference<decltype(records[0])>::type tmp = records[j]; \
+      eosio::remove_reference<decltype(records[0])>::type tmp = records[j]; \
       res = UPPER(I, i64i64i64, N(table2), tmp);\
       if(res == -1) { WASM_ASSERT(I##_ub[j]==-1,"i64x3 UPPER " #I " fail ") } \
       else { TABLE1_ASSERT(I##_ub[j], tmp, "i64x3 UPPER " #I " ok "); } \
@@ -882,13 +883,13 @@ unsigned int test_db::key_i64i64i64_general() {
 
   v2.new_field = 555;
 
-  res = update_i64i64i64(currentCode(),  N(table2), &v2, sizeof(TestModel3xi64_V2));
+  res = update_i64i64i64(current_code(),  N(table2), &v2, sizeof(TestModel3xi64_V2));
   WASM_ASSERT(res == 1, "store v2");  
 
   res = LOAD(primary, i64i64i64, N(table2), v2);
   WASM_ASSERT(res == sizeof(TestModel3xi64_V2), "load v2 updated");
 
-  res = remove_i64i64i64(currentCode(),  N(table2), &v2);
+  res = remove_i64i64i64(current_code(),  N(table2), &v2);
   WASM_ASSERT(res == 1, "load v2 updated");
 
   res = LOAD(primary, i64i64i64, N(table2), v2);
@@ -914,7 +915,7 @@ unsigned int test_db::key_i128i128_general() {
   my_memset(&tmp, 0, sizeof(TestModel128x2));
   tmp.number = 21;
 
-  res = load_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = load_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
 
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.price == 800 &&
@@ -925,7 +926,7 @@ unsigned int test_db::key_i128i128_general() {
   my_memset(&tmp, 0, sizeof(TestModel128x2));
   tmp.price = 4;
   
-  res = load_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = load_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 13 &&
                tmp.price == 4 &&
@@ -933,7 +934,7 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "bob3 secondary load");
 
-  res = front_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = front_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 0 &&
                tmp.price == 500 &&
@@ -941,10 +942,10 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "front primary load");
   
-  res = previous_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = previous_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT(res == -1, "previous primary fail");
 
-  res = next_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = next_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 1 &&
                tmp.price == 400 &&
@@ -952,7 +953,7 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "next primary ok");
 
-  res = front_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = front_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 10 &&
                tmp.price == 1 &&
@@ -960,10 +961,10 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "front secondary ok");
   
-  res = previous_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = previous_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT(res == -1, "previous secondary fail");
 
-  res = next_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = next_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 11 &&
                tmp.price == 2 &&
@@ -971,7 +972,7 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "next secondary ok");
 
-  res = back_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = back_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 33 &&
                tmp.price == 4 &&
@@ -979,10 +980,10 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "back primary ok");
   
-  res = next_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = next_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT(res == -1, "next primary fail");
 
-  res = previous_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = previous_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 32 &&
                tmp.price == 5 &&
@@ -990,7 +991,7 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "previous primary ok");
 
-  res = back_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = back_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 20 &&
                tmp.price == 900 &&
@@ -998,10 +999,10 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "back secondary ok");
   
-  res = next_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = next_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT(res == -1, "next secondary fail");
 
-  res = previous_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = previous_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 21 &&
@@ -1012,7 +1013,7 @@ unsigned int test_db::key_i128i128_general() {
 
   tmp.number = 1;
 
-  res = lower_bound_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = lower_bound_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 1 &&
                tmp.price == 400 &&
@@ -1020,7 +1021,7 @@ unsigned int test_db::key_i128i128_general() {
                tmp.table_name == N(table5),
               "lb primary ok");
 
-  res = upper_bound_primary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = upper_bound_primary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 2 &&
                tmp.price == 200 &&
@@ -1030,7 +1031,7 @@ unsigned int test_db::key_i128i128_general() {
 
   tmp.price = 800;
 
-  res = lower_bound_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp, sizeof(TestModel128x2) );
+  res = lower_bound_secondary_i128i128( current_code(), current_code(), N(table5), &tmp, sizeof(TestModel128x2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp.number == 21 &&
                tmp.price == 800 &&
@@ -1041,7 +1042,7 @@ unsigned int test_db::key_i128i128_general() {
   TestModel128x2_V2 tmp2;
   tmp2.price = 800;
 
-  res = upper_bound_secondary_i128i128( currentCode(), currentCode(), N(table5), &tmp2, sizeof(TestModel128x2_V2) );
+  res = upper_bound_secondary_i128i128( current_code(), current_code(), N(table5), &tmp2, sizeof(TestModel128x2_V2) );
   WASM_ASSERT( res == sizeof(TestModel128x2) &&
                tmp2.number == 20 &&
                tmp2.price == 900 &&
@@ -1050,13 +1051,13 @@ unsigned int test_db::key_i128i128_general() {
               "ub secondary ok");
   
   tmp2.new_field = 123456;
-  res = update_i128i128(currentCode(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
+  res = update_i128i128(current_code(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
   WASM_ASSERT( res == 1, "update_i128i128 ok");
 
   my_memset(&tmp2, 0, sizeof(TestModel128x2_V2));
   tmp2.number = 20;
 
-  res = load_primary_i128i128(currentCode(), currentCode(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
+  res = load_primary_i128i128(current_code(), current_code(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
   WASM_ASSERT( res == sizeof(TestModel128x2_V2) &&
                tmp2.number == 20 &&
                tmp2.price == 900 &&
@@ -1066,10 +1067,10 @@ unsigned int test_db::key_i128i128_general() {
               "lp update_i128i128 ok");
 
   tmp2.extra = N(xxxxx);
-  res = update_i128i128(currentCode(), N(table5), &tmp2, sizeof(uint128_t)*2+sizeof(uint64_t));
+  res = update_i128i128(current_code(), N(table5), &tmp2, sizeof(uint128_t)*2+sizeof(uint64_t));
   WASM_ASSERT( res == 1, "update_i128i128 small ok");
 
-  res = load_primary_i128i128(currentCode(), currentCode(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
+  res = load_primary_i128i128(current_code(), current_code(), N(table5), &tmp2, sizeof(TestModel128x2_V2));
   WASM_ASSERT( res == sizeof(TestModel128x2_V2) &&
                tmp2.number == 20 &&
                tmp2.price == 900 &&
@@ -1081,4 +1082,439 @@ unsigned int test_db::key_i128i128_general() {
   return WASM_TEST_PASS;
 }
 
-//eos::print("xxxx ", res, " ", tmp2.name, " ", uint64_t(tmp2.age), " ", tmp2.phone, " ", tmp2.new_field, "\n");
+void set_key_str(int i, char* key_4_digit)
+{
+   const char nums[] = "0123456789";
+   key_4_digit[0] = nums[(i % 10000) / 1000];
+   key_4_digit[1] = nums[(i % 1000) / 100];
+   key_4_digit[2] = nums[(i % 100) / 10];
+   key_4_digit[3] = nums[(i % 10)];
+}
+
+unsigned int test_db::key_str_setup_limit()
+{
+   // assuming max memory: 5 MBytes
+   // assuming row overhead: 16 Bytes
+   // key length: 30 bytes
+   // value length: 2498 bytes
+   // -> key + value bytes: 2528 Bytes
+   // 1024 * 2 * (2528 + 32)
+   char key[] = "0000abcdefghijklmnopqrstuvwxy";
+   const uint32_t value_size = 2498;
+   char* value = static_cast<char*>(eosio::malloc(value_size));
+   value[4] = '\0';
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      set_key_str(i, key);
+      // set the value with the same prefix to be able to identify
+      set_key_str(i, value);
+      store_str(N(dblimits), N(dblstr), key, sizeof(key), value, value_size);
+   }
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_str_min_exceed_limit()
+{
+   char key = '1';
+   char value = '1';
+   // assuming max memory: 5 MBytes
+   // assuming row overhead: 16 Bytes
+   // key length: 1 bytes
+   // value length: 1 bytes
+   // -> key + value bytes: 8 Bytes
+   // 8 + 32 = 40 Bytes (not enough space)
+   store_str(N(dblimits), N(dblstr), &key, 1, &value, 1);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_str_under_limit()
+{
+   // assuming max memory: 5 MBytes
+   // assuming row overhead: 16 Bytes
+   // key length: 30 bytes
+   // value length: 2489 bytes
+   // -> key + value bytes: 2520 Bytes
+   // 1024 * 2 * (2520 + 32) = 5,226,496 => 16K bytes remaining
+   char key[] = "0000abcdefghijklmnopqrstuvwxy";
+   const uint32_t value_size = 2489;
+   char* value = static_cast<char*>(eosio::malloc(value_size));
+   value[4] = '\0';
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      set_key_str(i, key);
+      // set the value with the same prefix to be able to identify
+      set_key_str(i, value);
+      store_str(N(dblimits), N(dblstr), key, sizeof(key), value, value_size);
+   }
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_str_available_space_exceed_limit()
+{
+   // key length: 30 bytes
+   // value length: 16323 bytes
+   // -> key + value bytes: 16360 Bytes (rounded to byte boundary)
+   // 16,392 Bytes => exceeds 16K bytes remaining
+   char key[] = "0000abcdefghijklmnopqrstuvwxy";
+   set_key_str(9999, key);
+   const uint32_t value_size = 16323;
+   char* value = static_cast<char*>(eosio::malloc(value_size));
+   store_str(N(dblimits), N(dblstr), key, sizeof(key), value, value_size);
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_str_another_under_limit()
+{
+   // 16K bytes remaining
+   // key length: 30 bytes
+   // value length: 18873 bytes
+   // -> key + value bytes: 18904 Bytes (rounded to byte boundary)
+   // 16,384 Bytes => just under 16K bytes remaining
+   char key[] = "0000abcdefghijklmnopqrstuvwxy";
+   set_key_str(0, key);
+   uint32_t value_size = 18873;
+   char* value = static_cast<char*>(eosio::malloc(value_size));
+   update_str(N(dblimits), N(dblstr), key, sizeof(key), value, value_size);
+   // 0 bytes remaining
+
+   // key length: 30 bytes
+   // value length: 2489 bytes
+   // -> key + value bytes: 2520 Bytes
+   set_key_str(1, key);
+   remove_str(N(dblimits), N(dblstr), key, sizeof(key));
+   // 2,552 Bytes remaining
+
+   // leave too little room for 32 Byte overhead + (key + value = 8 Byte min)
+   // key length: 30 bytes
+   // value length: 4909 bytes
+   // -> key + value bytes: 5040 Bytes
+   value_size = 2489 + 2514;
+   set_key_str(2, key);
+   value = static_cast<char*>(eosio::realloc(value, value_size));
+   update_str(N(dblimits), N(dblstr), key, sizeof(key), value, value_size);
+   eosio::free(value);
+
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64_setup_limit()
+{
+   // assuming max memory: 5M Bytes
+   // assuming row overhead: 16 Bytes
+   // key length: 8 bytes
+   // value length: 315 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2528 Bytes
+   // 1024 * 2 * (2528 + 32) = 5,242,880
+   const uint64_t value_size = 315 * sizeof(uint64_t) + 1;
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      store_i64(N(dblimits), N(dbli64), (char*)value, value_size);
+   }
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64_min_exceed_limit()
+{
+   // will allocate 8 + 32 Bytes
+   // at 5M Byte limit, so cannot store anything
+   uint64_t value = (uint64_t)-1;
+   store_i64(N(dblimits), N(dbli64), (char*)&value, sizeof(uint64_t));
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64_under_limit()
+{
+   // updating keys' values
+   // key length: 8 bytes
+   // value length: 299 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // 1024 * 2 * (2400 + 32) = 4,980,736
+   const uint64_t value_size = 300 * sizeof(uint64_t);
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      store_i64(N(dblimits), N(dbli64), (char*)value, value_size);
+   }
+   // 262,144 Bytes remaining
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64_available_space_exceed_limit()
+{
+   // 262,144 Bytes remaining
+   // key length: 8 bytes
+   // value length: 32764 * 8 bytes
+   // -> key + value bytes: 262,120 Bytes
+   // storing 262,152 Bytes exceeds remaining
+   const uint64_t value_size = 32765 * sizeof(uint64_t);
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   value[0] = 1024 * 2;
+   store_i64(N(dblimits), N(dbli64), (char*)value, value_size);
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64_another_under_limit()
+{
+   // 262,144 Bytes remaining
+   // key length: 8 bytes
+   // value length: 33067 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 264,544 Bytes
+   // replacing storage bytes so 264,544 - 2400 = 262,144 Bytes (0 Bytes remaining)
+   uint64_t value_size = 33067 * sizeof(uint64_t) + 7;
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   value[0] = 15;
+   update_i64(N(dblimits), N(dbli64), (char*)value, value_size);
+
+   // 0 Bytes remaining
+   // key length: 8 bytes
+   // previous value length: 299 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // free up 2,432 Bytes
+   value[0] = 14;
+   remove_i64(N(dblimits), N(dbli64), (char*)value);
+
+   // 2,432 Bytes remaining
+   // key length: 8 bytes
+   // previous value length: 294 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2,368 Bytes
+   // 2,400 Bytes allocated
+   value_size = 295 * sizeof(uint64_t) + 3;
+   value = (uint64_t*)eosio::realloc(value, value_size);
+   value[0] = 1024 * 2;
+   store_i64(N(dblimits), N(dbli64), (char*)value, value_size);
+   // 32 Bytes remaining (smallest row entry is 40 Bytes)
+
+   eosio::free(value);
+
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i128i128_setup_limit()
+{
+   // assuming max memory: 5M Bytes
+   // assuming row overhead: 16 Bytes
+   // keys length: 32 bytes
+   // value length: 312 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2528 Bytes
+   // 1024 * 2 * (2528 + 32) = 5,242,880
+   const uint64_t value_size = 315 * sizeof(uint64_t) + 1;
+   auto value = (uint128_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      value[1] = value[0] + 1;
+      store_i128i128(N(dblimits), N(dbli128i128), (char*)value, value_size);
+   }
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i128i128_min_exceed_limit()
+{
+   // will allocate 32 + 32 Bytes
+   // at 5M Byte limit, so cannot store anything
+   const uint64_t value_size = 2 * sizeof(uint128_t);
+   auto value = (uint128_t*)eosio::malloc(value_size);
+   value[0] = (uint128_t)-1;
+   value[1] = value[0] + 1;
+   store_i128i128(N(dblimits), N(dbli128i128), (char*)&value, value_size);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i128i128_under_limit()
+{
+   // updating keys' values
+   // keys length: 32 bytes
+   // value length: 296 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // 1024 * 2 * (2400 + 32) = 4,980,736
+   const uint64_t value_size = 300 * sizeof(uint64_t);
+   auto value = (uint128_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      value[1] = value[0] + 1;
+      store_i128i128(N(dblimits), N(dbli128i128), (char*)value, value_size);
+   }
+   // 262,144 Bytes remaining
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i128i128_available_space_exceed_limit()
+{
+   // 262,144 Bytes remaining
+   // keys length: 32 bytes
+   // value length: 32761 * 8 bytes
+   // -> key + value bytes: 262,120 Bytes
+   // storing 262,152 Bytes exceeds remaining
+   const uint64_t value_size = 32765 * sizeof(uint64_t);
+   auto value = (uint128_t*)eosio::malloc(value_size);
+   value[0] = 1024 * 2;
+   value[1] = value[0] + 1;
+   store_i128i128(N(dblimits), N(dbli128i128), (char*)value, value_size);
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i128i128_another_under_limit()
+{
+   // 262,144 Bytes remaining
+   // keys length: 32 bytes
+   // value length: 33064 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 264,544 Bytes
+   // replacing storage bytes so 264,544 - 2400 = 262,144 Bytes (0 Bytes remaining)
+   uint64_t value_size = 33067 * sizeof(uint64_t) + 7;
+   auto value = (uint128_t*)eosio::malloc(value_size);
+   value[0] = 15;
+   value[1] = value[0] + 1;
+   update_i128i128(N(dblimits), N(dbli128i128), (char*)value, value_size);
+
+   // 0 Bytes remaining
+   // keys length: 32 bytes
+   // previous value length: 296 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // free up 2,432 Bytes
+   value[0] = 14;
+   value[1] = value[0] + 1;
+   remove_i128i128(N(dblimits), N(dbli128i128), (char*)value);
+
+   // 2,432 Bytes remaining
+   // keys length: 32 bytes
+   // previous value length: 288 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2,344 Bytes
+   // 2,376 Bytes allocated
+   value_size = 292 * sizeof(uint64_t) + 3;
+   value = (uint128_t*)eosio::realloc(value, value_size);
+   value[0] = 1024 * 2;
+   value[1] = value[0] + 1;
+   store_i128i128(N(dblimits), N(dbli128i128), (char*)value, value_size);
+   // 56 Bytes remaining (smallest row entry is 64 Bytes)
+
+   eosio::free(value);
+
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64i64i64_setup_limit()
+{
+   // assuming max memory: 5M Bytes
+   // assuming row overhead: 16 Bytes
+   // keys length: 24 bytes
+   // value length: 313 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2528 Bytes
+   // 1024 * 2 * (2528 + 32) = 5,242,880
+   const uint64_t value_size = 315 * sizeof(uint64_t) + 1;
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      value[1] = value[0] + 1;
+      value[2] = value[0] + 2;
+      store_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value, value_size);
+   }
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64i64i64_min_exceed_limit()
+{
+   // will allocate 24 + 32 Bytes
+   // at 5M Byte limit, so cannot store anything
+   const uint64_t value_size = 3 * sizeof(uint64_t);
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   value[0] = (uint64_t)-1;
+   value[1] = value[0] + 1;
+   value[2] = value[0] + 2;
+   store_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)&value, value_size);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64i64i64_under_limit()
+{
+   // updating keys' values
+   // keys length: 24 bytes
+   // value length: 297 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // 1024 * 2 * (2400 + 32) = 4,980,736
+   const uint64_t value_size = 300 * sizeof(uint64_t);
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   for(int i = 0; i < 1024 * 2; ++i)
+   {
+      value[0] = i;
+      value[1] = value[0] + 1;
+      value[2] = value[0] + 2;
+      store_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value, value_size);
+   }
+   // 262,144 Bytes remaining
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64i64i64_available_space_exceed_limit()
+{
+   // 262,144 Bytes remaining
+   // keys length: 24 bytes
+   // value length: 32762 * 8 bytes
+   // -> key + value bytes: 262,120 Bytes
+   // storing 262,152 Bytes exceeds remaining
+   const uint64_t value_size = 32765 * sizeof(uint64_t);
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   value[0] = 1024 * 2;
+   value[1] = value[0] + 1;
+   value[2] = value[0] + 2;
+   store_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value, value_size);
+   eosio::free(value);
+   return WASM_TEST_PASS;
+}
+
+unsigned int test_db::key_i64i64i64_another_under_limit()
+{
+   // 262,144 Bytes remaining
+   // keys length: 24 bytes
+   // value length: 33065 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 264,544 Bytes
+   // replacing storage bytes so 264,544 - 2400 = 262,144 Bytes (0 Bytes remaining)
+   uint64_t value_size = 33067 * sizeof(uint64_t) + 7;
+   auto value = (uint64_t*)eosio::malloc(value_size);
+   value[0] = 15;
+   value[1] = value[0] + 1;
+   value[2] = value[0] + 2;
+   update_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value, value_size);
+
+   // 0 Bytes remaining
+   // keys length: 24 bytes
+   // previous value length: 297 * 8 bytes
+   // -> key + value bytes: 2400 Bytes
+   // free up 2,432 Bytes
+   value[0] = 14;
+   value[1] = value[0] + 1;
+   value[2] = value[0] + 2;
+   remove_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value);
+
+   // 2,432 Bytes remaining
+   // keys length: 24 bytes
+   // previous value length: 290 * 8 bytes (rounded to byte boundary)
+   // -> key + value bytes: 2,352 Bytes
+   // 2,384 Bytes allocated
+   value_size = 295 * sizeof(uint64_t) + 3;
+   value = (uint64_t*)eosio::realloc(value, value_size);
+   value[0] = 1024 * 2;
+   value[1] = value[0] + 1;
+   value[2] = value[0] + 2;
+   store_i64i64i64(N(dblimits), N(dbli64i64i64), (char*)value, value_size);
+   // 48 Bytes remaining (smallest row entry is 56 Bytes)
+
+   eosio::free(value);
+
+   return WASM_TEST_PASS;
+}
