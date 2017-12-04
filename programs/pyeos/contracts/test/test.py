@@ -327,3 +327,9 @@ def test_exec():
         r = eosapi.push_message('test', 'testexec', {'data':0}, ['test','inita'], {'test':'active'})
         assert not r
 
+def test_import():
+    with producer:
+        r = eosapi.push_message('test', 'testimport', {'data':0}, ['test','inita'], {'test':'active'})
+        assert not r
+
+

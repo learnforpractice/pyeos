@@ -11,6 +11,16 @@ cdef extern from "<fc/log/logger.hpp>":
 
 cdef extern from "<eos/chain/python_interface.hpp>":
     void Py_EnableCodeExecution(int enable, int _only_once)
+    void Py_SetWhiteList(const char** _white_list);
+    void Py_EnableImportWhiteList(int enable);
+
+    int tracemalloc_get_traceback_limit();
+    int tracemalloc_is_out_off_memory();
+    void tracemalloc_set_max_malloc_size(int nsize);
+    int py_tracemalloc_get_max_malloc_size();
+    void tracemalloc_set_max_execution_time(int nsize);
+    int tracemalloc_get_max_execution_time();
+
 
 code_map = {}
 
@@ -34,7 +44,9 @@ cdef extern int python_load(string& name, string& code, string* error):
             tracemalloc.start()
 
             Py_EnableCodeExecution(1, 1)
+            Py_EnableImportWhiteList(1);
             exec(code,vars(new_module))
+            Py_EnableImportWhiteList(0);
             Py_EnableCodeExecution(1, 0)
 
             code_map[name] = new_module
@@ -67,7 +79,9 @@ cdef extern int python_call(string& name, string& function, vector[uint64_t] arg
         tracemalloc.start()
         
         Py_EnableCodeExecution(0, 0)
+        Py_EnableImportWhiteList(1);
         func(*args)
+        Py_EnableImportWhiteList(0);
         Py_EnableCodeExecution(1, 0)
 
         tracemalloc.stop()

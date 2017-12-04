@@ -340,6 +340,13 @@ void messageDrop_(uint32_t handle) {
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_python_contract();
 
+static const char *white_list[] = {
+      "eoslib",
+      "struct",
+      "pickle",
+      "logging",
+      NULL
+};
 
 void init_smart_contract() {
    ilog("++++++++++init_smart_contract+++++++++");
@@ -356,7 +363,9 @@ void init_smart_contract() {
    PyRun_SimpleString("import tracemalloc");
    PyRun_SimpleString("tracemalloc.set_max_malloc_size(2000*1024)");
 
+   Py_SetWhiteList(white_list);
 }
+
 extern "C" {
    PyThreadState *tiny_PyEval_SaveThread(void) {
       return PyEval_SaveThread();

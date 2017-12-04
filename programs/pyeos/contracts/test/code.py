@@ -228,6 +228,13 @@ def test_exec_code():
     if fail:
         raise Exception("test passed")
 
+def test_import():
+    try:
+        import traceback
+    except Exception as e:
+        print(e)
+        raise Exception('import traceback failed')
+
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
@@ -256,4 +263,6 @@ def apply(code, action):
             test_time_out()
         elif action == N(b'testexec'):
             test_exec_code()
+        elif action == N(b'testimport'):
+            test_import()
 

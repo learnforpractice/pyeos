@@ -85,4 +85,17 @@ void messageDrop_(uint32_t handle);
 }
 } // eos::chain
 
-extern "C" void Py_EnableCodeExecution(int enable, int _only_once);
+extern "C" {
+   void Py_EnableCodeExecution(int enable, int _only_once);
+
+   int PyTraceMalloc_GetTracebackLimit();
+   int PyTraceMalloc_IsOutOffMemory();
+
+   void PyTraceMalloc_SetMaxMallocSize(int nsize);
+   int PyTraceMalloc_GetMaxMallocSize();
+   void PyTraceMalloc_SetMaxExecutionTime(int nsize);
+   int PyTraceMalloc_GetMaxExecutionTime();
+
+   void Py_SetWhiteList(const char** _white_list);
+   void Py_EnableImportWhiteList(int enable);
+}
