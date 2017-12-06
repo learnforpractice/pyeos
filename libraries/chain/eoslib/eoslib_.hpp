@@ -60,4 +60,9 @@ int32_t upper_bound_(Name scope, Name code, Name table, void* keys, int keyslen,
 void pack_(string& raw, string& out);
 void unpack_(string& raw, string& out);
 
+int get_account_balance_(Name account, uint64_t& eos_balance, uint64_t& staked_balance, uint32_t& unstaking_balance, uint32_t& last_unstaking_time);
+uint64_t get_active_producers_();
+void  sha256_(string& data, string& hash);
+
+
 #endif /* EOSLIB__HPP_ */

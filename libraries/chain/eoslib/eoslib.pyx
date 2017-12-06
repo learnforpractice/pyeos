@@ -32,6 +32,11 @@ cdef extern from "eoslib_.hpp":
     void unpack_(string& raw, string& out)
     void pack_(string& raw, string& out)
 
+    int get_account_balance_(Name account, uint64_t& eos_balance, uint64_t& staked_balance, uint32_t& unstaking_balance, uint32_t& last_unstaking_time);
+    uint64_t get_active_producers_();
+    void  sha256_(string& data, string& hash);
+
+
 cdef extern from "<eos/chain/python_interface.hpp>" namespace "eosio::chain":
     int wasm_call_function(uint64_t code, uint64_t function, vector[uint64_t] args);
     uint32_t transactionCreate_();
@@ -132,6 +137,7 @@ def remove(scope, table, bytes keys, int key_type):
     cdef char* keys_ = keys
     scope_ = toname(scope)
     table_ = toname(table)
+    value = bytes(1)
     return remove_(Name(scope_), Name(table_), <void*>keys_, len(keys), key_type, value, len(value))
 
 def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
@@ -265,6 +271,7 @@ def update_str(scope, table, bytes keys, bytes value):
     return update(scope, table, keys, KEY_TYPE_STR, value)
 
 def remove_str(scope, table, bytes keys):
+    value = bytes(1)
     return remove(scope, table, keys, KEY_TYPE_STR, value)
 
 def load_str(scope, code, table, bytes keys):
@@ -352,7 +359,27 @@ def messageRequirePermission(uint32_t handle, string& account,string& permission
 def messageSend(uint32_t handle):
     messageSend_(handle);
 
-def messageDrop_(uint32_t handle):
+def messageDrop(uint32_t handle):
     messageDrop_(handle);
 
+def get_account_balance(account):
+    cdef uint64_t eos_balance = 0
+    cdef uint64_t staked_balance = 0
+    cdef uint32_t unstaking_balance = 0
+    cdef uint32_t last_unstaking_time = 0
+    cdef uint64_t account_
+
+    account_ = toname(account)
+
+    get_account_balance_(Name(account_), eos_balance, staked_balance, unstaking_balance, last_unstaking_time)
+
+    return [eos_balance, staked_balance, unstaking_balance, last_unstaking_time]
+
+def get_active_producers():
+    return get_active_producers_()
+
+def sha256(string &data):
+    cdef string hash
+    sha256_(data, hash)
+    return hash
 

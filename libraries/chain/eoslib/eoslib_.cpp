@@ -2,9 +2,10 @@
 #include <eos/chain/python_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
+#include <eos/chain/balance_object.hpp>
+#include <eos/chain/staked_balance_objects.hpp>
 
 #include "eoslib_.hpp"
-
 
 using namespace eosio;
 using namespace eosio::chain;
@@ -182,4 +183,33 @@ DEFINE_READ_FUNCTION(previous)
 DEFINE_READ_FUNCTION(lower_bound)
 DEFINE_READ_FUNCTION(upper_bound)
 
+
+int get_account_balance_(Name account, uint64_t& eos_balance, uint64_t& staked_balance, uint32_t& unstaking_balance, uint32_t& last_unstaking_time) {
+
+   get_validate_ctx().require_scope(account);
+
+   auto& db = get_validate_ctx().db;
+   auto* balance        = db.find< balance_object,by_owner_name >( account );
+   auto* sbo = db.find< staked_balance_object,by_owner_name >( account );
+
+   if (balance == nullptr || sbo == nullptr)
+     return 0;
+
+   eos_balance = balance->balance;
+   staked_balance = sbo->staked_balance;
+   unstaking_balance = sbo->unstaking_balance;
+   last_unstaking_time  = sbo->last_unstaking_time.sec_since_epoch();
+   return 1;
+}
+
+uint64_t get_active_producers_() {
+   account_name _name;
+   get_validate_ctx().get_active_producers(&_name, sizeof(_name));
+   return _name.value;
+}
+
+void  sha256_(string& data, string& hash) {
+   auto v  = fc::sha256::hash(data);
+   hash = v.str();
+}
 
