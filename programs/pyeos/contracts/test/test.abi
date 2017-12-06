@@ -62,6 +62,9 @@
     },{
       "action_name": "testimport",
       "type": "Data"
+    },{
+      "action_name": "testrecursive",
+      "type": "Data"
     }
   ],
   "tables": [{

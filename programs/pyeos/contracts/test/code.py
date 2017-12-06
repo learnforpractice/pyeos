@@ -287,6 +287,14 @@ def test_load_str():
     ret = eoslib.load_str(code, code, table, b'abc')
     print(ret)
 
+def recursive(a):
+    a = bytes(1024*5)
+    recursive(a)
+
+def test_recursive():
+    a = bytes(1024*5)
+    recursive(a)
+
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
@@ -319,4 +327,7 @@ def apply(code, action):
             test_import()
         elif action == N(b'testloadstr'):
             test_load_str()
+        elif action == N(b'testrecursive'):
+            test_recursive()
+
 
