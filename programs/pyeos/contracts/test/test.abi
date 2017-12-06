@@ -42,6 +42,9 @@
       "action_name": "testdb",
       "type": "test"
     },{
+      "action_name": "testloadstr",
+      "type": "Data"
+    },{
       "action_name": "testmsg",
       "type": "bytes"
     },{

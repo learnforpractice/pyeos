@@ -76,7 +76,7 @@ void requireNotice_(uint64_t account) {
    get_validate_ctx().require_recipient(name(account));
 }
 
-#define RETURN_UPDATE_RECORD(NAME, VALUE_OBJECT)       \
+#define RETURN_WRITE_RECORD(NAME, VALUE_OBJECT)       \
    return ctx.NAME##_record<VALUE_OBJECT>(             \
        scope, ctx.code, table, \
        (VALUE_OBJECT::key_type*)keys, value, valuelen)
@@ -124,29 +124,36 @@ void requireNotice_(uint64_t account) {
           valuelen);                                                         \
    }
 
-#define RETURN_UPDATE_RECORD_STR(OPERATION) \
-      return ctx->OPERATION##_record<keystr_value_object>( scope, ctx->code, table, key, data, datalen);
-
+#define RETURN_WRITE_RECORD_STR(OPERATION) \
+{ \
+   std::string str_key((char*)keys, keylen); \
+   return ctx.OPERATION##_record<keystr_value_object>( scope, ctx.code, table, &str_key, value, valuelen ); \
+}
 
 #define RETURN_READ_RECORD_STR(OPERATION) \
-    return ctx->NAME##_record<keystr_value_index, by_scope_primary>( scope, code, table, key, data, datalen);
+{ \
+   std::string str_key((char*)keys, keylen); \
+   return ctx.OPERATION##_record<keystr_value_index, by_scope_primary>( scope, code, table, &str_key, value, valuelen); \
+}
 
 #define DEFINE_WRITE_FUNCTION(OPERATION) \
-int32_t OPERATION##_(name scope, name table, void* keys, int key_type, \
+int32_t OPERATION##_(name scope, name table, void* keys, int keylen, int key_type, \
                 char* value, uint32_t valuelen) { \
    apply_context& ctx = get_apply_ctx(); \
    if (key_type == 0) { \
-      RETURN_UPDATE_RECORD(OPERATION, key_value_object); \
+      RETURN_WRITE_RECORD(OPERATION, key_value_object); \
    } else if (key_type == 1) { \
-      RETURN_UPDATE_RECORD(OPERATION, key128x128_value_object); \
+      RETURN_WRITE_RECORD(OPERATION, key128x128_value_object); \
    } else if (key_type == 2) { \
-      RETURN_UPDATE_RECORD(OPERATION, key64x64x64_value_object); \
+      RETURN_WRITE_RECORD(OPERATION, key64x64x64_value_object); \
+   } else if (key_type == 3) { \
+      RETURN_WRITE_RECORD_STR(OPERATION); \
    } \
    return 0; \
 }
 
 #define DEFINE_READ_FUNCTION(OPERATION) \
-      int32_t OPERATION##_(name scope, name code, name table, void* keys, int key_type, \
+      int32_t OPERATION##_(name scope, name code, name table, void* keys, int keylen, int key_type, \
                     int scope_index, char* value, uint32_t valuelen) { \
    FC_ASSERT(scope_index >= 0, "scope index must be >= 0"); \
    apply_context& ctx = get_apply_ctx(); \
@@ -156,36 +163,8 @@ int32_t OPERATION##_(name scope, name table, void* keys, int key_type, \
       RETURN_READ_RECORD_KEY128x128(OPERATION); \
    } else if (key_type == 2) { \
       RETURN_READ_RECORD_KEY64x64x64(OPERATION); \
-   } \
-   return 0; \
-}
-
-
-#define DEFINE_WRITE_STR_FUNCTION(OPERATION) \
-int32_t OPERATION_str_(name scope, name table, string& keys, int key_type, \
-                char* value, uint32_t valuelen) { \
-   apply_context& ctx = get_apply_ctx(); \
-   if (key_type == 0) { \
-      RETURN_UPDATE_RECORD(OPERATION, key_value_object); \
-   } else if (key_type == 1) { \
-      RETURN_UPDATE_RECORD(OPERATION, key128x128_value_object); \
-   } else if (key_type == 2) { \
-      RETURN_UPDATE_RECORD(OPERATION, key64x64x64_value_object); \
-   } \
-   return 0; \
-}
-
-#define DEFINE_READ_STR_FUNCTION(OPERATION) \
-      int32_t OPERATION##_(name scope, name code, name table, void* keys, int key_type, \
-                    int scope_index, char* value, uint32_t valuelen) { \
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0"); \
-   apply_context& ctx = get_apply_ctx(); \
-   if (key_type == 0) { \
-      RETURN_READ_RECORD(OPERATION); \
-   } else if (key_type == 1) { \
-      RETURN_READ_RECORD_KEY128x128(OPERATION); \
-   } else if (key_type == 2) { \
-      RETURN_READ_RECORD_KEY64x64x64(OPERATION); \
+   } else if (key_type == 3) { \
+      RETURN_READ_RECORD_STR(OPERATION); \
    } \
    return 0; \
 }

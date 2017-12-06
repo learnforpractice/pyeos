@@ -267,6 +267,21 @@ def test_import():
         print(e)
         raise Exception('import traceback failed')
 
+def test_load_str():
+    code = N(b'test')
+    table = N(b'test')
+    ret = eoslib.remove_str(code, table, b'abc', b'def')
+    print(ret)
+
+    test = eoslib.N(b'test')
+    ret = eoslib.load_str(code, code, table, b'abc')
+    print(ret)
+
+    ret = eoslib.store_str(code, table, b'abc', b'def')
+    print(ret)
+
+    ret = eoslib.load_str(code, code, table, b'abc')
+    print(ret)
 
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
@@ -298,4 +313,6 @@ def apply(code, action):
             test_exec_code()
         elif action == N(b'testimport'):
             test_import()
+        elif action == N(b'testloadstr'):
+            test_load_str()
 

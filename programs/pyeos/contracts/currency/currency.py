@@ -3,6 +3,8 @@ if __name__ == '__main__':
 else:
     import eoslib
 import struct
+import logging
+print = logging.info
 
 code = eoslib.N(b'currency')
 table = eoslib.N(b'account')

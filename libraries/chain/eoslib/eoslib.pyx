@@ -18,16 +18,16 @@ cdef extern from "eoslib_.hpp":
     uint64_t currentCode_();
     uint32_t now_();
 
-    int32_t store_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
-    int32_t update_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
-    int32_t remove_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
-    int32_t load_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen);
-    int32_t front_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
-    int32_t back_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
-    int32_t next_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
-    int32_t previous_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
-    int32_t lower_bound_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
-    int32_t upper_bound_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t store_(Name scope, Name table, void* keys, int keyslen, int key_type, char* value, uint32_t valuelen);
+    int32_t update_(Name scope, Name table, void* keys, int keyslen, int key_type, char* value, uint32_t valuelen);
+    int32_t remove_(Name scope, Name table, void* keys, int keyslen, int key_type, char* value, uint32_t valuelen);
+    int32_t load_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen);
+    int32_t front_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t back_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t next_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t previous_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t lower_bound_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
+    int32_t upper_bound_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type, int scope_index, char* value, uint32_t valuelen)
 
     void unpack_(string& raw, string& out)
     void pack_(string& raw, string& out)
@@ -43,6 +43,12 @@ cdef extern from "<eos/chain/python_interface.hpp>" namespace "eosio::chain":
     void messageRequirePermission_(uint32_t handle, string& account,string& permission);
     void messageSend_(uint32_t handle);
     void messageDrop_(uint32_t handle);
+
+
+KEY_TYPE_KEY = 0
+KEY_TYPE_KEY128x128 = 1
+KEY_TYPE_KEY64x64x64 = 2
+KEY_TYPE_STR = 3
 
 def pack(bytes bs):
     cdef string out
@@ -103,14 +109,14 @@ def store(scope, table, bytes keys, int key_type, bytes value):
     cdef char* keys_ = keys
     scope_ = toname(scope)
     table_ = toname(table)
-    return store_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return store_(Name(scope_), Name(table_), <void*>keys_, len(keys), key_type, value, len(value))
 
 def store_u64(scope, table, uint64_t key, uint64_t value):
     cdef uint64_t scope_
     cdef uint64_t table_
     scope_ = toname(scope)
     table_ = toname(table)
-    return store_(Name(scope_), Name(table_), < void* >& key, 0, < char *>& value, sizeof(value))
+    return store_(Name(scope_), Name(table_), <void*>&key, sizeof(key), 0, < char *>&value, sizeof(value))
 
 def update(scope, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
@@ -118,7 +124,7 @@ def update(scope, table, bytes keys, int key_type, bytes value):
     cdef char* keys_ = keys
     scope_ = toname(scope)
     table_ = toname(table)
-    return update_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return update_(Name(scope_), Name(table_), <void*>keys_, len(keys), key_type, value, len(value))
 
 def remove(scope, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
@@ -126,7 +132,7 @@ def remove(scope, table, bytes keys, int key_type, bytes value):
     cdef char* keys_ = keys
     scope_ = toname(scope)
     table_ = toname(table)
-    return remove_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return remove_(Name(scope_), Name(table_), <void*>keys_, len(keys), key_type, value, len(value))
 
 def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -138,7 +144,7 @@ def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return load_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return load_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def load_u64(scope, code, table, uint64_t key):
     cdef uint64_t scope_
@@ -151,8 +157,9 @@ def load_u64(scope, code, table, uint64_t key):
     code_ = toname(code)
     table_ = toname(table)
     value = 0
-    value_length = load_(Name(scope_), Name(code_), Name(table_), < void* >& key, 0, 0, < char *>& value, sizeof(value))
+    value_length = load_(Name(scope_), Name(code_), Name(table_), <void*>&key, sizeof(key), 0, 0, < char *>&value, sizeof(value))
     return value
+
 '''
 int32_t front_( Name scope, Name code, Name table, void* keys,int key_type,int scope_index, char* value, uint32_t valuelen )
 int32_t back_( Name scope, Name code, Name table, void* keys,int key_type, int scope_index, char* value, uint32_t valuelen )
@@ -184,7 +191,7 @@ def front(scope, code, table, bytes keys, int key_type, int scope_index, bytes v
         return None
     if key_type > 2:
         return None
-    return front_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return front_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -199,7 +206,7 @@ def back(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
         return None
     if key_type > 2:
         return None
-    return back_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return back_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def next(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -211,7 +218,7 @@ def next(scope, code, table, bytes keys, int key_type, int scope_index, bytes va
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return next_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return next_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def previous(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -223,7 +230,7 @@ def previous(scope, code, table, bytes keys, int key_type, int scope_index, byte
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return previous_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return previous_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def lower_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -235,7 +242,7 @@ def lower_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return lower_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
 
 def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_
@@ -247,7 +254,68 @@ def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     scope_ = toname(scope)
     code_ = toname(code)
     table_ = toname(table)
-    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
+    return upper_bound_(Name(scope_), Name(code_), Name(table_), <void*>keys_, len(keys), key_type, scope_index, values_, len(values))
+
+
+#str
+def store_str(scope, table, bytes keys, bytes value):
+    return store(scope, table, keys, KEY_TYPE_STR, value)
+
+def update_str(scope, table, bytes keys, bytes value):
+    return update(scope, table, keys, KEY_TYPE_STR, value)
+
+def remove_str(scope, table, bytes keys, bytes value):
+    return remove(scope, table, keys, KEY_TYPE_STR, value)
+
+def load_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = load(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def front_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = front(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def back_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = back(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def next_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = next(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def previous_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = previous(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def lower_bound_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = lower_bound(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
+def upper_bound_str(scope, code, table, bytes keys):
+    values = bytes(256)
+    ret = upper_bound(scope, code, table, keys, KEY_TYPE_STR, 0, values)
+    if ret > 0:
+        return values[:ret]
+    return None
+
 
 def call_wasm_function(uint64_t code, uint64_t function, args: list):
     cdef vector[uint64_t] args_
