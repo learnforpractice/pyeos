@@ -362,6 +362,7 @@ void init_smart_contract() {
    PyRun_SimpleString("import logging");
    PyRun_SimpleString("import tracemalloc");
    PyRun_SimpleString("tracemalloc.set_max_malloc_size(2000*1024)");
+   PyRun_SimpleString("import sys;sys.setrecursionlimit(10)");
 
    Py_SetWhiteList(white_list);
 }
