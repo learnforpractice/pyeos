@@ -124,165 +124,83 @@ void requireNotice_(uint64_t account) {
           valuelen);                                                         \
    }
 
-//      FC_ASSERT(VALUE_INDEX::value_type::number_of_keys<scope_index,"scope
-//      index out off bound");
+#define RETURN_UPDATE_RECORD_STR(OPERATION) \
+      return ctx->OPERATION##_record<keystr_value_object>( scope, ctx->code, table, key, data, datalen);
 
-int32_t store_(name scope, name table, void* keys, int key_type,
-               char* value, uint32_t valuelen) {
-   //   key128x128_value_index
-   apply_context& ctx = get_apply_ctx();
-   //   return ctx.store_record<key_value_object>(name(scope),
-   //   name(ctx.code.value),name(table), (key_value_object::key_type*)keys,
-   //   data, valuelen);
 
-   if (key_type == 0) {
-      RETURN_UPDATE_RECORD(store, key_value_object);
-   } else if (key_type == 1) {
-      RETURN_UPDATE_RECORD(store, key128x128_value_object);
-   } else if (key_type == 2) {
-      RETURN_UPDATE_RECORD(store, key64x64x64_value_object);
-   }
-   return 0;
-   /*
-    key_value_object
-    key128x128_value_index
-    key64x64x64_value_index
-    */
+#define RETURN_READ_RECORD_STR(OPERATION) \
+    return ctx->NAME##_record<keystr_value_index, by_scope_primary>( scope, code, table, key, data, datalen);
+
+#define DEFINE_WRITE_FUNCTION(OPERATION) \
+int32_t OPERATION##_(name scope, name table, void* keys, int key_type, \
+                char* value, uint32_t valuelen) { \
+   apply_context& ctx = get_apply_ctx(); \
+   if (key_type == 0) { \
+      RETURN_UPDATE_RECORD(OPERATION, key_value_object); \
+   } else if (key_type == 1) { \
+      RETURN_UPDATE_RECORD(OPERATION, key128x128_value_object); \
+   } else if (key_type == 2) { \
+      RETURN_UPDATE_RECORD(OPERATION, key64x64x64_value_object); \
+   } \
+   return 0; \
 }
 
-int32_t update_(name scope, name table, void* keys, int key_type,
-                char* value, uint32_t valuelen) {
-   apply_context& ctx = get_apply_ctx();
-   if (key_type == 0) {
-      RETURN_UPDATE_RECORD(update, key_value_object);
-   } else if (key_type == 1) {
-      RETURN_UPDATE_RECORD(update, key128x128_value_object);
-   } else if (key_type == 2) {
-      RETURN_UPDATE_RECORD(update, key64x64x64_value_object);
-   }
-
-   return 0;
+#define DEFINE_READ_FUNCTION(OPERATION) \
+      int32_t OPERATION##_(name scope, name code, name table, void* keys, int key_type, \
+                    int scope_index, char* value, uint32_t valuelen) { \
+   FC_ASSERT(scope_index >= 0, "scope index must be >= 0"); \
+   apply_context& ctx = get_apply_ctx(); \
+   if (key_type == 0) { \
+      RETURN_READ_RECORD(OPERATION); \
+   } else if (key_type == 1) { \
+      RETURN_READ_RECORD_KEY128x128(OPERATION); \
+   } else if (key_type == 2) { \
+      RETURN_READ_RECORD_KEY64x64x64(OPERATION); \
+   } \
+   return 0; \
 }
 
-int32_t remove_(name scope, name table, void* keys, int key_type,
-                char* value, uint32_t valuelen) {
-   apply_context& ctx = get_apply_ctx();
-   if (key_type == 0) {
-      RETURN_UPDATE_RECORD(remove, key_value_object);
-   } else if (key_type == 1) {
-      RETURN_UPDATE_RECORD(remove, key128x128_value_object);
-   } else if (key_type == 2) {
-      RETURN_UPDATE_RECORD(remove, key64x64x64_value_object);
-   }
-   return 0;
+
+#define DEFINE_WRITE_STR_FUNCTION(OPERATION) \
+int32_t OPERATION_str_(name scope, name table, string& keys, int key_type, \
+                char* value, uint32_t valuelen) { \
+   apply_context& ctx = get_apply_ctx(); \
+   if (key_type == 0) { \
+      RETURN_UPDATE_RECORD(OPERATION, key_value_object); \
+   } else if (key_type == 1) { \
+      RETURN_UPDATE_RECORD(OPERATION, key128x128_value_object); \
+   } else if (key_type == 2) { \
+      RETURN_UPDATE_RECORD(OPERATION, key64x64x64_value_object); \
+   } \
+   return 0; \
 }
 
-int32_t load_(name scope, name code, name table, void* keys, int key_type,
-              int scope_index, char* value, uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
-
-   apply_context& ctx = get_apply_ctx();
-
-   if (key_type == 0) {
-      RETURN_READ_RECORD(load);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(load);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(load);
-   }
-   return 0;
+#define DEFINE_READ_STR_FUNCTION(OPERATION) \
+      int32_t OPERATION##_(name scope, name code, name table, void* keys, int key_type, \
+                    int scope_index, char* value, uint32_t valuelen) { \
+   FC_ASSERT(scope_index >= 0, "scope index must be >= 0"); \
+   apply_context& ctx = get_apply_ctx(); \
+   if (key_type == 0) { \
+      RETURN_READ_RECORD(OPERATION); \
+   } else if (key_type == 1) { \
+      RETURN_READ_RECORD_KEY128x128(OPERATION); \
+   } else if (key_type == 2) { \
+      RETURN_READ_RECORD_KEY64x64x64(OPERATION); \
+   } \
+   return 0; \
 }
 
-int32_t front_(name scope, name code, name table, void* keys, int key_type,
-               int scope_index, char* value, uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
-   apply_context& ctx = get_apply_ctx();
+DEFINE_WRITE_FUNCTION(store)
+DEFINE_WRITE_FUNCTION(update)
+DEFINE_WRITE_FUNCTION(remove)
 
-   if (key_type == 0) {
-      RETURN_READ_RECORD(front);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(front);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(front);
-   }
-   return 0;
-}
+DEFINE_READ_FUNCTION(load)
+DEFINE_READ_FUNCTION(front)
+DEFINE_READ_FUNCTION(back)
+DEFINE_READ_FUNCTION(next)
+DEFINE_READ_FUNCTION(previous)
+DEFINE_READ_FUNCTION(lower_bound)
+DEFINE_READ_FUNCTION(upper_bound)
 
-int32_t back_(name scope, name code, name table, void* keys, int key_type,
-              int scope_index, char* value, uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
 
-   apply_context& ctx = get_apply_ctx();
-
-   if (key_type == 0) {
-      RETURN_READ_RECORD(back);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(back);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(back);
-   }
-   return 0;
-}
-
-int32_t next_(name scope, name code, name table, void* keys, int key_type,
-              int scope_index, char* value, uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
-
-   apply_context& ctx = get_apply_ctx();
-
-   if (key_type == 0) {
-      RETURN_READ_RECORD(next);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(next);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(next);
-   }
-   return 0;
-}
-
-int32_t previous_(name scope, name code, name table, void* keys, int key_type,
-                  int scope_index, char* value, uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
-   apply_context& ctx = get_apply_ctx();
-   if (key_type == 0) {
-      RETURN_READ_RECORD(previous);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(previous);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(previous);
-   }
-   return 0;
-}
-
-int32_t lower_bound_(name scope, name code, name table, void* keys,
-                     int key_type, int scope_index, char* value,
-                     uint32_t valuelen) {
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
-   apply_context& ctx = get_apply_ctx();
-   if (key_type == 0) {
-      RETURN_READ_RECORD(lower_bound);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(lower_bound);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(lower_bound);
-   }
-   return 0;
-}
-
-int32_t upper_bound_(name scope, name code, name table, void* keys,
-                     int key_type, int scope_index, char* value,
-                     uint32_t valuelen) {
-   apply_context& ctx = get_apply_ctx();
-
-   FC_ASSERT(scope_index >= 0, "scope index must be >= 0");
-
-   if (key_type == 0) {
-      RETURN_READ_RECORD(upper_bound);
-   } else if (key_type == 1) {
-      RETURN_READ_RECORD_KEY128x128(upper_bound);
-   } else if (key_type == 2) {
-      RETURN_READ_RECORD_KEY64x64x64(upper_bound);
-   }
-   return 0;
-}
