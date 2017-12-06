@@ -415,7 +415,8 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
    }
 
    capture("n", block.block_num())("t", block.timestamp)("c", now)("count",count);
-   if (!app().is_debug_mode()) {
+//   if (!app().is_debug_mode()) {
+   if (true) {
       app().get_plugin<net_plugin>().broadcast_block(block);
    }
    return block_production_condition::produced;

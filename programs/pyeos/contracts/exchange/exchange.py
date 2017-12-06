@@ -159,7 +159,7 @@ class Bid(Object):
     def remove(self):
         keys = struct.pack('16s16s',self.buyer(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
-        return eoslib.remove(exchange,exchange,table_bids,keys,1,values)
+        return eoslib.remove(exchange,table_bids,keys,1)
 
     def load_by_order_id(id):
         keys = struct.pack('16s16s',id(),bytes(16))
@@ -295,7 +295,7 @@ class Ask(Object):
     def remove(self):
         keys = struct.pack('16s16s',self.seller(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
-        return eoslib.remove(exchange,exchange,table_asks,keys,1,values)
+        return eoslib.remove(exchange,table_asks,keys,1)
 
     def load_by_order_id(id):
         keys = struct.pack('16s16s',id(),bytes(16))

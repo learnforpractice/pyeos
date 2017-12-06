@@ -1458,7 +1458,8 @@ void chain_controller::clear_expired_transactions()
    auto& generated_transaction_idx = _db.get_mutable_index<generated_transaction_multi_index>();
    const auto& generated_index = generated_transaction_idx.indices().get<generated_transaction_object::by_expiration>();
    while( (!generated_index.empty()) && (head_block_time() > generated_index.rbegin()->trx.expiration) ) {
-      if (appbase::app().is_debug_mode()) {
+//      if (appbase::app().is_debug_mode()) {
+      if (false) {
          wlog("generated transaction is not removed in order to ignore pointer double free problem, generated_index.size() ${n}",("n",generated_index.size()));
          break;
       } else {

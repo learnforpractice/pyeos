@@ -272,7 +272,7 @@ def update_str(scope, table, bytes keys, bytes value):
 
 def remove_str(scope, table, bytes keys):
     value = bytes(1)
-    return remove(scope, table, keys, KEY_TYPE_STR, value)
+    return remove(scope, table, keys, KEY_TYPE_STR)
 
 def load_str(scope, code, table, bytes keys):
     values = bytes(256)
