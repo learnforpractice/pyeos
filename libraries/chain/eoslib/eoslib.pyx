@@ -126,7 +126,7 @@ def update(scope, table, bytes keys, int key_type, bytes value):
     table_ = toname(table)
     return update_(Name(scope_), Name(table_), <void*>keys_, len(keys), key_type, value, len(value))
 
-def remove(scope, table, bytes keys, int key_type, bytes value):
+def remove(scope, table, bytes keys, int key_type):
     cdef uint64_t scope_
     cdef uint64_t table_
     cdef char* keys_ = keys
@@ -264,7 +264,7 @@ def store_str(scope, table, bytes keys, bytes value):
 def update_str(scope, table, bytes keys, bytes value):
     return update(scope, table, keys, KEY_TYPE_STR, value)
 
-def remove_str(scope, table, bytes keys, bytes value):
+def remove_str(scope, table, bytes keys):
     return remove(scope, table, keys, KEY_TYPE_STR, value)
 
 def load_str(scope, code, table, bytes keys):

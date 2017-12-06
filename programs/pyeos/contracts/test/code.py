@@ -270,7 +270,11 @@ def test_import():
 def test_load_str():
     code = N(b'test')
     table = N(b'test')
-    ret = eoslib.remove_str(code, table, b'abc', b'def')
+
+    ret = eoslib.remove_str(code, table, b'abc')
+    print(ret)
+
+    ret = eoslib.remove_str(code, table, b'abc')
     print(ret)
 
     test = eoslib.N(b'test')
