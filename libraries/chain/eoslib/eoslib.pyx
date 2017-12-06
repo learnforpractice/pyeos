@@ -18,9 +18,9 @@ cdef extern from "eoslib_.hpp":
     uint64_t currentCode_();
     uint32_t now_();
 
-    int32_t store_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
-    int32_t update_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
-    int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t store_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t update_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
+    int32_t remove_(Name scope, Name table, void* keys, int key_type, char* value, uint32_t valuelen);
     int32_t load_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen);
     int32_t front_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
     int32_t back_(Name scope, Name code, Name table, void* keys, int key_type, int scope_index, char* value, uint32_t valuelen)
@@ -97,44 +97,36 @@ def requireNotice(account):
 def currentCode():
     return currentCode_()
 
-def store(scope, code, table, bytes keys, int key_type, bytes value):
+def store(scope, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
-    cdef uint64_t code_
     cdef uint64_t table_
     cdef char* keys_ = keys
     scope_ = toname(scope)
-    code_ = toname(code)
     table_ = toname(table)
-    return store_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return store_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
 
-def store_u64(scope, code, table, uint64_t key, uint64_t value):
+def store_u64(scope, table, uint64_t key, uint64_t value):
     cdef uint64_t scope_
-    cdef uint64_t code_
     cdef uint64_t table_
     scope_ = toname(scope)
-    code_ = toname(code)
     table_ = toname(table)
-    return store_(Name(scope_), Name(code_), Name(table_), < void* >& key, 0, < char *>& value, sizeof(value))
+    return store_(Name(scope_), Name(table_), < void* >& key, 0, < char *>& value, sizeof(value))
 
-def update(scope, code, table, bytes keys, int key_type, bytes value):
+def update(scope, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
-    cdef uint64_t code_
     cdef uint64_t table_
     cdef char* keys_ = keys
     scope_ = toname(scope)
-    code_ = toname(code)
     table_ = toname(table)
-    return update_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return update_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
 
-def remove(scope, code, table, bytes keys, int key_type, bytes value):
+def remove(scope, table, bytes keys, int key_type, bytes value):
     cdef uint64_t scope_
-    cdef uint64_t code_
     cdef uint64_t table_
     cdef char* keys_ = keys
     scope_ = toname(scope)
-    code_ = toname(code)
     table_ = toname(table)
-    return remove_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, value, len(value))
+    return remove_(Name(scope_), Name(table_), <void* >keys_, key_type, value, len(value))
 
 def load(scope, code, table, bytes keys, int key_type, int scope_index, bytes values):
     cdef uint64_t scope_

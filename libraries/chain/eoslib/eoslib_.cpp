@@ -78,7 +78,7 @@ void requireNotice_(uint64_t account) {
 
 #define RETURN_UPDATE_RECORD(NAME, VALUE_OBJECT)       \
    return ctx.NAME##_record<VALUE_OBJECT>(             \
-       scope, code, table, \
+       scope, ctx.code, table, \
        (VALUE_OBJECT::key_type*)keys, value, valuelen)
 
 #define RETURN_READ_RECORD(NAME)                                        \
@@ -127,7 +127,7 @@ void requireNotice_(uint64_t account) {
 //      FC_ASSERT(VALUE_INDEX::value_type::number_of_keys<scope_index,"scope
 //      index out off bound");
 
-int32_t store_(name scope, name code, name table, void* keys, int key_type,
+int32_t store_(name scope, name table, void* keys, int key_type,
                char* value, uint32_t valuelen) {
    //   key128x128_value_index
    apply_context& ctx = get_apply_ctx();
@@ -150,7 +150,7 @@ int32_t store_(name scope, name code, name table, void* keys, int key_type,
     */
 }
 
-int32_t update_(name scope, name code, name table, void* keys, int key_type,
+int32_t update_(name scope, name table, void* keys, int key_type,
                 char* value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {
@@ -164,7 +164,7 @@ int32_t update_(name scope, name code, name table, void* keys, int key_type,
    return 0;
 }
 
-int32_t remove_(name scope, name code, name table, void* keys, int key_type,
+int32_t remove_(name scope, name table, void* keys, int key_type,
                 char* value, uint32_t valuelen) {
    apply_context& ctx = get_apply_ctx();
    if (key_type == 0) {

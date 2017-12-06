@@ -1,6 +1,9 @@
 import eoslib
 import struct
 import pickle
+import logging
+print = logging.info
+
 from eoslib import N
 def init():
     print('hello from test.init')
@@ -11,24 +14,54 @@ test = N(b'test')
 def test_call_wasm_function():
     eoslib.call_wasm_function(N('test2'), N(b'hello'), [1,2])
 
+class Account(object):
+    key = eoslib.N(b'account')
+    code = eoslib.N(b'currency')
+    table = eoslib.N(b'account')
+
+    def __init__(self, scope, balance=0):
+        self.scope = scope
+        if balance == 0:
+            self.load()
+        else:
+            self.balance = balance
+
+    def isEmpty(self):
+        return self.balance == 0
+
+    def store(self):
+        eoslib.store_u64(self.scope, Account.table, Account.key, self.balance)
+
+    def load(self):
+        self.balance = eoslib.load_u64(self.scope, Account.code, Account.table, Account.key)
+
 def test_rw_db():
-    keys = struct.pack('Q', N('currency'))
+    
+    a = Account('test')
+    print('+++++++++balance:', a.balance)
+    a.balance += 100
+    a.store()
+    
+    a = Account('test')
+    print('+++++++++balance:', a.balance)
+
+
+    db_keys = struct.pack('Q', N('currency'))
     values = bytes(16)
     eos = N('eos')
-    ret = eoslib.load(eos, eos, N('test'), keys, 0, 0, values)
+    ret = eoslib.load(eos, eos, N('test'), db_keys, 0, 0, values)
     print('+++++++eoslib.load return:',ret)
     print(values)
     results = struct.unpack('QQ', values)
     print(results)
 
     print('--------------------------------')
-    keys = struct.pack('Q', N('currency'))
-    values = struct.pack('QQ', 77, 88)
-    ret = eoslib.store(test, eos, N('test'), keys, 0, values)
+    values = struct.pack('QQ', 0x778899, 0x112233)
+    ret = eoslib.store(test, N('test'), db_keys, 0, values)
     print('++++++++eoslib.store return:',ret)
 
     values = bytes(16)
-    ret = eoslib.load(test, eos, N('test'), keys, 0, 0, values)
+    ret = eoslib.load(test, eos, N('test'), db_keys, 0, 0, values)
     print('+++++++eoslib.load return:',ret)
     print(values)
     results = struct.unpack('QQ', values)
@@ -36,13 +69,12 @@ def test_rw_db():
 
     print('--------------------------------')
 
-    keys = struct.pack('Q', N('currency'))
     values = struct.pack('QQ', 44, 33)
-    ret = eoslib.store(test, test, N('test'), keys, 0, values)
+    ret = eoslib.store(test, N('test'), db_keys, 0, values)
     print('++++++++eoslib.store return:',ret)
 
     values = bytes(16)
-    ret = eoslib.load(test, test, N('test'), keys, 0, 0, values)
+    ret = eoslib.load(test, test, N('test'), db_keys, 0, 0, values)
     print('+++++++eoslib.load return:',ret)
     print(values)
     results = struct.unpack('QQ', values)
@@ -61,7 +93,7 @@ def test_db1():
 
     keys = msg[:8]
     values = msg[8:]
-    eoslib.store(test, test, test, keys, 0, values)
+    eoslib.store(test, test, keys, 0, values)
     keys = msg[:8]
     values = msg[8:]
     eoslib.load(test, test, test, keys, 0, 0, values)
@@ -78,7 +110,7 @@ def test_db2():
         print(result)
     keys = msg[:8]
     values = msg[8:]
-    eoslib.store(test, test, test, keys, 0, values)
+    eoslib.store(test, test, keys, 0, values)
     keys = msg[:8]
     values = msg[8:]
     eoslib.load(test, test, test, keys, 0, 0, values)
@@ -88,7 +120,7 @@ def test_db():
     for i in range(4, 11):
         keys = int.to_bytes(i + 1, 8, 'little')
         values = int.to_bytes(i + 2, 8, 'little')
-        eoslib.store(test, test, test, keys, 0, values)
+        eoslib.store(test, test, keys, 0, values)
 
     print('----------upper bound------------')
     keys = int.to_bytes(8, 8, 'little')
@@ -235,6 +267,7 @@ def test_import():
         print(e)
         raise Exception('import traceback failed')
 
+
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
@@ -246,7 +279,7 @@ def apply(code, action):
             from_ = result[0]
             to_ = result[1]
             amount = result[2]
-        elif action == N(b'test'):
+        elif action == N(b'testrwdb'):
             test_rw_db()
         elif action == N(b'testdb'):
             test_db()

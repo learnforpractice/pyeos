@@ -25,13 +25,13 @@ string uint64_to_string_(uint64_t n);
 
 #define Name name
 
-int32_t store_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t store_(Name scope, Name table, void* keys, int key_type,
                char* value, uint32_t valuelen);
 
-int32_t update_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t update_(Name scope, Name table, void* keys, int key_type,
                 char* value, uint32_t valuelen);
 
-int32_t remove_(Name scope, Name code, Name table, void* keys, int key_type,
+int32_t remove_(Name scope, Name table, void* keys, int key_type,
                 char* value, uint32_t valuelen);
 
 int32_t load_(Name scope, Name code, Name table, void* keys, int key_type,

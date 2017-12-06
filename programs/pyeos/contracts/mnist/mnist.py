@@ -90,17 +90,17 @@ class Network(object):
 
         keys = struct.pack('Q', N('sizeweights'))
         values = struct.pack('Q', len(weights))
-        eoslib.store(mnist, mnist, table_network, keys, 0, values)
+        eoslib.store(mnist, table_network, keys, 0, values)
 
         keys = struct.pack('Q', N('sizebiases'))
         values = struct.pack('Q', len(biases))
-        eoslib.store(mnist, mnist, table_network, keys, 0, values)
+        eoslib.store(mnist, table_network, keys, 0, values)
 
         keys = struct.pack('Q', N('weights'))
-        eoslib.store(mnist, mnist, table_network, keys, 0, weights)
+        eoslib.store(mnist, table_network, keys, 0, weights)
 
         keys = struct.pack('Q', N('biases'))
-        eoslib.store(mnist, mnist, table_network, keys, 0, biases)
+        eoslib.store(mnist, table_network, keys, 0, biases)
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
@@ -258,7 +258,7 @@ def test():
     print(len(weights))
     keys = struct.pack('Q', N('sizeweights'))
     values = struct.pack('Q', len(weights))
-    ret = eoslib.store(mnist, mnist, table_network, keys, 0, values)
+    ret = eoslib.store(mnist, table_network, keys, 0, values)
     print('store return:', ret)
     
     keys = struct.pack('Q', N('sizeweights'))
@@ -267,7 +267,7 @@ def test():
     print('load return:', int.from_bytes(values, 'little'))
     
     keys = struct.pack('Q', N('weights'))
-    ret = eoslib.store(mnist, mnist, table_network, keys, 0, weights)
+    ret = eoslib.store(mnist, table_network, keys, 0, weights)
     print('store return:', ret)
 
     keys = struct.pack('Q', N('weights'))

@@ -99,7 +99,7 @@ class Account(Object):
         keys = struct.pack("Q", self.owner)
         print(self.eos_balance, self.currency_balance, self.open_orders)
         values = struct.pack('QQI', self.eos_balance, self.currency_balance, self.open_orders)
-        eoslib.store(exchange, exchange, table_account, keys, 0, values)
+        eoslib.store(exchange, table_account, keys, 0, values)
         
     def load(self):
         keys = struct.pack("Q", self.owner)
@@ -154,7 +154,7 @@ class Bid(Object):
     def store(self):
         keys = struct.pack('16s16s',self.buyer(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
-        return eoslib.store(exchange,exchange,table_bids,keys,1,values)
+        return eoslib.store(exchange,table_bids,keys,1,values)
     
     def remove(self):
         keys = struct.pack('16s16s',self.buyer(),self.price())
@@ -290,7 +290,7 @@ class Ask(Object):
     def store(self):
         keys = struct.pack('16s16s',self.seller(),self.price())
         values = struct.pack('QI',self.quantity,self.expiration)
-        return eoslib.store(exchange,exchange,table_asks,keys,1,values)
+        return eoslib.store(exchange,table_asks,keys,1,values)
 
     def remove(self):
         keys = struct.pack('16s16s',self.seller(),self.price())

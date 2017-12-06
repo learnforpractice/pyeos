@@ -53,7 +53,12 @@ def deploy_wasm_code():
 def test_db():
     with producer:
         test = {'name':'test', 'balance':[1,2,3]}
-        r = eosapi.push_message('test','test',test,['test', 'eos'],{'test':'active'})
+        r = eosapi.push_message('test','test', test, ['test', 'eos'], {'test':'active'})
+        assert r
+
+def test_rw_db():
+    with producer:
+        r = eosapi.push_message('test', 'testrwdb', {'data':0}, ['test', 'eos'], {'test':'active'})
         assert r
 
 def send_message():
@@ -106,8 +111,8 @@ def send_eos_inline():
 def lock_eos():
 #    args = {"from":"inita", "to":"test", "amount":1000, "memo":"hello"}
 #    scopes = ['test', 'inita', 'eos']
-    args = {"from":"inita", "to":"inita", "amount":50}
-    scopes = ['inita', 'eos']
+    args = {"from":"inita", "to":"test", "amount":50}
+    scopes = ['inita', 'eos', 'test']
     permissions = {'inita':'active'}
 
     with producer:
@@ -119,7 +124,7 @@ def lock_eos():
     print(r)
 
 def unlock_eos():
-    args = {"account":"test", "amount":1000}
+    args = {"account":"test", "amount":50}
     scopes = ['test', 'eos']
     permissions = {'test':'active'}
 

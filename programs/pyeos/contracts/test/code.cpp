@@ -4,11 +4,11 @@
 #include <eoslib/print.hpp>
 
 extern "C"{
-   int pythonLoad(uint64_t name,void *codeptr,int codesize);
-   int pythonCall(uint64_t name,uint64_t func,void* argsptr,int argssize);
+   int pythonLoad(uint64_t name, const char* codeptr, int codesize);
+   int pythonCall(uint64_t name, uint64_t func, void* argsptr, int argssize);
 }
 
-int strlen(char *code){
+int strlen(const char *code){
    int length = 0;
    while(code[length++]);
    return length;
@@ -48,7 +48,7 @@ extern "C" {
        if( code == N(test) ) {
           if( action == N(test) ) {
              require_auth(N(test));
-             char *code = "def hello():\n" \
+             const char *code = "def hello():\n" \
                           "    print('hello,world')";
              pythonLoad(N(hello),code,strlen(code));
              pythonCall(N(hello),N(hello),0,0);

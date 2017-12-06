@@ -75,7 +75,7 @@ namespace python {
 
        const auto& recipient = get_db().get_database().get<account_object,by_name>(ctx->code);
 
-       if (recipient.code.size()) {
+       if (recipient.code.size() > 0) {
           //idump((context.code)(context.msg.type));
           const uint32_t execution_time = 1000*200; //200 ms
           if (recipient.vm_type == 0){

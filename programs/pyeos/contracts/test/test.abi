@@ -36,8 +36,8 @@
     }
   ],
   "actions": [{
-      "action_name": "test",
-      "type": "test"
+      "action_name": "testrwdb",
+      "type": "Data"
     },{
       "action_name": "testdb",
       "type": "test"
