@@ -4,7 +4,7 @@ else:
     import eoslib
 import struct
 import logging
-print = logging.info
+print = logging.info 
 
 code = eoslib.N(b'currency')
 table = eoslib.N(b'account')
@@ -34,7 +34,7 @@ def init():
 
 def apply(name, type):
 #     print('hello from python apply',name,type)
-#     print(eoslib.n2s(name),eoslib.n2s(type))
+    print(eoslib.n2s(name),eoslib.n2s(type))
     if type == eoslib.N(b'transfer'):
         msg = eoslib.readMessage()
         result = struct.unpack('QQQ', msg)

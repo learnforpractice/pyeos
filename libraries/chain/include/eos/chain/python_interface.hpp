@@ -98,4 +98,9 @@ extern "C" {
 
    void Py_SetWhiteList(const char** _white_list);
    void Py_EnableImportWhiteList(int enable);
+   int is_debug_mode();
+
 }
+
+void call_eos_main();
+void call_start_interactive_console();

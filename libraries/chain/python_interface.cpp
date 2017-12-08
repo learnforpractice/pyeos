@@ -34,7 +34,7 @@ int python_load_with_gil(string& name, string& code) {
    bool need_hold_gil;
    PyGILState_STATE save;
 
-   need_hold_gil = boost::this_thread::get_id() == appbase::app().get_thread_id();
+   need_hold_gil = boost::this_thread::get_id() != appbase::app().get_thread_id();
 
    if (need_hold_gil) {
       save = PyGILState_Ensure();
@@ -67,7 +67,7 @@ int python_call_with_gil(std::string &name, std::string &function, std::vector<u
    bool need_hold_gil;
    boost::this_thread::get_id();
 
-   need_hold_gil = boost::this_thread::get_id() == appbase::app().get_thread_id();
+   need_hold_gil = boost::this_thread::get_id() != appbase::app().get_thread_id();
 
    if (need_hold_gil) {
       save = PyGILState_Ensure();
@@ -336,6 +336,20 @@ void messageDrop_(uint32_t handle) {
 }
 }
 
+extern "C" {
+   PyThreadState *tiny_PyEval_SaveThread(void) {
+      return PyEval_SaveThread();
+   }
+
+   void tiny_PyEval_RestoreThread(PyThreadState *tstate) {
+      PyEval_RestoreThread(tstate);
+   }
+
+   int is_debug_mode() {
+      return appbase::app().is_debug_mode();
+   }
+
+}
 
 extern "C" PyObject* PyInit_eoslib();
 extern "C" PyObject* PyInit_python_contract();
@@ -348,31 +362,52 @@ static const char *white_list[] = {
       NULL
 };
 
-void init_smart_contract() {
+
+typedef void (*fn_eos_main)();
+typedef void (*fn_start_interactive_console)();
+
+static fn_eos_main eos_main = NULL;
+static fn_start_interactive_console start_interactive_console = NULL;
+
+void call_eos_main() {
+   if (eos_main == NULL) {
+      return;
+   }
+   eos_main();
+}
+
+void call_start_interactive_console() {
+   if (start_interactive_console == NULL) {
+      return;
+   }
+   start_interactive_console();
+}
+
+void init_debug() {
+   if (is_debug_mode()) {
+      PyRun_SimpleString("import pydevd;pydevd.settrace(suspend=False)");
+      PyRun_SimpleString("import threading;threading.settrace(pydevd.GetGlobalDebugger().trace_dispatch)");
+   }
+}
+
+typedef void (*fn_eos_main)();
+typedef void (*fn_start_interactive_console)();
+
+void init_smart_contract(fn_eos_main _eos_main, fn_start_interactive_console _start_interactive_console) {
+   eos_main = _eos_main;
+   start_interactive_console = _start_interactive_console;
+
    ilog("++++++++++init_smart_contract+++++++++");
+   Py_SetWhiteList(white_list);
+
    Py_InitializeEx(0);
    PyEval_InitThreads();
 
    PyInit_eoslib();
    PyInit_python_contract();
-   PyRun_SimpleString("import eoslib");
-   PyRun_SimpleString("import struct");
-   PyRun_SimpleString("import pickle");
-   PyRun_SimpleString("import numpy");
-   PyRun_SimpleString("import logging");
-   PyRun_SimpleString("import tracemalloc");
-   PyRun_SimpleString("tracemalloc.set_max_malloc_size(2000*1024)");
+   PyRun_SimpleString("import hello");
+   PyRun_SimpleString("import python_contract");
+   PyRun_SimpleString("python_contract.start()");
 //   PyRun_SimpleString("import sys;sys.setrecursionlimit(20)");
-
-   Py_SetWhiteList(white_list);
-}
-
-extern "C" {
-   PyThreadState *tiny_PyEval_SaveThread(void) {
-      return PyEval_SaveThread();
-   }
-   void tiny_PyEval_RestoreThread(PyThreadState *tstate) {
-      PyEval_RestoreThread(tstate);
-   }
 }
 
