@@ -58,7 +58,7 @@ cdef extern int python_load(string& name, string& code, string* error):
                 print(file_name)
                 with open(file_name, 'wb') as f:
                     f.write(b'import pydevd\n')
-                    f.write(b'pydevd.settrace(suspend=True)\n')
+                    f.write(b'pydevd.settrace(suspend=False)\n')
                     f.write(code)
 
             if not is_debug_mode():

@@ -378,9 +378,13 @@ signed_block chain_controller::_generate_block(
 
    const auto end = fc::time_point::now();
    const auto gen_time = end - start;
-   if( gen_time > fc::milliseconds(10) ) {
-      ilog("generation took ${x} ms", ("x", gen_time.count() / 1000));
-      FC_ASSERT(gen_time < fc::milliseconds(250), "block took too long to build");
+   if (appbase::app().is_debug_mode()) {
+      //
+   } else {
+      if( gen_time > fc::milliseconds(10) ) {
+         ilog("generation took ${x} ms", ("x", gen_time.count() / 1000));
+         FC_ASSERT(gen_time < fc::milliseconds(250), "block took too long to build");
+      }
    }
 
    if( !(skip & skip_producer_signature) )
@@ -911,8 +915,14 @@ void chain_controller::process_message(const transaction& trx, account_name code
                                        apply_context* parent_context, int depth,
                                        const fc::time_point& start_time ) {
    const blockchain_configuration& chain_configuration = get_global_properties().configuration;
-   EOS_ASSERT((fc::time_point::now() - start_time).count() < chain_configuration.max_trx_runtime, checktime_exceeded,
-      "Transaction message exceeded maximum total transaction time of ${limit}ms", ("limit", chain_configuration.max_trx_runtime));
+
+   if (appbase::app().is_debug_mode()) {
+      //
+   } else {
+      EOS_ASSERT((fc::time_point::now() - start_time).count() < chain_configuration.max_trx_runtime, checktime_exceeded,
+         "Transaction message exceeded maximum total transaction time of ${limit}ms", ("limit", chain_configuration.max_trx_runtime));
+   }
+
    EOS_ASSERT(depth < chain_configuration.in_depth_limit, msg_resource_exhausted,
      "Message processing exceeded maximum inline recursion depth of ${limit}", ("limit", chain_configuration.in_depth_limit));
 
