@@ -9,7 +9,8 @@ import zlib
 try:
     import eosapi
     producer = eosapi.Producer()
-    print('please make sure you are running the following command before test')
+    print('This DL example is not supported anymore, a turly AI on blockchain will not looks like this.')
+    print('Please make sure you are running the following command before test')
     print('./pyeos/pyeos --manual-gen-block --debug -i')
 except Exception as e:
     print(e)

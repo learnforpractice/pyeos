@@ -1,7 +1,4 @@
-if __name__ == '__main__':
-    import eoslib_dummy as eoslib
-else:
-    import eoslib
+import eoslib
 import struct
 import logging
 print = logging.info 
@@ -11,10 +8,10 @@ table = eoslib.N(b'account')
 
 class Account(object):
     key = eoslib.N(b'account')
-    def __init__(self, scope, balance=0):
+    def __init__(self, scope, balance=0): 
         self.scope = scope
         if balance == 0:
-            self.load()
+            self.load() 
         else:
             self.balance = balance
     def isEmpty(self):
@@ -42,7 +39,7 @@ def apply(name, type):
         from_ = result[0]
         to_ = result[1]
         amount = result[2]
-        
+
         eoslib.requireAuth(from_);
         eoslib.requireNotice(from_);
         eoslib.requireNotice(to_)
@@ -54,9 +51,4 @@ def apply(name, type):
             to_.balance += amount
             from_.store()
             to_.store()
-
-if __name__ == '__main__':
-    init()
-    apply(eoslib.N(b'python'), eoslib.N(b'transfer'))
-
 

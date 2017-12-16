@@ -104,3 +104,4 @@ extern "C" {
 
 void call_eos_main();
 void call_start_interactive_console();
+void tinypy_run_code_(const char* code);

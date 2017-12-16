@@ -36,6 +36,8 @@ int python_load_with_gil(string& name, string& code) {
 
    need_hold_gil = boost::this_thread::get_id() != appbase::app().get_thread_id();
 
+   ilog("++++++++need_hold_gil: ${n}", ("n", need_hold_gil));
+
    if (need_hold_gil) {
       save = PyGILState_Ensure();
    }
@@ -68,7 +70,7 @@ int python_call_with_gil(std::string &name, std::string &function, std::vector<u
    boost::this_thread::get_id();
 
    need_hold_gil = boost::this_thread::get_id() != appbase::app().get_thread_id();
-
+   ilog("++++++++need_hold_gil: ${n}", ("n", need_hold_gil));
    if (need_hold_gil) {
       save = PyGILState_Ensure();
    }
@@ -405,9 +407,24 @@ void init_smart_contract(fn_eos_main _eos_main, fn_start_interactive_console _st
 
    PyInit_eoslib();
    PyInit_python_contract();
-   PyRun_SimpleString("import hello");
    PyRun_SimpleString("import python_contract");
    PyRun_SimpleString("python_contract.start()");
 //   PyRun_SimpleString("import sys;sys.setrecursionlimit(20)");
 }
+
+void tinypy_run_code_(const char* code) {
+   bool need_hold_gil;
+   PyGILState_STATE save;
+
+   need_hold_gil = boost::this_thread::get_id() != appbase::app().get_thread_id();
+
+   if (need_hold_gil) {
+      save = PyGILState_Ensure();
+   }
+   PyRun_SimpleString(code);
+   if (need_hold_gil) {
+      PyGILState_Release(save);
+   }
+}
+
 

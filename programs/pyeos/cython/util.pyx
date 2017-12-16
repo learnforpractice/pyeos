@@ -187,4 +187,3 @@ def upper_bound(scope, code, table, bytes keys, int key_type, int scope_index, b
     table_ = toname(table)
     return upper_bound_(Name(scope_), Name(code_), Name(table_), <void* >keys_, key_type, scope_index, values_, len(values))
 
-

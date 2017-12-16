@@ -9,6 +9,9 @@ import traceback
 import threading
 
 cache_path = './pyeoscache'
+code_map = {}
+debug_contracts = []
+is_stop_at_load_module = False
 
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(string& str)
@@ -31,12 +34,30 @@ cdef extern from "<eos/chain/python_interface.hpp>":
     void call_eos_main();
     void call_start_interactive_console();
 
-code_map = {}
-
 cdef extern void stop_tracemalloc():
     tracemalloc.stop()
 
+def add_debug_contract(contract_name):
+    global debug_contracts
+    if not contract_name in debug_contracts:
+        debug_contracts.append(contract_name)
+
+def remove_deubg_contract(contract_name):
+    global debug_contracts
+    if contract_name in debug_contracts:
+        debug_contracts.remove(contract_name)
+
+def show_debug_contracts():
+    global debug_contracts
+    print(debug_contracts)
+
+def stop_at_load_module(stop):
+    global is_stop_at_load_module
+    is_stop_at_load_module = stop
+
 cdef extern int python_load(string& name, string& code, string* error):
+    global debug_contracts
+    global is_stop_at_load_module
     global code_map
     cdef int ret
     cdef string str_error
@@ -48,31 +69,45 @@ cdef extern int python_load(string& name, string& code, string* error):
 #    print('python_load:',name)
     module = code_map.get(module_name)
     cdef bytes code_ = code
-    if not module or (module.__code != code_):
+    if not module or (module.__code != code_) or is_debug_mode():
         try:
             new_module = None
-            if is_debug_mode():
+            if is_debug_mode() and module_name in debug_contracts:
                 if not os.path.exists(cache_path):
                     os.mkdir(cache_path)
                 file_name = os.path.join(cache_path, module_name+'.py')
                 print(file_name)
-                with open(file_name, 'wb') as f:
-                    f.write(b'import pydevd\n')
-                    f.write(b'pydevd.settrace(suspend=False)\n')
-                    f.write(code)
 
-            if not is_debug_mode():
+                if module_name in sys.modules:
+                    if os.path.exists(file_name):
+                        old_code = None
+                        with open(file_name, 'rb') as f:
+                            old_code = f.read()
+                    new_code = b'import pydevd\n'
+                    if is_stop_at_load_module:
+                        new_code += b'pydevd.settrace(suspend=True)\n'
+                    else:
+                        new_code += b'pydevd.settrace(suspend=False)\n'
+                    new_code += code
+                    if old_code != new_code:
+                        with open(file_name, 'wb') as f:
+                            f.write(new_code)
+                        try:
+                            exec('imp.reload({0})'.format(module_name))
+                        except Exception as e:
+                            print(e)
+                exec('import ' + module_name)
+
+                file_name = os.path.abspath(file_name)
+
+                new_module = sys.modules[module_name]
+                #new_module = imp.load_source(module_name, file_name)
+            else:
                 tracemalloc.stop()
                 tracemalloc.start()
                 Py_EnableCodeExecution(1, 1)
                 Py_EnableImportWhiteList(1)
 
-            if is_debug_mode():
-                file_name = os.path.abspath(file_name)
-                exec('import '+module_name)
-                new_module = sys.modules[module_name]
-                #new_module = imp.load_source(module_name, file_name)
-            else:
                 new_module = imp.new_module(module_name)
                 exec(code,vars(new_module))
 
@@ -92,7 +127,6 @@ cdef extern int python_load(string& name, string& code, string* error):
 
     if py_error:
         error[0] = bytes(py_error,'utf8')
-
     return ret;
 
 cdef extern int python_call(string& name, string& function, vector[uint64_t] args, string* error):
@@ -116,7 +150,7 @@ cdef extern int python_call(string& name, string& function, vector[uint64_t] arg
             tracemalloc.start()
             
             Py_EnableCodeExecution(0, 0)
-            Py_EnableImportWhiteList(1);
+            Py_EnableImportWhiteList(1)
 
         func(*args)
 
@@ -139,8 +173,8 @@ cdef extern int python_call(string& name, string& function, vector[uint64_t] arg
 def init_smart_contract():
     import eoslib
     import struct
-    import pickle
-    import numpy
+#    import pickle
+#    import numpy
     import logging
     tracemalloc.set_max_malloc_size(2000*1024)
 
@@ -157,12 +191,10 @@ def start():
     eos_main_thread = threading.Thread(target=eos_main)
     eos_main_thread.start()
     
-    print("++++++++++++=start interactive_console");
+    print("++++++++++++=start interactive_console")
 
-    if is_debug_mode():
-       import pydevd
-       pydevd.settrace(suspend=False)
+#    if is_debug_mode():
+#       import pydevd
+#       pydevd.settrace(suspend=False)
 
     call_start_interactive_console()
-
-

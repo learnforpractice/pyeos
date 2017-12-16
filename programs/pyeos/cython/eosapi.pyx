@@ -53,8 +53,10 @@ cdef extern from "eosapi_.hpp":
     int setcode_(char* account_, char* wast_file, char* abi_file, char* ts_buffer, int length) 
     int exec_func_(char* code_, char* action_, char* json_, char* scope, char* authorization, char* ts_result, int length)
 
-    object traceback_();
+    object traceback_()
 
+VM_TYPE_WASM = 0
+VM_TYPE_PYTHON = 1
 
 class JsonStruct(object):
     def __init__(self, js):

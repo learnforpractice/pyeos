@@ -43,6 +43,7 @@ extern "C" {
    PyObject* PyInit_database();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
+   PyObject* PyInit_debug();
 
    PyThreadState *tiny_PyEval_SaveThread(void);
    void tiny_PyEval_RestoreThread(PyThreadState *tstate);
@@ -98,10 +99,13 @@ void interactive_console() {
    PyInit_database();
    PyInit_blockchain();
    PyInit_util();
+   PyInit_debug();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import database;");
+   PyRun_SimpleString("import util;");
+   PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
    PyRun_SimpleString(

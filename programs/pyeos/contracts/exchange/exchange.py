@@ -35,7 +35,7 @@ class uint64(int):
         return int(int.__mul__(self,other))
 
     def from_bytes(bs):
-        return uint128(int.from_bytes(bs,'little'))
+        return uint64(int.from_bytes(bs,'little'))
 
     def __call__(self):
         return int.to_bytes(self,8,'little')
