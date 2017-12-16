@@ -10,9 +10,6 @@ cdef extern from "":
 cdef extern from  "<eos/types/public_key.hpp>":
     pass
 
-cdef extern from  "<eos/types/Asset.hpp>":
-    pass
-
 cdef extern from "" namespace "fc":
     cdef cppclass array[T, N]:
         array()

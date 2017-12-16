@@ -9,14 +9,15 @@ cdef extern from "":
 cdef extern from "database_.hpp" namespace "python::database":
     object database_create(string& path);
 
-def tobytes(ustr:str):
+def tobytes(ustr):
     if isinstance(ustr, bytes):
         return ustr
     if isinstance(ustr, str):
         ustr = bytes(ustr, 'utf8')
     return ustr
 
-def create(path: str):
+def create(path):
     path = tobytes(path)
     return database_create(path);
+
 

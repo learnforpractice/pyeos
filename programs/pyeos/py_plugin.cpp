@@ -24,7 +24,7 @@
 
 #include <fc/io/fstream.hpp>
 
-#include <python.h>
+#include <Python.h>
 #include <boost/thread.hpp>
 #include <eos/py_plugin/py_plugin.hpp>
 #include <fc/log/logger_config.hpp>

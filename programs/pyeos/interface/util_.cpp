@@ -1,9 +1,6 @@
 #include "db_handling.hpp"
 #include "util_.hpp"
 
-typedef long long int64_t;
-typedef unsigned long long uint64_t;
-
 typedef uint64_t TableName;
 
 

@@ -27,17 +27,17 @@ cdef extern from "wallet_.h":
     object sign_transaction_(void *signed_trx)
 
 
-def create(name: str) -> str:
+def create(name) :
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_create_(name)
 
-def open(name: str) -> bool:
+def open(name) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_open_(name)
 
-def set_dir(path_name: str) -> bool:
+def set_dir(path_name) -> bool:
     if type(path_name) == str:
         path_name = bytes(path_name, 'utf8')
     return wallet_set_dir_(path_name)
@@ -57,12 +57,12 @@ def get_public_keys():
 def lock_all():
     return wallet_lock_all_()
 
-def lock(name: str) -> bool:
+def lock(name) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     return wallet_lock_(name)
 
-def unlock(name: str, password: str) -> bool:
+def unlock(name, password) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
 
@@ -71,7 +71,7 @@ def unlock(name: str, password: str) -> bool:
     
     return wallet_unlock_(name, password)
 
-def import_key(name: str, wif_key: str) -> bool:
+def import_key(name, wif_key) -> bool:
     if type(name) == str:
         name = bytes(name, 'utf8')
     if type(wif_key) == str:
@@ -82,3 +82,4 @@ def sign_transaction(signed_trx):
     cdef uint64_t ptr
     ptr = signed_trx()
     return  sign_transaction_(<void*>ptr)
+
