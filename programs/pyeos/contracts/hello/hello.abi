@@ -1,0 +1,7 @@
+{
+  "actions": [{
+      "action": "sayhello",
+      "type": "bytes"
+    }
+  ]
+}
