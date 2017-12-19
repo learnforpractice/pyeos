@@ -9,7 +9,6 @@
 	path = libraries/python
 	url = https://github.com/learnforpractice/cpython
 	branch = v3.6.3-for-pyeos
-[submodule "libraries/tinypy"]
-	path = libraries/tinypy
-	url = https://github.com/learnforpractice/cpython
-	branch = tinypy
+[submodule "libraries/micropython"]
+	path = libraries/micropython
+	url = https://github.com/learnforpractice/micropython
