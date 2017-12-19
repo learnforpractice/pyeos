@@ -98,6 +98,9 @@ extern "C" {
 
    void Py_SetWhiteList(const char** _white_list);
    void Py_EnableImportWhiteList(int enable);
+
+   void PyObject_LimitAttr(int limit);
+
    int is_debug_mode();
 
 }

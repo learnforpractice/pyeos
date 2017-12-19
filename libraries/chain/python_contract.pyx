@@ -21,6 +21,7 @@ cdef extern from "<eos/chain/python_interface.hpp>":
     void Py_EnableCodeExecution(int enable, int _only_once)
     void Py_SetWhiteList(const char** _white_list);
     void Py_EnableImportWhiteList(int enable);
+    void PyObject_LimitAttr(int limit);
 
     int is_debug_mode();
 
@@ -107,13 +108,13 @@ cdef extern int python_load(string& name, string& code, string* error):
                 tracemalloc.start()
                 Py_EnableCodeExecution(1, 1)
                 Py_EnableImportWhiteList(1)
-
+                PyObject_LimitAttr(1)
+                
                 new_module = imp.new_module(module_name)
                 exec(code,vars(new_module))
 
-            if not is_debug_mode():
-                Py_EnableImportWhiteList(0)
-                Py_EnableCodeExecution(1, 0)
+            Py_EnableImportWhiteList(0)
+            Py_EnableCodeExecution(1, 0)
 
             code_map[module_name] = new_module
             new_module.__code = code
@@ -151,13 +152,14 @@ cdef extern int python_call(string& name, string& function, vector[uint64_t] arg
             
             Py_EnableCodeExecution(0, 0)
             Py_EnableImportWhiteList(1)
-
+            PyObject_LimitAttr(1)
         func(*args)
 
-        if not is_debug_mode():
-            Py_EnableImportWhiteList(0)
-            Py_EnableCodeExecution(1, 0)
-            tracemalloc.stop()
+        Py_EnableImportWhiteList(0)
+        Py_EnableCodeExecution(1, 0)
+        PyObject_LimitAttr(0)
+
+        tracemalloc.stop()
         ret = 0
     except Exception as e:
         tracemalloc.stop()

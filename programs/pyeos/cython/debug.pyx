@@ -4,6 +4,7 @@ cdef extern from "<eos/chain/python_interface.hpp>":
     void Py_EnableCodeExecution(int enable, int _only_once)
     void Py_SetWhiteList(const char** _white_list);
     void Py_EnableImportWhiteList(int enable);
+    void PyObject_LimitAttr(int limit)
 
 def tinypy_run_code(code):
     if isinstance(code, str):
@@ -30,4 +31,10 @@ def enable_whitelist(enable):
         Py_EnableImportWhiteList(1)
     else:
         Py_EnableImportWhiteList(0)
+
+def limit_attr(limit):
+    if limit:
+        PyObject_LimitAttr(1)
+    else:
+        PyObject_LimitAttr(0)
 
