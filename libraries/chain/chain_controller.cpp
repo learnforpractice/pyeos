@@ -18,6 +18,7 @@
 
 #include <eos/chain/wasm_interface.hpp>
 #include <eos/chain/python_interface.hpp>
+#include <eos/chain/micropython_interface.hpp>
 
 #include <eos/types/native.hpp>
 #include <eos/types/generated.hpp>
@@ -1001,7 +1002,9 @@ void chain_controller::apply_message(apply_context& context)
           wasm_interface::get().apply(context, execution_time, is_received_block);
        } else if (recipient.vm_type == 1) {
            python_interface::get().apply(context);
-       }
+       } else if (recipient.vm_type == 2) {
+          micropython_interface::get().apply(context);
+      }
     }
 
 } FC_CAPTURE_AND_RETHROW((context.msg)) }

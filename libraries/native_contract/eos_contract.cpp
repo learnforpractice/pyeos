@@ -19,8 +19,8 @@
 #include <eos/chain/producer_object.hpp>
 
 #include <eos/chain/wasm_interface.hpp>
-
 #include <eos/chain/python_interface.hpp>
+#include <eos/chain/micropython_interface.hpp>
 
 #include <eos/types/abi_serializer.hpp>
 
@@ -224,6 +224,8 @@ void apply_eos_setcode(apply_context& context) {
       wasm_interface::get().init( init_context );
    } else if (msg.vm_type == 1) {
       python_interface::get().init( init_context );
+   } else if (msg.vm_type == 2) {
+      micropython_interface::get().init( init_context );
    }
 }
 
