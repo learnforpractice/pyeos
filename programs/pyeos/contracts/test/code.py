@@ -82,7 +82,7 @@ def test_rw_db():
 
 
 def test_db1():
-    msg = eoslib.readMessage()
+    msg = eoslib.read_message()
     print(len(msg))
     test = N(b'eos')
     result = int.from_bytes(msg[:8], 'little')
@@ -100,7 +100,7 @@ def test_db1():
     print(values)
     
 def test_db2():
-    msg = eoslib.readMessage()
+    msg = eoslib.read_message()
     print(len(msg))
     test = N(b'eos')
     result = int.from_bytes(msg[:8], 'little')
@@ -222,7 +222,7 @@ def test_message():
     eoslib.messageSend(msghandle)
 
 def test_memory_limit():
-    msg = eoslib.readMessage()
+    msg = eoslib.read_message()
     print(msg,len(msg))
     size = int.from_bytes(msg[:8],'little')
     print('+++++++++++memory size:',size)
@@ -298,9 +298,9 @@ def test_recursive():
 def apply(code, action):
 #    print(eoslib.n2s(code),eoslib.n2s(action))
     if code == test:
-        eoslib.requireAuth(test)
+        eoslib.require_auth(test)
         if action == N(b'transfer'):
-            msg = eoslib.readMessage()
+            msg = eoslib.read_message()
             result = struct.unpack('QQQ', msg)
             print(result)
             from_ = result[0]

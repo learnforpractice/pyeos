@@ -226,8 +226,8 @@ def vectorized_result(j):
     return e
 
 def train():
-    eoslib.requireAuth(eoslib.N(b'mnist'))
-    data = eoslib.readMessage()
+    eoslib.require_auth(eoslib.N(b'mnist'))
+    data = eoslib.read_message()
     data = eoslib.unpack(data)
     print(len(data))
     data = zlib.decompress(data)

@@ -1,6 +1,6 @@
 import eoslib
 
-from eoslib import N,readMessage,requireAuth,now
+from eoslib import N,read_message,require_auth,now
 import struct
 import logging
 print = logging.info
@@ -74,7 +74,7 @@ class Object(object):
 class Transfer(Object):
     
     def __init__(self):
-        self.msg = readMessage()
+        self.msg = read_message()
         self.from_ = uint64(self.msg[:8])
         self.to_ = uint64(self.msg[8:16])
         self.amount = uint64(self.msg[16:24])
@@ -414,7 +414,7 @@ class Ask(Object):
 '''
 class BuyOrder(Bid):
     def __init__(self):
-        msg = readMessage()
+        msg = read_message()
         self.buyer = OrderID(msg[:16])
         self.price = uint128(msg[16:32]) # eos tokens per currency
         self.quantity = uint64(msg[32:40]) #buy currency amount
@@ -430,7 +430,7 @@ class BuyOrder(Bid):
 '''
 class SellOrder(Ask):
     def __init__(self):
-        msg = readMessage()
+        msg = read_message()
         self.seller = OrderID(msg[:16])
         self.price = uint128(msg[16:32]) # eos tokens per currency
         self.quantity = uint64(msg[32:40]) #sell currency amount
@@ -464,7 +464,7 @@ def apply_exchange_buy():
     order = BuyOrder()
     bid = order
     print(eoslib.n2s(bid.buyer.name))
-    eoslib.requireAuth( bid.buyer.name )
+    eoslib.require_auth( bid.buyer.name )
     assert bid.quantity > 0, "invalid quantity" 
     assert bid.expiration > eoslib.now(), "order expired" 
     print( eoslib.n2s(bid.buyer.name), " created bid for ", order.quantity, " currency at price: ", order.price, "\n" )
@@ -517,7 +517,7 @@ def apply_exchange_buy():
 def apply_exchange_sell():
     order = SellOrder()
     ask = order;
-    requireAuth( ask.seller.name ); 
+    require_auth( ask.seller.name ); 
     
     assert ask.quantity > 0, "invalid quantity";
     assert ask.expiration > now(), "order expired" ;
@@ -569,9 +569,9 @@ def apply_exchange_sell():
     print( "ask filled\n" );
    
 def apply_exchange_cancel_buy():
-    msg = readMessage()
+    msg = read_message()
     order = OrderID(msg)
-    requireAuth( order.name ); 
+    require_auth( order.name ); 
     
     bid_to_cancel = Bid.load_from_order_id(order)
     assert bid_to_cancel, "bid with this id does not exists";
@@ -585,9 +585,9 @@ def apply_exchange_cancel_buy():
     print( "bid removed\n" );
 
 def apply_exchange_cancel_sell():
-    msg = readMessage()
+    msg = read_message()
     order = OrderID()
-    requireAuth( order.name )
+    require_auth( order.name )
     
     bid_to_cancel = Bid.load_by_order_id(order)
     assert bid_to_cancel, "bid with this id does not exists"
@@ -608,7 +608,7 @@ def apply_currency_transfer():
         account.currency_balance += transfer.amount
         account.save()
     elif transfer.from_ == exchange:
-        requireAuth(transfer.to_); # require the receiver of funds (account owner) to authorize this transfer
+        require_auth(transfer.to_); # require the receiver of funds (account owner) to authorize this transfer
         account = Account(transfer.to_)
         assert account.currency_balance >= transfer.amount
         account.currency_balance -= transfer.amount
@@ -624,7 +624,7 @@ def apply_eos_transfer():
         account.eos_balance += transfer.amount
         account.save()
     elif transfer.from_ == exchange:
-        eoslib.requireAuth(transfer.to_)
+        eoslib.require_auth(transfer.to_)
         account = Account(transfer.to_)
         account.eos_balance -= transfer.amount
         account.save()
@@ -632,14 +632,14 @@ def apply_eos_transfer():
         assert False, "notified on transfer that is not relevant to this exchange"
 
 def dotest():
-    msg = readMessage()
+    msg = read_message()
     
     name = uint64(msg[:8])
     print(name)
     print(eoslib.n2s(name))
     
     id = uint64(msg[8:])
-    requireAuth(name)
+    require_auth(name)
     
     ask = Ask.front_by_price()
     print(ask)

@@ -14,10 +14,13 @@ class Account(object):
             self.load() 
         else:
             self.balance = balance
+
     def isEmpty(self):
         return self.balance == 0
+
     def store(self):
         eoslib.store_u64(self.scope, table, Account.key, self.balance)
+    
     def load(self):
         self.balance = eoslib.load_u64(self.scope, code, table, Account.key)
 
@@ -33,16 +36,16 @@ def apply(name, type):
 #     print('hello from python apply',name,type)
     print(eoslib.n2s(name),eoslib.n2s(type))
     if type == eoslib.N(b'transfer'):
-        msg = eoslib.readMessage()
+        msg = eoslib.read_message()
         result = struct.unpack('QQQ', msg)
 #         print(result)
         from_ = result[0]
         to_ = result[1]
         amount = result[2]
 
-        eoslib.requireAuth(from_);
-        eoslib.requireNotice(from_);
-        eoslib.requireNotice(to_)
+        eoslib.require_auth(from_);
+        eoslib.require_notice(from_);
+        eoslib.require_notice(to_)
 
         from_ = Account(from_)
         to_ = Account(to_)
