@@ -75,7 +75,16 @@ U32 micropython_interface::vm_pointer_to_offset(char* ptr) {
 }
 
 void micropython_interface::vm_call(const char* function_name) {
-   micropy_call_2(current_py_module, function_name, current_validate_context->msg.code.value, current_validate_context->msg.type.value);
+   nlr_buf_t nlr;
+   if (nlr_push(&nlr) == 0) {
+       micropy_call_2(current_py_module, function_name, current_validate_context->msg.code.value, current_validate_context->msg.type.value);
+       nlr_pop();
+   } else {
+      mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+      throw fc::exception();
+      // uncaught exception
+//       return (mp_obj_t)nlr.ret_val;
+   }
 }
 
 void micropython_interface::vm_apply() {
@@ -87,7 +96,16 @@ void micropython_interface::vm_onInit() {
    string module_name = current_module;
    string function_name = "init";
    if (current_py_module != NULL) {
-      micropy_call_0(current_py_module, "init");
+      nlr_buf_t nlr;
+      if (nlr_push(&nlr) == 0) {
+          micropy_call_0(current_py_module, "init");
+          nlr_pop();
+      } else {
+         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+         throw fc::exception();
+         // uncaught exception
+//          return (mp_obj_t)nlr.ret_val;
+      }
    }
    //   python_call_with_gil(module_name, function_name, args);
 }
@@ -149,21 +167,25 @@ void micropython_interface::load(const account_name& _name, const chainbase::dat
 
    std::map<string, mp_py_module*>::iterator it = py_modules.find(module_name);
    if (it == py_modules.end() || it->second->src != recipient.code.data()) {
-      ilog("code : ${n}",("n", code));
-      mp_obj_t obj = micropy_load(module_name.c_str(), (const char*)recipient.code.data(), recipient.code.size());
-      ilog("${n1}, obj ${n2}",("n1", module_name)("n2", (uint64_t)obj));
+      mp_obj_t obj = nullptr;
+      nlr_buf_t nlr;
+      if (nlr_push(&nlr) == 0) {
+          obj = micropy_load(module_name.c_str(), (const char*)recipient.code.data(), recipient.code.size());
+          nlr_pop();
+      } else {
+         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+         throw fc::exception();
+         // uncaught exception
+//          return (mp_obj_t)nlr.ret_val;
+      }
+
       if (obj != 0) {
          if (it == py_modules.end()) {
-            ilog("888");
             string code(recipient.code.data(), recipient.code.size());
             mp_py_module *module = new mp_py_module(obj, code);
-            ilog("111");
             py_modules[module_name] = module;
-            ilog("222");
          } else {
-            ilog("333");
             py_modules[module_name]->src = recipient.code.data();
-            ilog("444");
             py_modules[module_name]->obj = obj;
          }
          current_py_module = obj;
@@ -201,6 +223,7 @@ void* execute_from_str(const char *str) {
         nlr_pop();
         return 0;
     } else {
+       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         // uncaught exception
         return (mp_obj_t)nlr.ret_val;
     }
