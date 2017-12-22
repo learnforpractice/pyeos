@@ -1,7 +1,7 @@
 #include "mpeoslib.h"
 
 #include <eos/chain/chain_controller.hpp>
-#include <eos/chain/python_interface.hpp>
+#include <eos/chain/micropython_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
 #include <eos/chain/balance_object.hpp>
@@ -32,6 +32,7 @@ uint64_t string_to_uint64_(const char* str) {
 
 mp_obj_t uint64_to_string_(uint64_t n) {
    string s = name(n).to_string();
+   ilog("n: ${n}",("n", s.size()));
    return mp_obj_new_str(s.c_str(), s.size());
 }
 
@@ -50,11 +51,11 @@ mp_obj_t unpack_(const char* str, int nsize) {
 }
 
 static inline apply_context& get_apply_ctx() {
-   return *python_interface::get().current_apply_context;
+   return *micropython_interface::get().current_apply_context;
 }
 
 static inline apply_context& get_validate_ctx() {
-   return *python_interface::get().current_validate_context;
+   return *micropython_interface::get().current_validate_context;
 }
 
 void new_apply_context() {
@@ -87,14 +88,14 @@ void require_notice_(uint64_t account) {
 
 #define RETURN_WRITE_RECORD(NAME, VALUE_OBJECT)       \
    return ctx.NAME##_record<VALUE_OBJECT>(             \
-       scope, ctx.code, table, \
+       name(scope), name(ctx.code), name(table), \
        (VALUE_OBJECT::key_type*)keys, value, valuelen)
 
 #define RETURN_READ_RECORD(NAME)                                        \
    FC_ASSERT(key_value_index::value_type::number_of_keys > scope_index, \
              "scope index out off bound");                              \
    return ctx.NAME##_record<key_value_index, by_scope_primary>(         \
-       scope, code, table,                            \
+       name(scope), name(code), name(table),                            \
        (key_value_index::value_type::key_type*)keys, value, valuelen);
 
 #define RETURN_READ_RECORD_KEY128x128(NAME)                                    \
@@ -102,12 +103,12 @@ void require_notice_(uint64_t account) {
              "scope index out off bound");                                     \
    if (scope_index == 0) {                                                     \
       return ctx.NAME##_record<key128x128_value_index, by_scope_primary>(      \
-          scope, code, table,                                \
+          name(scope), name(code), name(table),                                \
           (key128x128_value_index::value_type::key_type*)keys, value,          \
           valuelen);                                                           \
    } else if (scope_index == 1) {                                              \
       return ctx.NAME##_record<key128x128_value_index, by_scope_secondary>(    \
-          scope, code, table,                                \
+          name(scope), name(code), name(table),                                \
           (key128x128_value_index::value_type::key_type*)keys, value,          \
           valuelen);                                                           \
    }
@@ -118,17 +119,17 @@ void require_notice_(uint64_t account) {
        "scope index out off bound");                                         \
    if (scope_index == 0) {                                                   \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_primary>(   \
-          scope, code, table,                              \
+          name(scope), name(code), name(table),                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    } else if (scope_index == 1) {                                            \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_secondary>( \
-          scope, code, table,                              \
+          name(scope), name(code), name(table),                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    } else if (scope_index == 2) {                                            \
       return ctx.NAME##_record<key64x64x64_value_index, by_scope_tertiary>(  \
-          scope, code, table,                              \
+          name(scope), name(code), name(table),                              \
           (key64x64x64_value_index::value_type::key_type*)keys, value,       \
           valuelen);                                                         \
    }
@@ -142,7 +143,7 @@ void require_notice_(uint64_t account) {
 #define RETURN_READ_RECORD_STR(OPERATION) \
 { \
    std::string str_key((char*)keys, keylen); \
-   return ctx.OPERATION##_record<keystr_value_index, by_scope_primary>( scope, code, table, &str_key, value, valuelen); \
+   return ctx.OPERATION##_record<keystr_value_index, by_scope_primary>( name(scope), name(code), name(table), &str_key, value, valuelen); \
 }
 
 #define DEFINE_WRITE_FUNCTION(OPERATION) \
