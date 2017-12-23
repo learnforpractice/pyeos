@@ -56,7 +56,10 @@ cdef extern from "eosapi_.hpp":
     object traceback_()
 
 VM_TYPE_WASM = 0
-VM_TYPE_PYTHON = 1
+VM_TYPE_PY = 1
+VM_TYPE_MP = 2
+
+py_vm_type = VM_TYPE_PY
 
 class JsonStruct(object):
     def __init__(self, js):

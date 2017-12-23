@@ -29,7 +29,7 @@ def init():
             r = eosapi.create_account('inita', 'mnist', key1, key2)
             assert r
     with producer:
-        r = eosapi.set_contract('mnist', '../../programs/pyeos/contracts/mnist/mnist.py', '../../programs/pyeos/contracts/mnist/mnist.abi', 1)
+        r = eosapi.set_contract('mnist', '../../programs/pyeos/contracts/mnist/mnist.py', '../../programs/pyeos/contracts/mnist/mnist.abi', eosapi.py_vm_type)
         assert r
 
 def vectorized_result(j):
