@@ -29,5 +29,5 @@ def init():
 
 def test():
     with producer:
-        r = eosapi.push_message('hello','sayhello','hello,world',['hello'],{'hello':'active'},rawargs=True)
+        r = eosapi.push_message('hello','sayhello','hello,world',['hello'],{},rawargs=True)
         assert r
