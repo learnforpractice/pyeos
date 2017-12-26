@@ -54,6 +54,11 @@ typedef struct _eoslib_stream_t {
 #define S_CUR(s) ((s).cur)
 #define S_NEXT(s) (eoslib_stream_next(&(s)))
 
+const int KEY_TYPE_KEY = 0;
+const int KEY_TYPE_KEY128x128 = 1;
+const int KEY_TYPE_KEY64x64x64 = 2;
+const int KEY_TYPE_STR = 3;
+
 STATIC mp_obj_t mod_eoslib_now(void) {
    return mp_obj_new_int(now_());
 }
@@ -83,13 +88,13 @@ STATIC mp_obj_t mod_eoslib_require_notice(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_require_notice_obj, mod_eoslib_require_notice);
 
-STATIC mp_obj_t mod_eoslib_string_to_uint64(mp_obj_t obj) {
+STATIC mp_obj_t mod_eoslib_s2n(mp_obj_t obj) {
    size_t len;
    const char *account = mp_obj_str_get_data(obj, &len);
    uint64_t n = string_to_uint64_(account);
    return mp_obj_new_int_from_ull(n);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_string_to_uint64_obj, mod_eoslib_string_to_uint64);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_s2n_obj, mod_eoslib_s2n);
 
 STATIC mp_obj_t mod_eoslib_N(mp_obj_t obj) {
    size_t len;
@@ -101,11 +106,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
 
 mp_uint_t mp_obj_uint_get_checked(mp_const_obj_t self_in);
 
-STATIC mp_obj_t mod_eoslib_uint64_to_string(mp_obj_t obj) {
+STATIC mp_obj_t mod_eoslib_n2s(mp_obj_t obj) {
    uint64_t n = mp_obj_uint_get_checked(obj);
    return uint64_to_string_(n);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_uint64_to_string_obj, mod_eoslib_uint64_to_string);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_n2s_obj, mod_eoslib_n2s);
 
 STATIC mp_obj_t mod_eoslib_pack(mp_obj_t obj) {
    size_t len = 0;
@@ -121,18 +126,93 @@ STATIC mp_obj_t mod_eoslib_unpack(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_unpack_obj, mod_eoslib_unpack);
 
-STATIC mp_obj_t mod_eoslib_store(size_t n_args, const mp_obj_t *args) {
-   size_t keys_len = 0;
-   size_t value_len = 0;
-   uint64_t scope = mp_obj_uint_get_checked(args[0]);
-   uint64_t table = mp_obj_uint_get_checked(args[1]);
-   void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len);
-   int key_type = mp_obj_uint_get_checked(args[3]);
-   void* value = (void *)mp_obj_str_get_data(args[4], &value_len);
-   int ret = store_(scope, table, keys, keys_len, key_type, value, value_len);
-   return mp_obj_new_int(ret);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_store_obj, 5, mod_eoslib_store);
+#define DEFINE_WRITE_FUNCTION(name) \
+STATIC mp_obj_t mod_eoslib_##name(size_t n_args, const mp_obj_t *args) { \
+   size_t keys_len = 0; \
+   size_t value_len = 0; \
+   uint64_t scope = mp_obj_uint_get_checked(args[0]); \
+   uint64_t table = mp_obj_uint_get_checked(args[1]); \
+   void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
+   int key_type = mp_obj_uint_get_checked(args[3]); \
+   void* value = (void *)mp_obj_str_get_data(args[4], &value_len); \
+   int ret = name##_(scope, table, keys, keys_len, key_type, value, value_len); \
+   return mp_obj_new_int(ret); \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_obj, 5, mod_eoslib_##name);
+
+#define DEFINE_READ_FUNCTION(name) \
+   STATIC mp_obj_t mod_eoslib_##name(size_t n_args, const mp_obj_t *args) { \
+      size_t keys_len = 0; \
+      size_t value_len = 0; \
+      uint64_t scope = mp_obj_uint_get_checked(args[0]); \
+      uint64_t code = mp_obj_uint_get_checked(args[1]); \
+      uint64_t table = mp_obj_uint_get_checked(args[2]); \
+      void* keys = (void *)mp_obj_str_get_data(args[3], &keys_len); \
+      int key_type = mp_obj_uint_get_checked(args[4]); \
+      int key_index = mp_obj_uint_get_checked(args[5]); \
+      void* value = (void *)mp_obj_str_get_data(args[6], &value_len); \
+      int ret = name##_(scope, code, table, keys, keys_len, key_type, key_index, value, value_len); \
+      return mp_obj_new_int(ret); \
+   } \
+   STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_obj, 7, mod_eoslib_##name);
+
+
+#define DEFINE_WRITE_STR_FUNCTION(name) \
+STATIC mp_obj_t mod_eoslib_##name##_str(size_t n_args, const mp_obj_t *args) { \
+   size_t keys_len = 0; \
+   size_t value_len = 0; \
+   uint64_t scope = mp_obj_uint_get_checked(args[0]); \
+   uint64_t table = mp_obj_uint_get_checked(args[1]); \
+   void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
+   void* value = (void *)mp_obj_str_get_data(args[3], &value_len); \
+   int ret = name##_(scope, table, keys, keys_len, KEY_TYPE_STR, value, value_len); \
+   return mp_obj_new_int(ret); \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_##name##_str);
+
+#define DEFINE_READ_STR_FUNCTION(name) \
+   STATIC mp_obj_t mod_eoslib_##name##_str(size_t n_args, const mp_obj_t *args) { \
+      char value[256]; \
+      size_t keys_len = 0; \
+      size_t value_len = 0; \
+      uint64_t scope = mp_obj_uint_get_checked(args[0]); \
+      uint64_t code = mp_obj_uint_get_checked(args[1]); \
+      uint64_t table = mp_obj_uint_get_checked(args[2]); \
+      void* keys = (void *)mp_obj_str_get_data(args[3], &keys_len); \
+      int ret = name##_(scope, code, table, keys, keys_len, KEY_TYPE_STR, 0, value, sizeof(value)); \
+      if (ret > 0) { \
+         return mp_obj_new_str(value, ret); \
+      } else { \
+         return mp_const_none; \
+      } \
+   } \
+   STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_##name##_str);
+
+
+DEFINE_WRITE_FUNCTION(store)
+DEFINE_WRITE_FUNCTION(update)
+DEFINE_WRITE_FUNCTION(remove)
+
+DEFINE_READ_FUNCTION(load)
+DEFINE_READ_FUNCTION(front)
+DEFINE_READ_FUNCTION(back)
+DEFINE_READ_FUNCTION(next)
+DEFINE_READ_FUNCTION(previous)
+DEFINE_READ_FUNCTION(lower_bound)
+DEFINE_READ_FUNCTION(upper_bound)
+
+
+DEFINE_WRITE_STR_FUNCTION(store)
+DEFINE_WRITE_STR_FUNCTION(update)
+DEFINE_WRITE_STR_FUNCTION(remove)
+
+DEFINE_READ_STR_FUNCTION(load)
+DEFINE_READ_STR_FUNCTION(front)
+DEFINE_READ_STR_FUNCTION(back)
+DEFINE_READ_STR_FUNCTION(next)
+DEFINE_READ_STR_FUNCTION(previous)
+DEFINE_READ_STR_FUNCTION(lower_bound)
+DEFINE_READ_STR_FUNCTION(upper_bound)
 
 
 STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
@@ -142,12 +222,32 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_require_scope), MP_ROM_PTR(&mod_eoslib_require_scope_obj) },
     { MP_ROM_QSTR(MP_QSTR_require_notice), MP_ROM_PTR(&mod_eoslib_require_notice_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_code), MP_ROM_PTR(&mod_eoslib_current_code_obj) },
-    { MP_ROM_QSTR(MP_QSTR_string_to_uint64), MP_ROM_PTR(&mod_eoslib_string_to_uint64_obj) },
+    { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
     { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uint64_to_string), MP_ROM_PTR(&mod_eoslib_uint64_to_string_obj) },
+    { MP_ROM_QSTR(MP_QSTR_n2s), MP_ROM_PTR(&mod_eoslib_n2s_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&mod_eoslib_pack_obj) },
     { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&mod_eoslib_unpack_obj) },
     { MP_ROM_QSTR(MP_QSTR_store), MP_ROM_PTR(&mod_eoslib_store_obj) },
+    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&mod_eoslib_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mod_eoslib_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&mod_eoslib_load_obj) },
+    { MP_ROM_QSTR(MP_QSTR_front), MP_ROM_PTR(&mod_eoslib_front_obj) },
+    { MP_ROM_QSTR(MP_QSTR_back), MP_ROM_PTR(&mod_eoslib_back_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next), MP_ROM_PTR(&mod_eoslib_next_obj) },
+    { MP_ROM_QSTR(MP_QSTR_previous), MP_ROM_PTR(&mod_eoslib_previous_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lower_bound), MP_ROM_PTR(&mod_eoslib_lower_bound_obj) },
+    { MP_ROM_QSTR(MP_QSTR_upper_bound), MP_ROM_PTR(&mod_eoslib_upper_bound_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_store_str), MP_ROM_PTR(&mod_eoslib_store_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_update_str), MP_ROM_PTR(&mod_eoslib_update_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove_str), MP_ROM_PTR(&mod_eoslib_remove_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_load_str), MP_ROM_PTR(&mod_eoslib_load_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_front_str), MP_ROM_PTR(&mod_eoslib_front_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_back_str), MP_ROM_PTR(&mod_eoslib_back_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next_str), MP_ROM_PTR(&mod_eoslib_next_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_previous_str), MP_ROM_PTR(&mod_eoslib_previous_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lower_bound_str), MP_ROM_PTR(&mod_eoslib_lower_bound_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_upper_bound_str), MP_ROM_PTR(&mod_eoslib_upper_bound_str_obj) },
 
 };
 

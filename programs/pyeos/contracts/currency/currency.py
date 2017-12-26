@@ -1,13 +1,16 @@
 import eoslib
-import struct
-import logging
-print = logging.info 
+try:
+    import struct
+except Exception as e:
+#load struct module in micropython
+    import ustruct as struct 
 
 code = eoslib.N(b'currency')
 table = eoslib.N(b'account')
 
 class Account(object):
     key = eoslib.N(b'account')
+    key = int.to_bytes(key, 8, 'little')
     def __init__(self, scope, balance=0): 
         self.scope = scope
         if balance == 0:
@@ -19,10 +22,13 @@ class Account(object):
         return self.balance == 0
 
     def store(self):
-        eoslib.store_u64(self.scope, table, Account.key, self.balance)
+        value = int.to_bytes(self.balance, 8, 'little')
+        eoslib.store(self.scope, table, Account.key, 0, value)
     
     def load(self):
-        self.balance = eoslib.load_u64(self.scope, code, table, Account.key)
+        value = bytes(8)
+        eoslib.load(self.scope, code, table, Account.key, 0, 0, value)
+        self.balance = int.from_bytes(value, 'little')
 
 def init():
     print('hello from currency.init')
