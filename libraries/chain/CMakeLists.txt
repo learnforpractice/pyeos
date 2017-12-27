@@ -42,7 +42,6 @@ add_library( eos_chain
              producer_objects.cpp
              staked_balance_objects.cpp
 
-             micropython/modeoslib.c
              micropython/mpeoslib.cpp
 
              ${HEADERS}
@@ -58,7 +57,12 @@ target_include_directories( eos_chain
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy
-                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod/eoslib
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
+
                             )
 
 if(MSVC)
