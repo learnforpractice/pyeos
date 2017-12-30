@@ -25,9 +25,9 @@ def init():
             assert r
 
     with producer:
-        r = eosapi.set_contract('currency', '../../programs/pyeos/contracts/currency/currency.py', '../../contracts/currency/currency.abi', 1)
+        r = eosapi.set_contract('currency', '../../programs/pyeos/contracts/currency/currency.py', '../../contracts/currency/currency.abi', eosapi.py_vm_type)
         assert r
-        r = eosapi.set_contract('exchange', '../../programs/pyeos/contracts/exchange/exchange.py', '../../contracts/exchange/exchange.abi', 1)
+        r = eosapi.set_contract('exchange', '../../programs/pyeos/contracts/exchange/exchange.py', '../../contracts/exchange/exchange.abi', eosapi.py_vm_type)
         assert r
 
 def test_deposit():

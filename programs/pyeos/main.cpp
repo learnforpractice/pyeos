@@ -47,6 +47,8 @@ extern "C" {
 
    PyThreadState *tiny_PyEval_SaveThread(void);
    void tiny_PyEval_RestoreThread(PyThreadState *tstate);
+
+   int main_micropython(int argc, char **argv);
 }
 
 static int g_argc = 0;
@@ -150,10 +152,12 @@ typedef void (*fn_interactive_console)();
 
 void init_smart_contract(fn_eos_main eos_main, fn_interactive_console console);
 
+extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
+
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
-
+   main_micropython(argc, argv);
    init_smart_contract(eos_main, interactive_console);
 
    return 0;

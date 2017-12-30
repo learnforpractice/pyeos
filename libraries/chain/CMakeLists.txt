@@ -18,6 +18,7 @@ add_library( eos_chain
              chain_controller.cpp
              wasm_interface.cpp
              python_interface.cpp
+             micropython_interface.cpp
              block_schedule.cpp
 
              fork_database.cpp
@@ -37,16 +38,18 @@ add_library( eos_chain
              python_contract.wrap.cpp
              eoslib/eoslib.wrap.cpp
              eoslib/eoslib_.cpp
-
+ 
              producer_objects.cpp
              staked_balance_objects.cpp
+
+             micropython/mpeoslib.cpp
 
              ${HEADERS}
            )
 
 target_link_libraries( eos_chain fc chainbase appbase eos_types Logging 
     IR WAST WASM Runtime 
-    tinypy
+    tinypy micropython
 )
 
 target_include_directories( eos_chain
@@ -54,6 +57,12 @@ target_include_directories( eos_chain
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod/eoslib
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
+
                             )
 
 if(MSVC)

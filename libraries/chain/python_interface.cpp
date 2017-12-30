@@ -398,7 +398,7 @@ typedef void (*fn_start_interactive_console)();
 void init_smart_contract(fn_eos_main _eos_main, fn_start_interactive_console _start_interactive_console) {
    eos_main = _eos_main;
    start_interactive_console = _start_interactive_console;
-
+   Py_NoSiteFlag = 1;
    ilog("++++++++++init_smart_contract+++++++++");
    Py_SetWhiteList(white_list);
 

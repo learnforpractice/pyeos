@@ -84,28 +84,28 @@ def N(name):
 def n2s(uint64_t n):
     return uint64_to_string_(n)
 
-def requireAuth(name):
+def require_auth(name):
     cdef uint64_t name_
     name_ = toname(name)
     requireAuth_(name_)
 
-def readMessage():
+def read_message():
     cdef string buffer
     cdef int ret
     ret = readMessage_(buffer)
     return buffer
 
-def requireScope(account):
+def require_scope(account):
     cdef uint64_t account_
     account_ = toname(account)
     requireScope_(account_)
 
-def requireNotice(account):
+def require_notice(account):
     cdef uint64_t account_
     account_ = toname(account)
     requireNotice_(account_)
 
-def currentCode():
+def current_code():
     return currentCode_()
 
 def store(scope, table, bytes keys, int key_type, bytes value):

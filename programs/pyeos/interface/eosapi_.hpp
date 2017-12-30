@@ -112,4 +112,5 @@ PyObject* traceback_();
 
 
 uint64_t string_to_uint64_(string str);
+string uint64_to_string_(uint64_t n);
 

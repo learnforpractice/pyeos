@@ -558,7 +558,7 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
          std::cout << "Assembling WASM..." << std::endl;
          auto wasm = assemble_wast(wast);
          handler.code.assign(wasm.begin(), wasm.end());
-      } else if (vm_type == 1) {
+      } else if (vm_type == 1 || vm_type == 2) {
          fc::read_file_contents(wastPath, wast);
          handler.code.assign(wast.begin(), wast.end());
       }

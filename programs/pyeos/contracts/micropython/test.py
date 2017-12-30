@@ -16,18 +16,19 @@ def init():
     key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 
     with producer:
-        if not eosapi.get_account('hello'):
-            r = eosapi.create_account('inita', 'hello', key1, key2)
-            assert r
+        if not eosapi.get_account('micropython'):
+                r = eosapi.create_account('inita', 'micropython', key1, key2)
+                assert r
+        if not eosapi.get_account('test'):
+            if not eosapi.get_account('test'):
+                r = eosapi.create_account('inita', 'test', key1, key2)
+                assert r
 
     with producer:
-        r = eosapi.set_contract('hello','../../programs/pyeos/contracts/hello/hello.py','../../programs/pyeos/contracts/hello/hello.abi', eosapi.py_vm_type)
+        r = eosapi.set_contract('micropython','../../programs/pyeos/contracts/micropython/mp.py','../../contracts/currency/currency.abi',2)
 #        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
         assert r
 
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
-def test():
-    with producer:
-        r = eosapi.push_message('hello','sayhello','hello,world',['hello'],{},rawargs=True)
-        assert r
+
