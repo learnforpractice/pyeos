@@ -1,9 +1,11 @@
 import eoslib
 
 from eoslib import N,read_message,require_auth,now
-import struct
-import logging
-print = logging.info
+try:
+    import struct
+except Exception as e:
+#load struct module in micropython
+    import ustruct as struct 
 
 exchange = N(b'exchange')
 currency = N(b'currency')
@@ -18,50 +20,11 @@ def min(a,b):
         return uint64(b)
     return uint64(a)
 
-class uint64(int):
-    
-    def __new__(cls, value):
-        if isinstance(value,bytes):
-            return int.__new__(cls, int.from_bytes(value,'little'))
-        return int.__new__(cls, value)
+def uint64(bs):
+    return int.from_bytes(bs, 'little')
 
-    def __div__(self,other):
-        return int(int.__div__(self,other))
-
-    def __truediv__(self,other):
-        return int(int.__truediv__(self,other))
-
-    def __mul__(self,other):
-        return int(int.__mul__(self,other))
-
-    def from_bytes(bs):
-        return uint64(int.from_bytes(bs,'little'))
-
-    def __call__(self):
-        return int.to_bytes(self,8,'little')
-
-class uint128(int):
-    
-    def __new__(cls, value):
-        if isinstance(value,bytes):
-            return int.__new__(cls, int.from_bytes(value,'little'))
-        else:
-            return int.__new__(cls, value)
-
-    def __div__(self,other):
-        return int(int.__div__(self,other))
-
-    def __truediv__(self,other):
-        return int(int.__truediv__(self,other))
-
-    def __mul__(self,other):
-        return int(int.__mul__(self,other))
-
-    def from_bytes(bs):
-        return uint128(int.from_bytes(bs,'little'))
-
-    def __call__(self):
-        return int.to_bytes(self,16,'little')
+def uint128(bs):
+    return int.from_bytes(bs, 'little')
 
 class Object(object):
     
@@ -76,6 +39,7 @@ class Transfer(Object):
     def __init__(self):
         self.msg = read_message()
         self.from_ = uint64(self.msg[:8])
+        print(self.msg, self.msg[:8], self.msg[8:16])
         self.to_ = uint64(self.msg[8:16])
         self.amount = uint64(self.msg[16:24])
         self.memo = str(self.msg[24:],'utf8')
@@ -601,8 +565,8 @@ def apply_exchange_cancel_sell():
 
 
 def apply_currency_transfer():
-    print('apply_currency_transfer')
     transfer = Transfer()
+    print('apply_currency_transfer', transfer.from_, transfer.to_)
     if transfer.to_ == exchange:
         account = Account(transfer.from_)
         account.currency_balance += transfer.amount

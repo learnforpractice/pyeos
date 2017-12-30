@@ -59,7 +59,7 @@ VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
 
-py_vm_type = VM_TYPE_PY
+py_vm_type = VM_TYPE_MP
 
 class JsonStruct(object):
     def __init__(self, js):

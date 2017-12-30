@@ -39,7 +39,7 @@ def init():
         a.store()
 
 def apply(name, type):
-    print('hello from python apply',name,type)
+#    print('hello from python apply',name,type)
     print(eoslib.n2s(name),eoslib.n2s(type))
     if type == eoslib.N(b'transfer'):
         msg = eoslib.read_message()
