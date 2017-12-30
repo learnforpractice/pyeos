@@ -75,7 +75,7 @@ uint64_t current_code_() { return get_validate_ctx().code.value; }
 
 mp_obj_t read_message_() {
    auto& bs = get_validate_ctx().msg.data;
-   return mp_obj_new_str(bs.data(), bs.size());
+   return mp_obj_new_bytes((unsigned char *)bs.data(), bs.size());
 }
 
 void require_scope_(uint64_t account) {
