@@ -19,6 +19,14 @@ namespace fc
 
     gelf_appender(const variant& args);
     ~gelf_appender();
+    /** \brief Required for name resolution and socket initialization.
+     *
+     * \warning If this method is not called, this appender will log nothing.
+     *
+     * In a single-threaded world with a boost::io_service that's not owned
+     * by this library, ugly things are required.  Tough.
+     */
+    void initialize(boost::asio::io_service& io_service);
     virtual void log(const log_message& m) override;
 
   private:

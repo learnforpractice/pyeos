@@ -1,5 +1,5 @@
 /**
-  @defgroup contractdev How To Write Contracts
+  @defgroup contractdev Smart Contract API Reference
   @brief Introduction to writing contracts for EOS.IO
 
   @section background Background 

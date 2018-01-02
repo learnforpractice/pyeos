@@ -40,7 +40,11 @@ namespace eosio {
     wrong_version, ///< the peer's network version doesn't match
     forked, ///< the peer's irreversible blocks are different
     unlinkable, ///< the peer sent a block we couldn't use
-    bad_transaction ///< the peer sent a transaction that failed verification
+    bad_transaction, ///< the peer sent a transaction that failed verification
+    validation, ///< the peer sent a block that failed validation
+    benign_other, ///< reasons such as a timeout. not fatal but warrant resetting
+    fatal_other, ///< a catch-all for errors we don't have discriminated
+    authentication ///< peer failed authenicatio
   };
 
   constexpr auto reason_str( go_away_reason rsn ) {
@@ -53,6 +57,10 @@ namespace eosio {
     case forked : return "chain is forked";
     case unlinkable : return "unlinkable block received";
     case bad_transaction : return "bad transaction";
+    case validation : return "invalid block";
+    case authentication : return "authentication failure";
+    case fatal_other : return "some other failure";
+    case benign_other : return "some other non-fatal condition";
     default : return "some crazy reason";
     }
   }
@@ -94,6 +102,7 @@ namespace eosio {
 
   template<typename T>
   struct select_ids {
+    select_ids () : mode(none),pending(0),ids() {}
     id_list_modes  mode;
     uint32_t       pending;
     vector<T>      ids;
@@ -104,11 +113,13 @@ namespace eosio {
   using ordered_blk_ids = select_ids<block_id_type>;
 
   struct notice_message {
+    notice_message () : known_trx(), known_blocks() {}
     ordered_txn_ids known_trx;
     ordered_blk_ids known_blocks;
   };
 
   struct request_message {
+    request_message () : req_trx(), req_blocks() {}
     ordered_txn_ids req_trx;
     ordered_blk_ids req_blocks;
   };

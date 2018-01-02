@@ -9,9 +9,9 @@
 extern "C" {
 /**
  *  @defgroup database Database API
- *  @brief APIs that store and retreive data on the blockchain
  *  @ingroup contractdev
- *
+ *  @brief APIs that store and retrieve data on the blockchain
+ *  
  *  EOS.IO organizes data according to the following broad structure:
  *
  *  - **scope** - an account where the data is stored
@@ -45,12 +45,6 @@ extern "C" {
 /**
  *  @defgroup databaseC Database C API
  *  @brief C APIs for interfacing with the database.
- *  @ingroup database
- */
-
-/**
- *  @defgroup databaseCpp Database C++ API
- *  @brief C++ APIs for interfacing with the database.
  *  @ingroup database
  */
 

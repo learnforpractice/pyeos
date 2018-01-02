@@ -40,7 +40,9 @@ libraries/wasm-jit/Source/Programs/Disassemble
 libraries/wasm-jit/Source/Programs/Test
 libraries/wasm-jit/Source/Programs/wavm
 
+programs/abi_gen/abi_gen
 programs/cli_wallet/cli_wallet
+programs/codegen/codegen
 programs/js_operation_serializer/js_operation_serializer
 programs/witness_node/witness_node
 programs/data-dir
@@ -50,10 +52,16 @@ programs/eosc/eosc
 programs/launcher/launcher
 
 tests/app_test
+tests/api_test
 tests/chain_bench
 tests/chain_test
+tests/slow_test
 tests/intense_test
 tests/performance_test
+tests/stress_test/node_modules/*
+tests/stress_test/stress_test_result_*.txt
+
+tools/eoscpp
 
 doxygen
 
@@ -69,6 +77,9 @@ object_database/*
 *.pyc
 *.pyo
 
+build.ninja
+.ninja_*
+*.ninja
 build/*
 build-debug/*
 
@@ -82,5 +93,3 @@ nbproject
 Debug
 .DS_Store
 
-tests/stress_test/node_modules/*
-tests/stress_test/stress_test_result_*.txt

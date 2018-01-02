@@ -56,7 +56,7 @@ void apply_eos_newaccount(apply_context& context) {
    auto& db = context.mutable_db;
 
    auto existing_account = db.find<account_object, by_name>(create.name);
-   EOS_ASSERT(existing_account == nullptr, message_precondition_exception,
+   EOS_ASSERT(existing_account == nullptr, account_name_exists_exception,
               "Cannot create account named ${name}, as that name is already taken",
               ("name", create.name));
 
@@ -212,6 +212,8 @@ void apply_eos_setcode(apply_context& context) {
       #warning TODO: update setcode message to include the hash, then validate it in validate 
       a.vm_type = int(msg.vm_type);
       a.code_version = fc::sha256::hash( msg.code.data(), msg.code.size() );
+      // Added resize(0) here to avoid bug in boost vector container
+      a.code.resize( 0 );
       a.code.resize( msg.code.size() );
       memcpy( a.code.data(), msg.code.data(), msg.code.size() );
 
@@ -442,6 +444,7 @@ void apply_eos_setproducer(apply_context& context) {
 
 
 void apply_eos_okproducer(apply_context& context) {
+   FC_ASSERT(false, "voting for producers is disabled for this test network");
    auto approve = context.msg.as<types::okproducer>();
    EOS_ASSERT(approve.approve == 0 || approve.approve == 1, message_validate_exception,
               "Unknown approval value: ${val}; must be either 0 or 1", ("val", approve.approve));

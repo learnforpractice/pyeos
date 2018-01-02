@@ -70,7 +70,9 @@ killAll()
 
 cleanup()
 {
-  rm -rf tn_data_00
+  if [ "$SERVER" == "localhost" ]; then
+    rm -rf tn_data_00
+  fi
   rm -rf test_wallet_0
 }
 
@@ -153,7 +155,7 @@ fi
 #
 
 # walletd
-programs/eos-walletd/eos-walletd --data-dir test_wallet_0 --http-server-endpoint=127.0.0.1:8899 > test_walletd_output.log 2>&1 &
+programs/eos-walletd/eos-walletd --data-dir test_wallet_0 --http-server-address=127.0.0.1:8899 > test_walletd_output.log 2>&1 &
 verifyErrorCode "eos-walletd"
 WALLETD_PROC_ID=$!
 sleep 3
@@ -458,6 +460,16 @@ if [ $count == 0 ]; then
 fi
 getTransactionId "$INFO"
 
+#
+# Setting simpledb contract without simpledb account was causing core dump in eosc.
+# Verify eosc generates an error, but does not core dump.
+#
+
+INFO="$( { programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 set contract simpledb contracts/simpledb/simpledb.wast contracts/simpledb/simpledb.abi ; } 2>&1 )"
+rc=$?
+if [ $rc -eq 0 ] || [ $rc -eq 139 ]; then # 139 SIGSEGV
+  error "FAILURE - $1 returned error code $rc, should have failed to execute."
+fi
 
 #
 # Producer
@@ -484,16 +496,18 @@ verifyErrorCode "eosc wallet lock_all"
 echo $PASSWORD_INITA | programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 wallet unlock --name inita
 verifyErrorCode "eosc wallet unlock inita"
 
+# TODO: Approving producers currently not supported
 # approve producer
-INFO="$(programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 set producer inita testera approve)"
-verifyErrorCode "eosc approve producer"
+# INFO="$(programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 set producer inita testera approve)"
+# verifyErrorCode "eosc approve producer"
 
 ACCOUNT_INFO="$(programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 get account inita)"
 verifyErrorCode "eosc get account"
 
+# TODO: Unapproving producers currently not supported
 # unapprove producer
-INFO="$(programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 set producer inita testera unapprove)"
-verifyErrorCode "eosc unapprove producer"
+# INFO="$(programs/eosc/eosc --host $SERVER --port $PORT --wallet-port 8899 set producer inita testera unapprove)"
+# verifyErrorCode "eosc unapprove producer"
 
 #
 # Proxy
