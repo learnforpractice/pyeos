@@ -2,8 +2,8 @@
 #include <appbase/plugin.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/core/demangle.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 namespace appbase {
    namespace bpo = boost::program_options;
@@ -14,27 +14,21 @@ namespace appbase {
       public:
          ~application();
 
-            /** @brief Sets version string
-           *
-           * @param version Version string output verbatim with -v/--version
-           */
-          void set_version(string version);
-          /** @overload
-           *
-           * @param version Integer version independent of the string output with -v/--version
-           */
-          void set_version(uint64_t version);
-          /** @brief Gets version string
-           *
-           * @return Version string output with -v/--version
-           */
-          string version() const;
-          /** @brief Gets version integer
-           *
-           * @return Version integer independent of the string output with -v/--version
-           */
-          uint64_t version_int() const;
-
+         /** @brief Set version
+          *
+          * @param version Version output with -v/--version
+          */
+         void set_version(uint64_t version);
+         /** @brief Get version
+          *
+          * @return Version output with -v/--version
+          */
+         uint64_t version() const;
+         /** @brief Get logging configuration path.
+          *
+          * @return Logging configuration location from command line
+          */
+         bfs::path get_logging_conf() const;
          /**
           * @brief Looks for the --plugin commandline / config option and calls initialize on those plugins
           *
@@ -90,11 +84,9 @@ namespace appbase {
 
 
          boost::asio::io_service& get_io_service() { return *io_serv; }
-
          boost::thread::id& get_thread_id() {
             return id;
          }
-
       protected:
          template<typename Impl>
          friend class plugin;
@@ -110,7 +102,7 @@ namespace appbase {
          ///@}
 
       private:
-         application(); ///< private because application is a singlton that should be accessed via instance()
+         application(); ///< private because application is a singleton that should be accessed via instance()
          map<string, std::unique_ptr<abstract_plugin>> plugins; ///< all registered plugins
          vector<abstract_plugin*>                  initialized_plugins; ///< stored in the order they were started running
          vector<abstract_plugin*>                  running_plugins; ///< stored in the order they were started running
@@ -120,7 +112,6 @@ namespace appbase {
          void write_default_config(const bfs::path& cfg_file);
          std::unique_ptr<class application_impl> my;
          boost::thread::id id;
-
    };
 
    application& app();
@@ -167,6 +158,7 @@ namespace appbase {
                static_cast<Impl*>(this)->plugin_shutdown();
             }
          }
+
       protected:
          plugin(const string& name) : _name(name){}
 

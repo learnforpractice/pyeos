@@ -22,37 +22,30 @@ class application_impl {
       options_description     _app_options;
       options_description     _cfg_options;
 
-      bfs::path                _data_dir;
+      bfs::path               _data_dir;
+      bfs::path               _logging_conf{"logging.json"};
 
-      string                  _version;
-      uint64_t                _version_int;
-
+      uint64_t                _version;
       bool _debug = false;
 };
 
 application::application()
 :my(new application_impl()){
    io_serv = std::make_shared<boost::asio::io_service>();
-   id = boost::this_thread::get_id();
 }
 
 application::~application() { }
 
-
-void application::set_version(string version) {
+void application::set_version(uint64_t version) {
   my->_version = version;
 }
 
-void application::set_version(uint64_t version) {
-  my->_version_int = version;
-}
-
-string application::version() const {
+uint64_t application::version() const {
   return my->_version;
 }
 
-uint64_t application::version_int() const {
-  return my->_version_int;
+bfs::path application::get_logging_conf() const {
+  return my->_logging_conf;
 }
 
 void application::startup() {
@@ -64,7 +57,6 @@ application& application::instance() {
    static application _app;
    return _app;
 }
-
 application& app() { return application::instance(); }
 
 
@@ -92,7 +84,8 @@ void application::set_program_options()
          ("help,h", "Print this help message and exit.")
          ("version,v", "Print version information.")
          ("data-dir,d", bpo::value<bfs::path>()->default_value( "data-dir" ), "Directory containing configuration file config.ini")
-         ("config,c", bpo::value<bfs::path>()->default_value( "config.ini" ), "Configuration file name relative to data-dir");
+         ("config,c", bpo::value<bfs::path>()->default_value( "config.ini" ), "Configuration file name relative to data-dir")
+         ("logconf,l", bpo::value<bfs::path>()->default_value( "logging.json" ), "Logging configuration file name/path for library users");
 
    my->_cfg_options.add(app_cfg_opts);
    my->_app_options.add(app_cfg_opts);
@@ -106,7 +99,12 @@ bool application::initialize_impl(int argc, char** argv, vector<abstract_plugin*
    bpo::store(bpo::parse_command_line(argc, argv, my->_app_options), options);
 
    if( options.count( "help" ) ) {
-      cout << my->_app_options << "\n";
+      cout << my->_app_options << std::endl;
+      return false;
+   }
+
+   if( options.count( "version" ) ) {
+      cout << my->_version << std::endl;
       return false;
    }
 
@@ -119,9 +117,18 @@ bool application::initialize_impl(int argc, char** argv, vector<abstract_plugin*
    }
    my->_data_dir = data_dir;
 
+   bfs::path logconf = data_dir / "logging.json";
+   if( options.count("logconf") )
+   {
+     logconf = options["logconf"].as<bfs::path>();
+     if( logconf.is_relative() )
+       logconf = data_dir / logconf;
+   }
+   my->_logging_conf = logconf;
+
    bfs::path config_file_name = data_dir / "config.ini";
    if( options.count( "config" ) ) {
-      auto config_file_name = options["config"].as<bfs::path>();
+      config_file_name = options["config"].as<bfs::path>();
       if( config_file_name.is_relative() )
          config_file_name = data_dir / config_file_name;
    }
@@ -165,10 +172,15 @@ void application::shutdown() {
    running_plugins.clear();
    initialized_plugins.clear();
    plugins.clear();
+   io_serv.reset();
 }
 
 void application::quit() {
    io_serv->stop();
+}
+
+bool application::is_debug_mode() const {
+   return my->_debug;
 }
 
 void application::exec() {
@@ -237,10 +249,5 @@ abstract_plugin& application::get_plugin(const string& name)const {
 bfs::path application::data_dir()const {
    return my->_data_dir;
 }
-
-bool application::is_debug_mode() const {
-   return my->_debug;
-}
-
 
 } /// namespace appbase
