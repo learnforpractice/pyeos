@@ -7,6 +7,7 @@
 #include "pyobject.hpp"
 
 PyArray::PyArray() { arr = array_create(); }
+PyArray::~PyArray() { Py_XDECREF(arr); }
 
 void PyArray::append(PyObject* obj) { array_append(arr, obj); }
 
@@ -20,11 +21,18 @@ void PyArray::append(uint64_t n) { array_append_uint64(arr, n); }
 
 void PyArray::append(double n) { array_append_double(arr, n); }
 
-PyObject* PyArray::get() { return arr; }
+PyObject* PyArray::get() {
+   Py_XINCREF(arr);
+   return arr;
+}
 
 PyDict::PyDict() { pydict = dict_create(); }
 
 PyDict::PyDict(PyObject* dictObj) { pydict = dictObj; }
+
+PyDict::~PyDict() {
+   Py_XDECREF(pydict);
+}
 
 void PyDict::add(PyObject* key, PyObject* value) {
    if (key == NULL || value == NULL) {
@@ -53,4 +61,8 @@ void PyDict::add(std::string& key, long long n) {
    dict_add(pydict, pykey, pyvalue);
 }
 
-PyObject* PyDict::get() { return pydict; }
+PyObject* PyDict::get() {
+   Py_XINCREF(pydict);
+   return pydict;
+}
+

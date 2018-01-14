@@ -34,6 +34,7 @@ using namespace std;
 class PyArray {
   public:
    PyArray();
+   ~PyArray();
    void append(PyObject* obj);
    void append(std::string s);
    void append(int n);
@@ -50,6 +51,7 @@ class PyDict {
   public:
    PyDict();
    PyDict(PyObject* dictObj);
+   ~PyDict();
    void add(PyObject* key, PyObject* value);
    void add(std::string& key, PyObject* value);
    void add(std::string& key, std::string& value);
