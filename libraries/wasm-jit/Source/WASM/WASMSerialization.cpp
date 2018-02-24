@@ -74,30 +74,30 @@ namespace IR
 		serialize(stream,tableType.elementType);
 		
 		Uptr flags = 0;
-		if(!Stream::isInput && tableType.size.max != UINT64_MAX) { flags |= 1; }
+		if(!Stream::isInput && tableType.size.max != UINT64_MAX) { flags |= 0x01; }
 		#if ENABLE_THREADING_PROTOTYPE
-		if(!Stream::isInput && tableType.isShared) { flags |= 2; }
+		if(!Stream::isInput && tableType.isShared) { flags |= 0x10; }
 		serializeVarUInt32(stream,flags);
-		if(Stream::isInput) { tableType.isShared = (flags & 2) != 0; }
+		if(Stream::isInput) { tableType.isShared = (flags & 0x10) != 0; }
 		#else
 		serializeVarUInt32(stream,flags);
 		#endif
-		serialize(stream,tableType.size,flags & 1);
+		serialize(stream,tableType.size,flags & 0x01);
 	}
 
 	template<typename Stream>
 	void serialize(Stream& stream,MemoryType& memoryType)
 	{
 		Uptr flags = 0;
-		if(!Stream::isInput && memoryType.size.max != UINT64_MAX) { flags |= 1; }
+		if(!Stream::isInput && memoryType.size.max != UINT64_MAX) { flags |= 0x01; }
 		#if ENABLE_THREADING_PROTOTYPE
-		if(!Stream::isInput && memoryType.isShared) { flags |= 2; }
+		if(!Stream::isInput && memoryType.isShared) { flags |= 0x10; }
 		serializeVarUInt32(stream,flags);
-		if(Stream::isInput) { memoryType.isShared = (flags & 2) != 0; }
+		if(Stream::isInput) { memoryType.isShared = (flags & 0x10) != 0; }
 		#else
 		serializeVarUInt32(stream,flags);
 		#endif
-		serialize(stream,memoryType.size,flags & 1);
+		serialize(stream,memoryType.size,flags & 0x01);
 	}
 
 	template<typename Stream>
@@ -186,12 +186,16 @@ public:
    {}
 
 
-   void addCall(const Module& module, Serialization::OutputStream& inByteStream)
+   void addCall(Module& module, OperatorEncoderStream& operatorEncoderStream, CodeValidationStream& codeValidationStream)
    {
-      OpcodeAndImm<CallImm>* encodedOperator = (OpcodeAndImm<CallImm>*)inByteStream.advance(sizeof(OpcodeAndImm<CallImm>));
-      encodedOperator->opcode = Opcode::call;
-      // checktime will be the last defined import
-      encodedOperator->imm.functionIndex = checktimeIndex(module);
+      // make sure the import is added
+      addImport(module);
+      LiteralImm<I32> param_imm { 11 };
+      codeValidationStream.i32_const(param_imm);
+      operatorEncoderStream.i32_const(param_imm);
+      CallImm checktime_imm { checktimeIndex(module) };
+      codeValidationStream.call(checktime_imm);
+      operatorEncoderStream.call(checktime_imm);
    }
 
    static U32 checktimeIndex(const Module& module)
@@ -201,7 +205,7 @@ public:
 
    void setTypeSlot(const Module& module, ResultType returnType, const std::vector<ValueType>& parameterTypes)
    {
-      if (returnType == ResultType::none && !parameterTypes.size() )
+      if (returnType == ResultType::none && parameterTypes.size() == 1 && parameterTypes[0] == ValueType::i32 )
         typeSlot = module.types.size() - 1;
    }
 
@@ -211,31 +215,43 @@ public:
       {
          // add a type for void func(void)
          typeSlot = module.types.size();
-         module.types.push_back(FunctionType::get(ResultType::none));
+         module.types.push_back(FunctionType::get(ResultType::none, std::vector<ValueType>(1, ValueType::i32)));
       }
    }
 
    void addImport(Module& module)
    {
-      const U32 functionTypeIndex = typeSlot;
-      module.functions.imports.push_back({{functionTypeIndex},std::move(u8"env"),std::move(u8"checktime")});
+      if (module.functions.imports.size() == 0 || module.functions.imports.back().exportName.compare(u8"checktime") != 0) {
+         if (typeSlot < 0) {
+            addTypeSlot(module);
+         }
+
+         const U32 functionTypeIndex = typeSlot;
+         module.functions.imports.push_back({{functionTypeIndex}, std::move(u8"env"), std::move(u8"checktime")});
+      }
    }
 
-   void conditionallyAddCall(Opcode opcode, const ControlStructureImm& imm, const Module& module, Serialization::OutputStream& inByteStream)
+   void conditionallyAddCall(Opcode opcode, const ControlStructureImm& imm, Module& module, OperatorEncoderStream& operatorEncoderStream, CodeValidationStream& codeValidationStream)
    {
       switch(opcode)
       {
       case Opcode::loop:
       case Opcode::block:
-         addCall(module, inByteStream);
+         addCall(module, operatorEncoderStream, codeValidationStream);
       default:
          break;
       };
    }
 
    template<typename Imm>
-   void conditionallyAddCall(Opcode , const Imm& , const Module& , Serialization::OutputStream& )
+   void conditionallyAddCall(Opcode , const Imm& , Module& , OperatorEncoderStream& , CodeValidationStream& )
    {
+   }
+
+   void adjustIfFunctionIndex(Uptr& index, ObjectKind kind)
+   {
+      if (kind == ObjectKind::function)
+         ++index;
    }
 
    void adjustExportIndex(Module& module)
@@ -243,8 +259,7 @@ public:
       // all function exports need to have their index increased to account for inserted definition
       for (auto& exportDef : module.exports)
       {
-         if (exportDef.kind == ObjectKind::function)
-            ++exportDef.index;
+         adjustIfFunctionIndex(exportDef.index, exportDef.kind);
       }
    }
 
@@ -265,12 +280,13 @@ private:
 
 struct NoOpInjection
 {
-   void addCall(const Module& , Serialization::OutputStream& ) {}
+   void addCall(Module& , OperatorEncoderStream& , CodeValidationStream& ) {}
    void setTypeSlot(const Module& , ResultType , const std::vector<ValueType>& ) {}
    void addTypeSlot(Module& ) {}
    void addImport(Module& ) {}
    template<typename Imm>
-   void conditionallyAddCall(Opcode , const Imm& , const Module& , Serialization::OutputStream& ) {}
+   void conditionallyAddCall(Opcode , const Imm& , Module& , OperatorEncoderStream& , CodeValidationStream& ) {}
+   void adjustIfFunctionIndex(Uptr& , ObjectKind ) {}
    void adjustExportIndex(Module& ) {}
    template<typename Imm>
    void adjustCallIndex(const Module& , Imm& ) {}
@@ -605,10 +621,10 @@ namespace WASM
          // Deserialize the function code, validate it, and re-encode it in the IR format.
          ArrayOutputStream irCodeByteStream;
 
-         injection.addCall(module, irCodeByteStream);
+         CodeValidationStream codeValidationStream(module,functionDef);
 
          OperatorEncoderStream irEncoderStream(irCodeByteStream);
-         CodeValidationStream codeValidationStream(module,functionDef);
+         injection.addCall(module, irEncoderStream, codeValidationStream);
          while(bodyStream.capacity())
          {
             Opcode opcode;
@@ -623,15 +639,10 @@ namespace WASM
                   injection.adjustCallIndex(module, imm); \
                   codeValidationStream.name(imm); \
                   irEncoderStream.name(imm); \
-                  injection.conditionallyAddCall(opcode, imm, module, irCodeByteStream); \
+                  injection.conditionallyAddCall(opcode, imm, module, irEncoderStream, codeValidationStream); \
                   break; \
                }
-            ENUM_NONFLOAT_OPERATORS(VISIT_OPCODE)
-            #undef VISIT_OPCODE
-            #define VISIT_OPCODE(_,name,nameString,...) \
-               case Opcode::name: \
-                  throw FatalSerializationException("float instructions not allowed");
-            ENUM_FLOAT_NONCONTROL_NONPARAMETRIC_OPERATORS(VISIT_OPCODE)
+            ENUM_OPERATORS(VISIT_OPCODE)
             #undef VISIT_OPCODE
             default: throw FatalSerializationException("unknown opcode");
             };
@@ -848,6 +859,7 @@ namespace WASM
          {
             serializeVarUInt32(sectionStream,module.startFunctionIndex);
          });
+         injection.adjustIfFunctionIndex(module.startFunctionIndex, ObjectKind::function);
       }
 
       template<typename Stream>

@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/eos/chain/*.hpp")
+file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.hpp")
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.wrap.cpp
@@ -13,24 +13,38 @@ add_custom_command(
 )
 
 ## SORT .cpp by most likely to change / break compile
-add_library( eos_chain
+add_library( eosio_chain
+             chain_config.cpp
+             merkle.cpp
+             name.cpp
+             transaction.cpp
+             block.cpp
              wast_to_wasm.cpp
-             chain_controller.cpp
              wasm_interface.cpp
+
              python_interface.cpp
              micropython_interface.cpp
              block_schedule.cpp
 
+             wasm_eosio_constraints.cpp
+             apply_context.cpp
+             rate_limiting.cpp
+
              fork_database.cpp
-
-             transaction.cpp
-             block.cpp
-
              get_config.cpp
-
              block_log.cpp
-             blockchain_configuration.cpp
+             asset.cpp
 
+
+             global_property_object.cpp
+             chain_controller.cpp
+
+             contracts/eosio_contract.cpp
+             contracts/chain_initializer.cpp
+             contracts/genesis_state.cpp
+             contracts/abi_serializer.cpp
+
+<<<<<<< HEAD
              types.cpp
              chain_administration_interface.cpp
              message_handling_contexts.cpp
@@ -41,18 +55,25 @@ add_library( eos_chain
  
              producer_objects.cpp
              staked_balance_objects.cpp
+=======
+>>>>>>> origin/master
 
              micropython/mpeoslib.cpp
 
              ${HEADERS}
-           )
+             transaction_metadata.cpp)
 
+<<<<<<< HEAD
 target_link_libraries( eos_chain fc chainbase appbase eos_types Logging 
     IR WAST WASM Runtime 
     tinypy micropython
 )
 
 target_include_directories( eos_chain
+=======
+target_link_libraries( eosio_chain eos_utilities fc chainbase Logging IR WAST WASM Runtime )
+target_include_directories( eosio_chain
+>>>>>>> origin/master
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/tinypy/Include
@@ -70,10 +91,17 @@ if(MSVC)
 endif(MSVC)
 
 INSTALL( TARGETS
-   eos_chain
+   eosio_chain
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
 )
-INSTALL( FILES ${HEADERS} DESTINATION "include/eos/chain" )
+INSTALL( FILES ${HEADERS} DESTINATION "include/eosio/chain" )
+
+add_subdirectory(test)
+
+#add_executable( test test.cpp )
+#target_link_libraries( test eosio_chain ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} ${Intl_LIBRARIES} )
+
+

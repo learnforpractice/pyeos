@@ -59,10 +59,10 @@ struct account {
  * any other contexts are notified 
  */
 void apply_social_post() {
-   const auto& post   = current_message<post_action>();
+   const auto& post   = current_action<post_action>();
    require_auth( post.author );
 
-   assert( current_context() == post.author, "cannot call from any other context" );
+   eosio_assert( current_context() == post.author, "cannot call from any other context" );
    
    static post_record& existing;
    if( !Db::get( post.postid, existing ) )
@@ -75,8 +75,8 @@ void apply_social_post() {
  * updates the vote total.  When executed 
  */
 void apply_social_vote() {
-   const auto& vote  = current_message<vote_action>();
-   require_notice( vote.voter, vote.author );
+   const auto& vote  = current_action<vote_action>();
+   require_recipient( vote.voter, vote.author );
    disable_context_code( vote.author() ); /// prevent the author's code from rejecting the potentially negative vote
 
    auto context = current_context();
@@ -84,8 +84,8 @@ void apply_social_vote() {
 
    if( context == vote.author ) {
       static post_record post;
-      assert( Db::get( vote.postid, post ) > 0, "unable to find post" );
-      assert( now() - post.created < days(7), "cannot vote after 7 days" );
+      eosio_assert( Db::get( vote.postid, post ) > 0, "unable to find post" );
+      eosio_assert( now() - post.created < days(7), "cannot vote after 7 days" );
       post.votes += vote.vote_power;
       Db::store( vote.postid, post );
    } 
@@ -95,13 +95,13 @@ void apply_social_vote() {
       auto abs_vote = abs(vote.vote_power);
       vote_account.vote_power = min( vote_account.social_power,
                                      vote_account.vote_power + (vote_account.social_power * (now()-last_vote)) / days(7));
-      assert( abs_vote <= vote_account.vote_power, "insufficient vote power" );
+      eosio_assert( abs_vote <= vote_account.vote_power, "insufficient vote power" );
       post.votes += vote.vote_power;
       vote_account.vote_power -= abs_vote;
       vote_account.last_vote  = now();
       Db::store( "account", vote_account );
    } else {
-      assert( false, "invalid context for execution of this vote" );
+      eosio_assert( false, "invalid context for execution of this vote" );
    }
 }
 

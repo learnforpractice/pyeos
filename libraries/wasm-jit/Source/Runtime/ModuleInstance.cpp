@@ -28,6 +28,8 @@ namespace Runtime
 		};
 	}
 
+	MemoryInstance* MemoryInstance::theMemoryInstance = nullptr;
+
 	ModuleInstance* instantiateModule(const IR::Module& module,ImportBindings&& imports)
 	{
 		ModuleInstance* moduleInstance = new ModuleInstance(
@@ -72,9 +74,11 @@ namespace Runtime
 		}
 		for(const MemoryDef& memoryDef : module.memories.defs)
 		{
-			auto memory = createMemory(memoryDef.type);
-			if(!memory) { causeException(Exception::Cause::outOfMemory); }
-			moduleInstance->memories.push_back(memory);
+			if(!MemoryInstance::theMemoryInstance) {
+				MemoryInstance::theMemoryInstance = createMemory(memoryDef.type);
+				if(!MemoryInstance::theMemoryInstance) { causeException(Exception::Cause::outOfMemory); }
+			}
+			moduleInstance->memories.push_back(MemoryInstance::theMemoryInstance);
 		}
 
 		// Find the default memory and table for the module.
@@ -96,33 +100,14 @@ namespace Runtime
 			const Value baseOffsetValue = evaluateInitializer(moduleInstance,tableSegment.baseOffset);
 			errorUnless(baseOffsetValue.type == ValueType::i32);
 			const U32 baseOffset = baseOffsetValue.i32;
-			if(baseOffset + tableSegment.indices.size() > table->elements.size())
-			{ causeException(Exception::Cause::invalidSegmentOffset); }
-		}
-		for(auto& dataSegment : module.dataSegments)
-		{
-			MemoryInstance* memory = moduleInstance->memories[dataSegment.memoryIndex];
-
-			const Value baseOffsetValue = evaluateInitializer(moduleInstance,dataSegment.baseOffset);
-			errorUnless(baseOffsetValue.type == ValueType::i32);
-			const U32 baseOffset = baseOffsetValue.i32;
-			if(baseOffset + dataSegment.data.size() > (memory->numPages << IR::numBytesPerPageLog2))
+			if(baseOffset > table->elements.size()
+			|| table->elements.size() - baseOffset < tableSegment.indices.size())
 			{ causeException(Exception::Cause::invalidSegmentOffset); }
 		}
 
-		// Copy the module's data segments into the module's default memory.
-		for(const DataSegment& dataSegment : module.dataSegments)
-		{
-			MemoryInstance* memory = moduleInstance->memories[dataSegment.memoryIndex];
-
-			const Value baseOffsetValue = evaluateInitializer(moduleInstance,dataSegment.baseOffset);
-			errorUnless(baseOffsetValue.type == ValueType::i32);
-			const U32 baseOffset = baseOffsetValue.i32;
-
-			assert(baseOffset + dataSegment.data.size() <= (memory->numPages << IR::numBytesPerPageLog2));
-
-			memcpy(memory->baseAddress + baseOffset,dataSegment.data.data(),dataSegment.data.size());
-		}
+		//Previously, the module instantiation would write in to the memoryInstance here. Don't do that
+      //since the memoryInstance is shared across all moduleInstances and we could be compiling
+      //a new instance while another instance is running
 		
 		// Instantiate the module's global definitions.
 		for(const GlobalDef& globalDef : module.globals.defs)
@@ -184,7 +169,7 @@ namespace Runtime
 		if(module.startFunctionIndex != UINTPTR_MAX)
 		{
 			assert(moduleInstance->functions[module.startFunctionIndex]->type == IR::FunctionType::get());
-			invokeFunction(moduleInstance->functions[module.startFunctionIndex],{});
+			moduleInstance->startFunctionIndex = module.startFunctionIndex;
 		}
 
 		moduleInstances.push_back(moduleInstance);
@@ -199,6 +184,16 @@ namespace Runtime
 	MemoryInstance* getDefaultMemory(ModuleInstance* moduleInstance) { return moduleInstance->defaultMemory; }
 	uint64_t getDefaultMemorySize(ModuleInstance* moduleInstance) { return moduleInstance->defaultMemory->numPages << IR::numBytesPerPageLog2; }
 	TableInstance* getDefaultTable(ModuleInstance* moduleInstance) { return moduleInstance->defaultTable; }
+
+	void runInstanceStartFunc(ModuleInstance* moduleInstance) {
+		if(moduleInstance->startFunctionIndex != UINTPTR_MAX)
+			invokeFunction(moduleInstance->functions[moduleInstance->startFunctionIndex],{});
+	}
+
+	void resetGlobalInstances(ModuleInstance* moduleInstance) {
+		for(GlobalInstance*& gi : moduleInstance->globals)
+			memcpy(&gi->value, &gi->initialValue, sizeof(gi->value));
+	}
 	
 	ObjectInstance* getInstanceExport(ModuleInstance* moduleInstance,const std::string& name)
 	{
