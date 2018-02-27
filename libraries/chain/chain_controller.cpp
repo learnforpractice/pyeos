@@ -18,11 +18,7 @@
 #include <eosio/chain/scope_sequence_object.hpp>
 #include <eosio/chain/merkle.hpp>
 
-
-#include <eos/chain/wasm_interface.hpp>
-#include <eos/chain/python_interface.hpp>
-#include <eos/chain/micropython_interface.hpp>
-
+#include <eosio/chain/wasm_interface.hpp>
 
 #include <eosio/utilities/rand.hpp>
 
@@ -59,8 +55,12 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
 {
    _initialize_indexes();
 
+   for (auto& f : cfg.applied_block_callbacks)
+      applied_block.connect(f);
    for (auto& f : cfg.applied_irreversible_block_callbacks)
       applied_irreversible_block.connect(f);
+   for (auto& f : cfg.on_pending_transaction_callbacks)
+      on_pending_transaction.connect(f);
 
    contracts::chain_initializer starter(cfg.genesis);
    starter.register_types(*this, _db);
@@ -157,11 +157,7 @@ std::vector<block_id_type> chain_controller::get_block_ids_on_fork(block_id_type
  */
 void chain_controller::push_block(const signed_block& new_block, uint32_t skip)
 { try {
-<<<<<<< HEAD
-   return with_skip_flags( skip, [&](){
-=======
    with_skip_flags( skip, [&](){
->>>>>>> origin/master
       return without_pending_transactions( [&]() {
          return _db.with_write_lock( [&]() {
             return _push_block(new_block);
@@ -230,31 +226,7 @@ bool chain_controller::_push_block(const signed_block& new_block)
 
    try {
       auto session = _db.start_undo_session(true);
-<<<<<<< HEAD
-      auto exec_start = std::chrono::high_resolution_clock::now();
-      apply_block(new_block, skip);
-      if( (fc::time_point::now() - new_block.timestamp) < fc::seconds(60) )
-      {
-         auto exec_stop = std::chrono::high_resolution_clock::now();
-         auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exec_stop - exec_start);
-         size_t trxcount = 0;
-         for (const auto& cycle : new_block.cycles)
-            for (const auto& thread : cycle)
-               trxcount += thread.user_input.size();
-#if 0
-         ilog( "${producer} #${num} @${time}  | ${trxcount} trx, ${pending} pending, exectime_ms=${extm}",
-            ("producer", new_block.producer)
-            ("time", new_block.timestamp)
-            ("num", new_block.block_num())
-            ("trxcount", trxcount)
-            ("pending", _pending_transactions.size())
-            ("extm", exec_ms.count())
-         );
-#endif
-      }
-=======
       _apply_block(new_block, skip);
->>>>>>> origin/master
       session.push();
    } catch ( const fc::exception& e ) {
       elog("Failed to push new block:\n${e}", ("e", e.to_detail_string()));
@@ -276,20 +248,12 @@ bool chain_controller::_push_block(const signed_block& new_block)
  */
 transaction_trace chain_controller::push_transaction(const packed_transaction& trx, uint32_t skip)
 { try {
-<<<<<<< HEAD
-   ilog("+++++++++++++++++chain_controller::push_transaction begin");
-   auto ret = with_skip_flags(skip, [&]() {
-=======
    return with_skip_flags(skip, [&]() {
->>>>>>> origin/master
       return _db.with_write_lock([&]() {
          return _push_transaction(trx);
       });
    });
-   ilog("+++++++++++++++++chain_controller::push_transaction end");
-   return ret;
-   }FC_CAPTURE_AND_RETHROW((trx))
-}
+} FC_CAPTURE_AND_RETHROW((trx)) }
 
 transaction_trace chain_controller::_push_transaction(const packed_transaction& trx) {
    transaction_metadata   mtrx( trx, get_chain_id(), head_block_time());
@@ -360,49 +324,13 @@ transaction_trace chain_controller::_push_transaction( transaction_metadata&& da
 
    // The transaction applied successfully. Merge its changes into the pending block session.
    temp_session.squash();
-<<<<<<< HEAD
-   // notify anyone listening to pending transactions
-   on_pending_transaction(trx); /// TODO move this to apply... ??? why...
-=======
 
    _pending_transaction_metas.emplace_back(std::forward<transaction_metadata>(data));
->>>>>>> origin/master
 
    return result;
 }
 
-<<<<<<< HEAD
-signed_block chain_controller::generate_block(
-   fc::time_point_sec when,
-   const account_name& producer,
-   const fc::ecc::private_key& block_signing_private_key,
-   block_schedule::factory scheduler, /* = block_schedule::by_threading_conflits */
-   uint32_t skip /* = 0 */
-   )
-{ try {
-   ilog("+++++++++++++++++chain_controller::generate_block begin");
-
-   auto ret = with_skip_flags( skip | created_block, [&](){
-      auto b = _db.with_write_lock( [&](){
-         return _generate_block( when, producer, block_signing_private_key, scheduler );
-      });
-      push_block(b, skip);
-      return b;
-   });
-   ilog("+++++++++++++++++chain_controller::generate_block end");
-   return ret;
-   } FC_CAPTURE_AND_RETHROW( (when) )
-}
-
-signed_block chain_controller::_generate_block(
-   fc::time_point_sec when,
-   const account_name& producer,
-   const fc::ecc::private_key& block_signing_private_key,
-   block_schedule::factory scheduler
-   )
-=======
 void chain_controller::_start_pending_block()
->>>>>>> origin/master
 {
    FC_ASSERT( !_pending_block );
    _pending_block         = signed_block();
@@ -549,12 +477,8 @@ signed_block chain_controller::_generate_block( block_timestamp_type when,
       if( !_pending_block ) {
          _start_pending_block();
       }
-<<<<<<< HEAD
-   }
-=======
 
       _finalize_pending_cycle();
->>>>>>> origin/master
 
       if( !(skip & skip_producer_signature) )
          FC_ASSERT( producer_obj.signing_key == block_signing_key.get_public_key(),
@@ -576,20 +500,7 @@ signed_block chain_controller::_generate_block( block_timestamp_type when,
       if( !(skip & skip_producer_signature) )
          _pending_block->sign( block_signing_key );
 
-<<<<<<< HEAD
-   const auto end = fc::time_point::now();
-   const auto gen_time = end - start;
-   if (appbase::app().is_debug_mode()) {
-      //
-   } else {
-      if( gen_time > fc::milliseconds(10) ) {
-         ilog("generation took ${x} ms", ("x", gen_time.count() / 1000));
-         FC_ASSERT(gen_time < fc::milliseconds(250), "block took too long to build");
-      }
-   }
-=======
       _finalize_block( *_pending_block_trace );
->>>>>>> origin/master
 
       _pending_block_session->push();
 
@@ -674,14 +585,6 @@ void chain_controller::__apply_block(const signed_block& next_block)
       processing_deadline = fc::time_point::now() + _limits.max_push_block_us;
    }
 
-<<<<<<< HEAD
-void chain_controller::_apply_block(const signed_block& next_block)
-{
-   try {
-   uint32_t next_block_num = next_block.block_num();
-
-=======
->>>>>>> origin/master
    uint32_t skip = _skip_flags;
 
    /*
@@ -957,139 +860,6 @@ void chain_controller::validate_expiration( const transaction& trx ) const
               ("now",now)("trx.exp",trx.expiration));
 } FC_CAPTURE_AND_RETHROW((trx)) }
 
-<<<<<<< HEAD
-uint32_t chain_controller::_transaction_message_rate(const fc::time_point_sec& now, const fc::time_point_sec& last_update_sec, const fc::time_point_sec& rate_limit_time_frame_sec,
-                                                     uint32_t rate_limit, uint32_t previous_rate, rate_limit_type type, const account_name& name)
-{
-   const fc::time_point_sec delta_time = fc::time_point(now - last_update_sec);
-   uint32_t message_count = 1;
-   if (delta_time <= rate_limit_time_frame_sec)
-   {
-      message_count += ( ( ( rate_limit_time_frame_sec - delta_time ).to_seconds() * fc::uint128( previous_rate ) )
-                     / rate_limit_time_frame_sec.sec_since_epoch() ).to_uint64();
-#define RATE_LIMIT_ASSERT(tx_msgs_exceeded, type_str) \
-      EOS_ASSERT(message_count <= rate_limit, tx_msgs_exceeded, \
-                 "Rate limiting ${type} account=${name} messages sent, ${count} exceeds ${max} messages limit per ${sec} seconds. Wait 1 second and try again", \
-                 ("type",type_str) \
-                 ("name",name) \
-                 ("count",message_count) \
-                 ("max",rate_limit) \
-                 ("sec", rate_limit_time_frame_sec))
-      switch (type)
-      {
-      case authorization_account:
-         RATE_LIMIT_ASSERT(tx_msgs_auth_exceeded, "authorization");
-         break;
-      case code_account:
-         RATE_LIMIT_ASSERT(tx_msgs_code_exceeded, "code");
-         break;
-      default:
-         FC_ASSERT(true, "Undefined rate_limit_type: ${rlt}", ("rlt", (uint32_t)type));
-      }
-   }
-
-   return message_count;
-}
-
-void chain_controller::rate_limit_message(const message& message)
-{ try {
-   const auto now = head_block_time();
-
-   // per authorization rate limiting
-   for (const auto& permission : message.authorization)
-   {
-      auto rate_limiting = _db.find<rate_limiting_object, by_name>(permission.account);
-      if (rate_limiting == nullptr)
-      {
-         _db.create<rate_limiting_object>([&](rate_limiting_object& rlo) {
-            rlo.name = permission.account;
-            rlo.per_auth_account_txn_msg_rate = 1;
-            rlo.per_auth_account_txn_msg_rate_last_update_sec = now;
-         });
-      }
-      else
-      {
-         const auto message_rate =
-               _transaction_message_rate(now, rate_limiting->per_auth_account_txn_msg_rate_last_update_sec, _per_auth_account_txn_msg_rate_limit_time_frame_sec,
-                                        _per_auth_account_txn_msg_rate_limit, rate_limiting->per_auth_account_txn_msg_rate, authorization_account, permission.account);
-         _db.modify(*rate_limiting, [&] (rate_limiting_object& rlo) {
-            rlo.per_auth_account_txn_msg_rate = message_rate;
-            rlo.per_auth_account_txn_msg_rate_last_update_sec = now;
-         });
-      }
-   }
-
-   // per code rate limiting
-   auto rate_limiting = _db.find<rate_limiting_object, by_name>(message.code);
-   if (rate_limiting == nullptr)
-   {
-      _db.create<rate_limiting_object>([&](rate_limiting_object& rlo) {
-         rlo.name = message.code;
-         rlo.per_code_account_txn_msg_rate = 1;
-         rlo.per_code_account_txn_msg_rate_last_update_sec = now;
-      });
-   }
-   else
-   {
-      const auto message_rate =
-            _transaction_message_rate(now, rate_limiting->per_code_account_txn_msg_rate_last_update_sec, _per_code_account_txn_msg_rate_limit_time_frame_sec,
-                                     _per_code_account_txn_msg_rate_limit, rate_limiting->per_code_account_txn_msg_rate, code_account, message.code);
-      _db.modify(*rate_limiting, [&] (rate_limiting_object& rlo) {
-         rlo.per_code_account_txn_msg_rate = message_rate;
-         rlo.per_code_account_txn_msg_rate_last_update_sec = now;
-      });
-   }
-} FC_CAPTURE_AND_RETHROW((message)) }
-
-void chain_controller::process_message(const transaction& trx, account_name code,
-                                       const message& message, message_output& output,
-                                       apply_context* parent_context, int depth,
-                                       const fc::time_point& start_time ) {
-   const blockchain_configuration& chain_configuration = get_global_properties().configuration;
-
-   if (appbase::app().is_debug_mode()) {
-      //
-   } else {
-      EOS_ASSERT((fc::time_point::now() - start_time).count() < chain_configuration.max_trx_runtime, checktime_exceeded,
-         "Transaction message exceeded maximum total transaction time of ${limit}ms", ("limit", chain_configuration.max_trx_runtime));
-   }
-
-   EOS_ASSERT(depth < chain_configuration.in_depth_limit, msg_resource_exhausted,
-     "Message processing exceeded maximum inline recursion depth of ${limit}", ("limit", chain_configuration.in_depth_limit));
-
-   apply_context apply_ctx(*this, _db, trx, message, code);
-   apply_message(apply_ctx);
-
-   output.notify.reserve( apply_ctx.notified.size() );
-
-   for( uint32_t i = 0; i < apply_ctx.notified.size(); ++i ) {
-      try {
-         auto notify_code = apply_ctx.notified[i];
-         output.notify.push_back( {notify_code} );
-         process_message(trx, notify_code, message, output.notify.back().output, &apply_ctx, depth + 1, start_time );
-      } FC_CAPTURE_AND_RETHROW((apply_ctx.notified[i]))
-   }
-
-   // combine inline messages and process
-   if (apply_ctx.inline_messages.size() > 0) {
-      output.inline_trx = inline_transaction(trx);
-      (*output.inline_trx).messages = std::move(apply_ctx.inline_messages);
-   }
-
-   for( auto& asynctrx : apply_ctx.deferred_transactions ) {
-      digest_type::encoder enc;
-      fc::raw::pack( enc, trx );
-      fc::raw::pack( enc, asynctrx );
-      auto id = enc.result();
-
-      auto gtrx = generated_transaction(id, asynctrx);
-      _db.create<generated_transaction_object>([&](generated_transaction_object& transaction) {
-         transaction.trx = gtrx;
-         transaction.status = generated_transaction_object::PENDING;
-      });
-
-      output.deferred_trxs.emplace_back( gtrx );
-=======
 
 void chain_controller::require_scope( const scope_name& scope )const {
    switch( uint64_t(scope) ) {
@@ -1098,89 +868,10 @@ void chain_controller::require_scope( const scope_name& scope )const {
          return; /// built in scopes
       default:
          require_account(scope);
->>>>>>> origin/master
    }
 }
 
-<<<<<<< HEAD
-void chain_controller::apply_message(apply_context& context)
-{ try {
-    /// context.code => the execution namespace
-    /// message.code / message.type => Event
-    const auto& m = context.msg;
-    auto contract_handlers_itr = apply_handlers.find(context.code);
-    if (contract_handlers_itr != apply_handlers.end()) {
-       auto message_handler_itr = contract_handlers_itr->second.find({m.code, m.type});
-       if (message_handler_itr != contract_handlers_itr->second.end()) {
-          message_handler_itr->second(context);
-          return;
-       }
-    }
-    const auto& recipient = _db.get<account_object,by_name>(context.code);
-
-    if (recipient.code.size()) {
-       //idump((context.code)(context.msg.type));
-       const uint32_t execution_time =
-          _skip_flags & received_block
-             ? _rcvd_block_txn_execution_time
-             : _skip_flags & created_block
-               ? _create_block_txn_execution_time
-               : _txn_execution_time;
-
-       const bool is_received_block = _skip_flags & received_block;
-       if (recipient.vm_type == 0){
-          wasm_interface::get().apply(context, execution_time, is_received_block);
-       } else if (recipient.vm_type == 1) {
-           python_interface::get().apply(context);
-       } else if (recipient.vm_type == 2) {
-          micropython_interface::get().apply(context);
-      }
-    }
-
-} FC_CAPTURE_AND_RETHROW((context.msg)) }
-
-template<typename T>
-typename T::processed chain_controller::apply_transaction(const T& trx)
-{ try {
-   validate_transaction(trx);
-   record_transaction(trx);
-   return process_transaction( trx, 0, fc::time_point::now());
-
-} FC_CAPTURE_AND_RETHROW((trx)) }
-
-/**
- *  @pre the transaction is assumed valid and all signatures / duplicate checks have been performed
- */
-template<typename T>
-typename T::processed chain_controller::process_transaction( const T& trx, int depth, const fc::time_point& start_time )
-{ try {
-   const blockchain_configuration& chain_configuration = get_global_properties().configuration;
-   EOS_ASSERT((fc::time_point::now() - start_time).count() < chain_configuration.max_trx_runtime, checktime_exceeded,
-      "Transaction exceeded maximum total transaction time of ${limit}ms", ("limit", chain_configuration.max_trx_runtime/1000));
-
-   EOS_ASSERT(depth < chain_configuration.in_depth_limit, tx_resource_exhausted,
-      "Transaction exceeded maximum inline recursion depth of ${limit}", ("limit", chain_configuration.in_depth_limit));
-
-   typename T::processed ptrx( trx );
-   ptrx.output.resize( trx.messages.size() );
-
-   for( uint32_t i = 0; i < trx.messages.size(); ++i ) {
-      auto& output = ptrx.output[i];
-      rate_limit_message(trx.messages[i]);
-      process_message(trx, trx.messages[i].code, trx.messages[i], output, nullptr, 0, start_time);
-      if (output.inline_trx.valid() ) {
-         const transaction& trx = *output.inline_trx;
-         output.inline_trx = process_transaction(pending_inline_transaction(trx), depth + 1, start_time);
-      }
-   }
-
-   return ptrx;
-} FC_CAPTURE_AND_RETHROW( (trx) ) }
-
-void chain_controller::require_account(const types::account_name& name) const {
-=======
 void chain_controller::require_account(const account_name& name) const {
->>>>>>> origin/master
    auto account = _db.find<account_object, by_name>(name);
    FC_ASSERT(account != nullptr, "Account not found: ${name}", ("name", name));
 }
@@ -1549,12 +1240,8 @@ void chain_controller::update_global_dynamic_data(const signed_block& b) {
 void chain_controller::update_signing_producer(const producer_object& signing_producer, const signed_block& new_block)
 {
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
-<<<<<<< HEAD
-   uint64_t new_block_aslot = dpo.current_absolute_slot + get_slot_at_time( new_block.timestamp );
-=======
    uint64_t new_block_aslot = dpo.current_absolute_slot + get_slot_at_time( (fc::time_point)new_block.timestamp );
 
->>>>>>> origin/master
    _db.modify( signing_producer, [&]( producer_object& _wit )
    {
       _wit.last_aslot = new_block_aslot;
@@ -1592,14 +1279,6 @@ void chain_controller::update_last_irreversible_block()
       [](const producer_object* a, const producer_object* b) {
          return a->last_confirmed_block_num < b->last_confirmed_block_num;
       });
-<<<<<<< HEAD
-   uint32_t new_last_irreversible_block_num = 0;
-   if (appbase::app().is_debug_mode()) {
-      new_last_irreversible_block_num = head_block_num();
-   } else {
-      new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
-   }
-=======
 
    uint32_t new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
    // TODO: right now the code cannot handle the head block being irreversible for reasons that are purely
@@ -1608,7 +1287,6 @@ void chain_controller::update_last_irreversible_block()
       new_last_irreversible_block_num -= 1;
    }
 
->>>>>>> origin/master
 
    if (new_last_irreversible_block_num > dpo.last_irreversible_block_num) {
       _db.modify(dpo, [&](dynamic_global_property_object& _dpo) {
@@ -1622,12 +1300,8 @@ void chain_controller::update_last_irreversible_block()
    // If this is null, there are no blocks on disk, so the zero is correct
    if (old_last_irreversible_block)
       last_block_on_disk = old_last_irreversible_block->block_num();
-<<<<<<< HEAD
-   if (last_block_on_disk < new_last_irreversible_block_num)
-=======
 
    if (last_block_on_disk < new_last_irreversible_block_num) {
->>>>>>> origin/master
       for (auto block_to_write = last_block_on_disk + 1;
            block_to_write <= new_last_irreversible_block_num;
            ++block_to_write) {
@@ -1676,22 +1350,9 @@ void chain_controller::clear_expired_transactions()
    //Look for expired transactions in the pending generated list, and remove them.
    //transactions must have expired by at least two forking windows in order to be removed.
    auto& generated_transaction_idx = _db.get_mutable_index<generated_transaction_multi_index>();
-<<<<<<< HEAD
-   const auto& generated_index = generated_transaction_idx.indices().get<generated_transaction_object::by_expiration>();
-   while( (!generated_index.empty()) && (head_block_time() > generated_index.rbegin()->trx.expiration) ) {
-//      if (appbase::app().is_debug_mode()) {
-      if (false) {
-         wlog("generated transaction is not removed in order to ignore pointer double free problem, generated_index.size() ${n}",("n",generated_index.size()));
-         break;
-      } else {
-         generated_transaction_idx.remove(*generated_index.rbegin());
-      }
-   }
-=======
    const auto& generated_index = generated_transaction_idx.indices().get<by_expiration>();
    while( (!generated_index.empty()) && (head_block_time() > generated_index.rbegin()->expiration) )
       generated_transaction_idx.remove(*generated_index.rbegin());
->>>>>>> origin/master
 
 } FC_CAPTURE_AND_RETHROW() }
 

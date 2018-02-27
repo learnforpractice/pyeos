@@ -22,14 +22,13 @@
 #include <boost/iostreams/stream_buffer.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <eos/chain/account_object.hpp>
-#include <eos/chain/block_summary_object.hpp>
-#include <eos/chain/chain_controller.hpp>
-#include <eos/chain/exceptions.hpp>
-#include <eos/chain/key_value_object.hpp>
-#include <eos/chain/wasm_interface.hpp>
+#include <eosio/chain/account_object.hpp>
+#include <eosio/chain/block_summary_object.hpp>
+#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/wasm_interface.hpp>
 
-#include <eos/utilities/tempdir.hpp>
+#include <eosio/utilities/tempdir.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/exception/exception.hpp>
@@ -51,14 +50,12 @@
 
 ////////////////////////////////////////
 
-#include <eos/chain/chain_controller.hpp>
-#include <eos/chain/producer_object.hpp>
-#include <eos/chain/exceptions.hpp>
+#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/producer_object.hpp>
+#include <eosio/chain/exceptions.hpp>
 
-#include <eos/native_contract/native_contract_chain_initializer.hpp>
-#include <eos/native_contract/native_contract_chain_administrator.hpp>
 
-#include <eos/utilities/tempdir.hpp>
+#include <eosio/utilities/tempdir.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>

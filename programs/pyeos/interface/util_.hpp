@@ -8,12 +8,12 @@
 #ifndef PROGRAMS_PYEOS_INTERFACE_UTIL__HPP_
 #define PROGRAMS_PYEOS_INTERFACE_UTIL__HPP_
 
-#include <eos/types/native.hpp>
+#include <eosio/chain/types.hpp>
 #include <string>
 
 using namespace std;
-using namespace eosio::types;
 using namespace eosio;
+using namespace eosio::chain;
 
 namespace python {
 

@@ -1,11 +1,9 @@
 #include "mpeoslib.h"
 
-#include <eos/chain/chain_controller.hpp>
+#include <eosio/chain/chain_controller.hpp>
 #include <eos/chain/micropython_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
-#include <eos/chain/balance_object.hpp>
-#include <eos/chain/staked_balance_objects.hpp>
 
 
 using namespace eosio;

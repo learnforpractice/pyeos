@@ -1,4 +1,4 @@
-#include <eos/chain/chain_controller.hpp>
+#include <eosio/chain/chain_controller.hpp>
 #include <eos/chain/python_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>

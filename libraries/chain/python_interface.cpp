@@ -3,7 +3,7 @@
 #include <boost/thread/thread.hpp>
 #include <eos/chain/python_interface.hpp>
 #include <eos/chain/wasm_interface.hpp>
-#include <eos/chain/chain_controller.hpp>
+#include <eosio/chain/chain_controller.hpp>
 #include "Platform/Platform.h"
 #include "WAST/WAST.h"
 #include "Runtime/Runtime.h"
@@ -12,8 +12,7 @@
 #include "IR/Module.h"
 #include "IR/Operators.h"
 #include "IR/Validate.h"
-#include <eos/chain/key_value_object.hpp>
-#include <eos/chain/account_object.hpp>
+#include <eosio/chain/account_object.hpp>
 #include <chrono>
 #include <appbase/application.hpp>
 

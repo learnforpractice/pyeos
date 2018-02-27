@@ -4,15 +4,14 @@
  *  Created on: Oct 26, 2017
  *      Author: newworld
  */
-#include <eos/chain/chain_controller.hpp>
-#include <eos/chain/message_handling_contexts.hpp>
+#include <eosio/chain/chain_controller.hpp>
 #include <eos/types/generated.hpp>
 #include <appbase/application.hpp>
-#include <eos/chain_plugin/chain_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eos/chain/python_interface.hpp>
-#include <eos/chain/wasm_interface.hpp>
+#include <eosio/chain/wasm_interface.hpp>
 
-#include <eos/chain/account_object.hpp>
+#include <eosio/chain/account_object.hpp>
 
 #include "blockchain_.hpp"
 

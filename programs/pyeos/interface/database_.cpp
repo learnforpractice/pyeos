@@ -2,26 +2,21 @@
 
 #include <fc/filesystem.hpp>
 
-#include <eos/chain/account_object.hpp>
-#include <eos/chain/permission_object.hpp>
-#include <eos/chain/action_objects.hpp>
-#include <eos/chain/block_summary_object.hpp>
-#include <eos/chain/generated_transaction_object.hpp>
-#include <eos/chain/global_property_object.hpp>
-#include <eos/chain/key_value_object.hpp>
-#include <eos/chain/permission_link_object.hpp>
-#include <eos/chain/producer_object.hpp>
-#include <eos/chain/transaction_object.hpp>
+#include <eosio/chain/account_object.hpp>
+#include <eosio/chain/permission_object.hpp>
+#include <eosio/chain/action_objects.hpp>
+#include <eosio/chain/block_summary_object.hpp>
+#include <eosio/chain/generated_transaction_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/permission_link_object.hpp>
+#include <eosio/chain/producer_object.hpp>
+#include <eosio/chain/transaction_object.hpp>
 
-#include <eos/chain/fork_database.hpp>
-#include <eos/chain/block_log.hpp>
-#include <eos/chain/authority_checker.hpp>
-#include <eos/chain/block_schedule.hpp>
-#include <eos/chain/chain_administration_interface.hpp>
-#include <eos/chain/chain_initializer_interface.hpp>
-#include <eos/chain/exceptions.hpp>
-#include <eos/chain/message_handling_contexts.hpp>
-#include <eos/chain/protocol.hpp>
+#include <eosio/chain/fork_database.hpp>
+#include <eosio/chain/block_log.hpp>
+#include <eosio/chain/authority_checker.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/protocol.hpp>
 
 #include <chainbase/chainbase.hpp>
 #include <fc/scoped_exit.hpp>
@@ -39,21 +34,7 @@ namespace database {
 
 PyObject* database_create(string& path) {
    auto _db = new chainbase::database(fc::path(path), chainbase::database::read_write, 1 * 1024 * 1024);
-   _db->add_index<account_index>();
-   _db->add_index<permission_index>();
-   _db->add_index<permission_link_index>();
-   _db->add_index<action_permission_index>();
-   _db->add_index<key_value_index>();
-   _db->add_index<keystr_value_index>();
-   _db->add_index<key128x128_value_index>();
-   _db->add_index<key64x64x64_value_index>();
 
-   _db->add_index<global_property_multi_index>();
-   _db->add_index<dynamic_global_property_multi_index>();
-   _db->add_index<block_summary_multi_index>();
-   _db->add_index<transaction_multi_index>();
-   _db->add_index<generated_transaction_multi_index>();
-   _db->add_index<producer_multi_index>();
 
    return py_new_uint64((uint64_t)_db);
 }

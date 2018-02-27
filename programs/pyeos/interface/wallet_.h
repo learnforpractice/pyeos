@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <eos/chain/transaction.hpp>
+#include <eosio/chain/transaction.hpp>
 
 void sign_transaction(eosio::chain::signed_transaction &trx);
 

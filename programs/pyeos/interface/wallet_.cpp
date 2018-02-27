@@ -9,15 +9,13 @@
 #include <boost/thread.hpp>
 #include <fc/log/logger_config.hpp>
 
-#include <eos/chain/exceptions.hpp>
-#include <eos/chain_api_plugin/chain_api_plugin.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
 #include <fc/io/json.hpp>
 
-#include <eos/chain_plugin/chain_plugin.hpp>
-#include <eos/chain/balance_object.hpp>
-#include <eos/chain/staked_balance_objects.hpp>
-#include <eos/wallet_plugin/wallet_manager.hpp>
-#include <eos/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <eosio/wallet_plugin/wallet_manager.hpp>
+#include <eosio/wallet_plugin/wallet_plugin.hpp>
 
 #include <Python.h>
 #include "pyobject.hpp"
@@ -130,7 +128,7 @@ PyObject* wallet_list_wallets_() {
 PyObject* wallet_list_keys_() {
    PyDict results;
    try {
-      map<public_key_type, std::string> keys = wm().list_keys();
+      map<public_key_type, private_key_type> keys = wm().list_keys();
       variant v;
       for (auto it = keys.begin(); it != keys.end(); it++) {
          //            to_variant(it.first,v);

@@ -1,7 +1,7 @@
 #pragma once
-#include <eos/chain/exceptions.hpp>
-#include <eos/chain/message.hpp>
-#include <eos/chain/message_handling_contexts.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/types.hpp>
+
 #include <Runtime/Runtime.h>
 #include "IR/Module.h"
 #include <Python.h>

@@ -45,7 +45,7 @@ cdef extern from "eosapi_.hpp":
     int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
     
     object transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
-    object push_message_(string& contract, string& action, string& args, vector[string] scopes, map[string, string]& permissions, bool sign, bool rawargs)
+    object push_message_(string& contract, string& action, string& args, map[string, string]& permissions, bool sign, bool rawargs)
     object set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
     int get_table_(string& scope, string& code, string& table, string& result);
@@ -144,11 +144,13 @@ def get_accounts(public_key) -> List[str]:
         public_key = bytes(public_key, 'utf8')
     return get_accounts_(public_key)
 
+'''
 def get_controlled_accounts(account_name) -> List[str]:
     if isinstance(account_name, str):
         account_name = bytes(account_name, 'utf8')
 
     return get_controlled_accounts_(account_name);
+'''
 
 def create_account(creator, newaccount, owner_key, active_key, sign=True) -> str:
     if isinstance(creator, str):
@@ -212,11 +214,10 @@ def transfer(sender, recipient, int amount, memo, sign=True) -> bytes:
         return JsonStruct(result)
     return None
 
-def push_message(contract, action, args, scopes: List[str], permissions: Dict, sign=True, rawargs=False):
+def push_message(contract, action, args, permissions: Dict, sign=True, rawargs=False):
     cdef string contract_
     cdef string action_
     cdef string args_
-    cdef vector[string] scopes_;
     cdef map[string, string] permissions_;
     cdef int sign_
     cdef int rawargs_
@@ -227,8 +228,6 @@ def push_message(contract, action, args, scopes: List[str], permissions: Dict, s
             args = json.dumps(args)
     args_ = tobytes(args)
     
-    for scope in scopes:
-        scopes_.push_back(tobytes(scope))
     for per in permissions:
         key = permissions[per]
         per = tobytes(per)
@@ -244,7 +243,7 @@ def push_message(contract, action, args, scopes: List[str], permissions: Dict, s
     else:
         rawargs_ = 0
 #    print(contract_,action_,args_,scopes_,permissions_,sign_)
-    result = push_message_(contract_, action_, args_, scopes_, permissions_, sign_, rawargs_)
+    result = push_message_(contract_, action_, args_, permissions_, sign_, rawargs_)
     if result:
         return JsonStruct(result)
     return None

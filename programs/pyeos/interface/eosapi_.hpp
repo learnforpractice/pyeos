@@ -27,14 +27,14 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 #include <string>
 #include <vector>
 
-#include <eos/account_history_api_plugin/account_history_api_plugin.hpp>
-#include <eos/chain/config.hpp>
-#include <eos/chain_plugin/chain_plugin.hpp>
+#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
+#include <eosio/chain/config.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/sort.hpp>
-#include <eos/utilities/key_conversion.hpp>
+#include <eosio/utilities/key_conversion.hpp>
 
 #include <IR/Module.h>
 #include <IR/Validate.h>
@@ -50,17 +50,15 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 #include <eos/py_plugin/py_plugin.hpp>
 #include <fc/log/logger_config.hpp>
 
-#include <eos/chain/exceptions.hpp>
-#include <eos/chain_api_plugin/chain_api_plugin.hpp>
-#include <eos/producer_plugin/producer_plugin.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
+#include <eosio/producer_plugin/producer_plugin.hpp>
 #include <fc/io/json.hpp>
 
-#include <eos/chain/wast_to_wasm.hpp>
-#include <eos/chain_plugin/chain_plugin.hpp>
-#include <eos/chain/balance_object.hpp>
-#include <eos/chain/staked_balance_objects.hpp>
-#include <eos/wallet_plugin/wallet_manager.hpp>
-#include <eos/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/chain/wast_to_wasm.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <eosio/wallet_plugin/wallet_manager.hpp>
+#include <eosio/wallet_plugin/wallet_plugin.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -100,7 +98,7 @@ int get_transactions_(string& account_name, int skip_seq, int num_seq,
 PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
                     bool sign);
 PyObject* push_message_(string& contract, string& action, string& args,
-                        vector<string> scopes, map<string, string>& permissions,
+                        map<string, string>& permissions,
                         bool sign, bool rawargs);
 PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
                         int vmtype, bool sign);

@@ -7,21 +7,17 @@
 
 #ifndef PROGRAMS_PYEOS_UTIL_DB_HANDLING_HPP_
 #define PROGRAMS_PYEOS_UTIL_DB_HANDLING_HPP_
-#include <eos/types/types.hpp>
-#include <eos/types/native.hpp>
 
 #include <boost/algorithm/cxx11/all_of.hpp>
 #include <boost/range/algorithm/find_if.hpp>
-#include <eos/chain/record_functions.hpp>
 
 #include <appbase/application.hpp>
-#include <eos/chain_plugin/chain_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
 
 
 namespace chainbase { class database; }
 
 using namespace eosio;
-using namespace eosio::types;
 using namespace eosio::chain;
 
 namespace python {

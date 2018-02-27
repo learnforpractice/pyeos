@@ -1,5 +1,4 @@
 add_subdirectory( python )
-add_subdirectory( tinypy )
 add_subdirectory( micropython )
 
 add_subdirectory( fc )

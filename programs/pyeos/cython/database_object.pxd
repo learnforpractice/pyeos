@@ -9,7 +9,7 @@ cdef extern from "":
     ctypedef unsigned long long uint64_t
     ctypedef unsigned char uint8_t
 
-cdef extern from "<eos/chain/account_object.hpp>" namespace "eosio::chain":
+cdef extern from "<eosio/chain/account_object.hpp>" namespace "eosio::chain":
     cppclass account_object :
 #        id_type             id;
         name         account_name;
