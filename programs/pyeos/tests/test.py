@@ -2,9 +2,17 @@ import struct
 import eosapi
 import wallet
 from eoslib import N
+'''
+{
+    "public": "EOS7zzybqATz1t6kWcPtyyKVf9xitXXZYA88bNt4WYrtwiEqACuKZ",
+    "private": "5HvsFc23cbmWCYvqfj42tbbSb4kD9MXAeZKJ5NPAtj9gdusCcQH"
+}
+
+eosio: 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+'''
 
 def init():
-    psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
+    psw = 'PW5JUPL2mFQTtRaxCYcuEKSiWpYuiECh6PKqKdUY17bYZNuZ3zA5Y'
     wallet.open('mywallet')
     wallet.unlock('mywallet',psw)
 import time

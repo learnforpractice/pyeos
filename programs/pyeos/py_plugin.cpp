@@ -49,6 +49,7 @@ py_plugin::~py_plugin() {}
 
 void py_plugin::set_program_options(options_description&,
                                     options_description& cfg) {
+
    cfg.add_options()("interactive,i", bpo::bool_switch()->default_value(false),
                      "enter interactive mode")(
        "option-name", bpo::value<string>()->default_value("default value"),

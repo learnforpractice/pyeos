@@ -160,6 +160,8 @@ int main(int argc, char** argv) {
 //   main_micropython(argc, argv);
 //   init_smart_contract(eos_main, interactive_console);
 
+   boost::thread t( eos_main );
+   interactive_console();
    return 0;
 }
 

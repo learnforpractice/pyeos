@@ -328,65 +328,17 @@ PyObject* get_block_(char* num_or_id) {
  optional<types::abi>       abi;
  };
  */
-PyObject* get_account_(char* _name) {
+PyObject* get_account_(const char* _name) {
 //   using namespace native::eosio;
    PyArray arr;
    PyDict dict;
-   //   arr.append(_name);
-   /*
-    Name                       _name;
-    Asset                      eos_balance = Asset(0,EOS_SYMBOL);
-    Asset                      staked_balance;
-    Asset                      unstaking_balance;
-    fc::time_point_sec         last_unstaking_time;
-    vector<permission>         permissions;
-    optional<producer_info>    producer;
-    */
-#if 0
-   try {
-      auto& db = get_db();
-      eosio::chain_apis::read_only::get_account_results result;
-      eosio::chain_apis::read_only::get_account_params params = {_name};
-      string key;
-      string value;
 
-      result.account_name = params.account_name;
-      const auto& d = db.get_database();
-      const auto& accnt = d.get<account_object, by_name>(params.account_name);
-      const auto& balance = d.get<balance_object, by_owner_name>(params.account_name);
-      const auto& staked_balance = d.get<staked_balance_object, by_owner_name>(params.account_name);
-      key = "name";
-      value = _name;
-      dict.add(key, value);
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
-      key = "balance";
-      dict.add(key, (uint64_t)balance.balance);
-
-      key = "stakedBalance";
-      dict.add(key, (uint64_t)staked_balance.staked_balance);
-
-      key = "unstakingBalance";
-      dict.add(key, (uint64_t)staked_balance.unstaking_balance);
-
-      key = "lastUnstakingTime";
-      value = staked_balance.last_unstaking_time.to_iso_string();
-      dict.add(key, value);
-
-      if (accnt.abi.size() > 4) {
-         eosio::types::abi _abi;
-         fc::datastream<const char*> ds(accnt.abi.data(), accnt.abi.size());
-         fc::raw::unpack(ds, _abi);
-         string value = fc::json::to_string(fc::variant(_abi));
-         key = "abi";
-         dict.add(key, value);
-      }
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-#endif
-   return dict.get();
+   eosio::chain_apis::read_only::get_account_results result;
+   eosio::chain_apis::read_only::get_account_params params = {chain::name(_name).value};
+   result = ro_api.get_account(params);
+   return python::json::to_string(result);
 }
 
 PyObject* get_accounts_(char* public_key) {
