@@ -4,6 +4,7 @@
  */
 
 #include <eosio/chain/chain_controller.hpp>
+#include <appbase/application.hpp>
 
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
@@ -1280,7 +1281,14 @@ void chain_controller::update_last_irreversible_block()
          return a->last_confirmed_block_num < b->last_confirmed_block_num;
       });
 
-   uint32_t new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
+//   uint32_t new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
+   uint32_t new_last_irreversible_block_num = 0;
+   if (appbase::app().is_debug_mode()) {
+      new_last_irreversible_block_num = head_block_num();
+   } else {
+      new_last_irreversible_block_num = producer_objs[offset]->last_confirmed_block_num;
+   }
+
    // TODO: right now the code cannot handle the head block being irreversible for reasons that are purely
    // implementation details.  We can and should remove this special case once the rest of the logic is fixed.
    if (producer_objs.size() == 1) {
