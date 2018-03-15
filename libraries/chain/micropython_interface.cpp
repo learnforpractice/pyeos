@@ -1,8 +1,8 @@
 #include <boost/function.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/thread/thread.hpp>
-#include <eos/chain/micropython_interface.hpp>
-#include <eos/chain/wasm_interface.hpp>
+#include <eosio/chain/micropython_interface.hpp>
+#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/chain_controller.hpp>
 #include "Platform/Platform.h"
 #include "WAST/WAST.h"
@@ -28,31 +28,8 @@ extern "C" void print_time() {
 
 namespace eosio {
 namespace chain {
-using namespace IR;
-using namespace Runtime;
-typedef boost::multiprecision::cpp_bin_float_50 DOUBLE;
-
 
 micropython_interface::micropython_interface() {
-}
-
-template<typename Function, typename KeyType, int numberOfKeys>
-int32_t validate(int32_t valueptr, int32_t valuelen, Function func) {
-
-   static const uint32_t keylen = numberOfKeys * sizeof(KeyType);
-
-   FC_ASSERT(valuelen >= keylen, "insufficient data passed");
-
-   auto& wasm = micropython_interface::get();
-   FC_ASSERT(wasm.current_apply_context, "no apply context found");
-
-   char* value = memoryArrayPtr<char>(wasm.current_memory, valueptr, valuelen);
-   KeyType* keys = reinterpret_cast<KeyType*>(value);
-
-   valuelen -= keylen;
-   value += keylen;
-
-   return func(wasm.current_apply_context, keys, value, valuelen);
 }
 
 micropython_interface& micropython_interface::get() {
@@ -64,151 +41,25 @@ micropython_interface& micropython_interface::get() {
    return *python;
 }
 
-int64_t micropython_interface::current_execution_time() {
-   return (fc::time_point::now() - checktimeStart).count();
-}
-
-char* micropython_interface::vm_allocate(int bytes) {
-   return 0;
-}
-
-U32 micropython_interface::vm_pointer_to_offset(char* ptr) {
-   return U32(ptr - &memoryRef<char>(current_memory, 0));
-}
-
-void micropython_interface::vm_call(const char* function_name) {
-   nlr_buf_t nlr;
-   if (nlr_push(&nlr) == 0) {
-       micropy_call_2(current_py_module, function_name, current_validate_context->msg.code.value, current_validate_context->msg.type.value);
-       nlr_pop();
-   } else {
-      mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-      throw fc::exception();
-      // uncaught exception
-//       return (mp_obj_t)nlr.ret_val;
-   }
-}
-
-void micropython_interface::vm_apply() {
-   vm_call("apply");
-}
-
-void micropython_interface::vm_onInit() {
-   vector<uint64_t> args;
-   string module_name = current_module;
-   string function_name = "init";
-   if (current_py_module != NULL) {
-      nlr_buf_t nlr;
-      if (nlr_push(&nlr) == 0) {
-          micropy_call_0(current_py_module, "init");
-          nlr_pop();
-      } else {
-         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-         throw fc::exception();
-         // uncaught exception
-//          return (mp_obj_t)nlr.ret_val;
-      }
-   }
-   //   python_call_with_gil(module_name, function_name, args);
-}
-
-void micropython_interface::validate(apply_context& c) {
-   /*
-    current_validate_context       = &c;
-    current_precondition_context   = nullptr;
-    current_apply_context          = nullptr;
-
-    load( c.code, c.db );
-    vm_validate();
-    */
-}
-
-void micropython_interface::precondition(apply_context& c) {
+void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
    try {
-
-      /*
-       current_validate_context       = &c;
-       current_precondition_context   = &c;
-
-       load( c.code, c.db );
-       vm_precondition();
-       */
-
-   }FC_CAPTURE_AND_RETHROW()
-}
-
-void micropython_interface::apply(apply_context& c) {
-   try {
-      current_validate_context = &c;
-      current_precondition_context = &c;
       current_apply_context = &c;
-
-      load(c.code, c.db);
-      vm_apply();
-
-   }FC_CAPTURE_AND_RETHROW()
-}
-
-void micropython_interface::init(apply_context& c) {
-   try {
-      current_validate_context = &c;
-      current_precondition_context = &c;
-      current_apply_context = &c;
-      load(c.code, c.db);
-      vm_onInit();
-   }FC_CAPTURE_AND_RETHROW()
-}
-
-void micropython_interface::load(const account_name& _name, const chainbase::database& db) {
-   const auto& recipient = db.get<account_object, by_name>(_name);
-   string module_name = string(name(_name));
-   string code = string((const char*) recipient.code.data(), recipient.code.size());
-   current_module = module_name;
-
-   ilog("micropython_interface::load");
-
-   std::map<string, mp_py_module*>::iterator it = py_modules.find(module_name);
-   if (it == py_modules.end() || it->second->src != recipient.code.data()) {
       mp_obj_t obj = nullptr;
-      nlr_buf_t nlr;
-      if (nlr_push(&nlr) == 0) {
-          obj = micropy_load(module_name.c_str(), (const char*)recipient.code.data(), recipient.code.size());
-          nlr_pop();
-      } else {
-         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-         throw fc::exception();
-         // uncaught exception
-//          return (mp_obj_t)nlr.ret_val;
-      }
-
-      if (obj != 0) {
-         if (it == py_modules.end()) {
-            string code(recipient.code.data(), recipient.code.size());
-            mp_py_module *module = new mp_py_module(obj, code);
-            py_modules[module_name] = module;
-         } else {
-            py_modules[module_name]->src = recipient.code.data();
-            py_modules[module_name]->obj = obj;
-         }
-         current_py_module = obj;
-      } else {
-         py_modules[module_name] = 0;
-         current_py_module = 0;
-      }
-   } else {
-      current_py_module = py_modules[module_name]->obj;
-   }
-
-   ilog("micropython_interface::load end");
-
-   //   ilog("micropython_interface::load");
-//   python_load_with_gil(module_name, code);
-}
-
-void micropython_interface::set_current_context(apply_context& c) {
-   current_validate_context = &c;
-   current_precondition_context = &c;
-   current_apply_context = &c;
+       nlr_buf_t nlr;
+       if (nlr_push(&nlr) == 0) {
+//               		ilog("${n}", ("n", a.code.data()));
+           obj = micropy_load(c.act.account.to_string().c_str(), (const char*)code.data(), code.size());
+           if (obj) {
+              micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
+           }
+           nlr_pop();
+       } else {
+          mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+          throw fc::exception();
+          // uncaught exception
+ //          return (mp_obj_t)nlr.ret_val;
+       }
+   }FC_CAPTURE_AND_RETHROW()
 }
 
 }

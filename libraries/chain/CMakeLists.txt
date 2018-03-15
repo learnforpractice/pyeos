@@ -9,6 +9,7 @@ add_library( eosio_chain
              block.cpp
              wast_to_wasm.cpp
              wasm_interface.cpp
+             micropython_interface.cpp
              wasm_eosio_constraints.cpp
              apply_context.cpp
              rate_limiting.cpp
@@ -27,6 +28,7 @@ add_library( eosio_chain
              contracts/genesis_state.cpp
              contracts/abi_serializer.cpp
 
+             micropython/mpeoslib.cpp
 
              ${HEADERS}
              transaction_metadata.cpp)

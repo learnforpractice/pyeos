@@ -2,6 +2,8 @@
 #include <eosio/chain/apply_context.hpp>
 #include <eosio/chain/chain_controller.hpp>
 #include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/micropython_interface.hpp>
+
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/scope_sequence_object.hpp>
 #include <boost/container/flat_set.hpp>
@@ -16,28 +18,6 @@ extern "C" {
 #include "py/stream.h"
 #include "py/obj.h"
 #include "py/compile.h"
-}
-
-extern "C" {
-   mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len);
-   mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
-   mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
-}
-
-void* execute_from_str(const char *str) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
-        mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_obj_t module_fun = mp_compile(&pt, lex->source_name, MP_EMIT_OPT_NONE, false);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-        return 0;
-    } else {
-       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-        // uncaught exception
-        return (mp_obj_t)nlr.ret_val;
-    }
 }
 
 using boost::container::flat_set;
@@ -64,30 +44,9 @@ void apply_context::exec_one()
                auto &wasm = wasm_interface::get();
                wasm.apply(code, *this);
             } else if (a.vm_type == 1) {
-/*
-             	vector<Value> args = {Value(uint64_t(context.act.account)),
-                                     Value(uint64_t(context.act.name))};
-               my->call("apply", args, code, context);
-*/
-             	printf("+++++++++++++++++hello,micropython\n");
-               mp_obj_t obj = nullptr;
-               nlr_buf_t nlr;
-               if (nlr_push(&nlr) == 0) {
-               		ilog("${n}", ("n", a.code.data()));
-                   obj = micropy_load(this->act.account.to_string().c_str(), (const char*)a.code.data(), a.code.size());
-                   if (obj) {
-                      micropy_call_2(obj, "apply", this->act.account.value, this->act.name.value);
-                   }
-                   nlr_pop();
-               } else {
-                  mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-                  throw fc::exception();
-                  // uncaught exception
-         //          return (mp_obj_t)nlr.ret_val;
-               }
-
+               auto &py = micropython_interface::get();
+               py.apply(*this, a.code);
             }
-
          }
       }
    } FC_CAPTURE_AND_RETHROW((_pending_console_output.str()));

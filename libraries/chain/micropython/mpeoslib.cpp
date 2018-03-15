@@ -1,9 +1,48 @@
 #include "mpeoslib.h"
 
 #include <eosio/chain/chain_controller.hpp>
-#include <eos/chain/micropython_interface.hpp>
+#include <eosio/chain/micropython_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
+
+
+
+#include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/apply_context.hpp>
+#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/producer_schedule.hpp>
+#include <eosio/chain/asset.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <boost/core/ignore_unused.hpp>
+#include <boost/multiprecision/cpp_bin_float.hpp>
+#include <eosio/chain/wasm_interface_private.hpp>
+#include <eosio/chain/wasm_eosio_constraints.hpp>
+#include <fc/exception/exception.hpp>
+#include <fc/crypto/sha256.hpp>
+#include <fc/crypto/sha1.hpp>
+#include <fc/io/raw.hpp>
+#include <fc/utf8.hpp>
+
+#include <Runtime/Runtime.h>
+#include "IR/Module.h"
+#include "Platform/Platform.h"
+#include "WAST/WAST.h"
+#include "IR/Operators.h"
+#include "IR/Validate.h"
+#include "IR/Types.h"
+#include "Runtime/Runtime.h"
+#include "Runtime/Linker.h"
+#include "Runtime/Intrinsics.h"
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+
+
+
 
 
 using namespace eosio;
@@ -49,12 +88,16 @@ mp_obj_t unpack_(const char* str, int nsize) {
 }
 
 static inline apply_context& get_apply_ctx() {
-   return *micropython_interface::get().current_apply_context;
+	apply_context *ctx = nullptr;
+	return *ctx;
+//   return *micropython_interface::get().current_apply_context;
 }
 
+#if 0
 static inline apply_context& get_validate_ctx() {
    return *micropython_interface::get().current_validate_context;
 }
+
 
 void new_apply_context() {
 
@@ -83,7 +126,9 @@ void require_scope_(uint64_t account) {
 void require_notice_(uint64_t account) {
    get_validate_ctx().require_recipient(name(account));
 }
+#endif
 
+#if 0
 #define RETURN_WRITE_RECORD(NAME, VALUE_OBJECT)       \
    return ctx.NAME##_record<VALUE_OBJECT>(             \
        name(scope), name(ctx.code), name(table), \
@@ -211,6 +256,8 @@ mp_obj_t get_account_balance_(Name account) {
    return MP_OBJ_FROM_PTR(tuple);
 }
 
+#endif
+
 }
 
 #if 0
@@ -225,3 +272,121 @@ void  sha256_(string& data, string& hash) {
    hash = v.str();
 }
 #endif
+
+namespace eosio { namespace chain {
+using namespace contracts;
+
+
+template<typename ObjectType>
+class db_api {
+   using KeyType = typename ObjectType::key_type;
+   static constexpr int KeyCount = ObjectType::number_of_keys;
+   using KeyArrayType = KeyType[KeyCount];
+   using ContextMethodType = int(apply_context::*)(const table_id_object&, const account_name&, const KeyType*, const char*, size_t);
+
+   private:
+      int call(ContextMethodType method, const scope_name& scope, const name& table, account_name bta, array_ptr<const char> data, size_t data_len) {
+         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         FC_ASSERT(data_len >= KeyCount * sizeof(KeyType), "Data is not long enough to contain keys");
+         const KeyType* keys = reinterpret_cast<const KeyType *>((const char *)data);
+
+         const char* record_data =  ((const char*)data) + sizeof(KeyArrayType);
+         size_t record_len = data_len - sizeof(KeyArrayType);
+         return (context->*(method))(t_id, bta, keys, record_data, record_len) + sizeof(KeyArrayType);
+      }
+
+      db_api<ObjectType>(apply_context& ctx) : context(&ctx) {}
+
+   public:
+      apply_context*     context;
+      static db_api<ObjectType>& get() {
+			static db_api<ObjectType>* instance = nullptr;
+			if (!instance) {
+				instance = new db_api<ObjectType>(*micropython_interface::get().current_apply_context);
+			} else {
+				instance->context = micropython_interface::get().current_apply_context;
+			}
+			return *instance;
+		}
+
+      int store(const scope_name& scope, const name& table, const account_name& bta, array_ptr<const char> data, size_t data_len) {
+         auto res = call(&apply_context::store_record<ObjectType>, scope, table, bta, data, data_len);
+         //ilog("STORE [${scope},${code},${table}] => ${res} :: ${HEX}", ("scope",scope)("code",context.receiver)("table",table)("res",res)("HEX", fc::to_hex(data, data_len)));
+         return res;
+      }
+
+      int update(const scope_name& scope, const name& table, const account_name& bta, array_ptr<const char> data, size_t data_len) {
+         return call(&apply_context::update_record<ObjectType>, scope, table, bta, data, data_len);
+      }
+
+      int remove(const scope_name& scope, const name& table, const KeyArrayType &keys) {
+         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         return context->remove_record<ObjectType>(t_id, keys);
+      }
+};
+
+template<>
+class db_api<keystr_value_object> {
+   using KeyType = std::string;
+   static constexpr int KeyCount = 1;
+   using KeyArrayType = KeyType[KeyCount];
+   using ContextMethodType = int(apply_context::*)(const table_id_object&, const KeyType*, const char*, size_t);
+
+
+/* TODO something weird is going on here, will maybe fix before DB changes or this might get
+ * totally changed anyway
+   private:
+      int call(ContextMethodType method, const scope_name& scope, const name& table, account_name bta,
+            null_terminated_ptr key, size_t key_len, array_ptr<const char> data, size_t data_len) {
+         const auto& t_id = context.find_or_create_table(context.receiver, scope, table);
+         const KeyType keys((const char*)key.value, key_len);
+
+         const char* record_data =  ((const char*)data);
+         size_t record_len = data_len;
+         return (context.*(method))(t_id, bta, &keys, record_data, record_len);
+      }
+*/
+	db_api<keystr_value_object>(apply_context& ctx) : context(&ctx) {}
+
+   public:
+   		apply_context*     context;
+   		static db_api<keystr_value_object>& get_instance() {
+   			static db_api<keystr_value_object>* instance = nullptr;
+   			if (!instance) {
+   				instance = new db_api<keystr_value_object>(*micropython_interface::get().current_apply_context);
+   			} else {
+      			instance->context = micropython_interface::get().current_apply_context;
+   			}
+   			return *instance;
+   		}
+
+      int store_str(const scope_name& scope, const name& table, const account_name& bta,
+            null_terminated_ptr key, uint32_t key_len, array_ptr<const char> data, size_t data_len) {
+         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         const KeyType keys(key.value, key_len);
+         const char* record_data =  ((const char*)data);
+         size_t record_len = data_len;
+         return context->store_record<keystr_value_object>(t_id, bta, &keys, record_data, record_len);
+         //return call(&apply_context::store_record<keystr_value_object>, scope, table, bta, key, key_len, data, data_len);
+      }
+
+      int update_str(const scope_name& scope,  const name& table, const account_name& bta,
+            null_terminated_ptr key, uint32_t key_len, array_ptr<const char> data, size_t data_len) {
+         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         const KeyType keys((const char*)key, key_len);
+         const char* record_data =  ((const char*)data);
+         size_t record_len = data_len;
+         return context->update_record<keystr_value_object>(t_id, bta, &keys, record_data, record_len);
+         //return call(&apply_context::update_record<keystr_value_object>, scope, table, bta, key, key_len, data, data_len);
+      }
+
+      int remove_str(const scope_name& scope, const name& table, array_ptr<const char> &key, uint32_t key_len) {
+         const auto& t_id = context->find_or_create_table(scope, context->receiver, table);
+         const KeyArrayType k = {std::string(key, key_len)};
+         return context->remove_record<keystr_value_object>(t_id, k);
+      }
+};
+
+}
+}
+
