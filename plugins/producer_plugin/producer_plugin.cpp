@@ -34,6 +34,9 @@ public:
 
    boost::program_options::variables_map _options;
    bool     _production_enabled                 = false;
+   bool 		_manual_gen_block 							= false;
+   bool 		_gen_empty_block 							= false;
+
    uint32_t _required_producer_participation    = uint32_t(config::required_producer_participation);
    uint32_t _production_skip_flags              = eosio::chain::skip_nothing;
 
@@ -78,7 +81,9 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
-         ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
+         ("manual-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
+         ("gen-empty-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
+         	("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("required-participation", boost::program_options::bool_switch()->notifier([this](int e){my->_required_producer_participation = uint32_t(e*config::percent_1);}), "Percent of producers (0-99) that must be participating in order to produce blocks")
          ("producer-name,p", boost::program_options::value<vector<string>>()->composing()->multitoken(),
           ("ID of producer controlled by this node (e.g. inita; may specify multiple times)"))
@@ -161,7 +166,9 @@ void producer_plugin::plugin_startup()
             new_chain_banner(chain);
          my->_production_skip_flags |= eosio::chain::skip_undo_history_check;
       }
-      my->schedule_production_loop();
+      if (!my->_manual_gen_block) {
+         my->schedule_production_loop();
+      }
    } else
       elog("No producers configured! Please add producer IDs and private keys to configuration.");
    ilog("producer plugin:  plugin_startup() end");
@@ -173,6 +180,17 @@ void producer_plugin::plugin_shutdown() {
    } catch(fc::exception& e) {
       edump((e.to_detail_string()));
    }
+}
+
+int producer_plugin::produce_block() {
+   int ret = -1;
+   if (my->_manual_gen_block) {
+      ret = my->block_production_loop();
+      ilog("block_production_loop return: ${n}",("n",(int)ret));
+   } else {
+      ilog("not in manual generate block mode.");
+   }
+   return ret;
 }
 
 void producer_plugin_impl::schedule_production_loop() {
@@ -245,8 +263,9 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
          elog( "exception producing block" );
          break;
    }
-
-   schedule_production_loop();
+   if (!_manual_gen_block) {
+      schedule_production_loop();
+   }
    return result;
 }
 
@@ -309,12 +328,16 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       return block_production_condition::low_participation;
    }
 
-   if( llabs(( time_point(scheduled_time) - now).count()) > fc::milliseconds( config::block_interval_ms ).count() )
+   if (app().is_debug_mode())
    {
-      capture("scheduled_time", scheduled_time)("now", now);
-      return block_production_condition::lag;
-   }
 
+   } else {
+      if( llabs(( time_point(scheduled_time) - now).count()) > fc::milliseconds( config::block_interval_ms ).count() )
+      {
+         capture("scheduled_time", scheduled_time)("now", now);
+         return block_production_condition::lag;
+      }
+   }
 
    auto block = chain.generate_block(
       scheduled_time,
