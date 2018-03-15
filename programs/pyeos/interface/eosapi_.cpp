@@ -533,7 +533,7 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
    try {
       std::string wast;
       contracts::setcode handler;
-
+      handler.vmtype = vm_type;
       if (vm_type == 0) {
          std::cout << localized("Reading WAST...") << std::endl;
          fc::read_file_contents(wastPath, wast);
@@ -552,6 +552,7 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
          handler.code.assign(wasm.begin(), wasm.end());
       } else if (vm_type == 1) {
          fc::read_file_contents(wastPath, wast);
+         handler.account = account;
          handler.code.assign(wast.begin(), wast.end());
       }
 

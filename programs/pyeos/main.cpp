@@ -157,7 +157,7 @@ extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
-//   main_micropython(argc, argv);
+   main_micropython(argc, argv);
 //   init_smart_contract(eos_main, interactive_console);
 
    boost::thread t( eos_main );

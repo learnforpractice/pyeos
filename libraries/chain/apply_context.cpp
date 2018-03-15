@@ -6,6 +6,40 @@
 #include <eosio/chain/scope_sequence_object.hpp>
 #include <boost/container/flat_set.hpp>
 
+extern "C" {
+#include <stdio.h>
+#include <string.h>
+
+#include "py/objlist.h"
+#include "py/objstringio.h"
+#include "py/runtime.h"
+#include "py/stream.h"
+#include "py/obj.h"
+#include "py/compile.h"
+}
+
+extern "C" {
+   mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len);
+   mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
+   mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
+}
+
+void* execute_from_str(const char *str) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
+        mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        mp_obj_t module_fun = mp_compile(&pt, lex->source_name, MP_EMIT_OPT_NONE, false);
+        mp_call_function_0(module_fun);
+        nlr_pop();
+        return 0;
+    } else {
+       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        // uncaught exception
+        return (mp_obj_t)nlr.ret_val;
+    }
+}
+
 using boost::container::flat_set;
 
 namespace eosio { namespace chain {
@@ -13,6 +47,8 @@ void apply_context::exec_one()
 {
    try {
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
+      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
+
       if (native) {
          (*native)(*this);
       } else {
@@ -20,13 +56,38 @@ void apply_context::exec_one()
          privileged = a.privileged;
 
          if (a.code.size() > 0) {
-            // get code from cache
-            auto code = mutable_controller.get_wasm_cache().checkout_scoped(a.code_version, a.code.data(),
-                                                                            a.code.size());
+            if (a.vm_type == 0) {
+               // get wasm_interface
+               // get code from cache
+               auto code = mutable_controller.get_wasm_cache().checkout_scoped(a.code_version, a.code.data(),
+                                                                               a.code.size());
+               auto &wasm = wasm_interface::get();
+               wasm.apply(code, *this);
+            } else if (a.vm_type == 1) {
+/*
+             	vector<Value> args = {Value(uint64_t(context.act.account)),
+                                     Value(uint64_t(context.act.name))};
+               my->call("apply", args, code, context);
+*/
+             	printf("+++++++++++++++++hello,micropython\n");
+               mp_obj_t obj = nullptr;
+               nlr_buf_t nlr;
+               if (nlr_push(&nlr) == 0) {
+               		ilog("${n}", ("n", a.code.data()));
+                   obj = micropy_load(this->act.account.to_string().c_str(), (const char*)a.code.data(), a.code.size());
+                   if (obj) {
+                      micropy_call_2(obj, "apply", this->act.account.value, this->act.name.value);
+                   }
+                   nlr_pop();
+               } else {
+                  mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+                  throw fc::exception();
+                  // uncaught exception
+         //          return (mp_obj_t)nlr.ret_val;
+               }
 
-            // get wasm_interface
-            auto &wasm = wasm_interface::get();
-            wasm.apply(code, *this);
+            }
+
          }
       }
    } FC_CAPTURE_AND_RETHROW((_pending_console_output.str()));
