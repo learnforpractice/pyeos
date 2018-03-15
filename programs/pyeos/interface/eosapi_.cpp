@@ -99,6 +99,7 @@ read_only::get_info_results get_info() {
 auto tx_expiration = fc::seconds(30);
 bool tx_force_unique = false;
 
+
 PyObject* push_transaction(signed_transaction& trx, bool skip_sign, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
@@ -117,7 +118,7 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, packed_trans
    bool success = false;
 //   PyThreadState* state = PyEval_SaveThread();
    try {
-      result = rw.push_transaction(fc::variant(trx).get_object());
+   		result = rw.push_transaction(fc::variant(packed_transaction(trx, compression)).get_object());
       success = true;
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
@@ -190,8 +191,7 @@ PyObject* push_transaction2_(void* signed_trx, bool sign) {
 
 
 int produce_block_() {
-	return 0;
-//   return app().get_plugin<producer_plugin>().produce_block();
+   return app().get_plugin<producer_plugin>().produce_block();
 }
 
 PyObject* create_key_() {
