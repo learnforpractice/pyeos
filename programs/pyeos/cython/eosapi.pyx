@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 import os
 import sys
 import signal
@@ -53,6 +55,8 @@ cdef extern from "eosapi_.hpp":
     int setcode_(char* account_, char* wast_file, char* abi_file, char* ts_buffer, int length) 
     int exec_func_(char* code_, char* action_, char* json_, char* scope, char* authorization, char* ts_result, int length)
 
+    object get_currency_balance_(string& _code, string& _account, string& _symbol)
+
     object traceback_()
 
 VM_TYPE_WASM = 0
@@ -66,8 +70,8 @@ class JsonStruct(object):
         if isinstance(js, bytes):
             js = js.decode('utf8')
             js = json.loads(js)
-            if isinstance(js, str):
-                js = json.loads(js)
+        if isinstance(js, str):
+            js = json.loads(js)
         for key in js:
             value = js[key]
             if isinstance(value, dict):
@@ -143,6 +147,9 @@ def get_accounts(public_key) -> List[str]:
     if isinstance(public_key, str):
         public_key = bytes(public_key, 'utf8')
     return get_accounts_(public_key)
+
+def get_currency_balance(string _code, string _account, string _symbol = ''):
+    return get_currency_balance_(_code, _account, _symbol)
 
 '''
 def get_controlled_accounts(account_name) -> List[str]:

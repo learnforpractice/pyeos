@@ -329,6 +329,7 @@ vector<asset> read_only::get_currency_balance( const read_only::get_currency_bal
       fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
       fc::raw::unpack(ds, balance);
       auto cursor = asset(balance, symbol(obj.primary_key));
+      printf("++++++++++++balance is : %lld", balance);
 
       if (p.symbol || cursor.symbol_name().compare(*p.symbol) == 0) {
          results.emplace_back(balance, symbol(obj.primary_key));

@@ -84,6 +84,9 @@ int produce_block_();
 PyObject* get_info_();
 PyObject* get_block_(char* num_or_id);
 PyObject* get_account_(const char* name);
+
+PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol);
+
 PyObject* get_accounts_(char* public_key);
 PyObject* get_controlled_accounts_(char* account_name);
 

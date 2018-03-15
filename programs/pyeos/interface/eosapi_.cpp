@@ -368,6 +368,19 @@ PyObject* get_accounts_(char* public_key) {
    return arr.get();
 }
 
+PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol) {
+//   using namespace native::eosio;
+   PyArray arr;
+   PyDict dict;
+
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+
+   eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
+   auto result = ro_api.get_currency_balance(params);
+   return python::json::to_string(result);
+}
+
+
 PyObject* get_controlled_accounts_(const char* account_name) {
    PyArray arr;
    try {
