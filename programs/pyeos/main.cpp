@@ -106,8 +106,8 @@ void interactive_console() {
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import database;");
-   PyRun_SimpleString("import util;");
-   PyRun_SimpleString("import debug;");
+//   PyRun_SimpleString("import util;");
+//   PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
    PyRun_SimpleString(
@@ -128,7 +128,7 @@ void interactive_console() {
    }
 
    PyRun_SimpleString("import initeos");
-   PyRun_SimpleString("from main import chain_controller as ctrl");
+//   PyRun_SimpleString("from main import chain_controller as ctrl");
 
    ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
 

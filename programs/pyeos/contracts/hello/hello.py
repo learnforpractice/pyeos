@@ -1,4 +1,4 @@
-#import eoslib
+import eoslib
 
 def init():
     print('hello,world')
@@ -9,5 +9,6 @@ def sayHello():
 
 def apply(name, type):
     print('hello,world', name, type)
+    print(dir(eoslib))
 #    if type == eoslib.N('sayhello'):
 #        sayHello()
