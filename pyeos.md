@@ -21,8 +21,8 @@ Python is one of the most powerfull language on the earth. It's easy to use and 
 <a name="whatpyeoscando"></a>
 # What Pyeos can do?
 
-1. call eos api with Python
-2. write contracts in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
+1. Calling Eos api with Python
+2. Writing contracts in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
 
 <a name="buildingpyeos"></a>
 # Building Pyeos

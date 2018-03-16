@@ -1,4 +1,4 @@
-from eoslib import store_str, load_str, N
+from eoslib import *
 
 def init():
     print('hello,world')
@@ -8,7 +8,7 @@ def sayHello():
     for i in range(1000):
         n += i
         n += i
-#    print('++++++++++++hello,world', n)
+    print('++++++++++++hello,world', n)
 #        print('got message on chain:', eoslib.read_message())
 
 def apply(name, type):
@@ -16,8 +16,13 @@ def apply(name, type):
 #    store_str(N('hello'), N('table'), 'helo', 'world')
     v = load_str(N('hello'), N('hello'), N('table'), 'helo')
     print('++++++++++++:', v)
-
-    if type == eoslib.N('sayhello'):
+    a = read_action()
+    print('++++++++++++:', a, len(a))
+    
+    print('sender:', n2s(current_sender()))
+    print('receiver:', n2s(current_receiver()))
+    
+    if type == N('sayhello'):
         sayHello()
 
 sayHello()
