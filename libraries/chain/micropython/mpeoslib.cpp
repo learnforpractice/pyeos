@@ -107,11 +107,6 @@ void require_auth_(uint64_t account) {
    get_validate_ctx().require_authorization(name(account));
 }
 
-uint32_t now_() {
-   auto& ctrl = get_validate_ctx().controller;
-   return ctrl.head_block_time().sec_since_epoch();
-}
-
 uint64_t current_code_() { return get_validate_ctx().code.value; }
 
 mp_obj_t read_message_() {
@@ -732,11 +727,11 @@ uint64_t current_sender() {
 }
 
 //apply_context
-void require_authorization(uint64_t account) {
+void require_auth(uint64_t account) {
 	get_apply_ctx().require_authorization(account_name(account));
 }
 
-void require_authorization_ex(uint64_t account, uint64_t permission) {
+void require_auth_ex(uint64_t account, uint64_t permission) {
 	get_apply_ctx().require_authorization(account_name(account), name(permission));
 }
 
@@ -763,6 +758,69 @@ int get_active_producers(uint64_t* producers, size_t datalen) {
 	size_t cpy_len = std::min(datalen, len);
 	memcpy(producers, active_producers.data(), cpy_len * sizeof(chain::account_name) );
 	return len;
+}
+
+
+extern "C" mp_obj_t send_inline(size_t n_args, const mp_obj_t *args) {
+   size_t len = 0;
+   action act;
+
+   const char* account = (const char *)mp_obj_str_get_data(args[0], &len);
+   if (!account) {
+      return mp_const_none;
+   }
+   len = 0;
+   char* action_name = (char *)mp_obj_str_get_data(args[1], &len);
+   if (!action_name) {
+      return mp_const_none;
+   }
+   act.account = account;
+   act.name = action_name;
+   mp_map_t *map = mp_obj_dict_get_map(args[2]);
+   for (size_t i = 0; i < map->alloc; i++) {
+       if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+           // the key must be a qstr, so intern it if it's a string
+           const char* key = mp_obj_str_get_str(map->table[i].key);
+           const char* value = mp_obj_str_get_str(map->table[i].value);
+           permission_level per = {name(key), name(value)};
+           act.authorization.emplace_back(per);
+       }
+   }
+   len = 0;
+   char* data = (char *)mp_obj_str_get_data(args[3], &len);
+   act.data = bytes(data, data+len);
+   get_apply_ctx().execute_inline(std::move(act));
+   return mp_obj_new_int(0);
+}
+
+#if 0
+void send_inline( array_ptr<char> data, size_t data_len ) {
+	// TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
+	FC_ASSERT( data_len < config::default_max_inline_action_size, "inline action too big" );
+
+	action act;
+	fc::raw::unpack<action>(data, data_len, act);
+	context.execute_inline(std::move(act));
+}
+
+void send_deferred( uint32_t sender_id, const fc::time_point_sec& execute_after, array_ptr<char> data, size_t data_len ) {
+	try {
+		// TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
+		FC_ASSERT(data_len < config::default_max_gen_trx_size, "generated transaction too big");
+
+		deferred_transaction dtrx;
+		fc::raw::unpack<transaction>(data, data_len, dtrx);
+		dtrx.sender = context.receiver;
+		dtrx.sender_id = sender_id;
+		dtrx.execute_after = execute_after;
+		context.execute_deferred(std::move(dtrx));
+	} FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
+}
+#endif
+
+uint32_t now_() {
+   auto& ctrl = get_apply_ctx().controller;
+   return ctrl.head_block_time().sec_since_epoch();
 }
 
 }
