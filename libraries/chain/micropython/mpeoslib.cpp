@@ -13,6 +13,8 @@
 #include <eosio/chain/producer_schedule.hpp>
 #include <eosio/chain/asset.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/types.hpp>
+
 #include <boost/core/ignore_unused.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 //#include <eosio/chain/wasm_interface_private.hpp>
@@ -88,9 +90,7 @@ mp_obj_t unpack_(const char* str, int nsize) {
 }
 
 static inline apply_context& get_apply_ctx() {
-	apply_context *ctx = nullptr;
-	return *ctx;
-//   return *micropython_interface::get().current_apply_context;
+   return *micropython_interface::get().current_apply_context;
 }
 
 #if 0
@@ -287,14 +287,16 @@ class db_api {
    using ContextMethodType = int(apply_context::*)(const table_id_object&, const account_name&, const KeyType*, const char*, size_t);
 
    private:
-      int call(ContextMethodType method, const scope_name& scope, const name& table, account_name bta, char* data, size_t data_len) {
+      int call(ContextMethodType method, const scope_name& scope, const name& table, account_name bta, char* keys, size_t keys_len, char* data, size_t data_len) {
          const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
-         FC_ASSERT(data_len >= KeyCount * sizeof(KeyType), "Data is not long enough to contain keys");
-         const KeyType* keys = reinterpret_cast<const KeyType *>((const char *)data);
+//         FC_ASSERT(data_len >= KeyCount * sizeof(KeyType), "Data is not long enough to contain keys");
+//         const KeyType* keys = reinterpret_cast<const KeyType *>((const char *)data);
 
-         const char* record_data =  ((const char*)data) + sizeof(KeyArrayType);
-         size_t record_len = data_len - sizeof(KeyArrayType);
-         return (context->*(method))(t_id, bta, keys, record_data, record_len) + sizeof(KeyArrayType);
+         FC_ASSERT(keys_len == KeyCount * sizeof(KeyType), "length of keys is incorrect");
+
+//         const char* record_data =  ((const char*)data) + sizeof(KeyArrayType);
+//         size_t record_len = data_len - sizeof(KeyArrayType);
+         return (context->*(method))(t_id, bta, reinterpret_cast<const KeyType *>((const char *)keys), data, data_len) + sizeof(KeyArrayType);
       }
 
       db_api<ObjectType>(apply_context& ctx) : context(&ctx) {}
@@ -311,19 +313,19 @@ class db_api {
 			return *instance;
 		}
 
-      int store(const scope_name& scope, const name& table, const account_name& bta, char* data, size_t data_len) {
-         auto res = call(&apply_context::store_record<ObjectType>, scope, table, bta, data, data_len);
+      int store(const scope_name& scope, const name& table, const account_name& bta, char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::store_record<ObjectType>, scope, table, bta, keys, keys_len, data, data_len);
          //ilog("STORE [${scope},${code},${table}] => ${res} :: ${HEX}", ("scope",scope)("code",context.receiver)("table",table)("res",res)("HEX", fc::to_hex(data, data_len)));
          return res;
       }
 
-      int update(const scope_name& scope, const name& table, const account_name& bta, char* data, size_t data_len) {
-         return call(&apply_context::update_record<ObjectType>, scope, table, bta, data, data_len);
+      int update(const scope_name& scope, const name& table, const account_name& bta, char* keys, size_t keys_len, char* data, size_t data_len) {
+         return call(&apply_context::update_record<ObjectType>, scope, table, bta, keys, keys_len, data, data_len);
       }
 
-      int remove(const scope_name& scope, const name& table, const KeyArrayType &keys) {
+      int remove(const scope_name& scope, const name& table, const char* keys) {
          const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
-         return context->remove_record<ObjectType>(t_id, keys);
+         return context->remove_record<ObjectType>(t_id, reinterpret_cast<const KeyType *>((const char *)keys));
       }
 };
 
@@ -398,61 +400,73 @@ class db_index_api {
    using ContextMethodType = int(apply_context::*)(const table_id_object&, KeyType*, char*, size_t);
 
 
-   int call(ContextMethodType method, const account_name& code, const scope_name& scope, const name& table, char* data, size_t data_len) {
+   int call(ContextMethodType method, const account_name& code, const scope_name& scope, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
       auto maybe_t_id = context->find_table(code, scope, table);
       if (maybe_t_id == nullptr) {
          return -1;
       }
 
       const auto& t_id = *maybe_t_id;
-      FC_ASSERT(data_len >= KeyCount * sizeof(KeyType), "Data is not long enough to contain keys");
-      KeyType* keys = reinterpret_cast<KeyType *>((char *)data);
+//      FC_ASSERT(data_len >= KeyCount * sizeof(KeyType), "Data is not long enough to contain keys");
+//      KeyType* keys = reinterpret_cast<KeyType *>((char *)data);
+      FC_ASSERT(keys_len == KeyCount * sizeof(KeyType), "length of keys is incorrect");
 
-      char* record_data =  ((char*)data) + sizeof(KeyArrayType);
-      size_t record_len = data_len - sizeof(KeyArrayType);
+//      char* record_data =  ((char*)data) + sizeof(KeyArrayType);
+//      size_t record_len = data_len - sizeof(KeyArrayType);
 
-      auto res = (context->*(method))(t_id, keys, record_data, record_len);
+      auto res = (context->*(method))(t_id, reinterpret_cast<KeyType *>((char *)keys), data, data_len);
       if (res != -1) {
          res += sizeof(KeyArrayType);
       }
       return res;
    }
 
+   db_index_api<IndexType, Scope>(apply_context& ctx) : context(&ctx) {}
+
    public:
    		apply_context*     context;
+   		static db_index_api<IndexType, Scope>& get() {
+   			static db_index_api<IndexType, Scope>* instance = nullptr;
+   			if (!instance) {
+   				instance = new db_index_api<IndexType, Scope>(*micropython_interface::get().current_apply_context);
+   			} else {
+      			instance->context = micropython_interface::get().current_apply_context;
+   			}
+   			return *instance;
+   		}
 
-      int load(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::load_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int load(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::load_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int front(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::front_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int front(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::front_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int back(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::back_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int back(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::back_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int next(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::next_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int next(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::next_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int previous(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::previous_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int previous(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::previous_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int lower_bound(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::lower_bound_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int lower_bound(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::lower_bound_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
-      int upper_bound(const scope_name& scope, const account_name& code, const name& table, char* data, size_t data_len) {
-         auto res = call(&apply_context::upper_bound_record<IndexType, Scope>, scope, code, table, data, data_len);
+      int upper_bound(const scope_name& scope, const account_name& code, const name& table, const char* keys, size_t keys_len, char* data, size_t data_len) {
+         auto res = call(&apply_context::upper_bound_record<IndexType, Scope>, scope, code, table, keys, keys_len, data, data_len);
          return res;
       }
 
@@ -552,6 +566,7 @@ using db_index_api_key64x64x64_value_index_by_scope_secondary = eosio::micropyth
 using db_index_api_key64x64x64_value_index_by_scope_tertiary  = eosio::micropython::db_index_api<key64x64x64_value_index,by_scope_tertiary>;
 
 using namespace eosio::micropython;
+using namespace eosio::chain;
 
 extern "C" {
 
@@ -603,62 +618,152 @@ int upper_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* 
 }
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#if 0
 
-int store(uint64_t scope, uint64_t table, uint64_t bta, array_ptr<const char> data, size_t data_len) {
-   auto res = call(&apply_context::store_record<ObjectType>, scope, table, bta, data, data_len);
-   return res;
+#define DB_METHOD_SEQ(API, SUFFIX) \
+   int store_##SUFFIX(uint64_t scope, uint64_t table, char* keys, size_t keys_len, char* data, size_t data_len) { \
+		return API::get().store(name(scope), name(table), name(0), keys, keys_len, data, data_len); \
+	} \
+   int update_##SUFFIX(uint64_t scope, uint64_t table, char* keys, size_t keys_len, char* data, size_t data_len) { \
+		return API::get().store(name(scope), name(table), name(0), keys, keys_len, data, data_len); \
+	} \
+   int remove_##SUFFIX(uint64_t scope, uint64_t table, const char* keys) { \
+		return API::get().remove(name(scope), name(table), keys); \
+	}
+
+#define DB_INDEX_METHOD_SEQ(API, SUFFIX)\
+   int load_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().load(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+   int front_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().front(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+   int previous_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().previous(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+   int back_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().front(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+   int next_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().previous(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+	int lower_bound_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().lower_bound(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	} \
+   int upper_bound_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len) {\
+		return API::get().upper_bound(name(scope), name(code), name(table), keys, keys_len, data, data_len); \
+	}
+
+DB_METHOD_SEQ(db_api_key_value_object, i64)
+DB_METHOD_SEQ(db_api_key128x128_value_object, i128i128)
+DB_METHOD_SEQ(db_api_key64x64_value_object, i64i64)
+DB_METHOD_SEQ(db_api_key64x64x64_value_object, i64i64i64)
+
+
+
+DB_INDEX_METHOD_SEQ(db_index_api_key_value_index_by_scope_primary, i64)
+
+DB_INDEX_METHOD_SEQ(db_index_api_key128x128_value_index_by_scope_primary, primary_i128i128)
+DB_INDEX_METHOD_SEQ(db_index_api_key128x128_value_index_by_scope_secondary, secondary_i128i128)
+
+DB_INDEX_METHOD_SEQ(db_index_api_key64x64_value_index_by_scope_primary, primary_i64i64)
+DB_INDEX_METHOD_SEQ(db_index_api_key64x64_value_index_by_scope_secondary, secondary_i64i64)
+
+DB_INDEX_METHOD_SEQ(db_index_api_key64x64x64_value_index_by_scope_primary, primary_i64i64i64)
+DB_INDEX_METHOD_SEQ(db_index_api_key64x64x64_value_index_by_scope_secondary, secondary_i64i64i64)
+DB_INDEX_METHOD_SEQ(db_index_api_key64x64x64_value_index_by_scope_tertiary, tertiary_i64i64i64)
+
+//context_free_transaction_api
+int read_transaction( char* data, size_t data_len ) {
+	bytes trx = get_apply_ctx().get_packed_transaction();
+	if (data_len >= trx.size()) {
+		memcpy(data, trx.data(), trx.size());
+	}
+	return trx.size();
 }
 
-int update(uint64_t scope, uint64_t table, uint64_t bta, array_ptr<const char> data, size_t data_len) {
-   return call(&apply_context::update_record<ObjectType>, scope, table, bta, data, data_len);
+int transaction_size() {
+	return get_apply_ctx().get_packed_transaction().size();
 }
 
-int remove(uint64_t scope, uint64_t table, const KeyArrayType &keys) {
-   const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
-   return context->remove_record<ObjectType>(t_id, keys);
+int expiration() {
+  return get_apply_ctx().trx_meta.trx().expiration.sec_since_epoch();
 }
 
-int load(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::load_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+int tapos_block_num() {
+  return get_apply_ctx().trx_meta.trx().ref_block_num;
+}
+int tapos_block_prefix() {
+  return get_apply_ctx().trx_meta.trx().ref_block_prefix;
 }
 
-int front(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::front_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size ) {
+	return get_apply_ctx().get_action( type, index, buffer, buffer_size );
 }
 
-int back(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::back_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+///////////////////////////////////////////////////////////////////////////
+//action_api
+
+int read_action(char* memory, size_t size) {
+   FC_ASSERT(size > 0);
+   int minlen = std::min<size_t>(get_apply_ctx().act.data.size(), size);
+   memcpy((void *)memory, get_apply_ctx().act.data.data(), minlen);
+   return minlen;
 }
 
-int next(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::next_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+int action_size() {
+   return get_apply_ctx().act.data.size();
 }
 
-int previous(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::previous_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+uint64_t current_receiver() {
+   return get_apply_ctx().receiver.value;
 }
 
-int lower_bound(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::lower_bound_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+uint64_t publication_time() {
+   return get_apply_ctx().trx_meta.published.time_since_epoch().count();
 }
 
-int upper_bound(uint64_t scope, uint64_t code, uint64_t table, char* data, size_t data_len) {
-   auto res = call(&apply_context::upper_bound_record<IndexType, Scope>, scope, code, table, data, data_len);
-   return res;
+uint64_t current_sender() {
+   if (get_apply_ctx().trx_meta.sender) {
+      return (*get_apply_ctx().trx_meta.sender).value;
+   } else {
+      return 0;
+   }
 }
-#endif
 
+//apply_context
+void require_authorization(uint64_t account) {
+	get_apply_ctx().require_authorization(account_name(account));
+}
 
+void require_authorization_ex(uint64_t account, uint64_t permission) {
+	get_apply_ctx().require_authorization(account_name(account), name(permission));
+}
+
+void require_write_lock(uint64_t scope) {
+	get_apply_ctx().require_write_lock(name(scope));
+}
+
+void require_read_lock(uint64_t account, uint64_t scope) {
+	get_apply_ctx().require_read_lock(name(account), name(scope));
+}
+
+int is_account(uint64_t account) {
+	return get_apply_ctx().is_account(name(account));
+}
+
+void require_recipient(uint64_t account) {
+	get_apply_ctx().require_recipient(name(account));
+}
+
+//producer_api
+int get_active_producers(uint64_t* producers, size_t datalen) {
+	auto active_producers = get_apply_ctx().get_active_producers();
+	size_t len = active_producers.size();
+	size_t cpy_len = std::min(datalen, len);
+	memcpy(producers, active_producers.data(), cpy_len * sizeof(chain::account_name) );
+	return len;
+}
 
 }
 

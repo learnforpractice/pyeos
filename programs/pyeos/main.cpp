@@ -101,13 +101,13 @@ void interactive_console() {
 //   PyInit_database();
 //   PyInit_blockchain();
 //   PyInit_util();
-//   PyInit_debug();
+   PyInit_debug();
 
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
-   PyRun_SimpleString("import database;");
+//   PyRun_SimpleString("import database;");
 //   PyRun_SimpleString("import util;");
-//   PyRun_SimpleString("import debug;");
+   PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
    PyRun_SimpleString(

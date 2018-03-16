@@ -3,7 +3,7 @@ import time
 import wallet
 import eosapi
 from eosapi import N
-import util
+#import util
 
 import struct
 import logging
@@ -346,4 +346,14 @@ def test_recursive():
     with producer:
         r = eosapi.push_message('test', 'testrecursive', {'data':0}, ['test','inita'], {'test':'active'})
         assert not r
+
+def timeit(count):
+    d = open('../../programs/pyeos/contracts/hello/hello.py','r').read()
+    start = time.time()
+    for i in range(count):
+        debug.micropy_eval(d)
+    cost = time.time() - start
+    print(cost, cost/count, 1/(cost/count))
+
+
 
