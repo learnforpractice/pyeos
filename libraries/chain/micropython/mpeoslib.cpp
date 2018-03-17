@@ -818,12 +818,94 @@ void send_deferred( uint32_t sender_id, const fc::time_point_sec& execute_after,
 }
 #endif
 
-uint32_t now_() {
+uint32_t now() {
    auto& ctrl = get_apply_ctx().controller;
    return ctrl.head_block_time().sec_since_epoch();
 }
 
+void abort() {
+   edump(("abort() called"));
+   FC_ASSERT( false, "abort() called");
+}
+
+void eosio_assert(int condition, const char* str) {
+   std::string message( str );
+   if( !condition ) edump((message));
+   FC_ASSERT( condition, "assertion failed: ${s}", ("s",message));
+}
+
+//class crypto_api
+void assert_recover_key( const char* data, size_t data_len, const char* sig, size_t siglen, const char* pub, size_t publen ) {
+	fc::sha256 digest( data, data_len);
+	fc::crypto::signature s;
+	fc::crypto::public_key p;
+	fc::datastream<const char*> ds( sig, siglen );
+	fc::datastream<const char*> pubds( pub, publen );
+
+	fc::raw::unpack(ds, s);
+	fc::raw::unpack(pubds, p);
+
+	auto check = fc::crypto::public_key( s, digest, false );
+	FC_ASSERT( check == p, "Error expected key different than recovered key" );
+}
+
+mp_obj_t recover_key(const char* data, size_t size, const char* sig, size_t siglen ) {
+	char pub[256];
+	fc::sha256 digest(data, size);
+	fc::crypto::signature s;
+	fc::datastream<const char*> ds( sig, siglen );
+	fc::datastream<char*> pubds( pub, sizeof(pub) );
+
+	fc::raw::unpack(ds, s);
+	fc::raw::pack( pubds, fc::crypto::public_key( s, digest, false ) );
+
+	return mp_obj_new_str(pub, pubds.tellp());
+}
+
+void assert_sha256(const char* data, size_t datalen, const char* hash, size_t hash_len) {
+	auto result = fc::sha256::hash( data, datalen );
+	fc::sha256 hash_val( hash, hash_len );
+	FC_ASSERT( result == hash_val, "hash miss match" );
+}
+
+void assert_sha1(const char* data, size_t datalen, const char* hash, size_t hash_len) {
+	auto result = fc::sha1::hash( data, datalen );
+	fc::sha1 hash_val( string(hash, hash_len) );
+	FC_ASSERT( result == hash_val, "hash miss match" );
+}
+
+void assert_sha512(const char* data, size_t datalen, const char* hash, size_t hash_len) {
+	auto result = fc::sha512::hash( data, datalen );
+	fc::sha512 hash_val( string(hash, hash_len) );
+	FC_ASSERT( result == hash_val, "hash miss match" );
+}
+
+void assert_ripemd160(const char* data, size_t datalen, const char* hash, size_t hash_len) {
+	auto result = fc::ripemd160::hash( data, datalen );
+	fc::ripemd160 hash_val( string(hash, hash_len) );
+	FC_ASSERT( result == hash_val, "hash miss match" );
+}
+
+mp_obj_t sha1(const char* data, size_t datalen) {
+	string str_hash = fc::sha1::hash( data, datalen ).str();
+	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+}
+
+mp_obj_t sha256(const char* data, size_t datalen) {
+	string str_hash = fc::sha256::hash( data, datalen ).str();
+	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+}
+
+mp_obj_t sha512(const char* data, size_t datalen) {
+	string str_hash = fc::sha512::hash( data, datalen ).str();
+	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+}
+
+mp_obj_t ripemd160(const char* data, size_t datalen) {
+	string str_hash = fc::ripemd160::hash( data, datalen ).str();
+	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
 
+}
 
