@@ -71,7 +71,7 @@ uint64_t string_to_uint64_(const char* str) {
 
 mp_obj_t uint64_to_string_(uint64_t n) {
    string s = name(n).to_string();
-   ilog("n: ${n}",("n", s.size()));
+//   ilog("n: ${n}",("n", s.size()));
    return mp_obj_new_str(s.c_str(), s.size());
 }
 

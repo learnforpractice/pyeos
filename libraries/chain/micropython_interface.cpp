@@ -22,9 +22,12 @@ extern "C" {
    mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
    mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
 }
+
+#if 0
 extern "C" void print_time() {
    ilog("fc::time_point::microseconds() ${n}", ("n", fc::time_point::now()));
 }
+#endif
 
 namespace eosio {
 namespace chain {

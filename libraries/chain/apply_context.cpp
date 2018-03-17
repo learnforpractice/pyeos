@@ -18,9 +18,13 @@ extern "C" {
 #include "py/stream.h"
 #include "py/obj.h"
 #include "py/compile.h"
+#include "py/gc.h"
 }
 
 using boost::container::flat_set;
+
+extern "C" void execution_start();
+extern "C" void execution_end();
 
 namespace eosio { namespace chain {
 void apply_context::exec_one()
@@ -45,7 +49,14 @@ void apply_context::exec_one()
                wasm.apply(code, *this);
             } else if (a.vm_type == 1) {
                auto &py = micropython_interface::get();
-               py.apply(*this, a.code);
+               try {
+                  execution_start();
+                  py.apply(*this, a.code);
+                  execution_end();
+               } catch (...) {
+               		execution_end();
+               		throw;
+               }
             }
          }
       }

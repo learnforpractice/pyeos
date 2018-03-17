@@ -5,10 +5,10 @@ def init():
 
 def sayHello():
     n = 0
-    for i in range(1000):
+    for i in range(100):
         n += i
         n += i
-    print('++++++++++++hello,world', n)
+#    print('++++++++++++hello,world', n)
 #        print('got message on chain:', eoslib.read_message())
 
 def apply(name, type):

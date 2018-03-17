@@ -348,10 +348,11 @@ def test_recursive():
         assert not r
 
 def timeit(count):
+    import time
     d = open('../../programs/pyeos/contracts/hello/hello.py','r').read()
     start = time.time()
     for i in range(count):
-        debug.micropy_eval(d)
+        debug.eval(d)
     cost = time.time() - start
     print(cost, cost/count, 1/(cost/count))
 
