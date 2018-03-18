@@ -40,11 +40,11 @@ include_directories (${CPP_ETHEREUM_DIR}/utils/include)
 include_directories (${CPP_ETHEREUM_DIR}/utils)
 include_directories (jsoncpp/include)
 
-add_library(secp256k STATIC IMPORTED)
-set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
+#add_library(secp256k STATIC IMPORTED)
+#set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
 
 #set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
-set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore secp256k)
+set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 
 target_link_libraries( eosio_chain eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime micropython ${ETH_LIBRARY})
 target_include_directories( eosio_chain
