@@ -1,11 +1,50 @@
 # Defines EOS library target.
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake")
+
+
+set(HUNTER_CONFIGURATION_TYPES Release)
+set(HUNTER_JOBS_NUMBER 4)
+set(HUNTER_CACHE_SERVERS "https://github.com/ethereum/hunter-cache")
+include(HunterGate)
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.19.105.tar.gz"
+    SHA1 "b96750beadc41207e88abf1bcdbe3baeb38f09c4"
+    LOCAL
+)
+
+if(HUNTER_ENABLED)
+    find_package(PythonInterp QUIET)
+    if(PYTHONINTERP_FOUND)
+        hunter_gate_self(
+            "${HUNTER_CACHED_ROOT}"
+            "${HUNTER_VERSION}"
+            "${HUNTER_SHA1}"
+            hunter_dir
+        )
+        set(hunter_upload_script "${hunter_dir}/maintenance/upload-cache-to-github.py")
+        set(hunter_cache_dir "${HUNTER_GATE_ROOT}/_Base/Cache")
+        set(hunter_tmp_dir "${HUNTER_GATE_ROOT}/tmp")
+        add_custom_target(
+            hunter_upload_cache
+            ${PYTHON_EXECUTABLE} ${hunter_upload_script}
+            --username hunter-cache-bot
+            --repo-owner ethereum
+            --repo hunter-cache
+            --cache-dir ${hunter_cache_dir}
+            --temp-dir ${hunter_tmp_dir}
+        )
+    endif()
+endif()
+
+
 project( EOS )
 cmake_minimum_required( VERSION 2.8.12 )
 
 enable_testing()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 INCLUDE( VersionMacros )
 INCLUDE( SetupTargetMacros )

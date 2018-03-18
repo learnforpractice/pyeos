@@ -5,7 +5,9 @@ def init():
 
 def sayHello():
     n = 0
-    for i in range(100):
+    s = 'a'*(1024*10)
+    for i in range(200,300):
+        store_str(N('hello'), N('table'), str(i), s)
         n += i
         n += i
 #    print('++++++++++++hello,world', n)

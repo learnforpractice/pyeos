@@ -1,5 +1,11 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+from libcpp.string cimport string
+
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
     void* execute_from_str(const char *str);
+
+cdef extern from "<eosio/chain/evm_interface.hpp>":
+    void evm_test_(string _code, string _data);
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -25,4 +31,7 @@ def collect():
     
 def dump_info():
     gc_dump_info()
+
+def evm_test(string _code, string _data):
+    evm_test_(_code, _data)
 

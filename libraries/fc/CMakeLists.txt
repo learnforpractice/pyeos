@@ -16,8 +16,11 @@ endif()
 
 SET (ORIGINAL_LIB_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
-find_package(Secp256k1 REQUIRED)
+
+#find_package(Secp256k1 REQUIRED)
 find_package(GMP REQUIRED)
+
+message(STATUS "+++++++++++++++++++++++++++"${Secp256k1_LIBRARY})
 
 IF( ECC_IMPL STREQUAL openssl )
   SET( ECC_REST src/crypto/elliptic_impl_pub.cpp )
@@ -128,7 +131,9 @@ INSTALL( TARGETS fc
    ARCHIVE DESTINATION lib
 )
 INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . )
-  
+
+hunter_add_package(ZLIB)
+
 IF(APPLE)
   # As of 10.10 yosemite, the OpenSSL static libraries shipped with os x have a dependency
   # on zlib, so any time you link in openssl you also need to link zlib.  .  We really want to detect whether openssl was configured with the --no-zlib

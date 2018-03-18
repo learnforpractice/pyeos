@@ -9,6 +9,7 @@ add_library( eosio_chain
              block.cpp
              wast_to_wasm.cpp
              wasm_interface.cpp
+             evm_interface.cpp
              micropython_interface.cpp
              wasm_eosio_constraints.cpp
              apply_context.cpp
@@ -33,7 +34,19 @@ add_library( eosio_chain
              ${HEADERS}
              transaction_metadata.cpp)
 
-target_link_libraries( eosio_chain eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime micropython)
+include_directories (${CPP_ETHEREUM_DIR})
+include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
+include_directories (${CPP_ETHEREUM_DIR}/utils/include)
+include_directories (${CPP_ETHEREUM_DIR}/utils)
+include_directories (jsoncpp/include)
+
+add_library(secp256k STATIC IMPORTED)
+set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
+
+#set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
+set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore secp256k)
+
+target_link_libraries( eosio_chain eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime micropython ${ETH_LIBRARY})
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"

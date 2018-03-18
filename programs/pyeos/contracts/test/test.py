@@ -356,5 +356,11 @@ def timeit(count):
     cost = time.time() - start
     print(cost, cost/count, 1/(cost/count))
 
-
-
+def timeit2(count):
+    import time
+    for i in range(count):
+        r = eosapi.push_message('hello','sayhello',str(i), {'hello':'active'}, True, rawargs=True)
+    start = time.time()
+    eosapi.produce_block()
+    cost = time.time() - start
+    print(cost, cost/count, 1/(cost/count))
