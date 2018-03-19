@@ -184,7 +184,7 @@ void evm_test_(string _code, string _data)
 	unsigned total = 0;
 	bigint memTotal;
 	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VM* evm, ExtVMFace const* extVM) {
-		std::cout << "++++++gasCost: " << gasCost << "\n";
+//		std::cout << "++++++gasCost: " << gasCost << "\n";
 		if (mode == Mode::Statistics)
 		{
 			counts[(byte)inst].first++;

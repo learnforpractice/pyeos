@@ -37,6 +37,8 @@
 
 #include <leveldb/db.h>
 
+using namespace dev;
+
 namespace dev
 {
 
@@ -63,6 +65,35 @@ class EosState : public dev::eth::State
 public:
 	EosState():State(0){}
 	EosState(leveldb::DB& db):State(Invalid256, OverlayDB(&db), BaseState::Empty){}
+
+	virtual void setCode(Address const& _address, bytes&& _code);
+	virtual void clearStorage(Address const& _contract);
+	virtual void addBalance(Address const& _id, u256 const& _amount);
+
+	virtual void rollback(size_t _savepoint);
+
+	virtual void kill(Address _a);
+
+	virtual u256 getNonce(Address const& _addr) const;
+
+	virtual u256 balance(Address const& _id) const;
+
+	virtual void subBalance(Address const& _addr, u256 const& _value);
+
+	virtual void incNonce(Address const& _id);
+
+	virtual size_t savepoint() const;
+
+	virtual bool addressHasCode(Address const& _address) const;
+
+	virtual bytes const& code(Address const& _addr) const;
+
+	virtual h256 codeHash(Address const& _contract) const;
+
+	virtual void transferBalance(Address const& _from, Address const& _to, u256 const& _value) { subBalance(_from, _value); addBalance(_to, _value); }
+
+	virtual u256 const& requireAccountStartNonce() const;
+
 };
 
 std::ostream& operator<<(std::ostream& _out, EosState const& _s);
