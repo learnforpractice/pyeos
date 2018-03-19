@@ -37,6 +37,17 @@
 #include <libethereum/TransactionQueue.h>
 #include <libethereum/Executive.h>
 
+namespace eosio {
+namespace chain {
+
+bool get_code(uint64_t _account, std::vector<uint8_t>& v);
+bool get_code_size(uint64_t _account, int& size);
+
+}
+}
+
+using namespace eosio::chain;
+
 extern "C" {
 int store_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
 int update_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
@@ -189,6 +200,10 @@ size_t EosState::savepoint() const
 
 bool EosState::addressHasCode(Address const& _id) const
 {
+	int size;
+	uint64_t n = ((uint64_t*)_id.data())[0];
+	return get_code_size(n, size);
+
 	if (auto a = account(_id))
 		return a->codeHash() != EmptySHA3;
 	else
@@ -197,6 +212,12 @@ bool EosState::addressHasCode(Address const& _id) const
 
 bytes const& EosState::code(Address const& _addr) const
 {
+	vector<uint8_t> v;
+	uint64_t n = ((uint64_t*)_addr.data())[0];
+	if (get_code(n, v)) {
+		return (bytes)v;
+	}
+	return NullBytes;
 	Account const* a = account(_addr);
 	if (!a || a->codeHash() == EmptySHA3)
 		return NullBytes;
@@ -229,36 +250,31 @@ u256 const& EosState::requireAccountStartNonce() const
 
 bool EosState::addressInUse(Address const& _id) const
 {
-	return !!account(_id);
+	uint64_t n = ((uint64_t*)_id.data())[0];
+	int size = 0;
+	return !get_code_size(n, size);
+//	return !!account(_id);
 }
 
 bool EosState::accountNonemptyAndExisting(Address const& _address) const
 {
+	uint64_t n = ((uint64_t*)_address.data())[0];
+	int size = 0;
+	return get_code_size(n, size);
+/*
 	if (Account const* a = account(_address))
 		return !a->isEmpty();
 	else
 		return false;
+*/
 }
 
 size_t EosState::codeSize(Address const& _a) const
 {
-	if (Account const* a = account(_a))
-	{
-		if (a->hasNewCode())
-			return a->code().size();
-		auto& codeSizeCache = CodeSizeCache::instance();
-		h256 codeHash = a->codeHash();
-		if (codeSizeCache.contains(codeHash))
-			return codeSizeCache.get(codeHash);
-		else
-		{
-			size_t size = code(_a).size();
-			codeSizeCache.store(codeHash, size);
-			return size;
-		}
-	}
-	else
-		return 0;
+	uint64_t n = ((uint64_t*)_a.data())[0];
+	int size = 0;
+	get_code_size(n, size);
+	return size;
 }
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
@@ -273,31 +289,14 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
-	if (Account const* a = account(_id))
-	{
-		auto mit = a->storageOverlay().find(_key);
-		if (mit != a->storageOverlay().end())
-			return mit->second;
-
-		uint64_t n = ((uint64_t*)_id.data())[0];
-		char data[256];
-		memset(data, 0, sizeof(data));
-		string key = _key.str();
-		if (load_str(n, n, n, (char*)key.c_str(), key.size(), data, sizeof(data)) > 0) {
-			return u256(data);
-		}
-		return 0;
-#if 0
-		// Not in the storage cache - go to the DB.
-		SecureTrieDB<h256, OverlayDB> memdb(const_cast<OverlayDB*>(&m_db), a->baseRoot());			// promise we won't change the overlay! :)
-		std::string payload = memdb.at(_key);
-		u256 ret = payload.size() ? RLP(payload).toInt<u256>() : 0;
-		a->setStorageCache(_key, ret);
-		return ret;
-#endif
+	uint64_t n = ((uint64_t*)_id.data())[0];
+	char data[256];
+	memset(data, 0, sizeof(data));
+	string key = _key.str();
+	if (load_str(n, n, n, (char*)key.c_str(), key.size(), data, sizeof(data)) > 0) {
+		return u256(data);
 	}
-	else
-		return 0;
+	return 0;
 }
 
 map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const

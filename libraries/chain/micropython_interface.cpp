@@ -44,6 +44,13 @@ apply_context* get_current_context() {
 	return s_context;
 }
 
+bool get_code(uint64_t _account, std::vector<uint8_t>& v) {
+	return s_context->get_code(_account, v);
+}
+bool get_code_size(uint64_t _account, int& size) {
+	return s_context->get_code_size(_account, size);
+}
+
 micropython_interface::micropython_interface() {
 }
 

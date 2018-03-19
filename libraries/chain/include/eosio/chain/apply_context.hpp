@@ -445,6 +445,9 @@ class apply_context {
       generic_index<contracts::index128_object>   idx128;
       uint32_t                                    recurse_depth;  // how deep inline actions can recurse
 
+      bool get_code(uint64_t _account, std::vector<uint8_t>& v);
+      bool get_code_size(uint64_t _account, int& size);
+
    private:
       iterator_cache<key_value_object> keyval_cache;
 
