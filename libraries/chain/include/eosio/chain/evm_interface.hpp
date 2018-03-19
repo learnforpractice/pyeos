@@ -36,10 +36,11 @@ public:
 
    apply_context* current_apply_context = nullptr;
 
+   std::unique_ptr<dev::eth::SealEngineFace> se;
+
 private:
    evm_interface();
 
-	std::unique_ptr<dev::eth::SealEngineFace> se;
 
 };
 

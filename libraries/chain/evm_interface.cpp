@@ -155,7 +155,6 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 
 	state.addBalance(sender, value);
 
-
 	LastBlockHashes lastBlockHashes;
 	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
 	EosExecutive executive(state, envInfo, *se);
@@ -244,8 +243,7 @@ void evm_test_(string _code, string _data)
 
 //m_stateDB = State::openDB(_dbPath, bc().genesisHash(), _forceAction);
 //m_state(Invalid256, _db, BaseState::PreExisting)
-	EosDB db;
-	EosState state;
+	State state(0);
 
 //dict: {'to': '0x5fd9151d3eebdfd3d7c12776a8096853804d2b53', 'data':
 // '0x6b2fafa9000000000000000000000000000000000000000000000000000000000000000a'}
@@ -292,12 +290,12 @@ void evm_test_(string _code, string _data)
 	ChainParams chainParams;
 	chainParams = chainParams.loadConfig(configJSON);
 
-	std::unique_ptr<dev::eth::SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
+//	std::unique_ptr<dev::eth::SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
 //	std::unique_ptr<SealEngineFace> se(chainParams.createSealEngine());
 
 	LastBlockHashes lastBlockHashes;
 	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
-	EosExecutive executive(state, envInfo, *se);
+	Executive executive(state, envInfo, *eosio::chain::evm_interface::get().se);
 	ExecutionResult res;
 	executive.setResultRecipient(res);
 	t.forceSender(sender);
@@ -338,7 +336,7 @@ void evm_test_(string _code, string _data)
 	std::vector<uint8_t> output = std::move(res.output);
 
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
-	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
+	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(eosio::chain::evm_interface::get().se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
 	std::cout << "Output: " << toHex(output) << "\n";
 	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
 
