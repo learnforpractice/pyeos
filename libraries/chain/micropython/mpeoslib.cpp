@@ -393,49 +393,49 @@ using namespace eosio::chain;
 extern "C" {
 
 
-int store_str_(uint64_t scope, uint64_t table,
+int store_str(uint64_t scope, uint64_t table,
       const char* key, uint32_t key_len, const char* data, size_t data_len) {
 	return db_api<keystr_value_object>::get().store_str(name(scope), name(table), name(0),
 	      key, key_len, data, data_len);
 }
 
-int update_str_(uint64_t scope, uint64_t table,
+int update_str(uint64_t scope, uint64_t table,
       const char* key, uint32_t key_len, const char* data, size_t data_len) {
 	return db_api<keystr_value_object>::get().update_str(name(scope), name(table), name(0),
 	      key, key_len, data, data_len);
 }
 
-int remove_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len) {
+int remove_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len) {
 	return db_api<keystr_value_object>::get().remove_str(name(scope), name(table), key, key_len);
 }
 
 
 using db_str = db_index_api<keystr_value_index, by_scope_primary>;
-int load_str_(uint64_t scope, uint64_t code, uint64_t table, char* key, size_t key_len, char* data, size_t data_len) {
+int load_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().load_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int front_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int front_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().front_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int back_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int back_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().back_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int next_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int next_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().next_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int previous_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int previous_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().previous_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int lower_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int lower_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().lower_bound_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 
-int upper_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
+int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len) {
 	return db_str::get().upper_bound_str(name(scope), name(code), name(table), key, key_len, data, data_len);
 }
 

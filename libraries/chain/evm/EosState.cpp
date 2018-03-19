@@ -37,6 +37,21 @@
 #include <libethereum/TransactionQueue.h>
 #include <libethereum/Executive.h>
 
+extern "C" {
+int store_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int update_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int remove_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
+
+int load_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int front_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int back_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int next_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int previous_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int lower_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+
+}
+
 using namespace dev::eth;
 void EosState::setCode(Address const& _address, bytes&& _code)
 {
@@ -210,4 +225,111 @@ u256 const& EosState::requireAccountStartNonce() const
 	if (m_accountStartNonce == Invalid256)
 		BOOST_THROW_EXCEPTION(InvalidAccountStartNonceInState());
 	return m_accountStartNonce;
+}
+
+bool EosState::addressInUse(Address const& _id) const
+{
+	return !!account(_id);
+}
+
+bool EosState::accountNonemptyAndExisting(Address const& _address) const
+{
+	if (Account const* a = account(_address))
+		return !a->isEmpty();
+	else
+		return false;
+}
+
+size_t EosState::codeSize(Address const& _a) const
+{
+	if (Account const* a = account(_a))
+	{
+		if (a->hasNewCode())
+			return a->code().size();
+		auto& codeSizeCache = CodeSizeCache::instance();
+		h256 codeHash = a->codeHash();
+		if (codeSizeCache.contains(codeHash))
+			return codeSizeCache.get(codeHash);
+		else
+		{
+			size_t size = code(_a).size();
+			codeSizeCache.store(codeHash, size);
+			return size;
+		}
+	}
+	else
+		return 0;
+}
+
+void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
+{
+	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
+//	m_cache[_contract].setStorage(_key, _value);
+	uint64_t n = ((uint64_t*)_contract.data())[0];
+	string key = _key.str();
+	string value = _value.str();
+	store_str(n, n, key.c_str(), key.size(), value.c_str(), value.size());
+}
+
+u256 EosState::storage(Address const& _id, u256 const& _key) const
+{
+	if (Account const* a = account(_id))
+	{
+		auto mit = a->storageOverlay().find(_key);
+		if (mit != a->storageOverlay().end())
+			return mit->second;
+
+		uint64_t n = ((uint64_t*)_id.data())[0];
+		char data[256];
+		memset(data, 0, sizeof(data));
+		string key = _key.str();
+		if (load_str(n, n, n, (char*)key.c_str(), key.size(), data, sizeof(data)) > 0) {
+			return u256(data);
+		}
+		return 0;
+#if 0
+		// Not in the storage cache - go to the DB.
+		SecureTrieDB<h256, OverlayDB> memdb(const_cast<OverlayDB*>(&m_db), a->baseRoot());			// promise we won't change the overlay! :)
+		std::string payload = memdb.at(_key);
+		u256 ret = payload.size() ? RLP(payload).toInt<u256>() : 0;
+		a->setStorageCache(_key, ret);
+		return ret;
+#endif
+	}
+	else
+		return 0;
+}
+
+map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const
+{
+	map<h256, pair<u256, u256>> ret;
+
+	if (Account const* a = account(_id))
+	{
+		// Pull out all values from trie storage.
+		if (h256 root = a->baseRoot())
+		{
+			SecureTrieDB<h256, OverlayDB> memdb(const_cast<OverlayDB*>(&m_db), root);		// promise we won't alter the overlay! :)
+
+			for (auto it = memdb.hashedBegin(); it != memdb.hashedEnd(); ++it)
+			{
+				h256 const hashedKey((*it).first);
+				u256 const key = h256(it.key());
+				u256 const value = RLP((*it).second).toInt<u256>();
+				ret[hashedKey] = make_pair(key, value);
+			}
+		}
+
+		// Then merge cached storage over the top.
+		for (auto const& i : a->storageOverlay())
+		{
+			h256 const key = i.first;
+			h256 const hashedKey = sha3(key);
+			if (i.second)
+				ret[hashedKey] = i;
+			else
+				ret.erase(hashedKey);
+		}
+	}
+	return ret;
 }

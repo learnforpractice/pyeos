@@ -113,7 +113,7 @@ void apply_eosio_setcode(apply_context& context) {
    context.require_authorization(act.account);
    context.require_write_lock( config::eosio_auth_scope );
 
-   FC_ASSERT( act.vmtype == 0 || act.vmtype == 1);
+   FC_ASSERT( act.vmtype == 0 || act.vmtype == 1 || act.vmtype == 2);
    FC_ASSERT( act.vmversion == 0 );
 
    auto code_id = fc::sha256::hash( act.code.data(), act.code.size() );
