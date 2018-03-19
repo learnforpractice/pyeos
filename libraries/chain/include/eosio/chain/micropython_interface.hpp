@@ -49,6 +49,8 @@ private:
    micropython_interface();
 };
 
+apply_context* get_current_context();
+
 }
 } // eos::chain
 

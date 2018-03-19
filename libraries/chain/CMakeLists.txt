@@ -1,5 +1,7 @@
 file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.hpp")
 
+find_package(leveldb)
+
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
              chain_config.cpp
@@ -31,6 +33,10 @@ add_library( eosio_chain
 
              micropython/mpeoslib.cpp
 
+             evm/EosState.cpp
+#             evm/EosExecutive.cpp
+             evm/EosDB.cpp
+
              ${HEADERS}
              transaction_metadata.cpp)
 
@@ -46,6 +52,9 @@ include_directories (jsoncpp/include)
 #set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
 set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 
+message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
+message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
+
 target_link_libraries( eosio_chain eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime micropython ${ETH_LIBRARY})
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
@@ -56,6 +65,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod/eoslib
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
+                            PRIVATE ${LevelDB_INCLUDE}
                             )
 
 if(MSVC)

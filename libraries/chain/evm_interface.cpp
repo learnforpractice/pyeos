@@ -1,4 +1,5 @@
-#include <libethereum/State.h>
+//#include <libethereum/State.h>
+
 #include <libethereum/Transaction.h>
 #include <libethereum/Executive.h>
 #include <libethereum/ChainParams.h>
@@ -13,15 +14,16 @@
 #include <libethashseal/GenesisInfo.h>
 #include <libethashseal/Ethash.h>
 
-
 #include <libevm/VM.h>
 #include <libevm/VMFactory.h>
 
-
 #include <libdevcrypto/Hash.h>
 
-
 #include <eosio/chain/evm_interface.hpp>
+
+
+#include "evm/EosState.h"
+#include "evm/EosDB.h"
 
 using namespace dev::eth;
 using namespace dev;
@@ -117,7 +119,10 @@ void evm_test_(string _code, string _data)
 	Address sender = Address("0xc2ff44dd289190eb47839a3e7bab1ee1abe1ebbe");
 	Address origin = Address(69);
 
-	State state(0);
+//m_stateDB = State::openDB(_dbPath, bc().genesisHash(), _forceAction);
+//m_state(Invalid256, _db, BaseState::PreExisting)
+	EosDB db;
+	EosState state;
 
 //dict: {'to': '0x5fd9151d3eebdfd3d7c12776a8096853804d2b53', 'data':
 // '0x6b2fafa9000000000000000000000000000000000000000000000000000000000000000a'}
@@ -178,7 +183,7 @@ void evm_test_(string _code, string _data)
 	unsigned total = 0;
 	bigint memTotal;
 	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VM* evm, ExtVMFace const* extVM) {
-//		std::cout << "++++++gasCost: " << gasCost << "\n";
+		std::cout << "++++++gasCost: " << gasCost << "\n";
 		if (mode == Mode::Statistics)
 		{
 			counts[(byte)inst].first++;

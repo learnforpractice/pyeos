@@ -2,7 +2,6 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/thread/thread.hpp>
 #include <eosio/chain/micropython_interface.hpp>
-#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/chain_controller.hpp>
 #include "Platform/Platform.h"
 #include "WAST/WAST.h"
@@ -23,6 +22,9 @@ extern "C" {
    mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
 }
 
+
+
+
 #if 0
 extern "C" void print_time() {
    ilog("fc::time_point::microseconds() ${n}", ("n", fc::time_point::now()));
@@ -31,6 +33,16 @@ extern "C" void print_time() {
 
 namespace eosio {
 namespace chain {
+
+static apply_context* s_context(0);
+
+void set_current_context(apply_context* context) {
+	s_context = context;
+}
+
+apply_context* get_current_context() {
+	return s_context;
+}
 
 micropython_interface::micropython_interface() {
 }
@@ -46,6 +58,7 @@ micropython_interface& micropython_interface::get() {
 
 void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
    try {
+   		set_current_context(&c);
       current_apply_context = &c;
       mp_obj_t obj = nullptr;
        nlr_buf_t nlr;
