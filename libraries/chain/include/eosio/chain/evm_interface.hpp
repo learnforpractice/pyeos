@@ -3,19 +3,21 @@
 
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
+#include <eosio/chain/apply_context.hpp>
 
 #include <Runtime/Runtime.h>
 #include "IR/Module.h"
 
+#include <libethcore/SealEngine.h>
 
 using namespace std;
+using namespace dev::eth;
+class SealEngineFace;
 
 namespace eosio {
 namespace chain {
 
-class apply_context;
 class chain_controller;
-
 /**
  * @class evm_interface
  *
@@ -26,15 +28,19 @@ class chain_controller;
  */
 class evm_interface {
 public:
-
+	void init();
    static evm_interface& get();
    void apply(apply_context& c, const shared_vector<char>&  code);
+
+   string run_code(string _code, string _data);
 
    apply_context* current_apply_context = nullptr;
 
 private:
-
    evm_interface();
+
+	std::unique_ptr<dev::eth::SealEngineFace> se;
+
 };
 
 }

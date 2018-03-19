@@ -19,9 +19,14 @@
 #include <eosio/chain/producer_object.hpp>
 
 #include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/micropython_interface.hpp>
+#include <eosio/chain/evm_interface.hpp>
+
 #include <eosio/chain/contracts/abi_serializer.hpp>
 
 #include <eosio/chain/rate_limiting.hpp>
+
+
 
 namespace eosio { namespace chain { namespace contracts {
 
@@ -123,20 +128,40 @@ void apply_eosio_setcode(apply_context& context) {
       context.mutable_controller.get_wasm_cache().checkin(code_id, code);
    }
 
-   const auto& account = db.get<account_object,by_name>(act.account);
-//   wlog( "set code: ${size}", ("size",act.code.size()));
-   db.modify( account, [&]( auto& a ) {
-      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-      #warning TODO: update setcode message to include the hash, then validate it in validate 
-      a.vm_type = act.vmtype.convert_to<uint8_t>();
-   		a.code_version = code_id;
-      // Added resize(0) here to avoid bug in boost vector container
-      a.code.resize( 0 );
-      a.code.resize( act.code.size() );
-      a.last_code_update = context.controller.head_block_time();
-      memcpy( a.code.data(), act.code.data(), act.code.size() );
 
-   });
+   if (act.vmtype == 2) { //evm
+   		string args(act.code.data(), act.code.size());
+   		string code = evm_interface::get().run_code("", args);
+
+		const auto& account = db.get<account_object,by_name>(act.account);
+	//   wlog( "set code: ${size}", ("size",act.code.size()));
+		db.modify( account, [&]( auto& a ) {
+			/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+			#warning TODO: update setcode message to include the hash, then validate it in validate
+			a.vm_type = act.vmtype.convert_to<uint8_t>();
+				a.code_version = code_id;
+			// Added resize(0) here to avoid bug in boost vector container
+			a.code.resize( 0 );
+			a.code.resize( code.size() );
+			a.last_code_update = context.controller.head_block_time();
+			memcpy( a.code.data(), code.c_str(), code.size() );
+		});
+
+   } else {
+      const auto& account = db.get<account_object,by_name>(act.account);
+   //   wlog( "set code: ${size}", ("size",act.code.size()));
+      db.modify( account, [&]( auto& a ) {
+         /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+         #warning TODO: update setcode message to include the hash, then validate it in validate
+         a.vm_type = act.vmtype.convert_to<uint8_t>();
+      		a.code_version = code_id;
+         // Added resize(0) here to avoid bug in boost vector container
+         a.code.resize( 0 );
+         a.code.resize( act.code.size() );
+         a.last_code_update = context.controller.head_block_time();
+         memcpy( a.code.data(), act.code.data(), act.code.size() );
+      });
+   }
 
 }
 

@@ -50,6 +50,7 @@ private:
 };
 
 apply_context* get_current_context();
+void set_current_context(apply_context* context);
 
 }
 } // eos::chain

@@ -6,7 +6,6 @@
 #include <libethereum/Block.h>
 #include <libethereum/LastBlockHashesFace.h>
 
-#include <libethcore/SealEngine.h>
 #include <libdevcore/CommonIO.h>
 #include <libdevcore/CommonJS.h>
 #include <libdevcore/SHA3.h>
@@ -19,12 +18,14 @@
 
 #include <libdevcrypto/Hash.h>
 
-#include <eosio/chain/evm_interface.hpp>
-
-
 #include "evm/EosState.h"
 #include "evm/EosExecutive.h"
 #include "evm/EosDB.h"
+
+#include <eosio/chain/evm_interface.hpp>
+
+
+
 
 using namespace dev::eth;
 using namespace dev;
@@ -33,7 +34,10 @@ using namespace dev;
 namespace eosio {
 namespace chain {
 
-evm_interface::evm_interface() {
+apply_context* get_current_context();
+
+evm_interface::evm_interface() : se(ChainParams(genesisInfo(Network::MainNetworkTest)).createSealEngine()) {
+	init();
 }
 
 evm_interface& evm_interface::get() {
@@ -43,6 +47,11 @@ evm_interface& evm_interface::get() {
       python = new evm_interface();
    }
    return *python;
+}
+
+void evm_interface::init() {
+	Ethash::init();
+	NoProof::init();
 }
 
 void evm_interface::apply(apply_context& c, const shared_vector<char>& code) {
@@ -91,14 +100,127 @@ public:
 };
 
 
+string eosio::chain::evm_interface::run_code(string _code, string _data)
+{
+	apply_context *ctx = get_current_context();
+	uint64_t receiver = ctx->receiver.value;
+
+	VMKind vmKind = VMKind::Interpreter;
+	Mode mode = Mode::Statistics;
+
+	std::vector<uint8_t> code;
+	std::vector<uint8_t> data;
+
+	u256 gas = maxBlockGasLimit();
+	u256 gasPrice = 0;
+	u256 value = 0;
+
+
+
+	StandardTrace st;
+
+	BlockHeader blockHeader; // fake block to be executed in
+	blockHeader.setGasLimit(maxBlockGasLimit());
+	blockHeader.setTimestamp(0);
+
+	Address sender(0);
+	*((uint64_t*)sender.data()) = receiver;
+
+	Address origin = Address(69);
+
+
+	EosState state;
+
+	code = dev::fromHex(_code);
+	data = dev::jsToBytes(_data, OnFailed::Throw);
+
+	Transaction t;
+	Address contractDestination("0x7f1d4eef5ce795e6714ea476108aa0d1b519f419");//("0x5fd9151d3eebdfd3d7c12776a8096853804d2b53");
+	if (!code.empty())
+	{
+		// Deploy the code on some fake account to be called later.
+		Account account(0, 0);
+		account.setCode(std::vector<uint8_t>{code});
+		std::unordered_map<Address, Account> map;
+		map[contractDestination] = account;
+		state.populateFrom(map);
+		t = Transaction(value, gasPrice, gas, contractDestination, data, 0);
+	}
+	else
+	{
+		// If not code provided construct "create" transaction out of the input
+		// data.
+		t = Transaction(value, gasPrice, gas, data, 0);
+	}
+
+	state.addBalance(sender, value);
+
+
+	LastBlockHashes lastBlockHashes;
+	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
+	EosExecutive executive(state, envInfo, *se);
+	ExecutionResult res;
+	executive.setResultRecipient(res);
+	t.forceSender(sender);
+
+	std::unordered_map<byte, std::pair<unsigned, bigint>> counts;
+	unsigned total = 0;
+	bigint memTotal;
+	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VM* evm, ExtVMFace const* extVM) {
+//		std::cout << "++++++gasCost: " << gasCost << "\n";
+		if (mode == Mode::Statistics)
+		{
+			counts[(byte)inst].first++;
+			counts[(byte)inst].second += gasCost;
+			total++;
+			if (m > 0)
+				memTotal = m;
+		}
+		else if (mode == Mode::Trace)
+			st(step, PC, inst, m, gasCost, gas, evm, extVM);
+	};
+
+	executive.initialize(t);
+	if (!code.empty())
+		executive.call(contractDestination, sender, value, gasPrice, &data, gas);
+	else
+		executive.create(sender, value, gasPrice, gas, &data, origin);
+
+	Timer timer;
+	if ((mode == Mode::Statistics || mode == Mode::Trace) && vmKind == VMKind::Interpreter)
+		// If we use onOp, the factory falls back to "interpreter"
+		executive.go(onOp);
+	else
+		executive.go();
+	double execTime = timer.elapsed();
+	executive.finalize();
+
+	std::vector<uint8_t> output = std::move(res.output);
+
+	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
+	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
+	std::cout << "Output: " << toHex(output) << "\n";
+	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
+
+	LogEntries logs = executive.logs();
+	std::cout << logs.size() << " logs" << (logs.empty() ? "." : ":") << "\n";
+	for (LogEntry const& l: logs)
+	{
+		std::cout << "  " << l.address.hex() << ": " << toHex(t.data()) << "\n";
+		for (h256 const& t: l.topics)
+			std::cout << "    " << t.hex() << "\n";
+	}
+	return toHex(output);
+}
+
 void evm_test_(string _code, string _data)
 {
 	Network networkName = Network::MainNetworkTest;
 	VMKind vmKind = VMKind::Interpreter;
 	Mode mode = Mode::Statistics;
 
-	bytes code;
-	bytes data;
+	std::vector<uint8_t> code;
+	std::vector<uint8_t> data;
 
 	u256 gas = maxBlockGasLimit();
 	u256 gasPrice = 0;
@@ -150,7 +272,7 @@ void evm_test_(string _code, string _data)
 	{
 		// Deploy the code on some fake account to be called later.
 		Account account(0, 0);
-		account.setCode(bytes{code});
+		account.setCode(std::vector<uint8_t>{code});
 		std::unordered_map<Address, Account> map;
 		map[contractDestination] = account;
 		state.populateFrom(map);
@@ -170,7 +292,7 @@ void evm_test_(string _code, string _data)
 	ChainParams chainParams;
 	chainParams = chainParams.loadConfig(configJSON);
 
-	std::unique_ptr<SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
+	std::unique_ptr<dev::eth::SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
 //	std::unique_ptr<SealEngineFace> se(chainParams.createSealEngine());
 
 	LastBlockHashes lastBlockHashes;
@@ -213,7 +335,7 @@ void evm_test_(string _code, string _data)
 	executive.finalize();
 	printf("++++++++executive.finalize()\n");
 
-	bytes output = std::move(res.output);
+	std::vector<uint8_t> output = std::move(res.output);
 
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
 	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";

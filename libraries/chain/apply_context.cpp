@@ -3,6 +3,7 @@
 #include <eosio/chain/chain_controller.hpp>
 #include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/micropython_interface.hpp>
+#include <eosio/chain/evm_interface.hpp>
 
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/scope_sequence_object.hpp>
@@ -29,7 +30,9 @@ extern "C" void execution_end();
 namespace eosio { namespace chain {
 void apply_context::exec_one()
 {
-   try {
+	set_current_context(this);
+
+	try {
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
       ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
 
@@ -57,6 +60,10 @@ void apply_context::exec_one()
                		execution_end();
                		throw;
                }
+            } else if (a.vm_type == 2) {
+            		string code(a.code.data(), a.code.size());
+            		string args(act.data.data());
+            		evm_interface::get().run_code(code, args);
             }
          }
       }
