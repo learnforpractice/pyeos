@@ -27,19 +27,23 @@
 #include <libethereum/Interface.h>
 
 #include "EosState.h"
+#include "EosExtVM.h"
 
-//#include <libethereum/ExtVM.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/Block.h>
+//#include <libethereum/BlockChain.h>
+//#include <libethereum/Block.h>
 
 using namespace std;
 using namespace dev;
 using namespace dev::eth;
 
-const char* VMTraceChannel::name() { return "EVM"; }
-const char* ExecutiveWarnChannel::name() { return WarnChannel::name(); }
+struct EosVMTraceChannel: public LogChannel { static const char* name(); static const int verbosity = 11; };
+struct EosExecutiveWarnChannel: public LogChannel { static const char* name(); static const int verbosity = 1; };
 
-bool changesMemory(Instruction _inst)
+const char* EosVMTraceChannel::name() { return "EVM"; }
+const char* EosExecutiveWarnChannel::name() { return WarnChannel::name(); }
+
+
+static bool changesMemory(Instruction _inst)
 {
 	return
 		_inst == Instruction::MSTORE ||
@@ -55,35 +59,11 @@ bool changesMemory(Instruction _inst)
 		_inst == Instruction::DELEGATECALL;
 }
 
-bool changesStorage(Instruction _inst)
+static bool changesStorage(Instruction _inst)
 {
 	return _inst == Instruction::SSTORE;
 }
 
-
-EosExecutive::EosExecutive(Block& _s, BlockChain const& _bc, unsigned _level):
-	m_s(_s.mutableState()),
-	m_envInfo(_s.info(), _bc.lastBlockHashes(), 0),
-	m_depth(_level),
-	m_sealEngine(*_bc.sealEngine())
-{
-}
-
-EosExecutive::EosExecutive(Block& _s, LastBlockHashesFace const& _lh, unsigned _level):
-	m_s(_s.mutableState()),
-	m_envInfo(_s.info(), _lh, 0),
-	m_depth(_level),
-	m_sealEngine(*_s.sealEngine())
-{
-}
-
-EosExecutive::EosExecutive(State& io_s, Block const& _block, unsigned _txIndex, BlockChain const& _bc, unsigned _level):
-	m_s(createIntermediateState(io_s, _block, _txIndex, _bc)),
-	m_envInfo(_block.info(), _bc.lastBlockHashes(), _txIndex ? _block.receipt(_txIndex - 1).gasUsed() : 0),
-	m_depth(_level),
-	m_sealEngine(*_bc.sealEngine())
-{
-}
 
 u256 EosExecutive::gasUsed() const
 {
@@ -120,13 +100,13 @@ void EosExecutive::initialize(Transaction const& _transaction)
 		}
 		catch (InvalidSignature const&)
 		{
-			clog(ExecutiveWarnChannel) << "Invalid Signature";
+			clog(EosExecutiveWarnChannel) << "Invalid Signature";
 			m_excepted = TransactionException::InvalidSignature;
 			throw;
 		}
 		if (m_t.nonce() != nonceReq)
 		{
-			clog(ExecutiveWarnChannel) << "Sender: " << m_t.sender().hex() << " Invalid Nonce: Require" << nonceReq << " Got" << m_t.nonce();
+			clog(EosExecutiveWarnChannel) << "Sender: " << m_t.sender().hex() << " Invalid Nonce: Require" << nonceReq << " Got" << m_t.nonce();
 			m_excepted = TransactionException::InvalidNonce;
 			BOOST_THROW_EXCEPTION(InvalidNonce() << RequirementError((bigint)nonceReq, (bigint)m_t.nonce()));
 		}
@@ -136,7 +116,7 @@ void EosExecutive::initialize(Transaction const& _transaction)
 		bigint totalCost = m_t.value() + gasCost;
 		if (m_s.balance(m_t.sender()) < totalCost)
 		{
-			clog(ExecutiveWarnChannel) << "Not enough cash: Require >" << totalCost << "=" << m_t.gas() << "*" << m_t.gasPrice() << "+" << m_t.value() << " Got" << m_s.balance(m_t.sender()) << "for sender: " << m_t.sender();
+			clog(EosExecutiveWarnChannel) << "Not enough cash: Require >" << totalCost << "=" << m_t.gas() << "*" << m_t.gasPrice() << "+" << m_t.value() << " Got" << m_s.balance(m_t.sender()) << "for sender: " << m_t.sender();
 			m_excepted = TransactionException::NotEnoughCash;
 			BOOST_THROW_EXCEPTION(NotEnoughCash() << RequirementError(totalCost, (bigint)m_s.balance(m_t.sender())) << errinfo_comment(m_t.sender().hex()));
 		}
@@ -218,7 +198,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
 		{
 			bytes const& c = m_s.code(_p.codeAddress);
 			h256 codeHash = m_s.codeHash(_p.codeAddress);
-			m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress, _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash, m_depth, _p.staticCall);
+			m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress, _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash, m_depth, _p.staticCall);
 		}
 	}
 
@@ -281,7 +261,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 
 	// Schedule _init execution if not empty.
 	if (!_init.empty())
-		m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin, _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth);
+		m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin, _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth);
 
 	return !m_ext;
 }
@@ -290,7 +270,7 @@ OnOpFunc EosExecutive::simpleTrace()
 {
 	return [](uint64_t steps, uint64_t PC, Instruction inst, bigint newMemSize, bigint gasCost, bigint gas, VM* voidVM, ExtVMFace const* voidExt)
 	{
-		ExtVM const& ext = *static_cast<ExtVM const*>(voidExt);
+		EosExtVM const& ext = *static_cast<EosExtVM const*>(voidExt);
 		VM& vm = *voidVM;
 
 		ostringstream o;
@@ -301,8 +281,8 @@ OnOpFunc EosExecutive::simpleTrace()
 		o << "    STORAGE" << endl;
 		for (auto const& i: ext.state().storage(ext.myAddress))
 			o << showbase << hex << i.second.first << ": " << i.second.second << endl;
-		dev::LogOutputStream<VMTraceChannel, false>() << o.str();
-		dev::LogOutputStream<VMTraceChannel, false>() << " < " << dec << ext.depth << " : " << ext.myAddress << " : #" << steps << " : " << hex << setw(4) << setfill('0') << PC << " : " << instructionInfo(inst).name << " : " << dec << gas << " : -" << dec << gasCost << " : " << newMemSize << "x32" << " >";
+		dev::LogOutputStream<EosVMTraceChannel, false>() << o.str();
+		dev::LogOutputStream<EosVMTraceChannel, false>() << " < " << dec << ext.depth << " : " << ext.myAddress << " : #" << steps << " : " << hex << setw(4) << setfill('0') << PC << " : " << instructionInfo(inst).name << " : " << dec << gas << " : -" << dec << gasCost << " : " << newMemSize << "x32" << " >";
 	};
 }
 
@@ -424,7 +404,7 @@ bool EosExecutive::finalize()
 	if (m_res) // Collect results
 	{
 		m_res->gasUsed = gasUsed();
-		m_res->excepted = m_excepted; // TODO: m_except is used only in ExtVM::call
+		m_res->excepted = m_excepted; // TODO: m_except is used only in EosExtVM::call
 		m_res->newAddress = m_newAddress;
 		m_res->gasRefunded = m_ext ? m_ext->sub.refunds : 0;
 	}

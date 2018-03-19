@@ -23,6 +23,7 @@
 
 
 #include "evm/EosState.h"
+#include "evm/EosExecutive.h"
 #include "evm/EosDB.h"
 
 using namespace dev::eth;
@@ -174,7 +175,7 @@ void evm_test_(string _code, string _data)
 
 	LastBlockHashes lastBlockHashes;
 	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
-	Executive executive(state, envInfo, *se);
+	EosExecutive executive(state, envInfo, *se);
 	ExecutionResult res;
 	executive.setResultRecipient(res);
 	t.forceSender(sender);

@@ -41,41 +41,10 @@ namespace eth
 class EosState;
 class Block;
 class BlockChain;
-class ExtVM;
+class EosExtVM;
 class SealEngineFace;
 struct Manifest;
 
-struct VMTraceChannel: public LogChannel { static const char* name(); static const int verbosity = 11; };
-struct ExecutiveWarnChannel: public LogChannel { static const char* name(); static const int verbosity = 1; };
-
-class StandardTrace
-{
-public:
-	struct DebugOptions
-	{
-		bool disableStorage = false;
-		bool disableMemory = false;
-		bool disableStack = false;
-		bool fullStorage = false;
-	};
-
-	StandardTrace();
-	void operator()(uint64_t _steps, uint64_t _PC, Instruction _inst, bigint _newMemSize, bigint _gasCost, bigint _gas, VM* _vm, ExtVMFace const* _extVM);
-
-	void setShowMnemonics() { m_showMnemonics = true; }
-	void setOptions(DebugOptions _options) { m_options = _options; }
-
-	std::string json(bool _styled = false) const;
-
-	OnOpFunc onOp() { return [=](uint64_t _steps, uint64_t _PC, Instruction _inst, bigint _newMemSize, bigint _gasCost, bigint _gas, VM* _vm, ExtVMFace const* _extVM) { (*this)(_steps, _PC, _inst, _newMemSize, _gasCost, _gas, _vm, _extVM); }; }
-
-private:
-	bool m_showMnemonics = false;
-	std::vector<Instruction> m_lastInst;
-	bytes m_lastCallData;
-	Json::Value m_trace;
-	DebugOptions m_options;
-};
 
 /**
  * @brief Message-call/contract-creation executor; useful for executing transactions.
@@ -102,25 +71,6 @@ class EosExecutive
 public:
 	/// Simple constructor; executive will operate on given state, with the given environment info.
 	EosExecutive(EosState& _s, EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, unsigned _level = 0): m_s(_s), m_envInfo(_envInfo), m_depth(_level), m_sealEngine(_sealEngine) {}
-
-	/** Easiest constructor.
-	 * Creates executive to operate on the state of end of the given block, populating environment
-	 * info from given Block and the LastHashes portion from the BlockChain.
-	 */
-	EosExecutive(Block& _s, BlockChain const& _bc, unsigned _level = 0);
-
-	/** LastHashes-split constructor.
-	 * Creates executive to operate on the state of end of the given block, populating environment
-	 * info accordingly, with last hashes given explicitly.
-	 */
-	EosExecutive(Block& _s, LastBlockHashesFace const& _lh, unsigned _level = 0);
-
-	/** Previous-state constructor.
-	 * Creates executive to operate on the state of a particular transaction in the given block,
-	 * populating environment info from the given Block and the LastHashes portion from the BlockChain.
-	 * EosState is assigned the resultant value, but otherwise unused.
-	 */
-	EosExecutive(EosState& io_s, Block const& _block, unsigned _txIndex, BlockChain const& _bc, unsigned _level = 0);
 
 	EosExecutive(EosExecutive const&) = delete;
 	void operator=(EosExecutive) = delete;
@@ -192,7 +142,7 @@ private:
 	EosState& m_s;							///< The state to which this operation/transaction is applied.
 	// TODO: consider changign to EnvInfo const& to avoid LastHashes copy at every CALL/CREATE
 	EnvInfo m_envInfo;					///< Information on the runtime environment.
-	std::shared_ptr<ExtVM> m_ext;		///< The VM externality object for the VM execution or null if no VM is required. shared_ptr used only to allow ExtVM forward reference. This field does *NOT* survive this object.
+	std::shared_ptr<EosExtVM> m_ext;		///< The VM externality object for the VM execution or null if no VM is required. shared_ptr used only to allow ExtVM forward reference. This field does *NOT* survive this object.
 	owning_bytes_ref m_output;			///< Execution output.
 	ExecutionResult* m_res = nullptr;	///< Optional storage for execution results.
 

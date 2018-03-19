@@ -34,8 +34,9 @@ add_library( eosio_chain
              micropython/mpeoslib.cpp
 
              evm/EosState.cpp
-#             evm/EosExecutive.cpp
+             evm/EosExecutive.cpp
              evm/EosDB.cpp
+             evm/EosExtVM.cpp
 
              ${HEADERS}
              transaction_metadata.cpp)
