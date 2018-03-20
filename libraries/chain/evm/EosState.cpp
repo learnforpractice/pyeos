@@ -269,11 +269,10 @@ bool EosState::accountNonemptyAndExisting(Address const& _address) const
 vector<uint8_t> g_code;
 bytes const& EosState::code(Address const& _addr) const
 {
-	ilog("");
+	ilog(_addr.hex());
 	uint64_t n = ((uint64_t*)_addr.data())[0];
 	if (get_code(n, g_code)) {
-//		std::cout<<"+++++++++++++++++++:"<<g_code.data()<<std::endl;
-		g_code = dev::jsToBytes(string((char*)g_code.data(),g_code.size()), dev::OnFailed::Throw);
+		ilog( "${n}", ("n", g_code.size()) );
 		return g_code;
 	}
 	return NullBytes;

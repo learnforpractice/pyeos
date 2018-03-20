@@ -32,7 +32,7 @@ public:
    static evm_interface& get();
    void apply(apply_context& c, const shared_vector<char>&  code);
 
-   string run_code(string _code, string _data);
+   bool run_code(bytes& code, bytes& data, eosio::chain::bytes& output);
 
    apply_context* current_apply_context = nullptr;
 

@@ -97,16 +97,13 @@ public:
 
 void evm_test_(string _code, string _data);
 
-string eosio::chain::evm_interface::run_code(string _code, string _data)
+bool eosio::chain::evm_interface::run_code(bytes& code, bytes& data, eosio::chain::bytes& output)
 {
 	apply_context *ctx = get_current_context();
 	uint64_t receiver = ctx->receiver.value;
 
 	VMKind vmKind = VMKind::Interpreter;
 	Mode mode = Mode::Statistics;
-
-	std::vector<uint8_t> code;
-	std::vector<uint8_t> data;
 
 	u256 gas = maxBlockGasLimit();
 	u256 gasPrice = 0;
@@ -129,8 +126,9 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 	EosState state;
 //	State state(0);
 
-	code = dev::fromHex(_code);
-	data = dev::jsToBytes(_data, OnFailed::Throw);
+//	code = dev::fromHex(_code);
+//	code = std::vector<uint8_t>( _code.begin(), _code.end() );
+//	data = dev::jsToBytes(_data, OnFailed::Throw);
 
 	Transaction t;
 	Address contractDestination = sender;
@@ -138,17 +136,17 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 	{
 		// Deploy the code on some fake account to be called later.
 		Account account(0, 0);
-		account.setCode(std::vector<uint8_t>{code});
+		account.setCode(std::vector<uint8_t>{*(reinterpret_cast<dev::bytes*>(&code))});
 		std::unordered_map<Address, Account> map;
 		map[contractDestination] = account;
 		state.populateFrom(map);
-		t = Transaction(value, gasPrice, gas, contractDestination, data, 0);
+		t = Transaction(value, gasPrice, gas, contractDestination, *(reinterpret_cast<dev::bytes*>(&data)), 0);
 	}
 	else
 	{
 		// If not code provided construct "create" transaction out of the input
 		// data.
-		t = Transaction(value, gasPrice, gas, data, 0);
+		t = Transaction(value, gasPrice, gas, *(reinterpret_cast<dev::bytes*>(&data)), 0);
 	}
 
 	state.addBalance(sender, value);
@@ -183,9 +181,9 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 
 	executive.initialize(t);
 	if (!code.empty())
-		executive.call(contractDestination, sender, value, gasPrice, &data, gas);
+		executive.call(contractDestination, sender, value, gasPrice, reinterpret_cast<dev::bytes*>(&data), gas);
 	else
-		executive.create(sender, value, gasPrice, gas, &data, origin);
+		executive.create(sender, value, gasPrice, gas, reinterpret_cast<dev::bytes*>(&data), origin);
 
 	Timer timer;
 	if ((mode == Mode::Statistics || mode == Mode::Trace) && vmKind == VMKind::Interpreter)
@@ -196,12 +194,15 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 	double execTime = timer.elapsed();
 	executive.finalize();
 
-	std::vector<uint8_t> output = std::move(res.output);
+	output.resize( 0 );
+	output.resize( res.output.size() );
+	memcpy( output.data(), res.output.data(), res.output.size() );
 
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
 	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(seal->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
-	std::cout << "Output: " << toHex(output) << "\n";
-	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
+	std::cout << "res.output.size():" << res.output.size() << "\n";
+	std::cout << "Output: " << toHex(res.output) << "\n";
+//	std::cout << "toJS(res.output): " << toJS(res.output) << "\n";
 
 	LogEntries logs = executive.logs();
 	std::cout << logs.size() << " logs" << (logs.empty() ? "." : ":") << "\n";
@@ -211,7 +212,7 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 		for (h256 const& t: l.topics)
 			std::cout << "    " << t.hex() << "\n";
 	}
-	return toHex(output);
+	return true;
 }
 
 void evm_test_(string _code, string _data)

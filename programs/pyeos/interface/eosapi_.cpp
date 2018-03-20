@@ -505,7 +505,16 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
       vector<chain::action> actions;
 
       if (action.size() == 0) {//evm
-      		std::vector<char> v(args.begin(), args.end());
+      		string _args;
+      		if (args[0] == '0' && args[1] == 'x') {
+         		_args = string(args.begin()+2, args.end());
+      		} else {
+      			_args = args;
+      		}
+      		bytes v;
+      		v.resize(0);
+      		v.resize(_args.size()/2);
+      		fc::from_hex(_args, v.data(), v.size());
          actions.emplace_back(accountPermissions, contract, action, v);
       } else {
          auto result = ro_api.abi_json_to_bin(params);
@@ -555,10 +564,19 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
          }
          handler.account = account;
          handler.code.assign(wasm.begin(), wasm.end());
-      } else if (vm_type == 1 || vm_type == 2) {
+      } else if (vm_type == 1) {
          fc::read_file_contents(wastPath, wast);
          handler.account = account;
          handler.code.assign(wast.begin(), wast.end());
+      } else if (vm_type == 2) {
+         fc::read_file_contents(wastPath, wast);
+         wast = fc::trim(wast);
+         bytes bin;
+         bin.resize(0);
+         bin.resize(wast.size()/2);
+         fc::from_hex(wast, bin.data(), bin.size());
+         handler.account = account;
+         handler.code.assign(bin.begin(), bin.end());
       }
 
       vector<chain::action> actions;

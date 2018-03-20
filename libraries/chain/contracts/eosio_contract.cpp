@@ -130,8 +130,11 @@ void apply_eosio_setcode(apply_context& context) {
 
 
    if (act.vmtype == 2) { //evm
-   		string args(act.code.data(), act.code.size());
-   		string code = evm_interface::get().run_code("", args);
+		bytes code;
+		bytes args(act.code.begin(), act.code.end());
+   		bytes output_code;
+		evm_interface::get().run_code(code, args, output_code);
+		FC_ASSERT(output_code.size() > 0, "evm return empty code");
 
 		const auto& account = db.get<account_object,by_name>(act.account);
 	//   wlog( "set code: ${size}", ("size",act.code.size()));
@@ -142,9 +145,11 @@ void apply_eosio_setcode(apply_context& context) {
 				a.code_version = code_id;
 			// Added resize(0) here to avoid bug in boost vector container
 			a.code.resize( 0 );
-			a.code.resize( code.size() );
+			a.code.resize( output_code.size() );
 			a.last_code_update = context.controller.head_block_time();
-			memcpy( a.code.data(), code.c_str(), code.size() );
+			ilog( "code.size(): ${n}", ("n", output_code.size()) );
+
+			memcpy( a.code.data(), output_code.data(), output_code.size() );
 		});
 
    } else {

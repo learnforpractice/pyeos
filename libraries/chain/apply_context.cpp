@@ -83,9 +83,11 @@ void apply_context::exec_one()
                		throw;
                }
             } else if (a.vm_type == 2) {
-            		string code(a.code.data(), a.code.size());
-            		string args(act.data.data(),act.data.size());
-            		evm_interface::get().run_code(code, args);
+            		bytes code(a.code.begin(), a.code.end());
+            		bytes args(act.data.begin(), act.data.end());
+            		bytes output;
+            		evm_interface::get().run_code(code, args, output);
+            		ilog("${n}",("n", output.size()));
             }
          }
       }
