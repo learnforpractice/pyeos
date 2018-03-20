@@ -63,6 +63,7 @@ void apply_context::exec_one()
       } else {
          const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
          privileged = a.privileged;
+         ilog("++++++++++++++++++call custom code,a.vm_type ${n}  a.code.size() ${n1}.", ("n", a.vm_type)("n1",a.code.size()));
 
          if (a.code.size() > 0) {
             if (a.vm_type == 0) {
@@ -83,8 +84,10 @@ void apply_context::exec_one()
                		throw;
                }
             } else if (a.vm_type == 2) {
+            		ilog("++++++++++++++++++++++++++++++++call evm ${n}", ("n", act.data.data()));
+//            		ilog(a.code.data());
             		string code(a.code.data(), a.code.size());
-            		string args(act.data.data());
+            		string args(act.data.data(),act.data.size());
             		evm_interface::get().run_code(code, args);
             }
          }

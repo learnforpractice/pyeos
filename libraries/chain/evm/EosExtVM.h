@@ -49,7 +49,7 @@ public:
 		// Contract: processing account must exist. In case of CALL, the EosExtVM
 		// is created only if an account has code (so exist). In case of CREATE
 		// the account must be created first.
-		assert(m_s.addressInUse(_myAddress));
+//		assert(m_s.addressInUse(_myAddress));
 	}
 
 	/// Read storage location.

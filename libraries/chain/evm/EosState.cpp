@@ -63,7 +63,10 @@ int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* k
 
 }
 
+
 using namespace dev::eth;
+
+#if 0
 void EosState::setCode(Address const& _address, bytes&& _code)
 {
 	m_changeLog.emplace_back(_address, code(_address));
@@ -182,6 +185,8 @@ void EosState::subBalance(Address const& _addr, u256 const& _value)
 
 void EosState::incNonce(Address const& _addr)
 {
+	printf("+++++++++++++++++EosState::incNonce\n");
+
 	if (Account* a = account(_addr))
 	{
 		auto oldNonce = a->nonce();
@@ -200,6 +205,8 @@ size_t EosState::savepoint() const
 
 bool EosState::addressHasCode(Address const& _id) const
 {
+	printf("+++++++++++++++++EosState::addressHasCode\n");
+
 	int size;
 	uint64_t n = ((uint64_t*)_id.data())[0];
 	return get_code_size(n, size);
@@ -210,14 +217,65 @@ bool EosState::addressHasCode(Address const& _id) const
 		return false;
 }
 
+h256 EosState::codeHash(Address const& _a) const
+{
+	printf("+++++++++++++++++EosState::codeHash\n");
+	return sha3(code(_a));
+	if (Account const* a = account(_a))
+		return a->codeHash();
+	else
+		return EmptySHA3;
+}
+
+u256 const& EosState::requireAccountStartNonce() const
+{
+	printf("+++++++++++++++++EosState::requireAccountStartNonce\n");
+
+	if (m_accountStartNonce == Invalid256)
+		BOOST_THROW_EXCEPTION(InvalidAccountStartNonceInState());
+	return m_accountStartNonce;
+}
+
+bool EosState::addressInUse(Address const& _id) const
+{
+	uint64_t n = ((uint64_t*)_id.data())[0];
+	int size = 0;
+	bool ret;
+	ret = get_code_size(n, size);
+	printf("+++++++++++++++++EosState::addressInUse size %d\n", size);
+	return ret;
+	//	return !!account(_id);
+}
+
+bool EosState::accountNonemptyAndExisting(Address const& _address) const
+{
+	printf("+++++++++++++++++EosState::accountNonemptyAndExisting\n");
+
+	uint64_t n = ((uint64_t*)_address.data())[0];
+	int size = 0;
+	return get_code_size(n, size);
+/*
+	if (Account const* a = account(_address))
+		return !a->isEmpty();
+	else
+		return false;
+*/
+}
+#endif
+
+#include <libdevcore/CommonJS.h>
+vector<uint8_t> g_code;
 bytes const& EosState::code(Address const& _addr) const
 {
-	vector<uint8_t> v;
+	printf("+++++++++++++++++EosState::code\n");
 	uint64_t n = ((uint64_t*)_addr.data())[0];
-	if (get_code(n, v)) {
-		return (bytes)v;
+	if (get_code(n, g_code)) {
+		std::cout<<"+++++++++++++++++++:"<<g_code.data()<<std::endl;
+		g_code = dev::jsToBytes(string((char*)g_code.data(),g_code.size()), dev::OnFailed::Throw);
+		return g_code;
 	}
 	return NullBytes;
+
 	Account const* a = account(_addr);
 	if (!a || a->codeHash() == EmptySHA3)
 		return NullBytes;
@@ -231,43 +289,9 @@ bytes const& EosState::code(Address const& _addr) const
 	}
 
 	return a->code();
+
 }
 
-h256 EosState::codeHash(Address const& _a) const
-{
-	if (Account const* a = account(_a))
-		return a->codeHash();
-	else
-		return EmptySHA3;
-}
-
-u256 const& EosState::requireAccountStartNonce() const
-{
-	if (m_accountStartNonce == Invalid256)
-		BOOST_THROW_EXCEPTION(InvalidAccountStartNonceInState());
-	return m_accountStartNonce;
-}
-
-bool EosState::addressInUse(Address const& _id) const
-{
-	uint64_t n = ((uint64_t*)_id.data())[0];
-	int size = 0;
-	return !get_code_size(n, size);
-//	return !!account(_id);
-}
-
-bool EosState::accountNonemptyAndExisting(Address const& _address) const
-{
-	uint64_t n = ((uint64_t*)_address.data())[0];
-	int size = 0;
-	return get_code_size(n, size);
-/*
-	if (Account const* a = account(_address))
-		return !a->isEmpty();
-	else
-		return false;
-*/
-}
 
 size_t EosState::codeSize(Address const& _a) const
 {
@@ -279,6 +303,7 @@ size_t EosState::codeSize(Address const& _a) const
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
+	std::cout<< "++++++++++++++++++++++++EosState::setStorage:" << _key.str() << ":" << _value.str() << std::endl;
 	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
 	uint64_t n = ((uint64_t*)_contract.data())[0];
@@ -289,6 +314,8 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
+	std::cout<< "++++++++++++++++++++++++EosState::storage:" << ":" << _key.str() << std::endl;
+
 	uint64_t n = ((uint64_t*)_id.data())[0];
 	char data[256];
 	memset(data, 0, sizeof(data));
@@ -297,11 +324,30 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 		return u256(data);
 	}
 	return 0;
+
+	if (Account const* a = account(_id))
+	{
+		auto mit = a->storageOverlay().find(_key);
+		if (mit != a->storageOverlay().end())
+			return mit->second;
+
+		// Not in the storage cache - go to the DB.
+		SecureTrieDB<h256, OverlayDB> memdb(const_cast<OverlayDB*>(&m_db), a->baseRoot());			// promise we won't change the overlay! :)
+		string payload = memdb.at(_key);
+		u256 ret = payload.size() ? RLP(payload).toInt<u256>() : 0;
+		a->setStorageCache(_key, ret);
+		return ret;
+	}
+	else
+		return 0;
+
 }
+
 
 map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const
 {
 	map<h256, pair<u256, u256>> ret;
+	printf("+++++++++++++++++EosState::storage 2\n");
 
 	if (Account const* a = account(_id))
 	{
@@ -332,3 +378,15 @@ map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const
 	}
 	return ret;
 }
+
+#if 0
+void EosState::createAccount(Address const& _address, Account const&& _account)
+{
+	cout<<"++++++++++++++++EosState::createAccount\n"<<endl;
+
+//	assert(!addressInUse(_address) && "Account already exists");
+	m_cache[_address] = std::move(_account);
+	m_nonExistingAccountsCache.erase(_address);
+	m_changeLog.emplace_back(Change::Create, _address);
+}
+#endif

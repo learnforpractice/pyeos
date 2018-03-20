@@ -67,7 +67,7 @@ public:
 	EosState():State(0){}
 	virtual ~EosState(){}
 	EosState(leveldb::DB& db):State(Invalid256, OverlayDB(&db), BaseState::Empty){}
-
+#if 0
 	virtual void setCode(Address const& _address, bytes&& _code);
 	virtual void clearStorage(Address const& _contract);
 	virtual void addBalance(Address const& _id, u256 const& _amount);
@@ -88,7 +88,6 @@ public:
 
 	virtual bool addressHasCode(Address const& _address) const;
 
-	virtual bytes const& code(Address const& _addr) const;
 
 	virtual h256 codeHash(Address const& _contract) const;
 
@@ -99,6 +98,10 @@ public:
 	virtual bool addressInUse(Address const& _address) const;
 
 	virtual bool accountNonemptyAndExisting(Address const& _address) const;
+#endif
+
+	virtual bytes const& code(Address const& _addr) const;
+
 
 	virtual size_t codeSize(Address const& _contract) const;
 
@@ -108,6 +111,10 @@ public:
 
 	virtual std::map<h256, std::pair<u256, u256>> storage(Address const& _contract) const;
 
+
+#if 0
+	virtual void createAccount(Address const& _address, Account const&& _account);
+#endif
 };
 
 std::ostream& operator<<(std::ostream& _out, EosState const& _s);

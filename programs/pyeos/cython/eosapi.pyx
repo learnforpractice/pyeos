@@ -259,8 +259,8 @@ def set_contract(account, wast_file, abi_file, vmtype=1, sign=True) -> str:
     ilog("set_contract.....");
     if not os.path.exists(wast_file):
         return False
-    if not os.path.exists(abi_file):
-        return False
+#    if not os.path.exists(abi_file):
+#        return False
     account = tobytes(account)
     wast_file = tobytes(wast_file)
     abi_file = tobytes(abi_file)

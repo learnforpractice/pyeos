@@ -36,22 +36,26 @@ namespace chain {
 
 apply_context* get_current_context();
 
-evm_interface::evm_interface() : se(ChainParams(genesisInfo(Network::MainNetworkTest)).createSealEngine()) {
+evm_interface::evm_interface() {
 	init();
 }
 
 evm_interface& evm_interface::get() {
-   static evm_interface* python = nullptr;
-   if (!python) {
-      wlog("evm_interface::init");
-      python = new evm_interface();
+   static evm_interface* evm = nullptr;
+   if (!evm) {
+      evm = new evm_interface();
    }
-   return *python;
+   return *evm;
 }
 
 void evm_interface::init() {
 	Ethash::init();
 	NoProof::init();
+	auto configJSON = contentsString("/Users/newworld/dev/raiblocks/build/genesis.json");
+
+	ChainParams chainParams;
+	chainParams = chainParams.loadConfig(configJSON);
+
 }
 
 void evm_interface::apply(apply_context& c, const shared_vector<char>& code) {
@@ -64,8 +68,6 @@ void evm_interface::apply(apply_context& c, const shared_vector<char>& code) {
 }
 
 
-
-
 using byte = uint8_t;
 using bytes = std::vector<byte>;
 
@@ -73,10 +75,9 @@ using bytes = std::vector<byte>;
 std::unique_ptr<dev::eth::State> globalState;
 std::shared_ptr<dev::eth::SealEngineFace> globalSealEngine;
 
-
 int64_t maxBlockGasLimit()
 {
-	static int64_t limit = ChainParams(genesisInfo(Network::MainNetwork)).maxGasLimit.convert_to<int64_t>();
+	static int64_t limit = ChainParams(genesisInfo(Network::MainNetworkTest)).maxGasLimit.convert_to<int64_t>();
 	return limit;
 }
 
@@ -99,9 +100,16 @@ public:
 	void clear() override {}
 };
 
+void evm_test_(string _code, string _data);
 
 string eosio::chain::evm_interface::run_code(string _code, string _data)
 {
+	ilog("${n}",("n",_code));
+	ilog("${n}",("n",_data));
+/*
+	evm_test_(_code, _data);
+	return "";
+	*/
 	apply_context *ctx = get_current_context();
 	uint64_t receiver = ctx->receiver.value;
 
@@ -120,7 +128,7 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 	StandardTrace st;
 
 	BlockHeader blockHeader; // fake block to be executed in
-	blockHeader.setGasLimit(maxBlockGasLimit());
+	blockHeader.setGasLimit(gas);
 	blockHeader.setTimestamp(0);
 
 	Address sender(0);
@@ -130,21 +138,24 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 
 
 	EosState state;
+//	State state(0);
+//	ilog(_code);
+//	ilog(_data);
 
 	code = dev::fromHex(_code);
 	data = dev::jsToBytes(_data, OnFailed::Throw);
 
 	Transaction t;
-	Address contractDestination("0x7f1d4eef5ce795e6714ea476108aa0d1b519f419");//("0x5fd9151d3eebdfd3d7c12776a8096853804d2b53");
+//	Address contractDestination("0x7f1d4eef5ce795e6714ea476108aa0d1b519f419");//("0x5fd9151d3eebdfd3d7c12776a8096853804d2b53");
 	if (!code.empty())
 	{
 		// Deploy the code on some fake account to be called later.
 		Account account(0, 0);
 		account.setCode(std::vector<uint8_t>{code});
 		std::unordered_map<Address, Account> map;
-		map[contractDestination] = account;
+		map[sender] = account;
 		state.populateFrom(map);
-		t = Transaction(value, gasPrice, gas, contractDestination, data, 0);
+		t = Transaction(value, gasPrice, gas, sender, data, 0);
 	}
 	else
 	{
@@ -157,7 +168,12 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 
 	LastBlockHashes lastBlockHashes;
 	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
-	EosExecutive executive(state, envInfo, *se);
+
+	std::unique_ptr<dev::eth::SealEngineFace> seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(genesisInfo(Network::MainNetworkTest)).createSealEngine());
+
+	EosExecutive executive(state, envInfo, *seal);
+//	Executive executive(state, envInfo, *seal);
+
 	ExecutionResult res;
 	executive.setResultRecipient(res);
 	t.forceSender(sender);
@@ -181,7 +197,7 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 
 	executive.initialize(t);
 	if (!code.empty())
-		executive.call(contractDestination, sender, value, gasPrice, &data, gas);
+		executive.call(sender, sender, value, gasPrice, &data, gas);
 	else
 		executive.create(sender, value, gasPrice, gas, &data, origin);
 
@@ -197,7 +213,7 @@ string eosio::chain::evm_interface::run_code(string _code, string _data)
 	std::vector<uint8_t> output = std::move(res.output);
 
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
-	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
+	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(seal->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
 	std::cout << "Output: " << toHex(output) << "\n";
 	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
 
@@ -231,7 +247,7 @@ void evm_test_(string _code, string _data)
 	StandardTrace st;
 
 	BlockHeader blockHeader; // fake block to be executed in
-	blockHeader.setGasLimit(maxBlockGasLimit());
+	blockHeader.setGasLimit(gas);
 	blockHeader.setTimestamp(0);
 
 	string addr("0xc2ff44dd289190eb47839a3e7bab1ee1abe1ebbe");
@@ -284,18 +300,17 @@ void evm_test_(string _code, string _data)
 	}
 
 	state.addBalance(sender, value);
-
+/*
 	auto configJSON = contentsString("/Users/newworld/dev/raiblocks/build/genesis.json");
-
 	ChainParams chainParams;
 	chainParams = chainParams.loadConfig(configJSON);
-
-//	std::unique_ptr<dev::eth::SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
+*/
+	std::unique_ptr<dev::eth::SealEngineFace> se(ChainParams(genesisInfo(networkName)).createSealEngine());
 //	std::unique_ptr<SealEngineFace> se(chainParams.createSealEngine());
 
 	LastBlockHashes lastBlockHashes;
 	EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
-	Executive executive(state, envInfo, *eosio::chain::evm_interface::get().se);
+	Executive executive(state, envInfo, *se);
 	ExecutionResult res;
 	executive.setResultRecipient(res);
 	t.forceSender(sender);
@@ -336,7 +351,7 @@ void evm_test_(string _code, string _data)
 	std::vector<uint8_t> output = std::move(res.output);
 
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
-	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(eosio::chain::evm_interface::get().se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
+	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
 	std::cout << "Output: " << toHex(output) << "\n";
 	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
 

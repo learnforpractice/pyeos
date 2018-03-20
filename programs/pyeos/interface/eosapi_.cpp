@@ -496,16 +496,21 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
          std::vector<char> v(args.begin(), args.end());
          params = {contract, action, fc::variant(v)};
       }
-      auto result = ro_api.abi_json_to_bin(params);
 
       vector<chain::permission_level> accountPermissions;
-
       for (auto it = permissions.begin(); it != permissions.end(); it++) {
          accountPermissions.push_back(chain::permission_level{name(it->first), name(it->second)});
       }
 
       vector<chain::action> actions;
-      actions.emplace_back(accountPermissions, contract, action, result.binargs);
+
+      if (action.size() == 0) {//evm
+      		std::vector<char> v(args.begin(), args.end());
+         actions.emplace_back(accountPermissions, contract, action, v);
+      } else {
+         auto result = ro_api.abi_json_to_bin(params);
+         actions.emplace_back(accountPermissions, contract, action, result.binargs);
+      }
 
       if (tx_force_unique) {
          actions.emplace_back( generate_nonce() );
@@ -550,7 +555,7 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
          }
          handler.account = account;
          handler.code.assign(wasm.begin(), wasm.end());
-      } else if (vm_type == 1) {
+      } else if (vm_type == 1 || vm_type == 2) {
          fc::read_file_contents(wastPath, wast);
          handler.account = account;
          handler.code.assign(wast.begin(), wast.end());

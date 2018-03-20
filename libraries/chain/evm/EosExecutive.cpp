@@ -198,6 +198,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
 		{
 			bytes const& c = m_s.code(_p.codeAddress);
 			h256 codeHash = m_s.codeHash(_p.codeAddress);
+			codeHash = sha3(c);
 			m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress, _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash, m_depth, _p.staticCall);
 		}
 	}
