@@ -217,13 +217,15 @@ bool EosExecutive::create(Address const& _txSender, u256 const& _endowment, u256
 bool EosExecutive::createOpcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin)
 {
 	u256 nonce = m_s.getNonce(_sender);
-	m_newAddress = right160(sha3(rlpList(_sender, nonce)));
+//	m_newAddress = right160(sha3(rlpList(_sender, nonce)));
+	m_newAddress = _sender;
 	return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin);
 }
 
 bool EosExecutive::create2Opcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, u256 const& _salt)
 {
-	m_newAddress = right160(sha3(_sender.asBytes() + toBigEndian(_salt) + sha3(_init).asBytes()));
+//	m_newAddress = right160(sha3(_sender.asBytes() + toBigEndian(_salt) + sha3(_init).asBytes()));
+	m_newAddress = _sender;
 	return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin);
 }
 
@@ -240,6 +242,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 	// we delete it explicitly if we decide we need to revert.
 
 	m_gas = _gas;
+#if 0
 	bool accountAlreadyExist = (m_s.addressHasCode(m_newAddress) || m_s.getNonce(m_newAddress) > 0);
 	if (accountAlreadyExist)
 	{
@@ -254,7 +257,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 	// Transfer ether before deploying the code. This will also create new
 	// account if it does not exist yet.
 	m_s.transferBalance(_sender, m_newAddress, _endowment);
-
+#endif
 	u256 newNonce = m_s.requireAccountStartNonce();
 	if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
 		newNonce += 1;
