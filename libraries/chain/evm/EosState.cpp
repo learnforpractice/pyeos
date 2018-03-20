@@ -37,6 +37,8 @@
 #include <libethereum/TransactionQueue.h>
 #include <libethereum/Executive.h>
 
+#include <fc/log/logger.hpp>
+
 namespace eosio {
 namespace chain {
 
@@ -185,7 +187,7 @@ void EosState::subBalance(Address const& _addr, u256 const& _value)
 
 void EosState::incNonce(Address const& _addr)
 {
-	printf("+++++++++++++++++EosState::incNonce\n");
+	ilog("");
 
 	if (Account* a = account(_addr))
 	{
@@ -205,7 +207,7 @@ size_t EosState::savepoint() const
 
 bool EosState::addressHasCode(Address const& _id) const
 {
-	printf("+++++++++++++++++EosState::addressHasCode\n");
+	ilog("");
 
 	int size;
 	uint64_t n = ((uint64_t*)_id.data())[0];
@@ -219,7 +221,7 @@ bool EosState::addressHasCode(Address const& _id) const
 
 h256 EosState::codeHash(Address const& _a) const
 {
-	printf("+++++++++++++++++EosState::codeHash\n");
+	ilog("");
 	return sha3(code(_a));
 	if (Account const* a = account(_a))
 		return a->codeHash();
@@ -229,7 +231,7 @@ h256 EosState::codeHash(Address const& _a) const
 
 u256 const& EosState::requireAccountStartNonce() const
 {
-	printf("+++++++++++++++++EosState::requireAccountStartNonce\n");
+	ilog("");
 
 	if (m_accountStartNonce == Invalid256)
 		BOOST_THROW_EXCEPTION(InvalidAccountStartNonceInState());
@@ -242,14 +244,14 @@ bool EosState::addressInUse(Address const& _id) const
 	int size = 0;
 	bool ret;
 	ret = get_code_size(n, size);
-	printf("+++++++++++++++++EosState::addressInUse size %d\n", size);
+	ilog( "size ${n}\n", ("n", size) );
 	return ret;
 	//	return !!account(_id);
 }
 
 bool EosState::accountNonemptyAndExisting(Address const& _address) const
 {
-	printf("+++++++++++++++++EosState::accountNonemptyAndExisting\n");
+	ilog("");
 
 	uint64_t n = ((uint64_t*)_address.data())[0];
 	int size = 0;
@@ -267,10 +269,10 @@ bool EosState::accountNonemptyAndExisting(Address const& _address) const
 vector<uint8_t> g_code;
 bytes const& EosState::code(Address const& _addr) const
 {
-	printf("+++++++++++++++++EosState::code\n");
+	ilog("");
 	uint64_t n = ((uint64_t*)_addr.data())[0];
 	if (get_code(n, g_code)) {
-		std::cout<<"+++++++++++++++++++:"<<g_code.data()<<std::endl;
+//		std::cout<<"+++++++++++++++++++:"<<g_code.data()<<std::endl;
 		g_code = dev::jsToBytes(string((char*)g_code.data(),g_code.size()), dev::OnFailed::Throw);
 		return g_code;
 	}
@@ -303,25 +305,26 @@ size_t EosState::codeSize(Address const& _a) const
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
-	std::cout<< "++++++++++++++++++++++++EosState::setStorage:" << _key.str() << ":" << _value.str() << std::endl;
+	ilog( "${n1} : ${n2}",("n1",_key.str())("n2",_value.str()) );
 	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
 	uint64_t n = ((uint64_t*)_contract.data())[0];
 	string key = _key.str();
 	string value = _value.str();
-	store_str(n, n, key.c_str(), key.size(), value.c_str(), value.size());
+	store_str( n, n, key.c_str(), key.size(), value.c_str(), value.size() );
 }
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
-	std::cout<< "++++++++++++++++++++++++EosState::storage:" << ":" << _key.str() << std::endl;
-
+	ilog("");
 	uint64_t n = ((uint64_t*)_id.data())[0];
 	char data[256];
 	memset(data, 0, sizeof(data));
 	string key = _key.str();
 	if (load_str(n, n, n, (char*)key.c_str(), key.size(), data, sizeof(data)) > 0) {
-		return u256(data);
+		u256 ret = u256(data);
+		ilog( "${n1} ${n2}", ("n1", _key.str())("n2", data) );
+		return ret;
 	}
 	return 0;
 
@@ -347,7 +350,7 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const
 {
 	map<h256, pair<u256, u256>> ret;
-	printf("+++++++++++++++++EosState::storage 2\n");
+	ilog("");
 
 	if (Account const* a = account(_id))
 	{
@@ -382,7 +385,7 @@ map<h256, pair<u256, u256>> EosState::storage(Address const& _id) const
 #if 0
 void EosState::createAccount(Address const& _address, Account const&& _account)
 {
-	cout<<"++++++++++++++++EosState::createAccount\n"<<endl;
+	ilog("");
 
 //	assert(!addressInUse(_address) && "Account already exists");
 	m_cache[_address] = std::move(_account);
