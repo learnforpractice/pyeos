@@ -108,12 +108,11 @@ void apply_eosio_newaccount(apply_context& context) {
 
 } FC_CAPTURE_AND_RETHROW( (create) ) }
 
-
 void apply_eosio_setcode(apply_context& context) {
    auto& db = context.mutable_db;
    auto  act = context.act.as<setcode>();
 
-   ilog("++++++++++apply_eosio_setcode ${n1} ${n2}",("n1", act.account.to_string())("n2", act.account.value));
+   ilog("++++++++++apply_eosio_setcode ${n1} ${n2} ${n3}",("n1", act.account.to_string())("n2", act.account.value)("n3", context.receiver.to_string()));
 
    context.require_authorization(act.account);
    context.require_write_lock( config::eosio_auth_scope );
@@ -133,7 +132,7 @@ void apply_eosio_setcode(apply_context& context) {
 		bytes code;
 		bytes args(act.code.begin(), act.code.end());
    		bytes output_code;
-		evm_interface::get().run_code(code, args, output_code);
+		evm_interface::get().run_code(context, code, args, output_code);
 		FC_ASSERT(output_code.size() > 0, "evm return empty code");
 
 		const auto& account = db.get<account_object,by_name>(act.account);

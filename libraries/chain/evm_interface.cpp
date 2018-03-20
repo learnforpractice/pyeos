@@ -35,6 +35,7 @@ namespace eosio {
 namespace chain {
 
 apply_context* get_current_context();
+void set_current_context(apply_context* context);
 
 evm_interface::evm_interface() {
 	init();
@@ -97,10 +98,29 @@ public:
 
 void evm_test_(string _code, string _data);
 
-bool eosio::chain::evm_interface::run_code(bytes& code, bytes& data, eosio::chain::bytes& output)
+bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, bytes& data, eosio::chain::bytes& output)
 {
-	apply_context *ctx = get_current_context();
-	uint64_t receiver = ctx->receiver.value;
+	Address contractDestination;;
+	Address sender;
+
+	set_current_context(&context);
+	if (code.empty()) { //setcode
+		auto act = context.act.as<eosio::chain::contracts::setcode>();
+		memcpy(contractDestination.data(), &act.account.value, sizeof(act.account.value));
+		sender = contractDestination;
+		ilog( "+++++++++++++act.account:${n}", ("n", act.account.to_string()) );
+	} else {
+		memcpy(contractDestination.data(), &context.receiver.value, sizeof(context.receiver.value));
+		sender = contractDestination;
+	}
+
+//	FC_ASSERT( context.trx_meta.sender );
+	if (context.trx_meta.sender) {
+		ilog( "+++++++++++++sender:${n}", ("n", context.trx_meta.sender->to_string()) );
+	}
+	ilog( "+++++++++++++receiver:${n}", ("n", context.receiver.to_string()) );
+	ilog( "+++++++++++++account:${n}", ("n", context.act.account.to_string()) );
+
 
 	VMKind vmKind = VMKind::Interpreter;
 	Mode mode = Mode::Statistics;
@@ -117,8 +137,6 @@ bool eosio::chain::evm_interface::run_code(bytes& code, bytes& data, eosio::chai
 	blockHeader.setGasLimit(gas);
 	blockHeader.setTimestamp(0);
 
-	Address sender(0);
-	*((uint64_t*)sender.data()) = receiver;
 
 	Address origin = Address(69);
 
@@ -131,7 +149,6 @@ bool eosio::chain::evm_interface::run_code(bytes& code, bytes& data, eosio::chai
 //	data = dev::jsToBytes(_data, OnFailed::Throw);
 
 	Transaction t;
-	Address contractDestination = sender;
 	if (!code.empty())
 	{
 		// Deploy the code on some fake account to be called later.

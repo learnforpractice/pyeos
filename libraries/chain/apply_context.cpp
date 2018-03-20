@@ -52,8 +52,6 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
 
 void apply_context::exec_one()
 {
-	set_current_context(this);
-
 	try {
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
       ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
@@ -86,7 +84,7 @@ void apply_context::exec_one()
             		bytes code(a.code.begin(), a.code.end());
             		bytes args(act.data.begin(), act.data.end());
             		bytes output;
-            		evm_interface::get().run_code(code, args, output);
+            		evm_interface::get().run_code(*this, code, args, output);
             		ilog("${n}",("n", output.size()));
             }
          }
