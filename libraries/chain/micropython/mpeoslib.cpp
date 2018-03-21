@@ -186,9 +186,19 @@ class db_api<keystr_value_object> {
    			return *instance;
    		}
 
+   		account_name code_account() {
+   			if ( context->act.account == eosio::chain::contracts::setcode::get_account() ) {
+   				if ( context->act.name == eosio::chain::contracts::setcode::get_name() ) {
+   					auto  act = context->act.as<setcode>();
+   					return act.account;
+   				}
+   			}
+   			return context->receiver;
+   		}
+
       int store_str(const scope_name& scope, const name& table, const account_name& bta,
             const char* key, uint32_t key_len, const char* data, size_t data_len) {
-         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         const auto& t_id = context->find_or_create_table(code_account(), scope, table);
          const KeyType keys(key, key_len);
          const char* record_data =  ((const char*)data);
          size_t record_len = data_len;
@@ -198,7 +208,7 @@ class db_api<keystr_value_object> {
 
       int update_str(const scope_name& scope,  const name& table, const account_name& bta,
             const char* key, uint32_t key_len, const char* data, size_t data_len) {
-         const auto& t_id = context->find_or_create_table(context->receiver, scope, table);
+         const auto& t_id = context->find_or_create_table(code_account(), scope, table);
          const KeyType keys((const char*)key, key_len);
          const char* record_data =  ((const char*)data);
          size_t record_len = data_len;
@@ -207,7 +217,7 @@ class db_api<keystr_value_object> {
       }
 
       int remove_str(const scope_name& scope, const name& table, const char* key, uint32_t key_len) {
-         const auto& t_id = context->find_or_create_table(scope, context->receiver, table);
+         const auto& t_id = context->find_or_create_table(scope, code_account(), table);
          const KeyArrayType k = {std::string(key, key_len)};
          return context->remove_record<keystr_value_object>(t_id, k);
       }
@@ -301,10 +311,21 @@ class db_index_api<keystr_value_index, by_scope_primary> {
    using KeyArrayType = KeyType[KeyCount];
    using ContextMethodType = int(apply_context::*)(const table_id_object&, KeyType*, char*, size_t);
 
+#if 0
+	account_name code_account() {
+		if ( context->act.account == eosio::chain::contracts::setcode::get_account() ) {
+			if ( context->act.name == eosio::chain::contracts::setcode::get_name() ) {
+				auto  act = context->act.as<setcode>();
+				return act.account;
+			}
+		}
+		return context->receiver;
+	}
+#endif
 
    int call(ContextMethodType method, const scope_name& scope, const account_name& code, const name& table,
          const char*key, uint32_t key_len, char* data, size_t data_len) {
-      auto maybe_t_id = context->find_table(scope, context->receiver, table);
+      auto maybe_t_id = context->find_table(scope, code, table);
       if (maybe_t_id == nullptr) {
          return 0;
       }

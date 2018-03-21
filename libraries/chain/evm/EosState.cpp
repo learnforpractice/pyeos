@@ -304,19 +304,24 @@ size_t EosState::codeSize(Address const& _a) const
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
-	ilog( "${n1} : ${n2}",("n1",_key.str())("n2",_value.str()) );
 	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
 	uint64_t n = ((uint64_t*)_contract.data())[0];
+
+	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+
 	string key = _key.str();
 	string value = _value.str();
-	store_str( n, n, key.c_str(), key.size(), value.c_str(), value.size() );
+	int ret = store_str( n, n, key.c_str(), key.size(), value.c_str(), value.size() );
+	ilog( "${n1} : ${n2} : ${n3} ${n4} ${n5}", ("n1",_key.str())("n2",_value.str())("n3", n)("n4", ret)("n5", value.size()) );
 }
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
-	ilog("");
+	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+
 	uint64_t n = ((uint64_t*)_id.data())[0];
+
 	char data[256];
 	memset(data, 0, sizeof(data));
 	string key = _key.str();

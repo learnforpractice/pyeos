@@ -21,7 +21,7 @@ def init():
             assert r
 
     with producer:
-        r = eosapi.set_contract('hello','../../programs/pyeos/contracts/hello/hello.py','../../programs/pyeos/contracts/hello/hello.abi', eosapi.py_vm_type)
+        r = eosapi.set_contract('hello','../../programs/pyeos/contracts/hello/hello.py','../../programs/pyeos/contracts/hello/hello.abi', 1)
 #        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
         assert r
 
