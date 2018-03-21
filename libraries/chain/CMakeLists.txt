@@ -14,7 +14,7 @@ add_library( eosio_chain
 
              evm_interface.cpp
              micropython_interface.cpp
-             wasm_eosio_constraints.cpp
+#             wasm_eosio_constraints.cpp
 
              wasm_eosio_validation.cpp
              wasm_eosio_injection.cpp

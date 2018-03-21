@@ -105,7 +105,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
 
 	set_current_context(&context);
 	if (code.empty()) { //setcode
-		auto act = context.act.as<eosio::chain::contracts::setcode>();
+		auto act = context.act.data_as<eosio::chain::contracts::setcode>();
 		memcpy(contractDestination.data(), &act.account.value, sizeof(act.account.value));
 		sender = contractDestination;
 		ilog( "+++++++++++++act.account:${n}", ("n", act.account.to_string()) );

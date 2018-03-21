@@ -3,7 +3,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/core/demangle.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
 
 namespace appbase {
    namespace bpo = boost::program_options;
@@ -24,6 +23,28 @@ namespace appbase {
           * @return Version output with -v/--version
           */
          uint64_t version() const;
+         /** @brief Set default data directory
+          *
+          * @param data_dir Default data directory to use if not specified
+          *                 on the command line.
+          */
+         void set_default_data_dir(const bfs::path& data_dir = "data-dir");
+         /** @brief Get data directory
+          *
+          * @return Data directory, possibly from command line
+          */
+         bfs::path data_dir() const;
+         /** @brief Set default config directory
+          *
+          * @param config_dir Default configuration directory to use if not
+          *                   specified on the command line.
+          */
+         void set_default_config_dir(const bfs::path& config_dir = "etc");
+         /** @brief Get config directory
+          *
+          * @return Config directory, possibly from command line
+          */
+         bfs::path config_dir() const;
          /** @brief Get logging configuration path.
           *
           * @return Logging configuration location from command line
@@ -80,13 +101,7 @@ namespace appbase {
             return *ptr;
          }
 
-         bfs::path data_dir()const;
-
-
          boost::asio::io_service& get_io_service() { return *io_serv; }
-         boost::thread::id& get_thread_id() {
-            return id;
-         }
       protected:
          template<typename Impl>
          friend class plugin;
@@ -111,7 +126,7 @@ namespace appbase {
          void set_program_options();
          void write_default_config(const bfs::path& cfg_file);
          std::unique_ptr<class application_impl> my;
-         boost::thread::id id;
+
    };
 
    application& app();

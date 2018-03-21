@@ -189,7 +189,7 @@ class db_api<keystr_value_object> {
    		account_name code_account() {
    			if ( context->act.account == eosio::chain::contracts::setcode::get_account() ) {
    				if ( context->act.name == eosio::chain::contracts::setcode::get_name() ) {
-   					auto  act = context->act.as<setcode>();
+   					auto  act = context->act.data_as<setcode>();
    					return act.account;
    				}
    			}
@@ -315,7 +315,7 @@ class db_index_api<keystr_value_index, by_scope_primary> {
 	account_name code_account() {
 		if ( context->act.account == eosio::chain::contracts::setcode::get_account() ) {
 			if ( context->act.name == eosio::chain::contracts::setcode::get_name() ) {
-				auto  act = context->act.as<setcode>();
+				auto  act = context->act.data_as<setcode>();
 				return act.account;
 			}
 		}

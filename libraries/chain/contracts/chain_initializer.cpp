@@ -342,7 +342,6 @@ void chain_initializer::prepare_database( chain_controller& chain,
          sb.cpu_weight  = -1;
          sb.db_reserved_capacity = -1;
       });
-
       db.create<producer_object>( [&]( auto& pro ) {
          pro.owner = config::system_account_name;
          pro.signing_key = genesis.initial_key;

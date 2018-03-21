@@ -22,11 +22,13 @@ class application_impl {
       options_description     _app_options;
       options_description     _cfg_options;
 
-      bfs::path               _data_dir;
+      bfs::path               _data_dir{"data-dir"};
+      bfs::path               _config_dir{"config-dir"};
       bfs::path               _logging_conf{"logging.json"};
 
       uint64_t                _version;
       bool _debug = false;
+
 };
 
 application::application()
@@ -42,6 +44,14 @@ void application::set_version(uint64_t version) {
 
 uint64_t application::version() const {
   return my->_version;
+}
+
+void application::set_default_data_dir(const bfs::path& data_dir) {
+  my->_data_dir = data_dir;
+}
+
+void application::set_default_config_dir(const bfs::path& config_dir) {
+  my->_config_dir = config_dir;
 }
 
 bfs::path application::get_logging_conf() const {
@@ -77,14 +87,15 @@ void application::set_program_options()
    options_description app_cfg_opts( "Application Config Options" );
    options_description app_cli_opts( "Application Command Line Options" );
    app_cfg_opts.add_options()
-            ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
-            ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
+				("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
+         		("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()
          ("help,h", "Print this help message and exit.")
          ("version,v", "Print version information.")
-         ("data-dir,d", bpo::value<bfs::path>()->default_value( "data-dir" ), "Directory containing configuration file config.ini")
-         ("config,c", bpo::value<bfs::path>()->default_value( "config.ini" ), "Configuration file name relative to data-dir")
+         ("data-dir,d", bpo::value<bfs::path>(), "Directory containing program runtime data")
+         ("config-dir", bpo::value<bfs::path>(), "Directory containing configuration files such as config.ini")
+         ("config,c", bpo::value<bfs::path>()->default_value( "config.ini" ), "Configuration file name relative to config-dir")
          ("logconf,l", bpo::value<bfs::path>()->default_value( "logging.json" ), "Logging configuration file name/path for library users");
 
    my->_cfg_options.add(app_cfg_opts);
@@ -108,32 +119,38 @@ bool application::initialize_impl(int argc, char** argv, vector<abstract_plugin*
       return false;
    }
 
-   bfs::path data_dir = "data-dir";
-   if( options.count("data-dir") )
-   {
-      data_dir = options["data-dir"].as<bfs::path>();
+   if( options.count( "data-dir" ) ) {
+      bfs::path data_dir = options["data-dir"].as<bfs::path>();
       if( data_dir.is_relative() )
          data_dir = bfs::current_path() / data_dir;
+      my->_data_dir = data_dir;
    }
-   my->_data_dir = data_dir;
 
-   bfs::path logconf = data_dir / "logging.json";
-   if( options.count("logconf") )
-   {
-     logconf = options["logconf"].as<bfs::path>();
-     if( logconf.is_relative() )
-       logconf = data_dir / logconf;
+   if( options.count( "config-dir" ) ) {
+      bfs::path config_dir = options["config-dir"].as<bfs::path>();
+      if( config_dir.is_relative() )
+         config_dir = bfs::current_path() / config_dir;
+      my->_config_dir = config_dir;
    }
+
+   bfs::path logconf = options["logconf"].as<bfs::path>();
+   if( logconf.is_relative() )
+      logconf = my->_config_dir / logconf;
    my->_logging_conf = logconf;
 
-   bfs::path config_file_name = data_dir / "config.ini";
+   bfs::path config_file_name = my->_config_dir / "config.ini";
    if( options.count( "config" ) ) {
       config_file_name = options["config"].as<bfs::path>();
       if( config_file_name.is_relative() )
-         config_file_name = data_dir / config_file_name;
+         config_file_name = my->_config_dir / config_file_name;
    }
 
    if(!bfs::exists(config_file_name)) {
+      if(config_file_name.compare(my->_config_dir / "config.ini") != 0)
+      {
+         cout << "Config file " << config_file_name << " missing." << std::endl;
+         return false;
+      }
       write_default_config(config_file_name);
    }
 
@@ -205,27 +222,42 @@ void application::write_default_config(const bfs::path& cfg_file) {
    if(!bfs::exists(cfg_file.parent_path()))
       bfs::create_directories(cfg_file.parent_path());
 
+   std::map<std::string, std::string> option_to_plug;
+   for(auto& plug : plugins) {
+      boost::program_options::options_description plugin_cli_opts;
+      boost::program_options::options_description plugin_cfg_opts;
+      plug.second->set_program_options(plugin_cli_opts, plugin_cfg_opts);
+
+      for(const boost::shared_ptr<bpo::option_description>& opt : plugin_cfg_opts.options())
+         option_to_plug[opt->long_name()] = plug.second->name();
+   }
+
    std::ofstream out_cfg( bfs::path(cfg_file).make_preferred().string());
    for(const boost::shared_ptr<bpo::option_description> od : my->_cfg_options.options())
    {
-      if(!od->description().empty())
-         out_cfg << "# " << od->description() << "\n";
+      if(!od->description().empty()) {
+         out_cfg << "# " << od->description();
+         std::map<std::string, std::string>::iterator it;
+         if((it = option_to_plug.find(od->long_name())) != option_to_plug.end())
+            out_cfg << " (" << it->second << ")";
+         out_cfg << std::endl;
+      }
       boost::any store;
       if(!od->semantic()->apply_default(store))
-         out_cfg << "# " << od->long_name() << " = \n";
+         out_cfg << "# " << od->long_name() << " = " << std::endl;
       else {
          auto example = od->format_parameter();
          if(example.empty())
             // This is a boolean switch
-            out_cfg << od->long_name() << " = " << "false\n";
+            out_cfg << od->long_name() << " = " << "false" << std::endl;
          else {
             // The string is formatted "arg (=<interesting part>)"
             example.erase(0, 6);
             example.erase(example.length()-1);
-            out_cfg << od->long_name() << " = " << example << "\n";
+            out_cfg << od->long_name() << " = " << example << std::endl;
          }
       }
-      out_cfg << "\n";
+      out_cfg << std::endl;
    }
    out_cfg.close();
 }
@@ -246,8 +278,12 @@ abstract_plugin& application::get_plugin(const string& name)const {
    return *ptr;
 }
 
-bfs::path application::data_dir()const {
+bfs::path application::data_dir() const {
    return my->_data_dir;
+}
+
+bfs::path application::config_dir() const {
+   return my->_config_dir;
 }
 
 } /// namespace appbase
