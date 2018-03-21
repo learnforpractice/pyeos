@@ -1,5 +1,8 @@
 add_subdirectory( python )
 add_subdirectory( micropython )
+
+add_subdirectory( softfloat )
+
 add_subdirectory( chainbase )
 add_subdirectory( wasm-jit )
 add_subdirectory( egenesis )

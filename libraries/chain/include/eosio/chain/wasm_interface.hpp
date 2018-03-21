@@ -2,14 +2,17 @@
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
 
-namespace Runtime {
-   struct MemoryInstance;
-}
-
 namespace eosio { namespace chain {
 
    class apply_context;
-   class intrinsics_accessor;
+
+   namespace webassembly { namespace common {
+      class intrinsics_accessor;
+   } }
+
+   struct wasm_exit {
+      int32_t code = 0;
+   };
 
    /**
     * @class wasm_cache
@@ -98,6 +101,11 @@ namespace eosio { namespace chain {
     */
    class wasm_interface {
       public:
+         enum class vm_type {
+            wavm,
+            binaryen,
+         };
+
          static wasm_interface& get();
 
          /**
@@ -106,16 +114,16 @@ namespace eosio { namespace chain {
           * @param context - the interface by which the contract can interact
           * with blockchain state.
           */
-         void apply( wasm_cache::entry& code, apply_context& context );
+         void apply( wasm_cache::entry& code, apply_context& context, vm_type vm = vm_type::wavm );
 
          /**
           */
-         void error( wasm_cache::entry& code, apply_context& context );
+         void error( wasm_cache::entry& code, apply_context& context, vm_type vm = vm_type::wavm  );
 
       private:
          wasm_interface();
          unique_ptr<struct wasm_interface_impl> my;
-         friend class eosio::chain::intrinsics_accessor;
+         friend class eosio::chain::webassembly::common::intrinsics_accessor;
    };
 
 } } // eosio::chain

@@ -6,6 +6,8 @@
 #include <eosio/chain/asset.hpp>
 #include <fc/time.hpp>
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 namespace eosio { namespace chain { namespace config {
 
 typedef __uint128_t uint128_t;
@@ -23,8 +25,6 @@ const static uint64_t eosio_all_scope        = N(eosio.all);
 
 const static uint64_t active_name = N(active);
 const static uint64_t owner_name  = N(owner);
-
-const static share_type initial_token_supply = asset::from_string("1000000000.0000 EOS").amount;
 
 const static int      block_interval_ms = 500;
 const static int      block_interval_us = block_interval_ms*1000;
@@ -67,13 +67,13 @@ const static uint16_t   max_recursion_depth = 6;
 /**
  *  The number of sequential blocks produced by a single producer
  */
-const static int producer_repititions = 12;
+const static int producer_repetitions = 12;
 
 /**
  * The number of blocks produced per round is based upon all producers having a chance
  * to produce all of their consecutive blocks.
  */
-//const static int blocks_per_round = producer_count * producer_repititions;
+//const static int blocks_per_round = producer_count * producer_repetitions;
 
 const static int irreversible_threshold_percent= 70 * percent_1;
 

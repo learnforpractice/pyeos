@@ -52,7 +52,10 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
 
 void apply_context::exec_one()
 {
-	try {
+   try {
+      const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
+      privileged = a.privileged;
+
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
       ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
 
@@ -64,12 +67,14 @@ void apply_context::exec_one()
 
          if (a.code.size() > 0) {
             if (a.vm_type == 0) {
-               // get wasm_interface
                // get code from cache
                auto code = mutable_controller.get_wasm_cache().checkout_scoped(a.code_version, a.code.data(),
                                                                                a.code.size());
-               auto &wasm = wasm_interface::get();
-               wasm.apply(code, *this);
+               try {
+                  // get wasm_interface
+                  auto &wasm = wasm_interface::get();
+                  wasm.apply(code, *this);
+               } catch ( const wasm_exit& ){}
             } else if (a.vm_type == 1) {
                auto &py = micropython_interface::get();
                try {
@@ -155,7 +160,6 @@ void apply_context::exec_one()
 void apply_context::exec()
 {
    _notified.push_back(act.account);
-
    for( uint32_t i = 0; i < _notified.size(); ++i ) {
       receiver = _notified[i];
       exec_one();
@@ -175,18 +179,21 @@ bool apply_context::is_account( const account_name& account )const {
 }
 
 void apply_context::require_authorization( const account_name& account )const {
-  for( const auto& auth : act.authorization )
-     if( auth.actor == account ) return;
-  wdump((act));
-  EOS_ASSERT( false, tx_missing_auth, "missing authority of ${account}", ("account",account));
+  EOS_ASSERT( has_authorization(account), tx_missing_auth, "missing authority of ${account}", ("account",account));
 }
-void apply_context::require_authorization(const account_name& account, 
+bool apply_context::has_authorization( const account_name& account )const {
+  for( const auto& auth : act.authorization )
+     if( auth.actor == account ) return true;
+  return false;
+}
+
+void apply_context::require_authorization(const account_name& account,
                                           const permission_name& permission)const {
   for( const auto& auth : act.authorization )
      if( auth.actor == account ) {
         if( auth.permission == permission ) return;
      }
-  EOS_ASSERT( false, tx_missing_auth, "missing authority of ${account}/${permission}", 
+  EOS_ASSERT( false, tx_missing_auth, "missing authority of ${account}/${permission}",
               ("account",account)("permission",permission) );
 }
 
@@ -224,7 +231,7 @@ void apply_context::require_read_lock(const account_name& account, const scope_n
 
 bool apply_context::has_recipient( account_name code )const {
    for( auto a : _notified )
-      if( a == code ) 
+      if( a == code )
          return true;
    return false;
 }
@@ -234,10 +241,25 @@ void apply_context::require_recipient( account_name code ) {
       _notified.push_back(code);
 }
 
-void apply_context::execute_inline( action &&a ) {
-   // todo: rethink this special case
-   if (receiver != config::system_account_name) {
-      controller.check_authorization({a}, flat_set<public_key_type>(), false, {receiver});
+
+/**
+ *  This will execute an action after checking the authorization. Inline transactions are 
+ *  implicitly authorized by the current receiver (running code). This method has significant
+ *  security considerations and several options have been considered:
+ *
+ *  1. priviledged accounts (those marked as such by block producers) can authorize any action
+ *  2. all other actions are only authorized by 'receiver' which means the following:
+ *         a. the user must set permissions on their account to allow the 'receiver' to act on their behalf
+ *  
+ *  Discarded Implemenation:  at one point we allowed any account that authorized the current transaction
+ *   to implicitly authorize an inline transaction. This approach would allow privelege escalation and
+ *   make it unsafe for users to interact with certain contracts.  We opted instead to have applications
+ *   ask the user for permission to take certain actions rather than making it implicit. This way users
+ *   can better understand the security risk.
+ */
+void apply_context::execute_inline( action&& a ) {
+   if ( !privileged ) { 
+      controller.check_authorization({a}, flat_set<public_key_type>(), false, {receiver}); 
    }
    _inline_actions.emplace_back( move(a) );
 }
@@ -366,17 +388,17 @@ void apply_context::update_db_usage( const account_name& payer, int64_t delta ) 
 }
 
 
-int apply_context::get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size )const 
+int apply_context::get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size )const
 {
    const transaction& trx = trx_meta.trx();
    const action* act = nullptr;
    if( type == 0 ) {
-      if( index >= trx.context_free_actions.size() ) 
+      if( index >= trx.context_free_actions.size() )
          return -1;
       act = &trx.context_free_actions[index];
    }
    else if( type == 1 ) {
-      if( index >= trx.actions.size() ) 
+      if( index >= trx.actions.size() )
          return -1;
       act = &trx.actions[index];
    }
@@ -397,9 +419,9 @@ int apply_context::get_context_free_data( uint32_t index, char* buffer, size_t b
    if( buffer_size == 0 ) return s;
 
    if( buffer_size < s )
-      memcpy( buffer, trx_meta.context_free_data.data(), buffer_size );
-   else 
-      memcpy( buffer, trx_meta.context_free_data.data(), s );
+      memcpy( buffer, trx_meta.context_free_data[index].data(), buffer_size );
+   else
+      memcpy( buffer, trx_meta.context_free_data[index].data(), s );
 
    return s;
 }
@@ -441,7 +463,7 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
    if( payer == account_name() ) payer = obj.payer;
 
    if( account_name(obj.payer) == payer ) {
-      update_db_usage( obj.payer, buffer_size + 200 - old_size );
+      update_db_usage( obj.payer, buffer_size - old_size );
    } else  {
       update_db_usage( obj.payer,  -(old_size+200) );
       update_db_usage( payer,  (buffer_size+200) );
@@ -466,92 +488,120 @@ void apply_context::db_remove_i64( int iterator ) {
    });
    mutable_db.remove( obj );
 
-   keyval_cache.remove( iterator, obj );
+   keyval_cache.remove( iterator );
 }
 
 int apply_context::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
    const key_value_object& obj = keyval_cache.get( iterator );
    memcpy( buffer, obj.value.data(), std::min(obj.value.size(), buffer_size) );
-   
+
    return obj.value.size();
 }
 
 int apply_context::db_next_i64( int iterator, uint64_t& primary ) {
-   const auto& obj = keyval_cache.get( iterator );
+   if( iterator < -1 ) return -1; // cannot increment past end iterator of table
+
+   const auto& obj = keyval_cache.get( iterator ); // Check for iterator != -1 happens in this call
    const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
 
    auto itr = idx.iterator_to( obj );
    ++itr;
 
-   if( itr == idx.end() ) return -1;
-   if( itr->t_id != obj.t_id ) return -1;
+   if( itr == idx.end() || itr->t_id != obj.t_id ) return keyval_cache.get_end_iterator_by_table_id(obj.t_id);
 
    primary = itr->primary_key;
    return keyval_cache.add( *itr );
 }
 
 int apply_context::db_previous_i64( int iterator, uint64_t& primary ) {
-   const auto& obj = keyval_cache.get(iterator);
    const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
-   
+
+   if( iterator < -1 ) // is end iterator
+   {
+      auto tab = keyval_cache.find_table_by_end_iterator(iterator);
+      FC_ASSERT( tab, "not a valid end iterator" );
+
+      auto itr = idx.upper_bound(tab->id);
+      if( idx.begin() == idx.end() || itr == idx.begin() ) return -1; // Empty table
+
+      --itr;
+
+      if( itr->t_id != tab->id ) return -1; // Empty table
+
+      primary = itr->primary_key;
+      return keyval_cache.add(*itr);
+   }
+
+   const auto& obj = keyval_cache.get(iterator); // Check for iterator != -1 happens in this call
+
    auto itr = idx.iterator_to(obj);
-   if (itr == idx.end() || itr == idx.begin()) return -1;
+   if( itr == idx.begin() ) return -1; // cannot decrement past beginning iterator of table
 
    --itr;
 
-   if (itr->t_id != obj.t_id) return -1;
-   
+   if( itr->t_id != obj.t_id ) return -1; // cannot decrement past beginning iterator of table
+
    primary = itr->primary_key;
    return keyval_cache.add(*itr);
 }
 
 int apply_context::db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope );
+   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
    validate_table_key(*tab, contracts::table_key_type::type_i64);
 
+   auto table_end_itr = keyval_cache.cache_table( *tab );
 
    const key_value_object* obj = db.find<key_value_object, contracts::by_scope_primary>( boost::make_tuple( tab->id, id ) );
-   if( !obj ) return -1;
+   if( !obj ) return table_end_itr;
 
-   keyval_cache.cache_table( *tab );
    return keyval_cache.add( *obj );
 }
 
 int apply_context::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope );
+   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
    validate_table_key(*tab, contracts::table_key_type::type_i64);
 
+   auto table_end_itr = keyval_cache.cache_table( *tab );
 
    const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
    auto itr = idx.lower_bound( boost::make_tuple( tab->id, id ) );
-   if( itr == idx.end() ) return -1;
-   if( itr->t_id != tab->id ) return -1;
+   if( itr == idx.end() ) return table_end_itr;
+   if( itr->t_id != tab->id ) return table_end_itr;
 
-   keyval_cache.cache_table( *tab );
    return keyval_cache.add( *itr );
 }
 
 int apply_context::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope );
+   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
    validate_table_key(*tab, contracts::table_key_type::type_i64);
 
+   auto table_end_itr = keyval_cache.cache_table( *tab );
 
    const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
    auto itr = idx.upper_bound( boost::make_tuple( tab->id, id ) );
-   if( itr == idx.end() ) return -1;
-   if( itr->t_id != tab->id ) return -1;
+   if( itr == idx.end() ) return table_end_itr;
+   if( itr->t_id != tab->id ) return table_end_itr;
 
-   keyval_cache.cache_table( *tab );
    return keyval_cache.add( *itr );
+}
+
+int apply_context::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
+   require_read_lock( code, scope ); // redundant?
+
+   const auto* tab = find_table( code, scope, table );
+   if( !tab ) return -1;
+   validate_table_key(*tab, contracts::table_key_type::type_i64);
+
+   return keyval_cache.cache_table( *tab );
 }
 
 template<>

@@ -6,8 +6,12 @@
 
 #include <eosio/chain/contracts/types.hpp>
 #include <eosio/chain/multi_index_includes.hpp>
+#include <softfloat.hpp>
 
 #include <chainbase/chainbase.hpp>
+
+#include <array>
+#include <type_traits>
 
 namespace eosio { namespace chain { namespace contracts {
 
@@ -58,7 +62,7 @@ namespace eosio { namespace chain { namespace contracts {
    struct by_scope_secondary;
    struct by_scope_tertiary;
 
-   
+
    struct key_value_object : public chainbase::object<key_value_object_type, key_value_object> {
       OBJECT_CTOR(key_value_object, (value))
 
@@ -89,7 +93,7 @@ namespace eosio { namespace chain { namespace contracts {
    struct by_primary;
    struct by_secondary;
 
-   template<typename SecondaryKey, uint64_t ObjectTypeId>
+   template<typename SecondaryKey, uint64_t ObjectTypeId, typename SecondaryKeyLess = std::less<SecondaryKey> >
    struct secondary_index
    {
       struct index_object : public chainbase::object<ObjectTypeId,index_object> {
@@ -120,17 +124,62 @@ namespace eosio { namespace chain { namespace contracts {
                   member<index_object, table_id, &index_object::t_id>,
                   member<index_object, SecondaryKey, &index_object::secondary_key>,
                   member<index_object, uint64_t, &index_object::primary_key>
-               >
+               >,
+               composite_key_compare< std::less<table_id>, SecondaryKeyLess, std::less<uint64_t> >
             >
          >
       > index_index;
    };
+
+/*
+   template <typename T, typename = void>
+   struct _is_array : std::false_type {};
+
+   template <typename T>
+   struct _is_array<T, std::enable_if<std::is_same<size_t, decltype(SecondaryKey::arr_size)>::type> : std::true_type {};
+
+   template<SecondaryKey>
+   inline
+   typename std::enable_if<_is_array<SecondaryKey>::value, size_t>::type
+   get_key_memory_usage() {
+      return SecondaryKey::arr_size;
+   }
+*/
+
+   template<typename SecondaryKey>
+   inline
+   //typename std::enable_if<!_is_array<SecondaryKey>::value, size_t>::type
+   size_t
+   get_key_memory_usage() {
+      return sizeof(SecondaryKey);
+   }
 
    typedef secondary_index<uint64_t,index64_object_type>::index_object   index64_object;
    typedef secondary_index<uint64_t,index64_object_type>::index_index    index64_index;
 
    typedef secondary_index<uint128_t,index128_object_type>::index_object index128_object;
    typedef secondary_index<uint128_t,index128_object_type>::index_index  index128_index;
+
+   typedef std::array<uint128_t, 2> key256_t;
+   typedef secondary_index<key256_t,index256_object_type>::index_object index256_object;
+   typedef secondary_index<key256_t,index256_object_type>::index_index  index256_index;
+
+   struct soft_double_less {
+      bool operator()( uint64_t a, uint64_t b )const {
+         float64_t x; x.v = a;
+         float64_t y; y.v = b;
+         return f64_lt(x, y);
+      }
+   };
+
+   /**
+    *  This index supports a deterministic software implementation of double as the secondary key.
+    *
+    *  The software double implementation is using the Berkeley softfloat library (release 3).
+    */
+   typedef secondary_index<uint64_t,index_double_object_type,soft_double_less>::index_object  index_double_object;
+   typedef secondary_index<uint64_t,index_double_object_type,soft_double_less>::index_index   index_double_index;
+
 
    /*
    struct index64_object : public chainbase::object<index64_object_type, index64_object> {
@@ -353,6 +402,8 @@ CHAINBASE_SET_INDEX_TYPE(eosio::chain::contracts::key64x64x64_value_object, eosi
 
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::contracts::index64_object, eosio::chain::contracts::index64_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::contracts::index128_object, eosio::chain::contracts::index128_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::contracts::index256_object, eosio::chain::contracts::index256_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::contracts::index_double_object, eosio::chain::contracts::index_double_index)
 
 FC_REFLECT(eosio::chain::contracts::table_id_object, (id)(code)(scope)(table)(key_type) )
 FC_REFLECT(eosio::chain::contracts::key_value_object, (id)(t_id)(primary_key)(value)(payer) )

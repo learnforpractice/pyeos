@@ -1,7 +1,3 @@
-[submodule "libraries/chainbase"]
-	path = libraries/chainbase
-	url = https://github.com/eosio/chainbase
-        ignore = dirty
 [submodule "programs/snapshot"]
 	path = programs/snapshot
 	url = https://github.com/EOSIO/genesis.git
@@ -9,6 +5,10 @@
 	path = libraries/python
 	url = https://github.com/learnforpractice/cpython
 	branch = v3.6.3-for-pyeos
+[submodule "libraries/ethereum"]
+       path = libraries/ethereum
+       url = https://github.com/learnforpractice/cpp-ethereum
+       branch = develop
 [submodule "libraries/micropython"]
 	path = libraries/micropython
 	url = https://github.com/learnforpractice/micropython
@@ -20,7 +20,9 @@
 	path = contracts/libc++/upstream
 	url = https://github.com/EOSIO/libcxx.git
 	branch = eosio
-[submodule "libraries/ethereum"]
-	path = libraries/ethereum
-	url = https://github.com/learnforpractice/cpp-ethereum
-	branch = develop
+[submodule "externals/binaryen"]
+	path = externals/binaryen
+	url = https://github.com/EOSIO/binaryen
+[submodule "libraries/softfloat"]
+	path = libraries/softfloat
+	url = https://github.com/eosio/berkeley-softfloat-3
