@@ -256,7 +256,7 @@ void evm_test_(string _code, string _data)
 
 	string addr("0xc2ff44dd289190eb47839a3e7bab1ee1abe1ebbe");
 	bytesConstRef _input(addr);
-	std::cout<< "dev::ripemd160: " << dev::ripemd160(_input).hex() << std::endl;
+//	std::cout<< "dev::ripemd160: " << dev::ripemd160(_input).hex() << std::endl;
 
 	Address sender = Address("0xc2ff44dd289190eb47839a3e7bab1ee1abe1ebbe");
 	Address origin = Address(69);
@@ -330,15 +330,13 @@ void evm_test_(string _code, string _data)
 		executive.go();
 	double execTime = timer.elapsed();
 	executive.finalize();
-	printf("++++++++executive.finalize()\n");
 
 	std::vector<uint8_t> output = std::move(res.output);
-
+#if 0
 	std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
 	std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(se->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
 	std::cout << "Output: " << toHex(output) << "\n";
 	std::cout << "toJS(er.output): " << toJS(res.output) << "\n";
-
 	LogEntries logs = executive.logs();
 	std::cout << logs.size() << " logs" << (logs.empty() ? "." : ":") << "\n";
 	for (LogEntry const& l: logs)
@@ -347,5 +345,5 @@ void evm_test_(string _code, string _data)
 		for (h256 const& t: l.topics)
 			std::cout << "    " << t.hex() << "\n";
 	}
-
+#endif
 }
