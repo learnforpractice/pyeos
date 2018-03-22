@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -27,19 +29,13 @@ cdef extern from "wallet_.h":
     object sign_transaction_(void *signed_trx)
 
 
-def create(name) :
-    if type(name) == str:
-        name = bytes(name, 'utf8')
+def create(string& name) :
     return wallet_create_(name)
 
-def open(name) -> bool:
-    if type(name) == str:
-        name = bytes(name, 'utf8')
+def open(string& name) -> bool:
     return wallet_open_(name)
 
-def set_dir(path_name) -> bool:
-    if type(path_name) == str:
-        path_name = bytes(path_name, 'utf8')
+def set_dir(string& path_name) -> bool:
     return wallet_set_dir_(path_name)
 
 def set_timeout(secs) -> bool:
@@ -57,25 +53,13 @@ def get_public_keys():
 def lock_all():
     return wallet_lock_all_()
 
-def lock(name) -> bool:
-    if type(name) == str:
-        name = bytes(name, 'utf8')
+def lock(string& name) -> bool:
     return wallet_lock_(name)
 
-def unlock(name, password) -> bool:
-    if type(name) == str:
-        name = bytes(name, 'utf8')
-
-    if type(password) == str:
-        password = bytes(password, 'utf8')
-    
+def unlock(string& name, string& password) -> bool:
     return wallet_unlock_(name, password)
 
-def import_key(name, wif_key) -> bool:
-    if type(name) == str:
-        name = bytes(name, 'utf8')
-    if type(wif_key) == str:
-        wif_key = bytes(wif_key, 'utf8')
+def import_key(string& name, string& wif_key) -> bool:
     return wallet_import_key_(name, wif_key)
 
 def sign_transaction(signed_trx):

@@ -198,29 +198,23 @@ def create_key():
     return JsonStruct(key)
 
 def get_public_key(priv_key):
-    cdef string priv_key_
-    priv_key_ = tobytes(priv_key)
-    return get_public_key_(priv_key_)
+    return get_public_key_(priv_key)
 
 def get_transaction(id) -> str:
     cdef string result
     if isinstance(id, int):
         id = str(id)
-    id = tobytes(id)
     if 0 == get_transaction_(id, result):
         return JsonStruct(result)
     return None
 
 def get_transactions(account_name, skip_seq: int, num_seq: int) -> bytes:
     cdef string result
-    account_name = tobytes(account_name)
     if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
         return result
     return None
 
 def transfer(sender, recipient, int amount, memo, sign=True) -> bytes:
-    sender = tobytes(sender)
-    recipient = tobytes(recipient)
     memo = tobytes(memo)
     if sign:
         sign = 1
@@ -276,9 +270,7 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     contract_ = convert_from_eth_address(eth_address)
     print('===eth_address:', eth_address)
     print('===contract_:', contract_)
-    
-#    contract_ = tobytes(contract)
-#    action_ = tobytes(action)
+
     if not rawargs:
         if not isinstance(args, str):
             args = json.dumps(args)
@@ -297,27 +289,21 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
         rawargs_ = 1
     else:
         rawargs_ = 0
-#    print(contract_,action_,args_,scopes_,permissions_,sign_)
     result = push_message_(contract_, '', args_, permissions_, sign_, rawargs_)
     if result:
         return JsonStruct(result)
     return None
 
 
-def set_contract(account, wast_file, abi_file, vmtype=1, sign=True) -> str:
-    cdef string _account;
-    ilog("set_contract.....");
+def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True) -> str:
     if not os.path.exists(wast_file):
         return False
-#    if not os.path.exists(abi_file):
-#        return False
-    _account = convert_from_eth_address(account)
     if sign:
         sign = 1
     else:
         sign = 0
 
-    result = set_contract_(_account, wast_file, abi_file, vmtype, sign)
+    result = set_contract_(account, wast_file, abi_file, vmtype, sign)
     if result:
         return JsonStruct(result)
     return None
@@ -341,17 +327,14 @@ def get_code(name):
     cdef string abi
     cdef string code_hash
     cdef int vm_type
-    name = tobytes(name)
+
     vm_type = 0
     if 0 == get_code_(name, wast, abi, code_hash, vm_type):
         return [wast, abi, code_hash, vm_type]
     return []
 
-def get_table(scope, code, table):
+def get_table(string& scope, string& code, string& table):
     cdef string result
-    scope = tobytes(scope)
-    code = tobytes(code)
-    table = tobytes(table)
 
     if 0 == get_table_(scope, code, table, result):
         return JsonStruct(result)

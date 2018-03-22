@@ -21,9 +21,7 @@ cdef extern from "py/gc.h":
     void gc_dump_info();
     void gc_collect()
     
-def eval(code):
-    if isinstance(code, str):
-        code = code.encode('utf8')
+def eval(const char* code):
     execute_from_str(code)
 
 def collect():
