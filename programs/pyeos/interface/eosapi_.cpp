@@ -29,6 +29,25 @@ string uint64_to_string_(uint64_t n) {
 	return name(n).to_string();
 }
 
+string convert_to_eth_address(string& name) {
+	uint64_t n = string_to_uint64_(name);
+	char address[20];
+	memset(address, 0, sizeof(address));
+	((uint64_t*)address)[0] = n;
+	return "0x" + fc::to_hex(address, sizeof(address));
+}
+
+string convert_from_eth_address(string& eth_address) {
+	char address[20];
+	memset(address, 0, sizeof(address));
+	if (eth_address[0] == '0' && eth_address[1] == 'x') {
+		eth_address = string(eth_address.begin()+2, eth_address.end());
+	}
+	fc::from_hex(eth_address, address, sizeof(address));
+	return uint64_to_string_(*((uint64_t*)address));
+}
+
+
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
 chain_controller& get_db() { return app().get_plugin<chain_plugin>().chain(); }
@@ -602,9 +621,11 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
    return py_new_none();
 }
 
-PyObject* set_evm_contract_(string& account, string& sol_bin, bool sign) {
-   try {
-      std::string wast;
+PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
+
+	try {
+		string account = convert_from_eth_address(eth_address);
+
       contracts::setcode handler;
       handler.vmtype = 2;
 

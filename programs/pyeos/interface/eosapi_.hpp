@@ -93,7 +93,7 @@ PyObject* get_controlled_accounts_(char* account_name);
 PyObject* create_account_(string creator, string newaccount, string owner,
                           string active, int sign);
 
-PyObject* set_evm_contract_(string& account, string& sol_bin, bool sign);
+PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
 
 PyObject* create_key_();
 PyObject* get_public_key_(string& wif_key);
@@ -117,4 +117,5 @@ PyObject* traceback_();
 
 uint64_t string_to_uint64_(string str);
 string uint64_to_string_(uint64_t n);
-
+string convert_to_eth_address(string& name);
+string convert_from_eth_address(string& eth_address);

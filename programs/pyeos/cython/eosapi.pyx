@@ -28,6 +28,8 @@ cdef extern from "eosapi_.hpp":
 
     uint64_t string_to_uint64_(string str);
     string uint64_to_string_(uint64_t n);
+    string convert_to_eth_address(string& name)
+    string convert_from_eth_address(string& eth_address)
 
     void quit_app_()
     uint32_t now2_()
@@ -49,7 +51,7 @@ cdef extern from "eosapi_.hpp":
     object transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
     object push_message_(string& contract, string& action, string& args, map[string, string]& permissions, bool sign, bool rawargs)
     object set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
-    object set_evm_contract_(string& account, string& sol_bin, bool sign);
+    object set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
 
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
     int get_table_(string& scope, string& code, string& table, string& result);
@@ -107,6 +109,12 @@ def n2s(n):
 
 def N(name):
     return s2n(name)
+
+def eos_name_to_eth_address(string name):
+    return convert_to_eth_address(name)
+
+def eth_address_to_eos_name(string addr):
+    return convert_from_eth_address(addr)
 
 def toobject(bstr):
     return JsonStruct(bstr)
@@ -257,26 +265,62 @@ def push_message(contract, action, args, permissions: Dict, sign=True, rawargs=F
         return JsonStruct(result)
     return None
 
+def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=False):
+    cdef string contract_
+    cdef string action_
+    cdef string args_
+    cdef map[string, string] permissions_;
+    cdef int sign_
+    cdef int rawargs_
+    
+    contract_ = convert_from_eth_address(eth_address)
+#    contract_ = tobytes(contract)
+#    action_ = tobytes(action)
+    if not rawargs:
+        if not isinstance(args, str):
+            args = json.dumps(args)
+    args_ = tobytes(args)
+    
+    for per in permissions:
+        key = permissions[per]
+        per = tobytes(per)
+        key = tobytes(key)
+        permissions_[per] = key
+
+    if sign:
+        sign_ = 1
+    else:
+        sign_ = 0
+    if rawargs:
+        rawargs_ = 1
+    else:
+        rawargs_ = 0
+#    print(contract_,action_,args_,scopes_,permissions_,sign_)
+    result = push_message_(contract_, '', args_, permissions_, sign_, rawargs_)
+    if result:
+        return JsonStruct(result)
+    return None
+
+
 def set_contract(account, wast_file, abi_file, vmtype=1, sign=True) -> str:
+    cdef string _account;
     ilog("set_contract.....");
     if not os.path.exists(wast_file):
         return False
 #    if not os.path.exists(abi_file):
 #        return False
-    account = tobytes(account)
-    wast_file = tobytes(wast_file)
-    abi_file = tobytes(abi_file)
+    _account = convert_from_eth_address(account)
     if sign:
         sign = 1
     else:
         sign = 0
 
-    result = set_contract_(account, wast_file, abi_file, vmtype, sign)
+    result = set_contract_(_account, wast_file, abi_file, vmtype, sign)
     if result:
         return JsonStruct(result)
     return None
 
-def set_evm_contract(account, sol_bin, sign=True) -> str:
+def set_evm_contract(eth_address, sol_bin, sign=True) -> str:
     ilog("set_evm_contract.....");
     if sign:
         sign = 1
@@ -284,7 +328,7 @@ def set_evm_contract(account, sol_bin, sign=True) -> str:
         sign = 0
     if sol_bin[0:2] == '0x':
         sol_bin = sol_bin[2:]
-    result = set_evm_contract_(account, sol_bin, sign);
+    result = set_evm_contract_(eth_address, sol_bin, sign);
 
     if result:
         return JsonStruct(result)

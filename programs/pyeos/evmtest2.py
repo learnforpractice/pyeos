@@ -15,11 +15,11 @@ class Producer(object):
 #        self.provider.make_request('test_mineBlocks', [1])
 
     def __call__(self):
-        self.produce_block()
+        eosapi.produce_block()
 
     def __enter__(self):
         pass
-    
+
     def __exit__(self, type, value, traceback):
         self.produce_block()
 
@@ -86,11 +86,25 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
         print('+++++++request_func_:', method, params)
         if method == 'eth_sendTransaction':
             if 'to' in params[0]:
-                r = eosapi.push_message(params[0]['to'], '', args, {params[0]['from']:'active'}, True,rawargs=True)
+                r = eosapi.push_evm_message(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True,rawargs=True)
             else:
                 r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:
                 return {'result':r}
+        elif method == 'eth_call':
+            return {"id":0,"jsonrpc":"2.0","result":123}
+        elif method == 'eth_estimateGas':
+            return {"id":0,"jsonrpc":"2.0","result":88}
+        elif method == 'eth_blockNumber':
+            return {"id":0,"jsonrpc":"2.0","result":15}
+        elif method == 'eth_getBlock':
+            result = {'author': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'extraData': '0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74', 'gasLimit': 3141592, 'gasUsed': 0, 'hash': '0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'number': 138, 'parentHash': '0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'stateRoot': '0x1a0789d0d895011034cda1007a4be75faee0b91093c784ebf246c8651dbf699b', 'timestamp': 1521704325, 'totalDifficulty': 131210, 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}
+            return {"id":0,"jsonrpc":"2.0","result":result}
+        elif method == 'eth_getBlockByNumber':
+            result = {'author': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'extraData': '0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74', 'gasLimit': 3141592, 'gasUsed': 0, 'hash': '0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'number': 138, 'parentHash': '0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'stateRoot': '0x1a0789d0d895011034cda1007a4be75faee0b91093c784ebf246c8651dbf699b', 'timestamp': 1521704325, 'totalDifficulty': 131210, 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}
+            return {"id":0,"jsonrpc":"2.0","result":result}
+        elif method == 'eth_blockNumber':
+            return {"id":0,"jsonrpc":"2.0","result":'100'}
 
     def request_func(self, web3, outer_middlewares):
         print( web3, outer_middlewares)
@@ -114,7 +128,12 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
             else:
                 r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:
-                return {'result', str(r)}
+                return {'result':str(r)}
+#{"id":0,"jsonrpc":"2.0","result":["0xc2ff44dd289190eb47839a3e7bab1ee1abe1ebbe"]}
+#raw_response    bytes: b'{"id":3,"jsonrpc":"2.0","result":{"author":"0x4b8823fda79d1898bd820a4765a94535d90babf3","extraData":"0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74","gasLimit":"0x2fefd8","gasUsed":"0x0","hash":"0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893","logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","miner":"0x4b8823fda79d1898bd820a4765a94535d90babf3","number":"0x8a","parentHash":"0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a","receiptsRoot":"0x56e81f171bcc55a6...    
+#{'author': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'extraData': '0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74', 'gasLimit': 3141592, 'gasUsed': 0, 'hash': '0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'number': 138, 'parentHash': '0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'stateRoot': '0x1a0789d0d895011034cda1007a4be75faee0b91093c784ebf246c8651dbf699b', 'timestamp': 1521704325, 'totalDifficulty': 131210, 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}
+
+
 
 TEST = False
 DEPLOY = True
@@ -155,8 +174,6 @@ def compile(main_class):
     #w3 = Web3(TestRPCProvider())
     #w3 = Web3(HTTPProvider())
     
-    
-    
     # Instantiate and deploy contract
     contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
     #print(contract_interface['abi'])
@@ -171,9 +188,9 @@ def deploy():
     global contract_address
     with producer:
         # Get transaction hash from deployed contract
-        address = 'evm' #w3.eth.accounts[0]
+        address = eosapi.eos_name_to_eth_address('evm') #w3.eth.accounts[0]
         with producer:
-            tx_hash = contract.deploy(transaction={'from': 'evm', 'gas': 2000001350})
+            tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
 #            tx_hash = contract.deploy(transaction={'from': address})
             print('tx_hash:', tx_hash)
 
@@ -202,7 +219,7 @@ def set_greeting():
     global contract_instance
     address = 'evm'
     
-    contract_address = '0x2445185DDc617d3240d4F0FdA365466CF3CF39F6' #'evm'
+    contract_address = eosapi.eos_name_to_eth_address('evm') #'0x2445185DDc617d3240d4F0FdA365466CF3CF39F6' #'evm'
 
     # Contract instance in concise mode
     contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
@@ -211,14 +228,16 @@ def set_greeting():
 #    r = contract_instance.getDiff(transact={'from': address})
 #    print(r)
     print(contract_instance)
+    with producer:
+        r = contract_instance.setValue(119000, transact={'from': address})
+        print('++++++++++++setValue:', r)
     
-    r = contract_instance.setValue(119000, transact={'from': address})
-    print('++++++++++++setValue:', r)
-
-#    r = contract_instance.getValue(transact={'from': address})
-#    r = contract_instance.getValue(call={'from': address})
-    r = contract_instance.getValue(call={})
-    print('++++++++++getValue:', r)
+    #    r = contract_instance.getValue(transact={'from': address})
+    #    r = contract_instance.getValue(call={'from': address})
+    #    r = contract_instance.getValue(call={})
+        r = contract_instance.getValue(transact={'from': address})
+    
+        print('++++++++++getValue:', r)
 
 #    r = contract_instance.getHash(119000, transact={'from': address})
 #    print(r)
