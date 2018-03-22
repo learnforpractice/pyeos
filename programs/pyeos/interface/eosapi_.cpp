@@ -504,6 +504,7 @@ PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
 PyObject* push_message_(string& contract, string& action, string& args, map<string, string>& permissions,
                         bool sign, bool rawargs) {
    signed_transaction trx;
+   wlog("+++++++++++++++++push_message:${n}", ("n", contract));
    try {
       //		ilog("Converting argument to binary...");
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
@@ -560,6 +561,56 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
     */
    return py_new_none();
 }
+
+PyObject* push_evm_message_(string& contract, string& args, map<string, string>& permissions,
+                        bool sign, bool rawargs) {
+   signed_transaction trx;
+
+   try {
+      //		ilog("Converting argument to binary...");
+      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
+      eosio::chain_apis::read_only::abi_json_to_bin_params params;
+      if (!rawargs) {
+         params = {contract, "", fc::json::from_string(args)};
+      } else {
+         std::vector<char> v(args.begin(), args.end());
+         params = {contract, "", fc::variant(v)};
+      }
+
+      vector<chain::permission_level> accountPermissions;
+      for (auto it = permissions.begin(); it != permissions.end(); it++) {
+         accountPermissions.push_back(chain::permission_level{name(it->first), name(it->second)});
+      }
+
+      vector<chain::action> actions;
+
+		string _args;
+		if (args[0] == '0' && args[1] == 'x') {
+			_args = string(args.begin()+2, args.end());
+		} else {
+			_args = args;
+		}
+		bytes v;
+		v.resize(0);
+		v.resize(_args.size()/2);
+		fc::from_hex(_args, v.data(), v.size());
+		actions.emplace_back(accountPermissions, contract, "", v);
+
+		if (tx_force_unique) {
+			actions.emplace_back( generate_nonce() );
+		}
+
+		return send_actions(std::move(actions), !sign);
+
+   } catch (fc::exception& ex) {
+      elog(ex.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
+}
+
 
 PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
                         int vm_type, bool sign) {

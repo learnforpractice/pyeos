@@ -4,44 +4,95 @@ import web3
 from web3 import Web3, HTTPProvider, TestRPCProvider, EthereumTesterProvider
 from solc import compile_source
 from web3.contract import ConciseContract
+import eosapi
 
 class Producer(object):
-    def __init__(self, provider):
-        self.provider = provider
-    
+    def __init__(self):
+        pass
+
     def produce_block(self):
-        self.provider.make_request('test_mineBlocks', [1])
+        eosapi.produce_block()
 
     def __call__(self):
-        self.produce_block()
+        eosapi.produce_block()
 
     def __enter__(self):
         pass
-    
+
     def __exit__(self, type, value, traceback):
         self.produce_block()
 
-contract_source_code = '''
-pragma solidity ^0.4.0;
-contract Greeter {
-    function Greeter() {
-        sha256('abc');
-        keccak256('abc');
-    }
+from eth_utils import (
+    to_dict,
+)
 
-    function getHash(uint blockNumber) public returns (bytes32) {
-        block.difficulty;
-        sha256('+++++++++++++++++++hello, smart contract abcdef');
-        return block.blockhash(blockNumber);
-    }
-    
-    function getDiff() public returns (uint) {
-        return block.difficulty;
-    }
-    
-}
+class LocalProvider(web3.providers.base.JSONBaseProvider):
+    endpoint_uri = None
+    _request_args = None
+    _request_kwargs = None
 
-'''
+    def __init__(self, request_kwargs=None):
+        self._request_kwargs = request_kwargs or {}
+        super(LocalProvider, self).__init__()
+
+    def __str__(self):
+        return "RPC connection {0}".format(self.endpoint_uri)
+
+    @to_dict
+    def get_request_kwargs(self):
+        if 'headers' not in self._request_kwargs:
+            yield 'headers', self.get_request_headers()
+        for key, value in self._request_kwargs.items():
+            yield key, value
+
+    def request_func_(self, method, params):
+        print('----request_func', method, params)
+        if method == 'eth_sendTransaction':
+            if 'to' in params[0]:
+                r = eosapi.push_evm_message(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True,rawargs=True)
+            else:
+                r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
+            if r:
+                return {'result':r}
+        elif method == 'eth_call':
+            return {"id":0,"jsonrpc":"2.0","result":123}
+        elif method == 'eth_estimateGas':
+            return {"id":0,"jsonrpc":"2.0","result":88}
+        elif method == 'eth_blockNumber':
+            return {"id":0,"jsonrpc":"2.0","result":15}
+        elif method == 'eth_getBlock':
+            result = {'author': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'extraData': '0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74', 'gasLimit': 3141592, 'gasUsed': 0, 'hash': '0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'number': 138, 'parentHash': '0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'stateRoot': '0x1a0789d0d895011034cda1007a4be75faee0b91093c784ebf246c8651dbf699b', 'timestamp': 1521704325, 'totalDifficulty': 131210, 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}
+            return {"id":0,"jsonrpc":"2.0","result":result}
+        elif method == 'eth_getBlockByNumber':
+            result = {'author': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'extraData': '0xdc809a312e332e302b2b313436372a4444617277692f6170702f496e74', 'gasLimit': 3141592, 'gasUsed': 0, 'hash': '0x259d3ac184c567e4e3aa3fb0aa6c89d39dd172f6dad2c7e26265b40dce2f8893', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x4b8823fda79d1898bd820a4765a94535d90babf3', 'number': 138, 'parentHash': '0x7ed0cdae409d5b785ea671e24408ab34b25cb450766e501099ad3050afeff71a', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'stateRoot': '0x1a0789d0d895011034cda1007a4be75faee0b91093c784ebf246c8651dbf699b', 'timestamp': 1521704325, 'totalDifficulty': 131210, 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}
+            return {"id":0,"jsonrpc":"2.0","result":result}
+        elif method == 'eth_blockNumber':
+            return {"id":0,"jsonrpc":"2.0","result":'100'}
+
+    def request_func(self, web3, outer_middlewares):
+        '''
+        @param outer_middlewares is an iterable of middlewares, ordered by first to execute
+        @returns a function that calls all the middleware and eventually self.make_request()
+        '''
+        return self.request_func_
+    
+    def get_request_headers(self):
+        return {
+            'Content-Type': 'application/json',
+            'User-Agent': construct_user_agent(str(type(self))),
+        }
+
+    def make_request(self, method, params):
+        print('++++make_request:', method, params)
+        if method == 'eth_sendTransaction':
+            if 'to' in params[0]:
+                r = eosapi.push_message(params[0]['to'], '', args, {params[0]['from']:'active'}, True,rawargs=True)
+            else:
+                r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
+            if r:
+                return {'result':str(r)}
+
+
 
 TEST = False
 DEPLOY = True
@@ -52,8 +103,8 @@ producer = None
 contract = None
 contract_address = None
 
-provider = HTTPProvider('http://localhost:8545')
-producer = Producer(provider)
+provider = LocalProvider()
+producer = Producer()
 
 if TEST:
     w3 = Web3(EthereumTesterProvider())
@@ -61,109 +112,73 @@ else:
     w3 = Web3(provider)
 
 
-def compile():
-    global contract_interface
+def compile(contract_source_code):
     global producer
     global w3
     global contract
-    
-    compiled_sol = compile_source(contract_source_code) # Compiled source code
-    s = json.dumps(compiled_sol["<stdin>:Greeter"], sort_keys=False, indent=4, separators=(',', ': '))
-#    print(s)
-    
-    contract_interface = compiled_sol['<stdin>:Greeter']
-    #print(contract_interface)
-    
-    # web3.py instance
-    #w3 = Web3(TestRPCProvider())
-    #w3 = Web3(HTTPProvider())
-    
-    
-    address = w3.eth.accounts[0]
-    
-    # Instantiate and deploy contract
-    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
-    #print(contract_interface['abi'])
-    print(contract_interface['bin'])
-    
-    json.dumps(contract_interface['abi'], sort_keys=False, indent=4, separators=(',', ': '))
-    
-    print('+++++++++w3.eth.accounts[0]:', address)
-    print('+++++++++w3.eth.blockNumber:', w3.eth.blockNumber)
+    main_class = '<stdin>:Greeter'
 
-def deploy():
-    global contract_address
+    compiled_sol = compile_source(contract_source_code) # Compiled source code
+
+    s = json.dumps(compiled_sol[main_class], sort_keys=False, indent=4, separators=(',', ': '))
+    contract_interface = compiled_sol[main_class]
+
+    return contract_interface
+
+def deploy(contract_interface):
+    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
+#    print(contract_interface['bin'])
+    json.dumps(contract_interface['abi'], sort_keys=False, indent=4, separators=(',', ': '))
+
     with producer:
-        # Get transaction hash from deployed contract
-        address = w3.eth.accounts[0]
-        print('----------w3.eth.blockNumber:', w3.eth.blockNumber)
+        address = eosapi.eos_name_to_eth_address('evm')
         with producer:
             tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
-#            tx_hash = contract.deploy(transaction={'from': address})
             print('tx_hash:', tx_hash)
-        print('----------w3.eth.blockNumber:', w3.eth.blockNumber)
-
-        # Get tx receipt to get contract address
-        tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
-##        print('tx_receipt:', tx_receipt)
-        contract_address = tx_receipt['contractAddress']
-        
-        print('-------------------------:', tx_receipt.contractAddress)
-
-##        print(tx_receipt)
-        print('contract_address:', contract_address)
-
-#    contract_address = '0x5c5ad149D975c0f6EcB9F19BA2F917AFdCD0AA41'
-
-#0x24bC35FA6f3f81EFD2c7F3ba9862470B805982D3
-#0x2445185DDc617d3240d4F0FdA365466CF3CF39F6
 
 contract_instance = None
 
-def set_greeting():
-    global contract_instance
-    print('contract_address:', contract_address)
-    address = w3.eth.accounts[0]
+def call_contract(contract_interface):
+    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
+    contract_address = eosapi.eos_name_to_eth_address('evm')
 
     # Contract instance in concise mode
     contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
-#    print(dir(contract_instance))
 
-    r = contract_instance.getDiff(transact={'from': address})
-    print(r)
+    with producer:
+        address = eosapi.eos_name_to_eth_address('evm')
+        r = contract_instance.setValue(119000, transact={'from': address})
+        print('++++++++++++setValue:', r)
+    with producer:
+    #    r = contract_instance.getValue(transact={'from': address})
+    #    r = contract_instance.getValue(call={'from': address})
+        r = contract_instance.getValue(transact={'from': address})
+        print('++++++++++getValue:', r)
 
-    r = contract_instance.getHash(10, transact={'from': address})
-    print(r)
-    
-    if 0:
-        with producer:
-            contract_instance.setGreeting('Nihao', transact={'from': address})
-    
-        if 0:
-            # Getters + Setters for web3.eth.contract object
-            print('Contract value: {}'.format(contract_instance.greet()))
-            print('+++++++++w3.eth.blockNumber:', w3.eth.blockNumber)
-        
-            with producer:
-                contract_instance.setGreeting('Nihao', transact={'from': address})
-            print('Setting value to: Nihao')
-            print('Contract value: {}'.format(contract_instance.greet()))
-        
-            print('Contract value: {}'.format(contract_instance.helloword()))
-            print('Contract getint: {}'.format(contract_instance.getint()))
-        
-        r = contract_instance.getHash(10).encode('utf8')
-        print(len(r))
-        
-        print('Contract getHash: {}'.format(r))
-        
-        if 0:
-            print('Contract value: {}'.format(contract_instance.getAddress()))
+contract_source_code = '''
+pragma solidity ^0.4.0;
+contract Greeter {
+    mapping(address => uint) public mymap;
 
-compile()
-deploy()
-set_greeting()
+    function Greeter() {
+    }
 
+    function getValue() public returns (uint) {
+        return mymap[msg.sender];
+    }
+
+    function setValue(uint v) public {
+        mymap[msg.sender] = v;
+    }
+}
+'''
+def test():
+    contract_interface = compile(contract_source_code)
+    deploy(contract_interface)
+    call_contract(contract_interface)
+
+if __name__ == '__main__':
+    test()
 
 
 

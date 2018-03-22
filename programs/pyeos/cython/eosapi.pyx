@@ -274,6 +274,9 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     cdef int rawargs_
     
     contract_ = convert_from_eth_address(eth_address)
+    print('===eth_address:', eth_address)
+    print('===contract_:', contract_)
+    
 #    contract_ = tobytes(contract)
 #    action_ = tobytes(action)
     if not rawargs:
@@ -283,8 +286,7 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     
     for per in permissions:
         key = permissions[per]
-        per = tobytes(per)
-        key = tobytes(key)
+        per = convert_from_eth_address(per)
         permissions_[per] = key
 
     if sign:
