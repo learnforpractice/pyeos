@@ -93,7 +93,6 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
                 return {'result':str(r)}
 
 
-
 TEST = False
 DEPLOY = True
 
@@ -113,14 +112,11 @@ else:
 
 
 def compile(contract_source_code):
-    global producer
-    global w3
-    global contract
     main_class = '<stdin>:Greeter'
 
     compiled_sol = compile_source(contract_source_code) # Compiled source code
 
-    s = json.dumps(compiled_sol[main_class], sort_keys=False, indent=4, separators=(',', ': '))
+#    s = json.dumps(compiled_sol[main_class], sort_keys=False, indent=4, separators=(',', ': '))
     contract_interface = compiled_sol[main_class]
 
     return contract_interface
@@ -135,8 +131,6 @@ def deploy(contract_interface):
         with producer:
             tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
             print('tx_hash:', tx_hash)
-
-contract_instance = None
 
 def call_contract(contract_interface):
     contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
