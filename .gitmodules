@@ -12,6 +12,7 @@
 [submodule "libraries/micropython"]
 	path = libraries/micropython
 	url = https://github.com/learnforpractice/micropython
+	branch = master
 [submodule "contracts/musl/upstream"]
 	path = contracts/musl/upstream
 	url = https://github.com/EOSIO/musl.git
