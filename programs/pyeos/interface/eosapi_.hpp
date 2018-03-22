@@ -92,6 +92,9 @@ PyObject* get_controlled_accounts_(char* account_name);
 
 PyObject* create_account_(string creator, string newaccount, string owner,
                           string active, int sign);
+
+PyObject* set_evm_contract_(string& account, string& sol_bin, bool sign);
+
 PyObject* create_key_();
 PyObject* get_public_key_(string& wif_key);
 

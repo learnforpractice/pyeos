@@ -12,7 +12,8 @@ endif()
 
 
 add_library(python3.6m STATIC IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
+#set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
+set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
@@ -68,7 +69,7 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
     interface/math_.cpp  
     interface/common.cpp
-    interface/codelimit.c 
+#    interface/codelimit.c 
     wrap/eosapi.wrap.cpp 
     wrap/database.wrap.cpp 
     wrap/wallet.wrap.cpp
@@ -91,8 +92,7 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
 
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
-                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                                  PUBLIC $ENV{PYTHON_INC}
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/interface"

@@ -49,6 +49,8 @@ cdef extern from "eosapi_.hpp":
     object transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
     object push_message_(string& contract, string& action, string& args, map[string, string]& permissions, bool sign, bool rawargs)
     object set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
+    object set_evm_contract_(string& account, string& sol_bin, bool sign);
+
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
     int get_table_(string& scope, string& code, string& table, string& result);
 
@@ -270,6 +272,20 @@ def set_contract(account, wast_file, abi_file, vmtype=1, sign=True) -> str:
         sign = 0
 
     result = set_contract_(account, wast_file, abi_file, vmtype, sign)
+    if result:
+        return JsonStruct(result)
+    return None
+
+def set_evm_contract(account, sol_bin, sign=True) -> str:
+    ilog("set_evm_contract.....");
+    if sign:
+        sign = 1
+    else:
+        sign = 0
+    if sol_bin[0:2] == '0x':
+        sol_bin = sol_bin[2:]
+    result = set_evm_contract_(account, sol_bin, sign);
+
     if result:
         return JsonStruct(result)
     return None

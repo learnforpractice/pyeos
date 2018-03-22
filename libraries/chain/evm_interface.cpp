@@ -114,7 +114,6 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
 		sender = contractDestination;
 	}
 
-//	FC_ASSERT( context.trx_meta.sender );
 	if (context.trx_meta.sender) {
 		ilog( "+++++++++++++sender:${n}", ("n", context.trx_meta.sender->to_string()) );
 	}

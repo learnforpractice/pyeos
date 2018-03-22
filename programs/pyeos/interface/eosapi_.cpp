@@ -602,6 +602,34 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
    return py_new_none();
 }
 
+PyObject* set_evm_contract_(string& account, string& sol_bin, bool sign) {
+   try {
+      std::string wast;
+      contracts::setcode handler;
+      handler.vmtype = 2;
+
+      sol_bin = fc::trim(sol_bin);
+		bytes bin;
+		bin.resize(0);
+		bin.resize(sol_bin.size()/2);
+		fc::from_hex(sol_bin, bin.data(), bin.size());
+		handler.account = account;
+		handler.code.assign(bin.begin(), bin.end());
+
+      vector<chain::action> actions;
+      actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
+
+      std::cout << localized("Publishing contract...") << std::endl;
+      return send_actions(std::move(actions), !sign, packed_transaction::zlib);
+
+   } catch (fc::exception& ex) {
+      elog(ex.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
+}
+
 #include <eosio/chain/contracts/types.hpp>
 using namespace eosio;
 

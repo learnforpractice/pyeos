@@ -1,4 +1,4 @@
-add_subdirectory( python )
+#add_subdirectory( python )
 add_subdirectory( micropython )
 
 add_subdirectory( softfloat )

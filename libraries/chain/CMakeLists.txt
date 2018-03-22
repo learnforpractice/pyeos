@@ -27,7 +27,6 @@ add_library( eosio_chain
              block_log.cpp
              asset.cpp
 
-
              global_property_object.cpp
              chain_controller.cpp
 
