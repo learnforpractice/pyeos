@@ -48,9 +48,11 @@ add_library( eosio_chain
              ${HEADERS}
              transaction_metadata.cpp)
 
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
+message("+++++++++++chain+++++++""${CPP_ETHEREUM_DIR}")
+
 include_directories (${CPP_ETHEREUM_DIR})
 include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
-include_directories (${CPP_ETHEREUM_DIR}/utils/include)
 include_directories (${CPP_ETHEREUM_DIR}/utils)
 include_directories (jsoncpp/include)
 
