@@ -63,6 +63,8 @@ cdef extern from "eosapi_.hpp":
 
     object traceback_()
 
+    object push_messages_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -427,4 +429,11 @@ def on_python_exit():
     
 atexit.register(on_python_exit)
 
+
+def push_messages(string& contract, vector[string]& functions, vector[string]& args, permissions,bool sign, bool rawargs):
+    cdef map[string, string] _permissions
+    for per in permissions:
+        key = permissions[per]
+        _permissions[per] = key
+    push_messages_(contract, functions, args, _permissions,sign, rawargs)
 
