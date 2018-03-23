@@ -17,10 +17,10 @@ endif()
 SET (ORIGINAL_LIB_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 
-#find_package(Secp256k1 REQUIRED)
+find_package(Secp256k1 REQUIRED)
 find_package(GMP REQUIRED)
 
-message(STATUS "+++++++++++++++++++++++++++"${Secp256k1_LIBRARY})
+message(STATUS "${CMAKE_CURRENT_LIST_FILE}: +++++++++++++++++++++++++++"${Secp256k1_LIBRARY})
 
 IF( ECC_IMPL STREQUAL openssl )
   SET( ECC_REST src/crypto/elliptic_impl_pub.cpp )
