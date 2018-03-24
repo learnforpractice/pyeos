@@ -66,7 +66,7 @@ class EosState : public dev::eth::State
 public:
 	EosState():State(0){}
 	virtual ~EosState(){}
-	EosState(leveldb::DB& db):State(Invalid256, OverlayDB(&db), BaseState::Empty){}
+//	EosState(leveldb::DB& db):State(Invalid256, OverlayDB(&db), BaseState::Empty){}
 #if 0
 	virtual void setCode(Address const& _address, bytes&& _code);
 	virtual void clearStorage(Address const& _contract);

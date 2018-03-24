@@ -199,7 +199,10 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
 			bytes const& c = m_s.code(_p.codeAddress);
 			h256 codeHash = m_s.codeHash(_p.codeAddress);
 			codeHash = sha3(c);
-			m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress, _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash, m_depth, _p.staticCall);
+//			m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress, _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash, m_depth, _p.staticCall);
+         m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress,
+             _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash,
+             m_depth, false, _p.staticCall);
 		}
 	}
 
@@ -265,29 +268,16 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 
 	// Schedule _init execution if not empty.
 	if (!_init.empty())
-		m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin, _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth);
+//		m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin, _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth);
+      m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
+          _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth, true, false);
 
 	return !m_ext;
 }
 
 OnOpFunc EosExecutive::simpleTrace()
 {
-	return [](uint64_t steps, uint64_t PC, Instruction inst, bigint newMemSize, bigint gasCost, bigint gas, VM* voidVM, ExtVMFace const* voidExt)
-	{
-		EosExtVM const& ext = *static_cast<EosExtVM const*>(voidExt);
-		VM& vm = *voidVM;
 
-		ostringstream o;
-		o << endl << "    STACK" << endl;
-		for (auto i: vm.stack())
-			o << (h256)i << endl;
-		o << "    MEMORY" << endl << ((vm.memory().size() > 1000) ? " mem size greater than 1000 bytes " : memDump(vm.memory()));
-		o << "    STORAGE" << endl;
-		for (auto const& i: ext.state().storage(ext.myAddress))
-			o << showbase << hex << i.second.first << ": " << i.second.second << endl;
-		dev::LogOutputStream<EosVMTraceChannel, false>() << o.str();
-		dev::LogOutputStream<EosVMTraceChannel, false>() << " < " << dec << ext.depth << " : " << ext.myAddress << " : #" << steps << " : " << hex << setw(4) << setfill('0') << PC << " : " << instructionInfo(inst).name << " : " << dec << gas << " : -" << dec << gasCost << " : " << newMemSize << "x32" << " >";
-	};
 }
 
 bool EosExecutive::go(OnOpFunc const& _onOp)

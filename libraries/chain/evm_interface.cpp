@@ -181,7 +181,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
 	std::unordered_map<byte, std::pair<unsigned, bigint>> counts;
 	unsigned total = 0;
 	bigint memTotal;
-	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VM* evm, ExtVMFace const* extVM) {
+	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
 //		std::cout << "++++++gasCost: " << gasCost << "\n";
 		if (mode == Mode::Statistics)
 		{
@@ -301,7 +301,7 @@ void evm_test_(string _code, string _data)
 	std::unordered_map<byte, std::pair<unsigned, bigint>> counts;
 	unsigned total = 0;
 	bigint memTotal;
-	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VM* evm, ExtVMFace const* extVM) {
+	auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
 //		std::cout << "++++++gasCost: " << gasCost << "\n";
 		if (mode == Mode::Statistics)
 		{
