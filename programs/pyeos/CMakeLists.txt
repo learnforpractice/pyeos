@@ -11,8 +11,15 @@ if( GPERFTOOLS_FOUND )
 endif()
 
 
-add_library(python3.6m STATIC IMPORTED)
-set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
+if( APPLE )
+  add_library(python3.6m STATIC IMPORTED)
+  set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a)
+else( APPLE )
+  add_library(python3.6m STATIC IMPORTED)
+  set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.so)
+endif( APPLE )
+
+
 #set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
 
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
@@ -86,11 +93,20 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
 #    wrap/blockchain.wrap.cpp
 
 
-target_link_libraries( pyeos micropython appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+if( APPLE )
+target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities eos_egenesis_none fc
     python3.6m eosio_chain)
+else( APPLE )
+target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+    producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
+    wallet_plugin wallet_api_plugin
+    chainbase eos_utilities eos_egenesis_none fc
+    python3.6m eosio_chain)
+endif( APPLE )
+
 
 target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -101,7 +117,6 @@ target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/util"
                                   PRIVATE "${CPP_ETHEREUM_DIR}"
                                   )
-
 
 
 install( TARGETS
