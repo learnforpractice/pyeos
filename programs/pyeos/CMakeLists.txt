@@ -97,6 +97,7 @@ target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/interface"
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/util"
+                                  PRIVATE "${CPP_ETHEREUM_DIR}"
                                   )
 
 
