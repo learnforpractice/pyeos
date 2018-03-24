@@ -307,8 +307,6 @@ def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True):
 
     result = set_contract_(account, wast_file, abi_file, vmtype, sign)
     
-    print(type(result), result)
-
     if result:
         return JsonStruct(result)
     return None
