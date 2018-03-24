@@ -671,7 +671,7 @@ uint32_t now() {
    return ctrl.head_block_time().sec_since_epoch();
 }
 
-void abort() {
+void abort_() {
    edump(("abort() called"));
    FC_ASSERT( false, "abort() called");
 }
