@@ -4,7 +4,7 @@ add_library( eos_egenesis_none
    include/eosio/egenesis/egenesis.hpp
    )
 
-target_link_libraries( eos_egenesis_none eosio_chain fc )
+target_link_libraries( eos_egenesis_none eosio_chain fc micropython)
 target_include_directories( eos_egenesis_none
    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
@@ -12,7 +12,7 @@ add_executable( embed_genesis
    embed_genesis.cpp
    )
 
-target_link_libraries( embed_genesis eosio_chain eos_egenesis_none fc )
+target_link_libraries( embed_genesis eosio_chain eos_egenesis_none fc micropython)
 
 set( embed_genesis_args
    -t "${CMAKE_CURRENT_SOURCE_DIR}/egenesis_brief.cpp.tmpl---${CMAKE_CURRENT_BINARY_DIR}/egenesis_brief.cpp"

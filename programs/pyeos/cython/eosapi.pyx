@@ -171,7 +171,7 @@ def get_controlled_accounts(account_name) -> List[str]:
     return get_controlled_accounts_(account_name);
 '''
 
-def create_account(creator, newaccount, owner_key, active_key, sign=True) -> str:
+def create_account(creator, newaccount, owner_key, active_key, sign=True):
     if isinstance(creator, str):
         creator = bytes(creator, 'utf8')
     
@@ -210,7 +210,7 @@ def get_transaction(id) -> str:
         return JsonStruct(result)
     return None
 
-def get_transactions(account_name, skip_seq: int, num_seq: int) -> bytes:
+def get_transactions(account_name, skip_seq: int, num_seq: int):
     cdef string result
     if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
         return result
@@ -297,7 +297,7 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     return None
 
 
-def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True) -> str:
+def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True):
     if not os.path.exists(wast_file):
         return False
     if sign:
@@ -306,11 +306,14 @@ def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True) -> s
         sign = 0
 
     result = set_contract_(account, wast_file, abi_file, vmtype, sign)
+    
+    print(type(result), result)
+
     if result:
         return JsonStruct(result)
     return None
 
-def set_evm_contract(eth_address, sol_bin, sign=True) -> str:
+def set_evm_contract(eth_address, sol_bin, sign=True):
     ilog("set_evm_contract.....");
     if sign:
         sign = 1
@@ -342,7 +345,7 @@ def get_table(string& scope, string& code, string& table):
         return JsonStruct(result)
     return None
 
-def exec_func(code_:str, action_:str, json_:str, scope_:str, authorization_:str) -> str:
+def exec_func(code_:str, action_:str, json_:str, scope_:str, authorization_:str):
     pass
 
 from importlib.abc import Loader, MetaPathFinder
