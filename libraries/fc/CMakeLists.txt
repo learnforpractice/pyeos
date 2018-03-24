@@ -50,7 +50,7 @@ IF(NOT "$ENV{OPENSSL_ROOT_DIR}" STREQUAL "")
 ENDIF()
 
 hunter_add_package(OpenSSL)
-find_package(OpenSSL "1.0.2" REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${ORIGINAL_LIB_SUFFIXES} )
 

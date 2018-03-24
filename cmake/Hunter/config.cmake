@@ -18,3 +18,4 @@ hunter_config(
 )
 
 hunter_config(Boost VERSION 1.65.1)
+hunter_config(OpenSSL VERSION 1.0.2n)
