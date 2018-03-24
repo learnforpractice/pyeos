@@ -1,6 +1,6 @@
 file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.hpp")
 
-find_package(leveldb)
+find_package(LevelDB)
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
