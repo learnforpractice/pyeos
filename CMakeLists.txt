@@ -1,13 +1,32 @@
 cmake_minimum_required( VERSION 3.5 )
 
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    # The default toolchain file configures compilers and build environment.
+    # This configuration is also used by hunter to build dependencies.
+    # CMake will cache this value, not need to explictly specify CACHE param.
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/libraries/ethereum/cmake/toolchain.cmake)
+endif()
+
+set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake" CACHE PATH "The path to the cmake directory")
+list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 # Defines EOS library target.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
 
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
 
-set(CPP_ETHEREUM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum")
+# set cmake_policies
+include(EthPolicy)
+eth_policy()
+
+if(CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
+endif()
+
+# Map current configuration to configurations of imported targets.
+set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG Release)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
 
 set(HUNTER_CONFIGURATION_TYPES Release)
 set(HUNTER_JOBS_NUMBER 4)
@@ -25,11 +44,10 @@ option(HUNTER_RUN_UPLOAD "Upload binaries to the cache server" ${run_upload})
 
 include(HunterGate)
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.20.9.tar.gz"
-    SHA1 "8f7cf6d719d05c49224a4ebeba90c6bb90b90f4a"
+    URL "https://github.com/learnforpractice/hunter/archive/v0.20.27.2.tar.gz"
+    SHA1 "a8829718f514ba870f8be876ed508638c2e9cac7"
     LOCAL
 )
-
 
 project( EOS )
 
@@ -78,33 +96,8 @@ if (USE_PCH)
   include (cotire)
 endif(USE_PCH)
 
-# add defaults for openssl
-if ("${OPENSSL_ROOT_DIR}" STREQUAL "")
-   if (NOT "$ENV{OPENSSL_ROOT_DIR}" STREQUAL "")
-      set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
-      set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include)
-   elseif (APPLE)
-      set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-      set(OPENSSL_INCLUDE_DIR "/usr/local/opt/openssl/include")
-   elseif(UNIX AND NOT APPLE)
-      set(OPENSSL_ROOT_DIR "/usr/include/openssl")
-      set(OPENSSL_INCLUDE_DIR "/usr/include/openssl/include")
-   else()
-      message(FATAL_ERROR "openssl not found and don't know where to look, please specify OPENSSL_ROOT_DIR")
-   endif()
-endif()
-
-if ("${OPENSSL_LIBRARIES}" STREQUAL "")
-   if (NOT "$ENV{OPENSSL_LIBRARIES}" STREQUAL "")
-      set(OPENSSL_LIBRARIES $ENV{OPENSSL_LIBRARIES})
-   elseif (APPLE)
-      set(OPENSSL_LIBRARIES "/usr/local/opt/openssl/lib")
-   elseif(UNIX AND NOT APPLE)
-      set(OPENSSL_LIBRARIES "/usr/include/openssl")
-   else()
-      message(FATAL_ERROR "openssl libs not found and don't know where to look, please specify OPENSSL_LIBRARIES")
-   endif()
-endif()
+hunter_add_package(OpenSSL)
+find_package(OpenSSL REQUIRED)
 
 if(UNIX)
   if(APPLE)
@@ -125,7 +118,23 @@ IF( WIN32 )
   set(Boost_USE_MULTITHREADED ON)
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries
 ENDIF(WIN32)
-FIND_PACKAGE(Boost 1.66 REQUIRED COMPONENTS
+
+hunter_add_package(Boost COMPONENTS 
+    thread
+    date_time
+    filesystem
+    system
+    program_options
+    signals
+    serialization
+    chrono
+    test
+    context
+    locale
+    iostreams
+    fiber)
+    
+find_package(Boost REQUIRED COMPONENTS
     thread
     date_time
     filesystem
@@ -138,6 +147,7 @@ FIND_PACKAGE(Boost 1.66 REQUIRED COMPONENTS
     context
     locale
     iostreams)
+
 
 if( WIN32 )
 
@@ -222,11 +232,11 @@ add_subdirectory( externals )
 include(wasm)
 
 add_subdirectory( libraries )
-add_subdirectory( contracts )
+#add_subdirectory( contracts )
 add_subdirectory( plugins )
 add_subdirectory( programs )
 add_subdirectory( scripts )
-add_subdirectory( tests )
+#add_subdirectory( tests )
 add_subdirectory( tools )
 add_subdirectory( debian )
 
