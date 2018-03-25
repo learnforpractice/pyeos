@@ -81,6 +81,8 @@ nbproject
 .project
 .pydevproject
 .settings
+etc/eosio/node_*
+var/lib/node_*
 .vscode
 Debug
 .DS_Store
