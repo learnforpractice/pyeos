@@ -49,9 +49,6 @@ IF(NOT "$ENV{OPENSSL_ROOT_DIR}" STREQUAL "")
   message(STATUS "Setting up OpenSSL root and include vars to ${OPENSSL_ROOT_DIR}, ${OPENSSL_INCLUDE_DIR}")
 ENDIF()
 
-hunter_add_package(OpenSSL)
-find_package(OpenSSL REQUIRED)
-
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${ORIGINAL_LIB_SUFFIXES} )
 
 set( fc_sources
@@ -147,6 +144,7 @@ else()
   set( ZLIB_LIBRARIES "" )
 endif( ZLIB_FOUND )
 
+hunter_add_package(BZip2)
 find_package( BZip2 )
 if( BZIP2_FOUND )
    MESSAGE( STATUS "bzip2 found" )
@@ -162,7 +160,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_ASIO_HAS_STD_CHRONO")
 
 target_include_directories(fc
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${Boost_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
     ${Secp256k1_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/websocketpp
