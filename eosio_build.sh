@@ -115,8 +115,8 @@
 		CXX_COMPILER=clang++
 		C_COMPILER=clang
 		MONGOD_CONF=/usr/local/etc/mongod.conf
-		OPENSSL_ROOT_DIR=/usr/local/opt/openssl
-		OPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
+#		OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+#		OPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
 		export WASM_ROOT=/usr/local/wasm
 	fi
 
@@ -142,8 +142,8 @@
 
 	$CMAKE -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
 	-DCMAKE_C_COMPILER=${C_COMPILER} -DWASM_ROOT=${WASM_ROOT} \
-	-DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DBUILD_MONGO_DB_PLUGIN=true \
-	-DOPENSSL_LIBRARIES=${OPENSSL_LIBRARIES} ..
+	-DBUILD_MONGO_DB_PLUGIN=true \
+	..
 
 	if [ $? -ne 0 ]; then
 		printf "\n\t>>>>>>>>>>>>>>>>>>>> CMAKE building EOSIO has exited with the above error.\n\n"
