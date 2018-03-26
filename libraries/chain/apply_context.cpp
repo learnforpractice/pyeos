@@ -57,7 +57,7 @@ void apply_context::exec_one()
       privileged = a.privileged;
 
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
-//      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
+      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
 
       if (native) {
          (*native)(*this);

@@ -237,25 +237,13 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       elog("Got exception while generating block:\n${e}", ("e", e.to_detail_string()));
       result = block_production_condition::exception_producing_block;
    }
-<<<<<<< HEAD
 
-   switch(result)
-   {
-      case block_production_condition::produced: {
-         const auto& db = app().get_plugin<chain_plugin>().chain();
-         auto producer  = db.head_block_producer();
- //        auto pending   = db.pending().size();
-
-//         wlog("\r${p} generated block ${id}... #${n} @ ${t} with ${count} trxs", ("p", producer)(capture) );
-         break;
-=======
    if(result != block_production_condition::produced && result == _prev_result) {
       _prev_result_count++;
    }
    else {
       if (_prev_result_count > 1) {
          ilog("Previous result occurred ${r} times",("r", _prev_result_count));
->>>>>>> origin/master
       }
       _prev_result_count = 1;
       _prev_result = result;
@@ -292,13 +280,10 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
             break;
          }
    }
-<<<<<<< HEAD
+
    if (!_manual_gen_block) {
       schedule_production_loop();
    }
-=======
-   schedule_production_loop();
->>>>>>> origin/master
    return result;
 }
 

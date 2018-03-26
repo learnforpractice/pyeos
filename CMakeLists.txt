@@ -112,6 +112,9 @@ else()
   set(no_whole_archive_flag "--no-whole-archive")
 endif()
 
+hunter_add_package(BZip2)
+find_package( BZip2 )
+
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 IF( WIN32 )
   SET(BOOST_ROOT $ENV{BOOST_ROOT})
@@ -232,11 +235,11 @@ add_subdirectory( externals )
 include(wasm)
 
 add_subdirectory( libraries )
-#add_subdirectory( contracts )
+add_subdirectory( contracts )
 add_subdirectory( plugins )
 add_subdirectory( programs )
 add_subdirectory( scripts )
-#add_subdirectory( tests )
+add_subdirectory( tests )
 add_subdirectory( tools )
 add_subdirectory( debian )
 

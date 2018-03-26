@@ -38,6 +38,7 @@
 #include <libethereum/Executive.h>
 
 #include <fc/log/logger.hpp>
+#include <fc/exception/exception.hpp>
 
 namespace eosio {
 namespace chain {
@@ -51,18 +52,16 @@ bool get_code_size(uint64_t _account, int& size);
 using namespace eosio::chain;
 
 extern "C" {
-int store_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int update_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int remove_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
-
-int load_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int front_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int back_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int next_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int previous_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int lower_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-
+	int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
+	void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
+	void db_remove_i64( int itr );
+	int db_get_i64( int itr, char* buffer, size_t buffer_size );
+	int db_next_i64( int itr, uint64_t* primary );
+	int db_previous_i64( int itr, uint64_t* primary );
+	int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+	int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+	int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+	int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 }
 
 
@@ -304,6 +303,7 @@ size_t EosState::codeSize(Address const& _a) const
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
+	uint64_t id = 0;
 	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
 	uint64_t n = ((uint64_t*)_contract.data())[0];
@@ -312,12 +312,20 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
 	string key = _key.str();
 	string value = _value.str();
-	int ret = store_str( n, n, key.c_str(), key.size(), value.c_str(), value.size() );
-	ilog( "${n1} : ${n2} : ${n3} ${n4} ${n5}", ("n1",_key.str())("n2",_value.str())("n3", n)("n4", ret)("n5", value.size()) );
+	if (key.size() < sizeof(id)) {
+		memcpy(&id, key.c_str(), key.size());
+	} else {
+		memcpy(&id, key.c_str(), sizeof(id));
+	}
+
+	int itr = db_store_i64(n, n, n, id, value.c_str(), value.size() );
+
+	ilog( "${n1} : ${n2} : ${n3} ${n4} ${n5}", ("n1",_key.str())("n2",_value.str())("n3", n)("n4", itr)("n5", value.size()) );
 }
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
+	uint64_t id = 0;
 	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
 
 	uint64_t n = ((uint64_t*)_id.data())[0];
@@ -325,11 +333,23 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 	char data[256];
 	memset(data, 0, sizeof(data));
 	string key = _key.str();
-	if (load_str(n, n, n, (char*)key.c_str(), key.size(), data, sizeof(data)) > 0) {
-		u256 ret = u256(data);
-		ilog( "${n1} ${n2}", ("n1", _key.str())("n2", data) );
-		return ret;
+	if (key.size() < sizeof(id)) {
+		memcpy(&id, key.c_str(), key.size());
+	} else {
+		memcpy(&id, key.c_str(), sizeof(id));
 	}
+	try {
+		int itr = db_find_i64( n, n, n, id );
+		int size = db_get_i64( itr, data, sizeof(data) );
+		if (size > 0) {
+			u256 ret = u256(data);
+			ilog( "${n1} ${n2}", ("n1", _key.str())("n2", data) );
+			return ret;
+		}
+	} catch (const fc::exception& e) {
+		wlog("exception thrown while call db_get_i64 ${e}", ("e",e.to_detail_string()));
+	}
+
 	return 0;
 
 	if (Account const* a = account(_id))

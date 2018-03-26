@@ -101,15 +101,8 @@ void apply_eosio_setcode(apply_context& context) {
 
    auto code_id = fc::sha256::hash( act.code.data(), act.code.size() );
    if (act.vmtype == 0) {
-      // TODO: remove this compilation step in favor of validation without compilation
-      auto& code = context.mutable_controller.get_wasm_cache().checkout(code_id, act.code.data(), act.code.size());
-      context.mutable_controller.get_wasm_cache().checkin(code_id, code);
+      wasm_interface::validate(act.code);
    }
-
-<<<<<<< HEAD
-=======
-   wasm_interface::validate(act.code);
->>>>>>> origin/master
 
    if (act.vmtype == 2) { //evm
 		bytes code;
