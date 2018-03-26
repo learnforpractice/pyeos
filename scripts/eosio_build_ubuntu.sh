@@ -98,21 +98,21 @@
 		printf "\n\tNo required dpkg dependencies to install.\n"
 	fi
 
-	printf "\n\tChecking for boost libraries\n"
-	if [ ! -d ${HOME}/opt/boost_1_66_0 ]; then
-		# install boost
-		printf "\tInstalling boost libraries\n"
-		cd ${TEMP_DIR}
-		curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2 > boost_1.66.0.tar.bz2
-		tar xf boost_1.66.0.tar.bz2
-		cd boost_1_66_0/
-		./bootstrap.sh "--prefix=$BOOST_ROOT"
-		./b2 -j${CPU_CORE} install
-		rm -rf ${TEMP_DIR}/boost_1_66_0/
-		rm -f  ${TEMP_DIR}/boost_1.66.0.tar.bz2
-	else
-		printf "\tBoost 1.66 found at ${HOME}/opt/boost_1_66_0\n"
-	fi
+#	printf "\n\tChecking for boost libraries\n"
+#	if [ ! -d ${HOME}/opt/boost_1_66_0 ]; then
+#		# install boost
+#		printf "\tInstalling boost libraries\n"
+#		cd ${TEMP_DIR}
+#		curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2 > boost_1.66.0.tar.bz2
+#		tar xf boost_1.66.0.tar.bz2
+#		cd boost_1_66_0/
+#		./bootstrap.sh "--prefix=$BOOST_ROOT"
+#		./b2 -j${CPU_CORE} install
+#		rm -rf ${TEMP_DIR}/boost_1_66_0/
+#		rm -f  ${TEMP_DIR}/boost_1.66.0.tar.bz2
+#	else
+#		printf "\tBoost 1.66 found at ${HOME}/opt/boost_1_66_0\n"
+#	fi
 
 	printf "\n\tChecking for MongoDB C++ driver.\n"
     # install libmongocxx.dylib
