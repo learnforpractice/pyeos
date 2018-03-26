@@ -76,6 +76,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
                             PRIVATE ${LevelDB_INCLUDE}
+                            PRIVATE ${CPP_ETHEREUM_DIR}
                             )
 
 if(MSVC)
