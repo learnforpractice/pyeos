@@ -133,7 +133,7 @@ IF(APPLE)
   # just always try to link it in on mac.
   find_package( ZLIB REQUIRED )
 ELSE(APPLE)
-  find_package( ZLIB )
+  find_package( ZLIB REQUIRED)
 ENDIF(APPLE)
 
 if( ZLIB_FOUND )
@@ -145,7 +145,8 @@ else()
 endif( ZLIB_FOUND )
 
 hunter_add_package(BZip2)
-find_package( BZip2 )
+find_package( BZip2 CONFIG REQUIRED)
+
 if( BZIP2_FOUND )
    MESSAGE( STATUS "bzip2 found" )
    add_definitions( -DHAS_BZIP2 )
