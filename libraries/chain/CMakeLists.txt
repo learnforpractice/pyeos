@@ -72,7 +72,6 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod/eoslib
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
                             PRIVATE ${LevelDB_INCLUDE}

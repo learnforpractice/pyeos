@@ -527,5 +527,68 @@ mp_obj_t ripemd160(const char* data, size_t datalen) {
 	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
+static struct eosapi s_eosapi;
+
+void init_eosapi() {
+	s_eosapi.now = now;
+	s_eosapi.abort_ = abort;
+	s_eosapi.eosio_assert = eosio_assert;
+	s_eosapi.assert_recover_key = assert_recover_key;
+
+	s_eosapi.recover_key = recover_key;
+	s_eosapi.assert_sha256 = assert_sha256;
+	s_eosapi.assert_sha1 = assert_sha1;
+	s_eosapi.assert_sha512 = assert_sha512;
+	s_eosapi.assert_ripemd160 = assert_ripemd160;
+	s_eosapi.sha1 = sha1;
+	s_eosapi.sha256 = sha256;
+	s_eosapi.sha512 = sha512;
+	s_eosapi.ripemd160 = ripemd160;
+
+	s_eosapi.string_to_uint64_ = string_to_uint64_;
+	s_eosapi.uint64_to_string_ = uint64_to_string_;
+
+	s_eosapi.pack_ = pack_;
+	s_eosapi.unpack_ = unpack_;
+
+//	s_eosapi.get_account_balance_
+//	s_eosapi.get_active_producers_
+
+	s_eosapi.read_transaction = read_transaction;
+	s_eosapi.transaction_size = transaction_size;
+	s_eosapi.expiration = expiration;
+	s_eosapi.tapos_block_num = tapos_block_num;
+	s_eosapi.tapos_block_prefix = tapos_block_prefix;
+	s_eosapi.get_action = get_action;
+
+
+	s_eosapi.require_auth = require_auth;
+	s_eosapi.require_auth_ex = require_auth_ex;
+	s_eosapi.require_write_lock = require_write_lock;
+	s_eosapi.require_read_lock = require_read_lock;
+	s_eosapi.is_account = is_account;
+	s_eosapi.require_recipient = require_recipient;
+
+
+	s_eosapi.read_action = read_action;
+	s_eosapi.action_size = action_size;
+	s_eosapi.current_receiver = current_receiver;
+	s_eosapi.publication_time = publication_time;
+	s_eosapi.current_sender = current_sender;
+
+	s_eosapi.db_store_i64 = db_store_i64;
+	s_eosapi.db_update_i64 = db_update_i64;
+	s_eosapi.db_remove_i64 = db_remove_i64;
+	s_eosapi.db_get_i64 = db_get_i64;
+	s_eosapi.db_next_i64 = db_next_i64;
+	s_eosapi.db_previous_i64 = db_previous_i64;
+	s_eosapi.db_find_i64 = db_find_i64;
+	s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
+	s_eosapi.db_upperbound_i64 = db_upperbound_i64;
+	s_eosapi.db_end_i64 = db_end_i64;
+}
+
+
+
 
 }
