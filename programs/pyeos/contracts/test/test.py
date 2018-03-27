@@ -358,7 +358,7 @@ def timeit(count):
 
 def timeit2(count):
     import time
-    for i in range(count):
+    for i in range(100,100+count):
         r = eosapi.push_message('hello','sayhello',str(i), {'hello':'active'}, True, rawargs=True)
     start = time.time()
     eosapi.produce_block()
@@ -373,3 +373,29 @@ def evm_timeit(count):
         r = debug.evm_test('', code)
     cost = time.time() - start
     print(cost, cost/count, 1/(cost/count))
+
+def wasm_test(count):
+    import time
+    functions = []
+    args = []
+    per = {'currency':'active'}
+    start = time.time()
+    for i in range(count):
+        functions.append('issue')
+        arg = {"to":"currency","quantity":"1000.0000 CUR","memo":str(i)}
+        args.append(str(arg).replace("'",'"'))
+    eosapi.push_messages( 'currency', functions, args, per, True, False)
+    cost = time.time() - start
+    print(cost, cost/count, 1/(cost/count))
+    eosapi.produce_block()
+
+
+def t():
+    import time
+    start = time.time()
+    r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
+    cost = time.time() - start
+    print(cost, cost/1, 1/(cost/1))
+    eosapi.produce_block()
+
+
