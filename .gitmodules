@@ -4,7 +4,7 @@
 [submodule "libraries/python"]
 	path = libraries/python
 	url = https://github.com/learnforpractice/cpython
-	branch = v3.6.3-for-pyeos
+	branch = v3.6.4-cmake
 [submodule "libraries/ethereum"]
        path = libraries/ethereum
        url = https://github.com/learnforpractice/cpp-ethereum
