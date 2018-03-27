@@ -65,7 +65,7 @@ const static uint32_t   rate_limiting_precision        = 1000*1000;
 
 const static uint16_t   max_recursion_depth = 6;
 
-const static eosio::chain::wasm_interface::vm_type default_wasm_runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+const static eosio::chain::wasm_interface::vm_type default_wasm_runtime = eosio::chain::wasm_interface::vm_type::wavm;
 
 /**
  *  The number of sequential blocks produced by a single producer
