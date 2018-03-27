@@ -402,6 +402,7 @@ BOOST_FIXTURE_TEST_CASE( simple_no_memory_check, tester ) try {
    act.name = N();
    act.authorization = vector<permission_level>{{N(nomem),config::active_name}};
    trx.actions.push_back(act);
+   trx.expiration = control->head_block_time();
 
    trx.sign(get_private_key( N(nomem), "active" ), chain_id_type());
    BOOST_CHECK_THROW(push_transaction( trx ), wasm_execution_error);
@@ -1088,6 +1089,16 @@ BOOST_FIXTURE_TEST_CASE( apply_export_and_signature, tester ) try {
    produce_blocks(1);
 
    BOOST_CHECK_THROW(set_code(N(bbb), apply_wrong_signature_wast), fc::exception);
+   produce_blocks(1);
+} FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE( protect_injected, tester ) try {
+   produce_blocks(2);
+
+   create_accounts( {N(inj)} );
+   produce_block();
+
+   BOOST_CHECK_THROW(set_code(N(inj), import_injected_wast), fc::exception);
    produce_blocks(1);
 } FC_LOG_AND_RETHROW()
 
