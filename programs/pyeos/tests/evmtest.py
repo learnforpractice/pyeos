@@ -5,22 +5,24 @@ from web3 import Web3, HTTPProvider, TestRPCProvider, EthereumTesterProvider
 from solc import compile_source
 from web3.contract import ConciseContract
 import eosapi
+import wallet
 
-class Producer(object):
-    def __init__(self):
-        pass
+producer = eosapi.Producer()
 
-    def produce_block(self):
-        eosapi.produce_block()
+def init():
+    psw = 'PW5KQ5RieLowfi5gX81bQ4zTnHde3ZENpooryxdm4xbdoH6bNW9SZ'
+    wallet.open('mywallet')
+    wallet.unlock('mywallet', psw)
 
-    def __call__(self):
-        eosapi.produce_block()
+    key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
+    key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 
-    def __enter__(self):
-        pass
-
-    def __exit__(self, type, value, traceback):
-        self.produce_block()
+    with producer:
+        r = eosapi.get_account('evm')
+        if not r.permissions:
+            print('evm account not exist, create it.')
+            r = eosapi.create_account('eosio', 'evm', key1, key2)
+            assert r
 
 from eth_utils import (
     to_dict,
@@ -98,12 +100,10 @@ DEPLOY = True
 
 contract_interface = None
 w3 = None
-producer = None
 contract = None
 contract_address = None
 
 provider = LocalProvider()
-producer = Producer()
 
 if TEST:
     w3 = Web3(EthereumTesterProvider())
@@ -131,7 +131,7 @@ def deploy(contract_interface):
         with producer:
             tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
             print('tx_hash:', tx_hash)
-
+    print('=========================deploy end======================')
 def call_contract(contract_interface):
     contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
     contract_address = eosapi.eos_name_to_eth_address('evm')
@@ -140,14 +140,22 @@ def call_contract(contract_interface):
     contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
 
     with producer:
+    #    r = contract_instance.getValue(transact={'from': address})
+    #    r = contract_instance.getValue(call={'from': address})
+        r = contract_instance.getValue(transact={'from': contract_address})
+        print('++++++++++getValue:', r)
+
+    with producer:
         address = eosapi.eos_name_to_eth_address('evm')
-        r = contract_instance.setValue(119000, transact={'from': address})
+        r = contract_instance.setValue(119000, transact={'from': contract_address})
         print('++++++++++++setValue:', r)
+
     with producer:
     #    r = contract_instance.getValue(transact={'from': address})
     #    r = contract_instance.getValue(call={'from': address})
-        r = contract_instance.getValue(transact={'from': address})
+        r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
+
 
 contract_source_code = '''
 pragma solidity ^0.4.0;
@@ -155,6 +163,7 @@ contract Greeter {
     mapping(address => uint) public mymap;
 
     function Greeter() {
+        mymap[msg.sender] = 100;
     }
 
     function getValue() public returns (uint) {
