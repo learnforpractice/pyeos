@@ -589,6 +589,7 @@ class apply_context {
       using table_id_object = contracts::table_id_object;
       const table_id_object* find_table( name code, name scope, name table );
       const table_id_object& find_or_create_table( name code, name scope, name table );
+      const name& get_receiver();
 
       vector<account_name>                _notified; ///< keeps track of new accounts to be notifed of current message
       vector<action>                      _inline_actions; ///< queued inline messages

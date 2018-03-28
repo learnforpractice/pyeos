@@ -57,7 +57,7 @@ void apply_context::exec_one()
       privileged = a.privileged;
 
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
-      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
+//      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
 
       if (native) {
          (*native)(*this);
@@ -182,6 +182,7 @@ bool apply_context::is_account( const account_name& account )const {
 }
 
 void apply_context::require_authorization( const account_name& account )const {
+	wlog("+++++++++++++++account: ${n}", ("n", account.to_string()));
   EOS_ASSERT( has_authorization(account), tx_missing_auth, "missing authority of ${account}", ("account",account));
 }
 bool apply_context::has_authorization( const account_name& account )const {
@@ -421,10 +422,19 @@ int apply_context::get_context_free_data( uint32_t index, char* buffer, size_t b
    return s;
 }
 
+const name& apply_context::get_receiver() {
+	if ( act.account == contracts::setcode::get_account() ) {
+		if ( act.name == contracts::setcode::get_name() ) {
+			auto  a = act.data_as<contracts::setcode>();
+			return a.account;
+		}
+	}
+	return this->receiver;
+}
 
 int apply_context::db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
    require_write_lock( scope );
-   const auto& tab = find_or_create_table( receiver, scope, table );
+   const auto& tab = find_or_create_table( get_receiver(), scope, table );
    auto tableid = tab.id;
 
    FC_ASSERT( payer != account_name(), "must specify a valid account to pay for new record" );
