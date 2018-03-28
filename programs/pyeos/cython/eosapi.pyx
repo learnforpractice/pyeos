@@ -138,7 +138,7 @@ def get_info():
     info = get_info_()
     return JsonStruct(info)
 
-def get_block(id) -> str:
+def get_block(id):
     if isinstance(id, int):
         id = str(id)
         id = bytes(id, 'utf8')
@@ -155,7 +155,7 @@ def get_account(name):
         return JsonStruct(result)
     return None
 
-def get_accounts(public_key) -> List[str]:
+def get_accounts(public_key):
     if isinstance(public_key, str):
         public_key = bytes(public_key, 'utf8')
     return get_accounts_(public_key)
@@ -202,7 +202,7 @@ def create_key():
 def get_public_key(priv_key):
     return get_public_key_(priv_key)
 
-def get_transaction(id) -> str:
+def get_transaction(id):
     cdef string result
     if isinstance(id, int):
         id = str(id)
@@ -216,7 +216,7 @@ def get_transactions(account_name, skip_seq: int, num_seq: int):
         return result
     return None
 
-def transfer(sender, recipient, int amount, memo, sign=True) -> bytes:
+def transfer(sender, recipient, int amount, memo, sign=True):
     memo = tobytes(memo)
     if sign:
         sign = 1
@@ -382,25 +382,14 @@ class Producer(object):
         pass
     
     def produce_block(self):
-        for i in range(5):
-            ret = produce_block()
-            if ret == 0:
-                break
-            time.sleep(1.0)
-        count = 0
-        while self.num == get_info().head_block_num:  # wait for finish of create account
-            time.sleep(0.2)
-            count += 1
-            if count >= 20:
-                print('time out')
-                return
+        ret = produce_block_()
+        time.sleep(0.5)
 
     def __call__(self):
-        self.num = get_info().head_block_num
         self.produce_block()
 
     def __enter__(self):
-        self.num = get_info().head_block_num
+        pass
     
     def __exit__(self, type, value, traceback):
         self.produce_block()
