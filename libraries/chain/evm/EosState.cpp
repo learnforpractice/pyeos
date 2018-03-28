@@ -271,7 +271,7 @@ bytes const& EosState::code(Address const& _addr) const
 	ilog(_addr.hex());
 	uint64_t n = ((uint64_t*)_addr.data())[0];
 	if (get_code(n, g_code)) {
-		ilog( "${n}", ("n", g_code.size()) );
+		ilog( "code size: ${n}", ("n", g_code.size()) );
 		return g_code;
 	}
 	return NullBytes;
@@ -318,9 +318,20 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 		memcpy(&id, key.c_str(), sizeof(id));
 	}
 
-	int itr = db_store_i64(n, n, n, id, value.c_str(), value.size() );
-
-	ilog( "${n1} : ${n2} : ${n3} ${n4} ${n5}", ("n1",_key.str())("n2",_value.str())("n3", n)("n4", itr)("n5", value.size()) );
+	try {
+		int itr = db_find_i64( n, n, n, id );
+		if (itr > 0) {
+			wlog("update value");
+			db_update_i64( itr, n, value.c_str(), value.size() );
+		} else {
+			wlog("store value");
+			db_store_i64(n, n, n, id, value.c_str(), value.size() );
+		}
+	} catch (const fc::exception& e) {
+		wlog("exception thrown while call db_store_i64 ${e}", ("e",e.to_detail_string()));
+	} catch (...) {
+		wlog("uncaught exception.");
+	}
 }
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
@@ -343,7 +354,7 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 		int size = db_get_i64( itr, data, sizeof(data) );
 		if (size > 0) {
 			u256 ret = u256(data);
-			ilog( "${n1} ${n2}", ("n1", _key.str())("n2", data) );
+			ilog( "got value ${n2}", ("n2", data) );
 			return ret;
 		}
 	} catch (const fc::exception& e) {
