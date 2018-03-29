@@ -23,8 +23,6 @@ cdef extern from "<fc/log/logger.hpp>":
     
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
-    ctypedef unsigned int uint32_t
-    ctypedef unsigned long long uint64_t
 
     uint64_t string_to_uint64_(string str);
     string uint64_to_string_(uint64_t n);
@@ -63,7 +61,7 @@ cdef extern from "eosapi_.hpp":
 
     object traceback_()
 
-    object push_messages_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
+    object push_messages_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs, uint64_t& cost_time)
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -420,10 +418,18 @@ def on_python_exit():
 atexit.register(on_python_exit)
 
 
-def push_messages(string& contract, vector[string]& functions, vector[string]& args, permissions,bool sign, bool rawargs):
+def push_messages(string& contract, vector[string]& functions, args, permissions,bool sign, bool rawargs):
     cdef map[string, string] _permissions
+    cdef vector[string] _args
+    cdef uint64_t cost_time = 0
+    
     for per in permissions:
         key = permissions[per]
         _permissions[per] = key
-    push_messages_(contract, functions, args, _permissions,sign, rawargs)
+    for arg in args:
+        if not isinstance(arg, str):
+            arg = json.dumps(arg)
+        _args.push_back(arg)
 
+    ret = push_messages_(contract, functions, _args, _permissions,sign, rawargs, cost_time)
+    return (ret, cost_time)

@@ -544,9 +544,15 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
    return py_new_none();
 }
 
+static uint64_t get_microseconds() {
+   struct timeval  tv;
+   gettimeofday(&tv, NULL);
+   return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
+}
+
 
 PyObject* push_messages_(string& contract, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
-                        bool sign, bool rawargs) {
+                        bool sign, bool rawargs, uint64_t& cost_time) {
    signed_transaction trx;
    wlog("+++++++++++++++++push_message:${n}", ("n", contract));
    try {
@@ -580,7 +586,7 @@ PyObject* push_messages_(string& contract, vector<string>& functions, vector<str
          for (int i=0;i<functions.size();i++) {
          		string action = functions[i];
          		string arg = args[i];
-            if (!rawargs) {
+         		if (!rawargs) {
                params = {contract, action, fc::json::from_string(arg)};
             } else {
                std::vector<char> v(arg.begin(), arg.end());
@@ -595,7 +601,10 @@ PyObject* push_messages_(string& contract, vector<string>& functions, vector<str
          actions.emplace_back( generate_nonce() );
       }
 
-      return send_actions(std::move(actions), !sign);
+      cost_time = get_microseconds();
+      PyObject* ret = send_actions(std::move(actions), !sign);
+      cost_time = get_microseconds() - cost_time;
+      return ret;
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());

@@ -121,4 +121,4 @@ string convert_to_eth_address(string& name);
 string convert_from_eth_address(string& eth_address);
 
 PyObject* push_messages_(string& contract, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
-                        bool sign, bool rawargs);
+                        bool sign, bool rawargs, uint64_t& cost_time);
