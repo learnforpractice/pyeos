@@ -76,6 +76,7 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
     interface/math_.cpp  
     interface/common.cpp
+    interface/debug_.cpp
 #    interface/codelimit.c 
     wrap/eosapi.wrap.cpp 
     wrap/database.wrap.cpp 

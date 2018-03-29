@@ -7,6 +7,9 @@ cdef extern from "<eosio/chain/micropython_interface.hpp>":
 cdef extern from "<eosio/chain/evm_interface.hpp>":
     void evm_test_(string _code, string _data);
 
+cdef extern from "../interface/debug_.hpp":
+    void debug_test();
+
 cdef extern from "py/gc.h":
     ctypedef int size_t 
     cdef struct gc_info_t:
@@ -33,3 +36,5 @@ def dump_info():
 def evm_test(string _code, string _data):
     evm_test_(_code, _data)
 
+def test():
+    debug_test()
