@@ -1,31 +1,22 @@
 from eoslib import *
 
-def init():
-    print('hello,world')
-
 def sayHello():
-    n = 0
-    s = 'a'*(1024*10)
-    for i in range(200,300):
-        store_str(N('hello'), N('table'), str(i), s)
-        n += i
-        n += i
-#    print('++++++++++++hello,world', n)
-#        print('got message on chain:', eoslib.read_message())
+    n = N('hello')
+    id = N('name')
+
+
+    name = read_action()
+    print('hello', name)
+
+    itr = db_find_i64(n, n, n, id)
+    if itr >= 0: # value exist, update it
+        old_name = db_get_i64(itr)
+        print('hello,', old_name)
+        db_update_i64(itr, n, name)
+    else:
+        db_store_i64(n, n, n, id, name)
 
 def apply(name, type):
-    print('hello,world', name, type)
-#    store_str(N('hello'), N('table'), 'helo', 'world')
-    v = load_str(N('hello'), N('hello'), N('table'), 'helo')
-    print('++++++++++++:', v)
-    a = read_action()
-    print('++++++++++++:', a, len(a))
-    
-    print('sender:', n2s(current_sender()))
-    print('receiver:', n2s(current_receiver()))
-    
     if type == N('sayhello'):
         sayHello()
-
-sayHello()
 
