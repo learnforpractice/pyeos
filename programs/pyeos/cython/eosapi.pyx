@@ -407,19 +407,14 @@ def quit_app():
 exit_by_signal_handler = False
 
 def signal_handler(signal, frame):
-    global exit_by_signal_handler
-    produce_block()
-    quit_app_()
-    exit_by_signal_handler = True
     exit()
     
 def register_signal_handler():
     signal.signal(signal.SIGINT, signal_handler)
 
 def on_python_exit():
-    if not exit_by_signal_handler:
-        produce_block()
-        quit_app_()
+    produce_block()
+    quit_app_()
 
 atexit.register(on_python_exit)
 

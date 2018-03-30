@@ -452,8 +452,7 @@ chain::action generate_nonce() {
 }
 
 
-PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
-                    bool sign) {
+PyObject* transfer_(string& sender, string& recipient, int amount, string memo, bool sign) {
 
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
@@ -611,13 +610,7 @@ PyObject* push_messages_(string& contract, vector<string>& functions, vector<str
    } catch (boost::exception& ex) {
       elog(boost::diagnostic_information(ex));
    }
-   /*
-    auto obj =
-    get_db().get_database().get<eosio::chain::block_summary_object>((uint16_t)trx.refBlockNum);
-    ilog("obj.block_id._hash[0] ${n} ", ("n",
-    fc::endian_reverse_u32(obj.block_id._hash[0]))); ilog("trx.refBlockNum ${n}
-    ", ("n", trx.refBlockNum) );
-    */
+
    return py_new_none();
 }
 
@@ -712,12 +705,12 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
       actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
 
       if (!abiPath.empty()) {
-				contracts::setabi handler;
-				handler.account = account;
-				try {
-					handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
-				} EOS_CAPTURE_AND_RETHROW(abi_type_exception,  "Fail to parse ABI JSON")
-				actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
+			contracts::setabi handler;
+			handler.account = account;
+			try {
+				handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
+			} EOS_CAPTURE_AND_RETHROW(abi_type_exception,  "Fail to parse ABI JSON")
+			actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
       }
 
       std::cout << localized("Publishing contract...") << std::endl;
