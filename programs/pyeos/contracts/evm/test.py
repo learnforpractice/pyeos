@@ -6,22 +6,16 @@ from solc import compile_source
 from web3.contract import ConciseContract
 import eosapi
 import wallet
+import initeos
 
 producer = eosapi.Producer()
 
 def init():
-    psw = 'PW5KQ5RieLowfi5gX81bQ4zTnHde3ZENpooryxdm4xbdoH6bNW9SZ'
-    wallet.open('mywallet')
-    wallet.unlock('mywallet', psw)
-
-    key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-    key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
-
     with producer:
         r = eosapi.get_account('evm')
         if not r.permissions:
             print('evm account not exist, create it.')
-            r = eosapi.create_account('eosio', 'evm', key1, key2)
+            r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
             assert r
 
 from eth_utils import (

@@ -128,6 +128,8 @@ void interactive_console() {
    }
 
    PyRun_SimpleString("import initeos");
+   PyRun_SimpleString("initeos.init()");
+
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
    ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));

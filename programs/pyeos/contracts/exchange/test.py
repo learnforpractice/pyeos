@@ -1,6 +1,7 @@
 import time
 import wallet
 import eosapi
+import initeos
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
@@ -8,20 +9,14 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 producer = eosapi.Producer()
 
 def init():
-    psw = 'PW5Kd5tv4var9XCzvQWHZVyBMPjHEXwMjH1V19X67kixwxRpPNM4J'
-    wallet.open('mywallet')
-    wallet.unlock('mywallet', psw)
-    
-    key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-    key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
     if not eosapi.get_account('currency'):
         with producer:
-            r = eosapi.create_account('inita', 'currency', key1, key2)
+            r = eosapi.create_account('inita', 'currency', initeos.key1, initeos.key2)
             assert r
 
     if not eosapi.get_account('exchange'):
         with producer:
-            r = eosapi.create_account('inita', 'exchange', key1, key2)
+            r = eosapi.create_account('inita', 'exchange', initeos.key1, initeos.key2)
             assert r
 
     with producer:

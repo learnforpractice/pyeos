@@ -709,7 +709,7 @@ PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
 			handler.account = account;
 			try {
 				handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
-			} EOS_CAPTURE_AND_RETHROW(abi_type_exception,  "Fail to parse ABI JSON")
+			} EOS_CAPTURE_AND_RETHROW(abi_type_exception)
 			actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
       }
 

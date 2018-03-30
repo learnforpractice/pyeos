@@ -1,8 +1,7 @@
 add_subdirectory( pyeos )
 
-add_subdirectory( nodeos )
+#add_subdirectory( nodeos )
 add_subdirectory( cleos )
-add_subdirectory( eosiowd )
 add_subdirectory( keosd )
 add_subdirectory( eosio-launcher )
 add_subdirectory( eosio-applesedemo )
