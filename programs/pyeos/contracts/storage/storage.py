@@ -14,7 +14,10 @@ class storage_dict(object):
         self._dict = {}
         self.table_id = table_id
 
-        itr = db_end_i64(g_code, g_scope, table_id);
+        itr = db_end_i64(g_code, g_scope, table_id)
+        if itr == -1: #no value in table
+            return
+        print('+++itr:', itr) # itr should be -2
         while True:
             itr, key = db_previous_i64(itr)
             if itr < 0:
@@ -35,7 +38,7 @@ class storage_dict(object):
                 table_id = int.from_bytes(value[8:8+key_length], 'little')
                 _key = storage_dict(table_id)
             else:
-                raise 'unknown key type'
+                raise Exception('unknown key type')
 
             if value_type == 0: #int
                 _value = int.from_bytes(value[8+key_length:], 'little')
@@ -48,7 +51,7 @@ class storage_dict(object):
                 table_id = int.from_bytes(value[8+key_length:], 'little')
                 _value = storage_dict(table_id)
             else:
-                raise 'unknown key type'
+                raise Exception('unknown key type')
 
             self._dict[_key] = _value
 
@@ -60,7 +63,7 @@ class storage_dict(object):
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
-            raise 'unsupported value type'
+            raise Exception('unsupported value type')
 
     def get_type(self,val):
         if type(val) == int:
@@ -72,7 +75,7 @@ class storage_dict(object):
         elif type(val) == storage_dict:
             return 3
         else:
-            raise 'unsupported type'
+            raise Exception('unsupported type')
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -139,7 +142,8 @@ def apply(name, type):
     a[100] = 'hello'
     a[101] = 'world'
     a['name'] = 'mike'
+    msg = read_action()
+    a[msg] = msg
     if 101 in a:
         del a[101]
-
 
