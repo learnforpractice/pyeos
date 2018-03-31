@@ -105,14 +105,16 @@ else:
     w3 = Web3(provider)
 
 
-def compile(contract_source_code):
-    main_class = '<stdin>:Greeter'
+def compile(contract_source_code, main_class):
 
     compiled_sol = compile_source(contract_source_code) # Compiled source code
-
+#    print(compiled_sol)
+    
 #    s = json.dumps(compiled_sol[main_class], sort_keys=False, indent=4, separators=(',', ': '))
-    contract_interface = compiled_sol[main_class]
+    for _class in compiled_sol.keys():
+        print(_class)
 
+    contract_interface = compiled_sol[main_class]
     return contract_interface
 
 def deploy(contract_interface):
@@ -126,6 +128,7 @@ def deploy(contract_interface):
             tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
             print('tx_hash:', tx_hash)
     print('=========================deploy end======================')
+
 def call_contract(contract_interface):
     contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
     contract_address = eosapi.eos_name_to_eth_address('evm')
@@ -151,6 +154,29 @@ def call_contract(contract_interface):
         print('++++++++++getValue:', r)
 
 
+def kitties_test(contract_interface):
+    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
+    contract_address = eosapi.eos_name_to_eth_address('evm')
+
+    # Contract instance in concise mode
+    contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
+
+    with producer:
+    #    r = contract_instance.getValue(transact={'from': address})
+    #    r = contract_instance.getValue(call={'from': address})
+        r = contract_instance.getValue(transact={'from': contract_address})
+        print('++++++++++getValue:', r)
+
+    with producer:
+        address = eosapi.eos_name_to_eth_address('evm')
+        r = contract_instance.setValue(119000, transact={'from': contract_address})
+        print('++++++++++++setValue:', r)
+
+    with producer:
+    #    r = contract_instance.getValue(transact={'from': address})
+    #    r = contract_instance.getValue(call={'from': address})
+        r = contract_instance.getValue(transact={'from': contract_address})
+        print('++++++++++getValue:', r)
 contract_source_code = '''
 pragma solidity ^0.4.0;
 contract Greeter {
@@ -170,9 +196,19 @@ contract Greeter {
 }
 '''
 def test():
-    contract_interface = compile(contract_source_code)
+    main_class = '<stdin>:Greeter'
+    contract_interface = compile(contract_source_code, main_class)
     deploy(contract_interface)
     call_contract(contract_interface)
+
+def test2():
+    main_class = '<stdin>:KittyCore'
+    with open('../../programs/pyeos/contracts/evm/cryptokitties.sol', 'r') as f:
+        contract_source_code = f.read()
+        contract_interface = compile(contract_source_code, main_class)
+        deploy(contract_interface)
+        kitties_test(contract_interface)
+
 
 if __name__ == '__main__':
     test()
