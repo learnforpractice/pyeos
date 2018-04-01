@@ -4,6 +4,7 @@
 #include <eosio/chain/transaction_metadata.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <algorithm>
+#include <appbase/application.hpp>
 
 namespace eosio { namespace chain { namespace resource_limits {
 
@@ -107,9 +108,13 @@ void resource_limits_manager::add_transaction_usage(const vector<account_name>& 
       rls.pending_cpu_usage += cpu_usage;
       rls.pending_net_usage += net_usage;
    });
-
-   EOS_ASSERT( state.pending_cpu_usage <= config.cpu_limit_parameters.max, block_resource_exhausted, "Block has insufficient cpu resources" );
-   EOS_ASSERT( state.pending_net_usage <= config.net_limit_parameters.max, block_resource_exhausted, "Block has insufficient net resources" );
+   if (appbase::app().is_debug_mode()) {
+		wlog("++++++state.pending_cpu_usage: ${n1}, cpu_limit_parameters.max: ${n2}", ("n1", state.pending_cpu_usage)("n2", config.cpu_limit_parameters.max));
+		wlog("++++++state.pending_net_usage: ${n1}, net_limit_parameters.max: ${n2}", ("n1", state.pending_net_usage)("n2", config.net_limit_parameters.max));
+   } else {
+		EOS_ASSERT( state.pending_cpu_usage <= config.cpu_limit_parameters.max, block_resource_exhausted, "Block has insufficient cpu resources" );
+		EOS_ASSERT( state.pending_net_usage <= config.net_limit_parameters.max, block_resource_exhausted, "Block has insufficient net resources" );
+   }
 }
 
 void resource_limits_manager::add_account_ram_usage( const account_name account, int64_t ram_delta, const char* use_format, const fc::variant_object& args ) {

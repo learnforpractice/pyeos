@@ -109,7 +109,7 @@ void apply_eosio_setcode(apply_context& context) {
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    auto  act = context.act.data_as<setcode>();
 
-   ilog("++++++++++apply_eosio_setcode ${n1} ${n2} ${n3}",("n1", act.account.to_string())("n2", act.account.value)("n3", context.receiver.to_string()));
+   ilog("++++++++++apply_eosio_setcode ${n1} ${n2} ${n3}",("n1", act.account.to_string())("n2", act.vmtype)("n3", context.receiver.to_string()));
 
    context.require_authorization(act.account);
    context.require_write_lock( config::eosio_auth_scope );
@@ -133,6 +133,7 @@ void apply_eosio_setcode(apply_context& context) {
       FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
    //   wlog( "set code: ${size}", ("size",act.code.size()));
       db.modify( account, [&]( auto& a ) {
+      		a.vm_type = act.vmtype.convert_to<uint8_t>();
          /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
          #warning TODO: update setcode message to include the hash, then validate it in validate
          a.code_version = code_id;

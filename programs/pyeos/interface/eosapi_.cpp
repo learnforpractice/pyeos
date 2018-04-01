@@ -1,7 +1,9 @@
 #include "eosapi_.hpp"
 
 #include <fc/time.hpp>
-#include "eosio/chain/block_summary_object.hpp"
+#include <eosio/chain/block_summary_object.hpp>
+#include <eosio/wallet_plugin/wallet_plugin.hpp>
+
 #include "fc/bitutil.hpp"
 #include "json.hpp"
 #include "pyobject.hpp"
@@ -113,14 +115,80 @@ read_only::get_info_results get_info() {
 auto tx_expiration = fc::seconds(30);
 bool tx_force_unique = false;
 
+uint32_t tx_cf_cpu_usage = 0;
+uint32_t tx_net_usage = 0;
 
-PyObject* push_transaction(signed_transaction& trx, bool skip_sign, packed_transaction::compression_type compression = packed_transaction::none) {
+
+string generate_nonce_value() {
+   return fc::to_string(fc::time_point::now().time_since_epoch().count());
+}
+
+chain::action generate_nonce() {
+   auto v = generate_nonce_value();
+   variant nonce = fc::mutable_variant_object()
+         ("value", v);
+   return chain::action( {}, config::system_account_name, "nonce", fc::raw::pack(nonce));
+}
+
+fc::variant determine_required_keys(const signed_transaction& trx) {
+   // TODO better error checking
+//   const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
+   auto& wallet_mgr = app().get_plugin<wallet_plugin>().get_wallet_manager();
+//   flat_set<public_key_type> wallet_manager::get_public_keys() {
+   const auto& public_keys = wallet_mgr.get_public_keys();
+
+   eosio::chain_apis::read_only::get_required_keys_params get_arg = {fc::variant((transaction)trx), public_keys};
+//   auto get_arg = fc::mutable_variant_object
+//           ("transaction", (transaction)trx)
+//           ("available_keys", variant(public_keys));
+//   read_only::get_required_keys_result
+//   const auto& required_keys = call(host, port, get_required_keys, get_arg);
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   auto results = ro_api.get_required_keys(get_arg);
+   return fc::variant(results.required_keys);
+}
+
+static uint32_t estimate_transaction_context_free_kilo_cpu_usage( const signed_transaction& trx, int32_t extra_kcpu = 1000 ) {
+   if (tx_cf_cpu_usage != 0) {
+      return (uint32_t)(tx_cf_cpu_usage + 1023UL) / (uint32_t)1024UL;
+   }
+
+   const uint32_t estimated_per_action_usage = config::default_base_per_action_cpu_usage * 10;
+   return extra_kcpu + (uint32_t)(trx.context_free_actions.size() * estimated_per_action_usage + 1023) / (uint32_t)1024;
+}
+
+static uint32_t estimate_transaction_net_usage_words( const signed_transaction& trx, packed_transaction::compression_type compression, size_t num_keys ) {
+   if (tx_net_usage != 0) {
+      return tx_net_usage / (uint32_t)8UL;
+   }
+
+   uint32_t sigs =  (uint32_t)5 +  // the maximum encoded size of the unsigned_int for the size of the signature block
+                    (uint32_t)(num_keys * sizeof(signature_type));
+
+   uint32_t packed_size_drift = compression == packed_transaction::none ?
+           4 :  // there is 1 variably encoded ints we haven't set yet, this size it can grow by 4 bytes
+           256; // allow for drift in the compression due to new data
+
+   uint32_t estimated_packed_size = (uint32_t)packed_transaction(trx, compression).data.size() + packed_size_drift;
+
+   return (uint32_t)(sigs + estimated_packed_size + (uint32_t)trx.context_free_data.size() + 7) / (uint32_t)8;
+}
+//bool   tx_skip_sign = false;
+
+PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
    trx.set_reference_block(info.head_block_id);
 
-   //    transaction_set_reference_block(trx, info.head_block_id);
-//   boost::sort(trx.scope);
+   if (tx_force_unique) {
+      trx.context_free_actions.emplace_back( generate_nonce() );
+   }
+
+   auto required_keys = determine_required_keys(trx);
+   size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
+
+   trx.kcpu_usage = estimate_transaction_context_free_kilo_cpu_usage(trx, extra_kcpu );
+   trx.net_usage_words = estimate_transaction_net_usage_words(trx, compression, num_keys);
 
    if (!skip_sign) {
       sign_transaction(trx);
@@ -154,7 +222,7 @@ PyObject* push_actions(std::vector<chain::action>&& actions, bool skip_sign, pac
    signed_transaction trx;
    trx.actions = std::forward<decltype(actions)>(actions);
 
-   return push_transaction(trx, skip_sign, compression);
+   return push_transaction(trx, skip_sign, 10000000, compression);
 }
 
 PyObject* send_actions(std::vector<chain::action>&& actions, bool skip_sign, packed_transaction::compression_type compression = packed_transaction::none) {
@@ -437,18 +505,6 @@ int get_transactions_(string& account_name, int skip_seq, int num_seq,
       elog(ex.to_detail_string());
    }
    return -1;
-}
-
-
-string generate_nonce_value() {
-   return fc::to_string(fc::time_point::now().time_since_epoch().count());
-}
-
-chain::action generate_nonce() {
-   auto v = generate_nonce_value();
-   variant nonce = fc::mutable_variant_object()
-         ("value", v);
-   return chain::action( {}, config::system_account_name, "nonce", fc::raw::pack(nonce));
 }
 
 
