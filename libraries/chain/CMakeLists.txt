@@ -9,6 +9,7 @@ add_library( eosio_chain
              name.cpp
              transaction.cpp
              block.cpp
+             block_trace.cpp
              wast_to_wasm.cpp
              wasm_interface.cpp
 
@@ -20,7 +21,7 @@ add_library( eosio_chain
              wasm_eosio_injection.cpp
 
              apply_context.cpp
-             rate_limiting.cpp
+             resource_limits.cpp
 
              fork_database.cpp
              get_config.cpp
