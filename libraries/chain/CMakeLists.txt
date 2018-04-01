@@ -36,6 +36,7 @@ add_library( eosio_chain
              contracts/abi_serializer.cpp
 
              micropython/mpeoslib.cpp
+             micropython/frozenmod.cpp
 
              evm/EosState.cpp
              evm/EosExecutive.cpp

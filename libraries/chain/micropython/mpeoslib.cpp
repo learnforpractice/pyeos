@@ -527,6 +527,10 @@ mp_obj_t ripemd160(const char* data, size_t datalen) {
 	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
+uint64_t get_action_account() {
+	return get_apply_ctx().act.account.value;
+}
+
 static struct eosapi s_eosapi;
 
 void init_eosapi() {
