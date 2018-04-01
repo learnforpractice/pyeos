@@ -3,6 +3,7 @@ from eoslib import *
 code = N('kitties')
 
 def deploy(mod_name, src_code):
+    print('++++++++++++deploy:mod_name', mod_name)
     id = hash(mod_name)
     itr = db_find_i64(code, code, code, id)
     if itr < 0:
@@ -19,7 +20,8 @@ def apply(name, action):
         src_code = msg[1+length:]
         deploy(mod_name, src_code)
     elif action == N('call'):
-        pass
+        import basement
+        print(basement)
     else:
         pass
     

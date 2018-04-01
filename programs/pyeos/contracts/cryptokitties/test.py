@@ -31,13 +31,13 @@ def deploy():
         if file_name in ('main.py', 'test.py'):
             continue
         src_code = open(os.path.join(src_dir, file_name), 'r').read()
-        mod_name = file_name[:-3]
+        mod_name = file_name
         msg = int.to_bytes(len(mod_name), 1, 'little')
         msg += mod_name.encode('utf8')
         msg += src_code.encode('utf8')
         with producer:
             print('++++++++++++++++deply:', file_name)
-            r = eosapi.push_message('kitties','sayhello',msg,{'kitties':'active'},rawargs=True)
+            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
             assert r
 
 def test(name=None):
@@ -46,7 +46,6 @@ def test(name=None):
             name = 'mike'
         r = eosapi.push_message('kitties','sayhello',name,{'kitties':'active'},rawargs=True)
         assert r
-
 
 def test2(count):
     import time
@@ -62,6 +61,11 @@ def test2(count):
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
+
+def test3(name=None):
+    with producer:
+        r = eosapi.push_message('kitties','call','hello,world',{'kitties':'active'},rawargs=True)
+        assert r
 
 def import_test():
     import kittybreeding

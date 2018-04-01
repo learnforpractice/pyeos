@@ -1,3 +1,6 @@
+#include <fc/log/logger.hpp>
+#include <eosio/chain/name.hpp>
+
 #include "mpeoslib.h"
 #include "extmod/crypto-algorithms/xxhash.h"
 
@@ -23,6 +26,7 @@ extern "C" {
 static char code_data[2048];
 
 int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
+	ilog("+++++++++mod_name: ${n}", ("n", mod_name));
 	uint64_t code = get_action_account();
    uint64_t id = XXH64(mod_name, len, 0);
    int itr = db_find_i64(code, code, code, id);
@@ -42,12 +46,17 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
 
 mp_import_stat_t mp_frozen_stat(const char *mod_name) {
 	uint64_t code = get_action_account();
+	mp_import_stat_t ret;
+
 	uint64_t id = XXH64(mod_name, strlen(mod_name), 0);
    int itr = db_find_i64(code, code, code, id);
    if (itr < 0) {
-   		return MP_IMPORT_STAT_NO_EXIST;
+   		ret = MP_IMPORT_STAT_NO_EXIST;
+   } else {
+      ret = MP_IMPORT_STAT_FILE;
    }
-   return MP_IMPORT_STAT_FILE;
+	ilog("+++++++++mod_name: ${n1}, code: ${n2}, ret: ${n3}", ("n1", mod_name)("n2", eosio::chain::name(code).to_string())("n3", ret));
+	return ret;
 }
 
 }
