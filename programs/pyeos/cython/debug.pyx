@@ -9,6 +9,7 @@ cdef extern from "<eosio/chain/evm_interface.hpp>":
 
 cdef extern from "../interface/debug_.hpp":
     void debug_test();
+    void set_debug_mode(int mode);
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -25,7 +26,9 @@ cdef extern from "py/gc.h":
     void gc_collect()
     
 def eval(const char* code):
+    set_debug_mode(1)
     execute_from_str(code)
+    set_debug_mode(0)
 
 def collect():
     gc_collect()

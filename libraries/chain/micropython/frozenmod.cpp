@@ -21,11 +21,24 @@ int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t i
 int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 */
 
+static int s_debug_mode = 0;
+void set_debug_mode(int mode) {
+	s_debug_mode = mode;
+}
+
+int get_debug_mode() {
+	return s_debug_mode;
+}
+
+
 extern "C" {
 
-static char code_data[2048];
+static char code_data[1024*64];
 
 int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
+	if (get_debug_mode()) {
+		return MP_FROZEN_NONE;
+	}
 	ilog("+++++++++mod_name: ${n}", ("n", mod_name));
 	uint64_t code = get_action_account();
    uint64_t id = XXH64(mod_name, len, 0);
@@ -34,6 +47,8 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
    		return MP_FROZEN_NONE;
    }
    	int size = db_get_i64(itr, code_data, sizeof(code_data));
+   	eosio_assert(size < sizeof(code_data), "source file too large!");
+
 	qstr qstr_mod_name = qstr_from_str(mod_name);
    mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, code_data, size, 0);
    *data = lex;
@@ -45,6 +60,10 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
 }
 
 mp_import_stat_t mp_frozen_stat(const char *mod_name) {
+	if (get_debug_mode()) {
+		return MP_IMPORT_STAT_NO_EXIST;
+	}
+
 	uint64_t code = get_action_account();
 	mp_import_stat_t ret;
 
