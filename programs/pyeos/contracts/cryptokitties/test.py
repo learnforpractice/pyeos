@@ -22,7 +22,7 @@ def init():
 
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
-def deploy():
+def deploy_all():
     src_dir = '../../programs/pyeos/contracts/cryptokitties'
     files = os.listdir(src_dir)
     for file_name in files:
@@ -39,6 +39,20 @@ def deploy():
             print('++++++++++++++++deply:', file_name)
             r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
             assert r
+
+def deploy(src_file):
+    src_dir = '../../programs/pyeos/contracts/cryptokitties'
+
+    src_code = open(os.path.join(src_dir, src_file), 'r').read()
+    mod_name = src_file
+    msg = int.to_bytes(len(mod_name), 1, 'little')
+    msg += mod_name.encode('utf8')
+    msg += src_code.encode('utf8')
+    with producer:
+        print('++++++++++++++++deply:', src_file)
+        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+        assert r
+
 
 def test(name=None):
     with producer:
@@ -62,7 +76,7 @@ def test2(count):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
 
-def test3(name=None):
+def call(name=None):
     with producer:
         r = eosapi.push_message('kitties','call','hello,world',{'kitties':'active'},rawargs=True)
         assert r

@@ -20,8 +20,26 @@ def apply(name, action):
         src_code = msg[1+length:]
         deploy(mod_name, src_code)
     elif action == N('call'):
+        import backend
+        import auction
         import basement
-        print(basement)
+        import clockauction
+        import clockauctionbase
+        import erc720metadata
+        import erc721
+        import genescienceinterface
+        import kitty
+        import kittyaccesscontrol
+        import kittyauction
+        import kittybase
+        import kittybreeding
+        import kittycore
+        import kittyminting
+        import kittyownership
+        import ownable
+        import pausable
+        import saleclockauction
+        import siringclockauction
     else:
         pass
     
