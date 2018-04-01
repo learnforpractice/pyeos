@@ -1,3 +1,5 @@
+from backend import *
+from basement import *
 from kittyaccesscontrol import KittyAccessControl
 # @title Base contract for CryptoKitties. Holds all common structs, events and base variables.
 # @author Axiom Zen (https://www.axiomzen.co)
@@ -5,6 +7,7 @@ from kittyaccesscontrol import KittyAccessControl
 class KittyBase(KittyAccessControl):
     #/*** EVENTS ***/
     def __init__(self):
+        '''FIXME:
         self.cooldowns = [
             uint32(1 minutes),
             uint32(2 minutes),
@@ -20,7 +23,7 @@ class KittyBase(KittyAccessControl):
             uint32(2 days),
             uint32(4 days),
             uint32(7 days) ]
-    
+        '''
         # An approximation of currently how many seconds are in between blocks.
         self.secondsPerBlock = uint256(15)
     
@@ -119,7 +122,7 @@ class KittyBase(KittyAccessControl):
     # @param _genes The kitty's genetic code.
     # @param _owner The inital owner of this cat, must be non-zero (except for the unKitty, ID 0)
     def _createKitty(_matronId: uint256, _sireId: uint256, _generation: uint256, 
-                     _genes: uint256, _owner: address) -> uint
+                     _genes: uint256, _owner: address) -> uint:
         # These requires are not strictly necessary, our calling code should make
         # sure that these conditions are never broken. However! _createKitty() is already
         # an expensive call (for storage), and it doesn't hurt to be especially careful

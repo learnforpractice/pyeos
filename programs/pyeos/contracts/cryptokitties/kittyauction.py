@@ -1,4 +1,9 @@
+from backend import *
+from basement import *
+
 from kittybreeding import KittyBreeding
+from saleclockauction import SaleClockAuction
+
 # @title Handles creating auctions for sale and siring of kitties.
 #  This wrapper of ReverseAuction exists only so that users can create
 #  auctions with only one transaction.
@@ -48,7 +53,7 @@ class KittyAuction(KittyBreeding):
         # Ensure the kitty is not pregnant to prevent the auction
         # contract accidentally receiving ownership of the child.
         # NOTE: the kitty IS allowed to be in a cooldown.
-        require(!isPregnant(_kittyId));
+        require(not self.isPregnant(_kittyId));
         self._approve(_kittyId, saleAuction);
         # Sale auction throws if inputs are invalid and clears
         # transfer and sire approval after escrowing the kitty.

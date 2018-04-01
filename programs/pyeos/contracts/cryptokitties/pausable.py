@@ -1,3 +1,5 @@
+from basement import *
+from ownable import Ownable
 '''
  * @title Pausable
  * @dev Base contract which allows children to implement an emergency stop mechanism.
@@ -36,11 +38,11 @@ class Pausable(Ownable):
            require(self.paused)
            return func(self, *args)
        return func_wrapper
-   '''
+    '''
    * @dev called by the owner to pause, triggers stopped state
     '''
-   @onlyOwner
-   @whenNotPaused
+    @onlyOwner
+    @whenNotPaused
     def pause() -> bool:
         self.paused = true;
         self.Pause();
@@ -49,8 +51,8 @@ class Pausable(Ownable):
     '''
    * @dev called by the owner to unpause, returns to normal state
     '''
-   @onlyOwner
-   @whenNotPaused
+    @onlyOwner
+    @whenNotPaused
     def unpause() -> bool:
         self.paused = False
         self.Unpause()

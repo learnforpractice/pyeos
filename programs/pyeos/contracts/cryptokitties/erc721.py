@@ -1,3 +1,4 @@
+from backend import *
 class ERC721:
 #     Required methods
     def totalSupply(self) -> uint256:

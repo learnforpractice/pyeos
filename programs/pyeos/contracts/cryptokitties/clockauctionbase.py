@@ -1,3 +1,6 @@
+from backend import *
+from auction import Auction
+
 # @title Auction Core
 # @dev Contains models, variables, and internal methods for the auction.
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -51,7 +54,8 @@ class ClockAuctionBase:
     def _addAuction(self, _tokenId: uint256, _auction: Auction):
         #Require that all auctions have a duration of
         #at least one minute. (Keeps our math from getting hairy!)
-        require(_auction.duration >= 1 minutes)
+#        require(_auction.duration >= 1 minutes)
+        require(_auction.duration >= 60)
         self.tokenIdToAuction[_tokenId] = _auction;
 
         self.AuctionCreated(
@@ -80,7 +84,7 @@ class ClockAuctionBase:
         require(self._isOnAuction(auction));
 
         #Check that the bid is greater than or equal to the current price
-        uint256 price = self._currentPrice(auction);
+        price = self._currentPrice(auction);
         require(_bidAmount >= price);
 
         #Grab a reference to the seller before the auction struct

@@ -1,3 +1,5 @@
+from backend import *
+from basement import *
 from kittybase import KittyBase
 from erc721 import ERC721
 # @title The facet of the CryptoKitties core contract that manages ownership, ERC-721 (draft) compliant.
@@ -164,8 +166,8 @@ class KittyOwnership(KittyBase, ERC721):
     #  expensive (it walks the entire Kitty array looking for cats belonging to owner),
     #  but it also returns a dynamic array, which is only supported for web3 calls, and
     #  not contract-to-contract calls.
-    def tokensOfOwner(self, address _owner) -> List(uint256):
-        uint256 tokenCount = self.balanceOf(_owner)
+    def tokensOfOwner(self, _owner: address) -> List:
+        tokenCount = self.balanceOf(_owner)
 
         result = List([],uint256)
 
@@ -178,7 +180,7 @@ class KittyOwnership(KittyBase, ERC721):
 #            uint256 totalCats = self.totalSupply();
 #            uint256 resultIndex = 0;
             result = List(size = tokenCount, value_type=uint256)
-            totalCats = self.totalSupply();]
+            totalCats = self.totalSupply()
             resultIndex = 0
 
             # We count on the fact that all cats have IDs starting at 1 and increasing
@@ -223,7 +225,7 @@ class KittyOwnership(KittyBase, ERC721):
     #  This method is licenced under the Apache License.
     #  Ref: https://github.com/Arachnid/solidity-stringutils/blob/2f6ca9accb48ae14c66f1437ec50ed19a0616f78/strings.sol
     #FIXME
-    def _toString(self, _rawBytes, _stringLength) -> str：
+    def _toString(self, _rawBytes, _stringLength) -> str:
         assert False
 
     '''
@@ -245,7 +247,7 @@ class KittyOwnership(KittyBase, ERC721):
     # @notice Returns a URI pointing to a metadata package for this token conforming to
     #  ERC-721 (https://github.com/ethereum/EIPs/issues/721)
     # @param _tokenId The ID number of the Kitty whose metadata should be returned.
-    def tokenMetadata(self, _tokenId: uint256, _preferredTransport: str) -> string:
+    def tokenMetadata(self, _tokenId: uint256, _preferredTransport: str) -> str:
         require(erc721Metadata != address(0))
 #        bytes32[4] memory buffer;
 #        uint256 count;

@@ -1,8 +1,9 @@
+from backend import *
 # @title The external contract that is responsible for generating metadata for the kitties,
 #  it has one function that will return the data as bytes.
 class ERC721Metadata:
     # @dev Given a token Id, returns a byte array that is supposed to be converted into string.
-    def getMetadata(uint256 _tokenId, string) -> (List, uint256):
+    def getMetadata(_tokenId: uint256) -> (List, uint256):
         buffer = List(size = 4, value_type=str)
         count = 0
         if _tokenId == 1:

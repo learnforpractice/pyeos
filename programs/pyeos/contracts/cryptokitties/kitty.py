@@ -1,3 +1,5 @@
+from backend import *
+
 #/*** DATA TYPES ***/
 
 # @dev The main Kitty struct. Every cat in CryptoKitties is represented by a copy

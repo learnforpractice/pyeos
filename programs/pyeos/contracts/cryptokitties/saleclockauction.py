@@ -1,14 +1,17 @@
+from backend import *
+from basement import *
+
 from clockauction import ClockAuction
 # @title Clock auction modified for sale of kitties
 # @notice We omit a fallback function to prevent accidental sends to this contract.
 class SaleClockAuction(ClockAuction):
     # Delegate constructor
-     def __init__(self, _nftAddr: address, _cut: uint256):
+    def __init__(self, _nftAddr: address, _cut: uint256):
         ClockAuction.__init__(self, _nftAddr, _cut)
         # @dev Sanity check that allows us to ensure that we are pointing to the
         #  right auction in our setSaleAuctionAddress() call.
         self.isSaleClockAuction = True
-
+        
         # Tracks last 5 sale price of gen0 kitty sales
         gen0SaleCount = uint256(0)
         lastGen0SalePrices = List(size = 5, value_type = uint256)

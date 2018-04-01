@@ -1,6 +1,8 @@
 from backend import *
+from basement import *
 from pausable import Pausable
 from clockauctionbase import ClockAuctionBase
+
 
 # @title Clock auction for non-fungible tokens.
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -35,7 +37,7 @@ class ClockAuction(Pausable, ClockAuctionBase):
     #  Always transfers to the NFT contract, but can be called either by
     #  the owner or the NFT contract.
     def withdrawBalance():
-        nftAddress = address(self.nonFungibleContract);
+        nftAddress = address(self.nonFungibleContract)
         require(msg.sender == owner or msg.sender == nftAddress)
         # We are using this boolean method to make sure that even if one fails it will still work
         res = nftAddress.send(this.balance)
@@ -48,7 +50,7 @@ class ClockAuction(Pausable, ClockAuctionBase):
     #  price and ending price (in seconds).
     # @param _seller - Seller, if not the message sender
     @whenNotPaused
-    function createAuction(self, _tokenId: uint256, _startingPrice: uint256,
+    def createAuction(self, _tokenId: uint256, _startingPrice: uint256,
                            _endingPrice: uint256,
                             _duration: uint256,
                             _seller: uint256):

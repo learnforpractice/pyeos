@@ -1,3 +1,4 @@
+from backend import *
 #/ @title SEKRETOOOO
 class GeneScienceInterface:
     #/ @dev simply a boolean to indicate this is the contract we expect to be

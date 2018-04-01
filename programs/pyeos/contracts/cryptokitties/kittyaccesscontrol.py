@@ -1,3 +1,5 @@
+from backend import *
+from basement import *
 #/ @title A facet of KittyCore that manages special access privileges.
 #/ @author Axiom Zen (https://www.axiomzen.co)
 #/ @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.
@@ -60,33 +62,6 @@ class KittyAccessControl:
     def paused(self, value):
         self._paused = value
 
-    #/ @dev Access modifier for CEO-only functionality
-    def onlyCEO(func):
-       def func_wrapper(self, *args):
-           require_auth(self._ceoAddress)
-           return func(self, *args)
-       return func_wrapper
-
-    #/ @dev Access modifier for CFO-only functionality
-    def onlyCFO():
-       def func_wrapper(self, *args):
-           require_auth(self._cfoAddress)
-           return func(self, *args)
-       return func_wrapper
-
-    #/ @dev Access modifier for COO-only functionality
-    def onlyCOO():
-       def func_wrapper(self, *args):
-           require_auth(self._cooAddress)
-           return func(self, *args)
-       return func_wrapper
-
-    def onlyCLevel(func):
-       def func_wrapper(self, *args):
-           eosio_assert(msg.sender == cooAddress or msg.sender == ceoAddress or msg.sender == cfoAddress, "only clevel")
-           return func(self, *args)
-       return func_wrapper
-
     #/ @dev Assigns a new address to act as the CEO. Only available to the current CEO.
     #/ @param _newCEO The address of the new CEO
     @onlyCEO
@@ -110,25 +85,11 @@ class KittyAccessControl:
 
     #/*** Pausable functionality adapted from OpenZeppelin ***/
 
-    #/ @dev Modifier to allow actions only when the contract IS NOT paused
-    def whenNotPaused(self):
-       def func_wrapper(self, *args):
-           require(not self._paused)
-           return func(self, *args)
-       return func_wrapper
-
-    #/ @dev Modifier to allow actions only when the contract IS paused
-    def whenPaused(self):
-       def func_wrapper(self, *args):
-           require(self._paused)
-           return func(self, *args)
-       return func_wrapper
-
     #/ @dev Called by any "C-level" role to pause the contract. Used only when
     #/  a bug or exploit is detected and we need to limit damage.
     @onlyCLevel
+    @whenNotPaused
     def pause(self):
-        self.whenNotPaused()
         self.paused = True;
 
     #/ @dev Unpauses the smart contract. Can only be called by the CEO, since

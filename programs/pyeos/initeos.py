@@ -1,4 +1,5 @@
 import os
+import sys
 import wallet
 
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
@@ -26,3 +27,6 @@ def init():
     for priv_key in priv_keys:
         if not priv_key in exist_priv_keys:
             wallet.import_key('mywallet', priv_key)
+
+    sys.path.append('/Users/newworld/dev/pyeos/programs/pyeos/contracts/cryptokitties')
+

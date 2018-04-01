@@ -1,3 +1,6 @@
+from backend import *
+from basement import *
+
 from kittyminting import KittyMinting
 # @title CryptoKitties: Collectible, breedable, and oh-so-adorable cats on the Ethereum blockchain.
 # @author Axiom Zen (https://www.axiomzen.co)
@@ -81,7 +84,7 @@ class KittyCore(KittyMinting):
 
     # @notice Returns all the relevant information about a specific kitty.
     # @param _id The ID of the kitty of interest.
-    def getKitty(self, uint256 _id):
+    def getKitty(self, _id: uint256):
         kit = kitties[_id]
         # if this variable is 0 then it's not gestating
         isGestating = (kit.siringWithId != 0)

@@ -1,3 +1,7 @@
+from backend import *
+from basement import *
+
+from kitty import Kitty
 from kittyownership import KittyOwnership
 # @title A facet of KittyCore that manages Kitty siring, gestation, and birth.
 # @author Axiom Zen (https://www.axiomzen.co)
@@ -247,7 +251,7 @@ class KittyBreeding(KittyOwnership):
     #  new kitten will be ready to breed again. Note that anyone can call this function (if they
     #  are willing to pay the gas!), but the new kitten always goes to the mother's owner.
     @whenNotPaused
-    def giveBirth(_matronId: uint256) -> uint256
+    def giveBirth(_matronId: uint256) -> uint256:
         # Grab a reference to the matron in storage.
         matron = self.kitties[_matronId];
 
