@@ -35,10 +35,12 @@ def deploy_all():
         msg = int.to_bytes(len(mod_name), 1, 'little')
         msg += mod_name.encode('utf8')
         msg += src_code.encode('utf8')
-        with producer:
-            print('++++++++++++++++deply:', file_name)
-            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
-            assert r
+
+        print('++++++++++++++++deply:', file_name)
+        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+        assert r
+    producer.produce_block()
+
 
 def deploy(src_file):
     src_dir = '../../programs/pyeos/contracts/cryptokitties'
