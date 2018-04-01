@@ -33,7 +33,7 @@ class storage_list(object):
                 table_id = int.from_bytes(value[2:], 'little')
                 _value = storage_dict(table_id)
             else:
-                raise Exception('unknown key type')
+                raise TypeError('unknown key type')
 
             self._list.insert(0,_value)
 
@@ -45,7 +45,7 @@ class storage_list(object):
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
-            raise Exception('unsupported value type')
+            raise TypeError('unsupported value type')
 
     def get_type(self,val):
         if type(val) == int:
@@ -57,7 +57,7 @@ class storage_list(object):
         elif type(val) == storage_dict:
             return 3
         else:
-            raise Exception('unsupported type')
+            raise TypeError('unsupported type')
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -142,7 +142,7 @@ class storage_dict(object):
                 table_id = int.from_bytes(value[8:8+key_length], 'little')
                 _key = storage_dict(table_id)
             else:
-                raise Exception('unknown key type')
+                raise TypeError('unknown key type')
 
             if value_type == 0: #int
                 _value = int.from_bytes(value[8+key_length:], 'little')
@@ -155,7 +155,7 @@ class storage_dict(object):
                 table_id = int.from_bytes(value[8+key_length:], 'little')
                 _value = storage_dict(table_id)
             else:
-                raise Exception('unknown key type')
+                raise TypeError('unknown key type')
 
             self._dict[_key] = _value
 
@@ -167,7 +167,7 @@ class storage_dict(object):
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
-            raise Exception('unsupported value type')
+            raise TypeError('unsupported value type')
 
     def get_type(self,val):
         if type(val) == int:
@@ -179,7 +179,7 @@ class storage_dict(object):
         elif type(val) == storage_dict:
             return 3
         else:
-            raise Exception('unsupported type')
+            raise TypeError('unsupported type')
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -193,10 +193,10 @@ class storage_dict(object):
             raw_data = data
         elif data_type == 2: #list
             raw_length = 8
-            raw_data = data.table_id
+            raw_data = int.to_bytes(data.table_id, 8, 'little')
         elif data_type == 3: #dict
             raw_length = 8
-            raw_data = data.table_id
+            raw_data = int.to_bytes(data.table_id, 8, 'little')
         return (data_type, raw_length, raw_data)
     
     def __getitem__(self, key):
@@ -235,19 +235,24 @@ class storage_dict(object):
             db_remove_i64(itr)
 
     def __repr__(self):
-        dictrepr = dict.__repr__(self)
-        return '%s(%s)' % (type(self).__name__, dictrepr)
+        return '%s(%s)' % (type(self).__name__, str(self._dict))
 
 def apply(name, type):
     require_auth(g_code)
-    a = storage_dict(123)
+    a = storage_dict(N('a'))
+    b = storage_dict(N('b'))
     for key in a:
         print(key, a[key])
     a[100] = 'hello'
     a[101] = 'world'
     a['name'] = 'mike'
+    b[0] = '0'
+    b[1] = '1'
+    a['b'] = b
+    
     msg = read_action()
     a[msg] = msg
+    b[msg] = msg
     if 101 in a:
         del a[101]
 

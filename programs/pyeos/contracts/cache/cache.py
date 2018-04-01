@@ -28,7 +28,7 @@ class cache_list(object):
             elif value_type == 1: #str
                 _value = value[2:]
             else:
-                raise 'unknown key type'
+                raise TypeError('unknown key type')
 
             self._dict[_key] = _value
 
@@ -57,7 +57,7 @@ class cache_list(object):
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
-            raise 'unsupported value type'
+            raise TypeError('unsupported value type')
 
     def get_type(self,val):
         if type(val) == int:
@@ -69,7 +69,7 @@ class cache_list(object):
         elif type(val) == storage_dict:
             return 3
         else:
-            raise 'unsupported type'
+            raise TypeError('unsupported type')
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -141,7 +141,7 @@ class cache_dict(object):
                 table_id = int.from_bytes(value[8:8+key_length], 'little')
                 _key = storage_dict(table_id)
             else:
-                raise 'unknown key type'
+                raise TypeError('unknown key type')
 
             if value_type == 0: #int
                 _value = int.from_bytes(value[8+key_length:], 'little')
@@ -154,7 +154,7 @@ class cache_dict(object):
                 table_id = int.from_bytes(value[8+key_length:], 'little')
                 _value = storage_dict(table_id)
             else:
-                raise 'unknown key type'
+                raise TypeError('unknown key type')
 
             self._dict[_key] = _value
 
@@ -186,7 +186,7 @@ class cache_dict(object):
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
-            raise 'unsupported value type'
+            raise TypeError('unsupported value type')
 
     def get_type(self,val):
         if type(val) == int:
@@ -198,7 +198,7 @@ class cache_dict(object):
         elif type(val) == storage_dict:
             return 3
         else:
-            raise 'unsupported type'
+            raise TypeError('unsupported type')
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -212,10 +212,10 @@ class cache_dict(object):
             raw_data = data
         elif data_type == 2: #list
             raw_length = 8
-            raw_data = data.table_id
+            raw_data = int.to_bytes(data.table_id, 8, 'little')
         elif data_type == 3: #dict
             raw_length = 8
-            raw_data = data.table_id
+            raw_data = int.to_bytes(data.table_id, 8, 'little')
         return (data_type, raw_length, raw_data)
 
     def __getitem__(self, key):
