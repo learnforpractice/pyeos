@@ -9,6 +9,12 @@ msg.value (uint): number of wei sent with the message
 
 contract_owner = N('cryptokittie') #sorry kitty, max 12 charactor support
 
+def event(func):
+   def func_wrapper(self, *args):
+       print('TODO: event')
+       return func(self, *args)
+   return func_wrapper
+
 def balanceOf(address):
     return 99999
 
@@ -371,8 +377,8 @@ class KittyAccessControl:
     #/ @notice This is public rather than external so it can be called by
     #/  derived contracts.
     @onlyCEO
+    @whenPaused
     def unpause():
-        self.whenPaused()
         # can't unpause if contract was upgraded
         self.paused = False
 
@@ -440,7 +446,7 @@ class Kitty:
 # @title Base contract for CryptoKitties. Holds all common structs, events and base variables.
 # @author Axiom Zen (https://www.axiomzen.co)
 # @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.
-class KittyBase : KittyAccessControl:
+class KittyBase(KittyAccessControl):
     #/*** EVENTS ***/
     def __init__(self):
         self.cooldowns = [
@@ -509,12 +515,14 @@ class KittyBase : KittyAccessControl:
     #  includes any time a cat is created through the giveBirth method, but it is also called
     #  when a new gen0 cat is created.
     #event Birth(address owner, uint256 kittyId, uint256 matronId, uint256 sireId, uint256 genes);
+    @event
     def Birth(owner: address, kittyId: uint256, matronId: uint256, sireId: uint256, genes: uint256):
         pass
 
     # @dev Transfer event as defined in current draft of ERC721. Emitted every time a kitten
     #  ownership is assigned, including births.
     #event Transfer(address from, address to, uint256 tokenId);
+    @event
     def Transfer(_from: address, to: address, tokenId: uint256):
         pass
 
@@ -529,18 +537,18 @@ class KittyBase : KittyAccessControl:
 
 
     # @dev Assigns ownership of a specific Kitty to an address.
-    def _transfer(address _from, address _to, uint256 _tokenId):
+    def _transfer(_from: address, _to: address, _tokenId: uint256):
         # Since the number of kittens is capped to 2^32 we can't overflow this
-        self.ownershipTokenCount[_to]++
+        self.ownershipTokenCount[_to]+=1
         # transfer ownership
         self.kittyIndexToOwner[_tokenId] = _to
         # When creating new kittens _from is 0x0, but we can't account that address.
         if _from != address(0):
-            ownershipTokenCount[_from]--
+            self.ownershipTokenCount[_from]-=1
             # once the kitten is transferred also clear sire allowances
-            del sireAllowedToAddress[_tokenId]
+            del self.sireAllowedToAddress[_tokenId]
             # clear any previously approved ownership exchange
-            del kittyIndexToApproved[_tokenId]
+            del self.kittyIndexToApproved[_tokenId]
 
         # Emit the transfer event.
         self.Transfer(_from, _to, _tokenId)
@@ -596,7 +604,7 @@ class KittyBase : KittyAccessControl:
 
         # This will assign ownership, and also emit the Transfer event as
         # per ERC721 draft
-        _transfer(0, _owner, newKittenId)
+        self._transfer(0, _owner, newKittenId)
         return newKittenId
 
     # Any C-level can fix how many seconds per blocks are currently observed.
@@ -610,17 +618,17 @@ class KittyBase : KittyAccessControl:
 #  it has one function that will return the data as bytes.
 class ERC721Metadata:
     # @dev Given a token Id, returns a byte array that is supposed to be converted into string.
-    def getMetadata(uint256 _tokenId, string) -> (Dict, uint256) {
-        buffer = Dict()
+    def getMetadata(uint256 _tokenId, string) -> (List, uint256):
+        buffer = List(size = 4, value_type=str)
         count = 0
-        if (_tokenId == 1) {
+        if _tokenId == 1:
             buffer[0] = "Hello World! :D";
             count = 15;
-        } else if (_tokenId == 2) {
+        elif _tokenId == 2:
             buffer[0] = "I would definitely choose a medi";
             buffer[1] = "um length string.";
             count = 49;
-        } else if (_tokenId == 3) {
+        elif _tokenId == 3:
             buffer[0] = "Lorem ipsum dolor sit amet, mi e";
             buffer[1] = "st accumsan dapibus augue lorem,";
             buffer[2] = " tristique vestibulum id, libero";
@@ -668,16 +676,17 @@ class KittyOwnership(KittyBase, ERC721):
     # @notice Introspection interface as per ERC-165 (https://github.com/ethereum/EIPs/issues/165).
     #  Returns true for any standardized interfaces implemented by this contract. We implement
     #  ERC-165 (obviously!) and ERC-721.
-    def supportsInterface(bytes4 _interfaceID) -> bool:
+
+    def supportsInterface(self, _interfaceID: bytes) -> bool:
         # DEBUG ONLY
         #require((InterfaceSignature_ERC165 == 0x01ffc9a7) && (InterfaceSignature_ERC721 == 0x9a20483d));
-        return (_interfaceID == InterfaceSignature_ERC165) or (_interfaceID == InterfaceSignature_ERC721)
+        return (_interfaceID == self.InterfaceSignature_ERC165) or (_interfaceID == self.InterfaceSignature_ERC721)
 
 
     # @dev Set the address of the sibling contract that tracks metadata.
     #  CEO only.
     @onlyCEO
-    def setMetadataAddress(_contractAddress: address):
+    def setMetadataAddress(self, _contractAddress: address):
         self.erc721Metadata = ERC721Metadata(_contractAddress)
 
     # Internal utility functions: These functions all assume that their input arguments
@@ -687,28 +696,28 @@ class KittyOwnership(KittyBase, ERC721):
     # @dev Checks if a given address is the current owner of a particular Kitty.
     # @param _claimant the address we are validating against.
     # @param _tokenId kitten id, only valid when > 0
-    def _owns(_claimant: address, _tokenId: uint256) -> bool:
-        return kittyIndexToOwner[_tokenId] == _claimant
+    def _owns(self, _claimant: address, _tokenId: uint256) -> bool:
+        return self.kittyIndexToOwner[_tokenId] == _claimant
 
     # @dev Checks if a given address currently has transferApproval for a particular Kitty.
     # @param _claimant the address we are confirming kitten is approved for.
     # @param _tokenId kitten id, only valid when > 0
-    def _approvedFor(_claimant: address, _tokenId: uint256) -> bool:
-        return kittyIndexToApproved[_tokenId] == _claimant
+    def _approvedFor(self, _claimant: address, _tokenId: uint256) -> bool:
+        return self.kittyIndexToApproved[_tokenId] == _claimant
 
     # @dev Marks an address as being approved for transferFrom(), overwriting any previous
     #  approval. Setting _approved to address(0) clears all transfer approval.
     #  NOTE: _approve() does NOT send the Approval event. This is intentional because
     #  _approve() and transferFrom() are used together for putting Kitties on auction, and
     #  there is no value in spamming the log with Approval events in that case.
-    def _approve(_tokenId: uint256, _approved: address):
-        kittyIndexToApproved[_tokenId] = _approved
+    def _approve(self, _tokenId: uint256, _approved: address):
+        self.kittyIndexToApproved[_tokenId] = _approved
 
     # @notice Returns the number of Kitties owned by a specific address.
     # @param _owner The owner address to check.
     # @dev Required for ERC-721 compliance
-    def balanceOf(_owner: address)  -> uint256:
-        return ownershipTokenCount[_owner]
+    def balanceOf(self, _owner: address)  -> uint256:
+        return self.ownershipTokenCount[_owner]
     
 
     # @notice Transfers a Kitty to another address. If transferring to a smart
@@ -717,7 +726,7 @@ class KittyOwnership(KittyBase, ERC721):
     # @param _to The address of the recipient, can be a user or contract.
     # @param _tokenId The ID of the Kitty to transfer.
     # @dev Required for ERC-721 compliance.
-    def transfer(_to: address, _tokenId: uint256):
+    def transfer(self, _to: address, _tokenId: uint256):
         self.whenNotPaused()
         # Safety check to prevent against an unexpected 0x0 default.
         require(_to != address(0))
@@ -731,9 +740,9 @@ class KittyOwnership(KittyBase, ERC721):
         require(_to != address(saleAuction))
         require(_to != address(siringAuction))
         # You can only send your own cat.
-        require(_owns(msg.sender, _tokenId))
+        require(self._owns(msg.sender, _tokenId))
         # Reassign ownership, clear pending approvals, emit Transfer event.
-        _transfer(msg.sender, _to, _tokenId)
+        self._transfer(msg.sender, _to, _tokenId)
 
     # @notice Grant another address the right to transfer a specific Kitty via
     #  transferFrom(). This is the preferred flow for transfering NFTs to contracts.
@@ -741,8 +750,8 @@ class KittyOwnership(KittyBase, ERC721):
     #  clear all approvals.
     # @param _tokenId The ID of the Kitty that can be transferred if this call succeeds.
     # @dev Required for ERC-721 compliance.
-    def approve(_to: address, _tokenId: uint256):
-        self.whenNotPaused()
+    @whenNotPaused
+    def approve(self, _to: address, _tokenId: uint256):
         # Only an owner can grant transfer approval.
         require(self._owns(msg.sender, _tokenId))
 
@@ -759,8 +768,8 @@ class KittyOwnership(KittyBase, ERC721):
     #  including the caller.
     # @param _tokenId The ID of the Kitty to be transferred.
     # @dev Required for ERC-721 compliance.
-    def transferFrom(_from: address, _to: address, _tokenId: uint256):
-        self.whenNotPaused()
+    @whenNotPaused
+    def transferFrom(self, _from: address, _to: address, _tokenId: uint256):
         # Safety check to prevent against an unexpected 0x0 default.
         require(_to != address(0))
         # Disallow transfers to this contract to prevent accidental misuse.
@@ -776,12 +785,12 @@ class KittyOwnership(KittyBase, ERC721):
 
     # @notice Returns the total number of Kitties currently in existence.
     # @dev Required for ERC-721 compliance.
-    def totalSupply() -> uint:
-        return kitties.length - 1
+    def totalSupply(self) -> uint:
+        return self.kitties.length - 1
 
     # @notice Returns the address currently assigned ownership of a given Kitty.
     # @dev Required for ERC-721 compliance.
-    def ownerOf(_tokenId: uint256) -> address:
+    def ownerOf(self, _tokenId: uint256) -> address:
         owner = kittyIndexToOwner[_tokenId]
         require(owner != address(0))
         return owner
@@ -792,7 +801,7 @@ class KittyOwnership(KittyBase, ERC721):
     #  expensive (it walks the entire Kitty array looking for cats belonging to owner),
     #  but it also returns a dynamic array, which is only supported for web3 calls, and
     #  not contract-to-contract calls.
-    def tokensOfOwner(address _owner) -> List(uint256):
+    def tokensOfOwner(self, address _owner) -> List(uint256):
         uint256 tokenCount = self.balanceOf(_owner)
 
         result = List([],uint256)
@@ -824,7 +833,7 @@ class KittyOwnership(KittyBase, ERC721):
     #  This method is licenced under the Apache License.
     #  Ref: https://github.com/Arachnid/solidity-stringutils/blob/2f6ca9accb48ae14c66f1437ec50ed19a0616f78/strings.sol
 
-    def _memcpy(_dest: uint, _src: uint, _len: uint):
+    def _memcpy(self, _dest: uint, _src: uint, _len: uint):
         pass
     '''
     def _memcpy(uint _dest, uint _src, uint _len) private view {
@@ -851,7 +860,7 @@ class KittyOwnership(KittyBase, ERC721):
     #  This method is licenced under the Apache License.
     #  Ref: https://github.com/Arachnid/solidity-stringutils/blob/2f6ca9accb48ae14c66f1437ec50ed19a0616f78/strings.sol
     #FIXME
-    def _toString(_rawBytes, _stringLength) -> str：
+    def _toString(self, _rawBytes, _stringLength) -> str：
         assert False
 
     '''
@@ -873,7 +882,7 @@ class KittyOwnership(KittyBase, ERC721):
     # @notice Returns a URI pointing to a metadata package for this token conforming to
     #  ERC-721 (https://github.com/ethereum/EIPs/issues/721)
     # @param _tokenId The ID number of the Kitty whose metadata should be returned.
-    def tokenMetadata(_tokenId: uint256, _preferredTransport: str) -> string:
+    def tokenMetadata(self, _tokenId: uint256, _preferredTransport: str) -> string:
         require(erc721Metadata != address(0))
 #        bytes32[4] memory buffer;
 #        uint256 count;
@@ -906,13 +915,14 @@ class KittyBreeding(KittyOwnership):
     #  timer begins for the matron.
     #FIXME
     #event Pregnant(address owner, uint256 matronId, uint256 sireId, uint256 cooldownEndBlock);
-    def Pregnant(owner: address, matronId: uint256, sireId: uint256, cooldownEndBlock: uint256):
+    @event
+    def Pregnant(self, owner: address, matronId: uint256, sireId: uint256, cooldownEndBlock: uint256):
         raise Exception('Fix event')
 
     # @dev Update the address of the genetic contract, can only be called by the CEO.
     # @param _address An address of a GeneScience contract instance to be used from this point forward.
     @onlyCEO
-    def setGeneScienceAddress(address _address):
+    def setGeneScienceAddress(self, _address: address):
         candidateContract = GeneScienceInterface(_address)
 
         # NOTE: verify that a contract is what we expect - https://github.com/Lunyr/crowdsale-contracts/blob/cfadd15986c30521d8ba7d5b6f57b4fefcc7ac38/contracts/LunyrToken.sol#L117
@@ -924,7 +934,7 @@ class KittyBreeding(KittyOwnership):
     # @dev Checks that a given kitten is able to breed. Requires that the
     #  current cooldown is finished (for sires) and also checks that there is
     #  no pending pregnancy.
-    def _isReadyToBreed(_kit: Kitty) -> bool:
+    def _isReadyToBreed(self, _kit: Kitty) -> bool:
         # In addition to checking the cooldownEndBlock, we also need to check to see if
         # the cat has a pending birth; there can be some period of time between the end
         # of the pregnacy timer and the birth event.
@@ -934,7 +944,7 @@ class KittyBreeding(KittyOwnership):
     # @dev Check if a sire has authorized breeding with this matron. True if both sire
     #  and matron have the same owner, or if the sire has given siring permission to
     #  the matron's owner (via approveSiring()).
-    def _isSiringPermitted(_sireId: uint256, _matronId: uint256) -> bool:
+    def _isSiringPermitted(self, _sireId: uint256, _matronId: uint256) -> bool:
         matronOwner = self.kittyIndexToOwner[_matronId]
         sireOwner = self.kittyIndexToOwner[_sireId]
 
@@ -947,7 +957,7 @@ class KittyBreeding(KittyOwnership):
     # @param _kitten A reference to the Kitty in storage which needs its timer started.
     #def _triggerCooldown(Kitty storage _kitten) internal {
 
-    def _triggerCooldown(_kitten: Kitty):
+    def _triggerCooldown(self, _kitten: Kitty):
         # Compute an estimation of the cooldown time in blocks (based on current cooldownIndex).
         _kitten.cooldownEndBlock = uint64((self.cooldowns[_kitten.cooldownIndex]/self.secondsPerBlock) + block.number);
 
@@ -961,27 +971,27 @@ class KittyBreeding(KittyOwnership):
     # @param _addr The address that will be able to sire with your Kitty. Set to
     #  address(0) to clear all siring approvals for this Kitty.
     # @param _sireId A Kitty that you own that _addr will now be able to sire with.
-    def approveSiring(_addr: address, _sireId: uint256):
-        self.whenNotPaused()
-        require(_owns(msg.sender, _sireId))
-        sireAllowedToAddress[_sireId] = _addr
+    @whenNotPaused
+    def approveSiring(self, _addr: address, _sireId: uint256):
+        require(self._owns(msg.sender, _sireId))
+        self.sireAllowedToAddress[_sireId] = _addr
 
     # @dev Updates the minimum payment required for calling giveBirthAuto(). Can only
     #  be called by the COO address. (This fee is used to offset the gas cost incurred
     #  by the autobirth daemon).
-    def setAutoBirthFee(val: uint256):
-        self.onlyCOO()
+    @onlyCOO
+    def setAutoBirthFee(self, val: uint256):
         self.autoBirthFee = val;
 
     # @dev Checks to see if a given Kitty is pregnant and (if so) if the gestation
     #  period has passed.
-    def _isReadyToGiveBirth(_matron: Kitty) -> bool:
+    def _isReadyToGiveBirth(self, _matron: Kitty) -> bool:
         return (_matron.siringWithId != 0) and (_matron.cooldownEndBlock <= uint64(block.number))
 
     # @notice Checks that a given kitten is able to breed (i.e. it is not pregnant or
     #  in the middle of a siring cooldown).
     # @param _kittyId reference the id of the kitten, any user can inquire about it
-    def isReadyToBreed(_kittyId: uint256) -> bool:
+    def isReadyToBreed(self, _kittyId: uint256) -> bool:
         require(_kittyId > 0)
 #        Kitty storage kit = kitties[_kittyId];
         kit = self.kitties[_kittyId]
@@ -989,10 +999,10 @@ class KittyBreeding(KittyOwnership):
 
     # @dev Checks whether a kitty is currently pregnant.
     # @param _kittyId reference the id of the kitten, any user can inquire about it
-    def isPregnant(_kittyId: uint256) -> bool:
-        require(_kittyId > 0);
+    def isPregnant(self, _kittyId: uint256) -> bool:
+        require(_kittyId > 0)
         # A kitty is pregnant if and only if this field is set
-        return kitties[_kittyId].siringWithId != 0;
+        return self.kitties[_kittyId].siringWithId != 0;
 
     # @dev Internal check to see if a given sire and matron are a valid mating pair. DOES NOT
     #  check ownership permissions (that is up to the caller).
@@ -1030,7 +1040,7 @@ class KittyBreeding(KittyOwnership):
 
     # @dev Internal check to see if a given sire and matron are a valid mating pair for
     #  breeding via auction (i.e. skips ownership and siring approval checks).
-    def _canBreedWithViaAuction(_matronId: uint256, _sireId: uint256) -> bool:
+    def _canBreedWithViaAuction(self, _matronId: uint256, _sireId: uint256) -> bool:
         matron = self.kitties[_matronId]
         sire = self.kitties[_sireId]
         return self._isValidMatingPair(matron, _matronId, sire, _sireId)
@@ -1041,16 +1051,16 @@ class KittyBreeding(KittyOwnership):
     #  TODO: Shouldn't this check pregnancy and cooldowns?!?
     # @param _matronId The ID of the proposed matron.
     # @param _sireId The ID of the proposed sire.
-    def canBreedWith(_matronId: uint256, _sireId: uint256) -> bool :
+    def canBreedWith(self, _matronId: uint256, _sireId: uint256) -> bool :
         require(_matronId > 0)
         require(_sireId > 0)
         matron = self.kitties[_matronId]
-        sire = self.kitties[_sireId];
+        sire = self.kitties[_sireId]
         return self._isValidMatingPair(matron, _matronId, sire, _sireId) and self._isSiringPermitted(_sireId, _matronId)
 
     # @dev Internal utility function to initiate breeding, assumes that all breeding
     #  requirements have been checked.
-    def _breedWith(_matronId: uint256, _sireId: uint256):
+    def _breedWith(self, _matronId: uint256, _sireId: uint256):
         # Grab a reference to the Kitties from storage.
         sire = self.kitties[_sireId]
         matron = self.kitties[_matronId]
@@ -1064,27 +1074,27 @@ class KittyBreeding(KittyOwnership):
 
         # Clear siring permission for both parents. This may not be strictly necessary
         # but it's likely to avoid confusion!
-        del sireAllowedToAddress[_matronId]
-        del sireAllowedToAddress[_sireId]
+        del self.sireAllowedToAddress[_matronId]
+        del self.sireAllowedToAddress[_sireId]
 
         # Every time a kitty gets pregnant, counter is incremented.
         self.pregnantKitties += 1
 
         # Emit the pregnancy event.
-        self.Pregnant(kittyIndexToOwner[_matronId], _matronId, _sireId, matron.cooldownEndBlock)
+        self.Pregnant(self.kittyIndexToOwner[_matronId], _matronId, _sireId, matron.cooldownEndBlock)
 
     # @notice Breed a Kitty you own (as matron) with a sire that you own, or for which you
     #  have previously been given Siring approval. Will either make your cat pregnant, or will
     #  fail entirely. Requires a pre-payment of the fee given out to the first caller of giveBirth()
     # @param _matronId The ID of the Kitty acting as matron (will end up pregnant if successful)
     # @param _sireId The ID of the Kitty acting as sire (will begin its siring cooldown if successful)
-    def breedWithAuto(_matronId: uint256, _sireId: uint256):
-        self.whenNotPaused()
+    @whenNotPaused
+    def breedWithAuto(self, _matronId: uint256, _sireId: uint256):
         # Checks for payment.
-        require(msg.value >= autoBirthFee);
+        require(msg.value >= self.autoBirthFee);
 
         # Caller must own the matron.
-        require(_owns(msg.sender, _matronId));
+        require(self._owns(msg.sender, _matronId));
 
         # Neither sire nor matron are allowed to be on auction during a normal
         # breeding operation, but we don't need to check that explicitly.
@@ -1100,25 +1110,25 @@ class KittyBreeding(KittyOwnership):
         # Check that matron and sire are both owned by caller, or that the sire
         # has given siring permission to caller (i.e. matron's owner).
         # Will fail for _sireId = 0
-        require(self._isSiringPermitted(_sireId, _matronId));
+        require(self._isSiringPermitted(_sireId, _matronId))
 
         # Grab a reference to the potential matron
-        matron = self.kitties[_matronId];
+        matron = self.kitties[_matronId]
 
         # Make sure matron isn't pregnant, or in the middle of a siring cooldown
-        require(self._isReadyToBreed(matron));
+        require(self._isReadyToBreed(matron))
 
         # Grab a reference to the potential sire
-        sire = self.kitties[_sireId];
+        sire = self.kitties[_sireId]
 
         # Make sure sire isn't pregnant, or in the middle of a siring cooldown
-        require(self._isReadyToBreed(sire));
+        require(self._isReadyToBreed(sire))
 
         # Test that these cats are a valid mating pair.
-        require(self._isValidMatingPair(matron, _matronId, sire,_sireId));
+        require(self._isValidMatingPair(matron, _matronId, sire,_sireId))
 
         # All checks passed, kitty gets pregnant!
-        self._breedWith(_matronId, _sireId);
+        self._breedWith(_matronId, _sireId)
 
     # @notice Have a pregnant Kitty give birth!
     # @param _matronId A Kitty ready to give birth.
@@ -1128,8 +1138,8 @@ class KittyBreeding(KittyOwnership):
     #  to the current owner of the matron. Upon successful completion, both the matron and the
     #  new kitten will be ready to breed again. Note that anyone can call this function (if they
     #  are willing to pay the gas!), but the new kitten always goes to the mother's owner.
+    @whenNotPaused
     def giveBirth(_matronId: uint256) -> uint256
-        self.whenNotPaused()
         # Grab a reference to the matron in storage.
         matron = self.kitties[_matronId];
 
@@ -1152,18 +1162,18 @@ class KittyBreeding(KittyOwnership):
         childGenes = self.geneScience.mixGenes(matron.genes, sire.genes, matron.cooldownEndBlock - 1);
 
         # Make the new kitten!
-        owner = kittyIndexToOwner[_matronId]
+        owner = self.kittyIndexToOwner[_matronId]
         kittenId = self._createKitty(_matronId, matron.siringWithId, parentGen + 1, childGenes, owner)
 
         # Clear the reference to sire from the matron (REQUIRED! Having siringWithId
         # set is what marks a matron as being pregnant.)
-        del matron.siringWithId;
+        del matron.siringWithId
 
         # Every time a kitty gives birth counter is decremented.
-        self.pregnantKitties--;
+        self.pregnantKitties-=1
 
         # Send the balance fee to the person who made birth happen.
-        msg.sender.send(autoBirthFee);
+        msg.sender.send(self.autoBirthFee);
 
         # return the new kitten's ID
         return kittenId;
@@ -1201,17 +1211,17 @@ class Auction:
 # @notice We omit a fallback function to prevent accidental sends to this contract.
 class ClockAuctionBase:
     def __init__(self):
-    #Reference to contract tracking NFT ownership
-    #ERC721 public nonFungibleContract;
-    self.nonFungibleContract = ERC721()
-    #Cut owner takes on each auction, measured in basis points (1/100 of a percent).
-    #Values 0-10,000 map to 0%-100%
-    #uint256 public ownerCut;
-    self.ownerCut = uint256(0)
-
-    #Map from token ID to their corresponding auction.
-    #mapping (uint256 => Auction) tokenIdToAuction;
-    self.tokenIdToAuction = Dict(uint256, Auction)
+        #Reference to contract tracking NFT ownership
+        #ERC721 public nonFungibleContract;
+        self.nonFungibleContract = ERC721()
+        #Cut owner takes on each auction, measured in basis points (1/100 of a percent).
+        #Values 0-10,000 map to 0%-100%
+        #uint256 public ownerCut;
+        self.ownerCut = uint256(0)
+    
+        #Map from token ID to their corresponding auction.
+        #mapping (uint256 => Auction) tokenIdToAuction;
+        self.tokenIdToAuction = Dict(uint256, Auction)
 
     '''FIXME
     event AuctionCreated(uint256 tokenId, uint256 startingPrice, uint256 endingPrice, uint256 duration);
@@ -1222,23 +1232,23 @@ class ClockAuctionBase:
     # @dev Returns true if the claimant owns the token.
     # @param _claimant - Address claiming to own the token.
     # @param _tokenId - ID of token whose ownership to verify.
-    def _owns(_claimant: address, _tokenId: uint256) -> bool:
+    def _owns(self, _claimant: address, _tokenId: uint256) -> bool:
         return self.nonFungibleContract.ownerOf(_tokenId) == _claimant
 
     # @dev Escrows the NFT, assigning ownership to this contract.
     # Throws if the escrow fails.
     # @param _owner - Current owner address of token to escrow.
     # @param _tokenId - ID of token whose approval to verify.
-    def _escrow(address _owner, uint256 _tokenId):
+    def _escrow(self, _owner: address, _tokenId: uint256):
         #it will throw if transfer fails
         #FIXME this
-        self.nonFungibleContract.transferFrom(_owner, this, _tokenId);
+        self.nonFungibleContract.transferFrom(_owner, this, _tokenId)
 
     # @dev Transfers an NFT owned by this contract to another address.
     # Returns true if the transfer succeeds.
     # @param _receiver - Address to transfer NFT to.
     # @param _tokenId - ID of token to transfer.
-    def _transfer(_receiver: address, _tokenId: uint256):
+    def _transfer(self, _receiver: address, _tokenId: uint256):
         #it will throw if transfer fails
         self.nonFungibleContract.transfer(_receiver, _tokenId)
 
@@ -1246,7 +1256,7 @@ class ClockAuctionBase:
     #  AuctionCreated event.
     # @param _tokenId The ID of the token to be put on auction.
     # @param _auction Auction to add.
-    def _addAuction(_tokenId: uint256, _auction: Auction):
+    def _addAuction(self, _tokenId: uint256, _auction: Auction):
         #Require that all auctions have a duration of
         #at least one minute. (Keeps our math from getting hairy!)
         require(_auction.duration >= 1 minutes)
@@ -1260,14 +1270,14 @@ class ClockAuctionBase:
         )
 
     # @dev Cancels an auction unconditionally.
-    def _cancelAuction(_tokenId: uint256, _seller: address):
+    def _cancelAuction(self, _tokenId: uint256, _seller: address):
         self._removeAuction(_tokenId)
         self._transfer(_seller, _tokenId)
         self.AuctionCancelled(_tokenId)
 
     # @dev Computes the price and transfers winnings.
     # Does NOT transfer ownership of token.
-    def _bid(_tokenId: uint256, _bidAmount: uint256) -> uint256:
+    def _bid(self, _tokenId: uint256, _bidAmount: uint256) -> uint256:
         #Get a reference to the auction struct
         auction = self.tokenIdToAuction[_tokenId];
 
@@ -1325,38 +1335,38 @@ class ClockAuctionBase:
 
     # @dev Removes an auction from the list of open auctions.
     # @param _tokenId - ID of NFT on auction.
-    def _removeAuction(_tokenId: uint256):
-        del tokenIdToAuction[_tokenId]
+    def _removeAuction(self, _tokenId: uint256):
+        del self.tokenIdToAuction[_tokenId]
 
     # @dev Returns true if the NFT is on auction.
     # @param _auction - Auction to check.
-    def _isOnAuction(_auction: Auction) -> bool:
+    def _isOnAuction(self, _auction: Auction) -> bool:
         return _auction.startedAt > 0
 
     # @dev Returns current price of an NFT on auction. Broken into two
     #  functions (this one, that computes the duration from the auction
     #  structure, and the other that does the price computation) so we
     #  can easily test that the price computation works correctly.
-    def _currentPrice(_auction: Auction) -> uint256:
-        uint256 secondsPassed = 0;
+    def _currentPrice(self, _auction: Auction) -> uint256:
+        self.secondsPassed = 0;
         #A bit of insurance against negative values (or wraparound).
         #Probably not necessary (since Ethereum guarnatees that the
         #now variable doesn't ever go backwards).
         if now > _auction.startedAt:
-            secondsPassed = now - _auction.startedAt;
+            self.secondsPassed = now() - _auction.startedAt;
 
         return self._computeCurrentPrice(
             _auction.startingPrice,
             _auction.endingPrice,
             _auction.duration,
-            secondsPassed
+            self.secondsPassed
         )
 
     # @dev Computes the current price of an auction. Factored out
     #  from _currentPrice so we can run extensive unit tests.
     #  When testing, make this function public and turn on
     #  `Current price computation` test suite.
-    def _computeCurrentPrice(_startingPrice: uint256, _endingPrice: uint256, _duration: uint256, _secondsPassed: uint256) -> uint256:
+    def _computeCurrentPrice(self, _startingPrice: uint256, _endingPrice: uint256, _duration: uint256, _secondsPassed: uint256) -> uint256:
         #NOTE: We don't use SafeMath (or similar) in this function because
         # all of our public functions carefully cap the maximum values for
         # time (at 64-bits) and currency (at 128-bits). _duration is
@@ -1369,28 +1379,28 @@ class ClockAuctionBase:
         else:
             #Starting price can be higher than ending price (and often is!), so
             #this delta can be negative.
-            totalPriceChange = int256(_endingPrice) - int256(_startingPrice);
+            self.totalPriceChange = int256(_endingPrice) - int256(_startingPrice);
 
             #This multiplication can't overflow, _secondsPassed will easily fit within
             #64-bits, and totalPriceChange will easily fit within 128-bits, their product
             #will always fit within 256-bits.
-            currentPriceChange = totalPriceChange * int256(_secondsPassed) / int256(_duration);
+            self.currentPriceChange = self.totalPriceChange * int256(_secondsPassed) / int256(_duration);
 
             #currentPriceChange can be negative, but if so, will have a magnitude
             #less that _startingPrice. Thus, this result will always end up positive.
-            currentPrice = int256(_startingPrice) + currentPriceChange;
+            self.currentPrice = int256(_startingPrice) + self.currentPriceChange;
 
-            return uint256(currentPrice);
+            return uint256(self.currentPrice);
 
     # @dev Computes owner's cut of a sale.
     # @param _price - Sale price of NFT.
-    def _computeCut(_price: uint256)  -> uint256:
+    def _computeCut(self, _price: uint256)  -> uint256:
         #NOTE: We don't use SafeMath (or similar) in this function because
         # all of our entry functions carefully cap the maximum values for
         # currency (at 128-bits), and ownerCut <= 10000 (see the require()
         # statement in the ClockAuction constructor). The result of this
         # function is always guaranteed to be <= _price.
-        return _price * ownerCut / 10000;
+        return _price * self.ownerCut / 10000;
 
 '''
  * @title Pausable
@@ -1416,20 +1426,26 @@ class Pausable(Ownable):
       _;
     }
     '''
-    def whenNotPaused(self):
-        require(not self.paused)
+    def whenNotPaused(func):
+       def func_wrapper(self, *args):
+           require(not self.paused)
+           return func(self, *args)
+       return func_wrapper
+        
     '''
    * @dev modifier to allow actions only when the contract IS NOT paused
     '''
-    def whenPaused(self):
-        require(self.paused)
-
+    def whenPaused(func):
+       def func_wrapper(self, *args):
+           require(self.paused)
+           return func(self, *args)
+       return func_wrapper
    '''
    * @dev called by the owner to pause, triggers stopped state
     '''
+   @onlyOwner
+   @whenNotPaused
     def pause() -> bool:
-        self.onlyOwner()
-        self.whenNotPaused()
         self.paused = true;
         self.Pause();
         return True;
@@ -1437,9 +1453,9 @@ class Pausable(Ownable):
     '''
    * @dev called by the owner to unpause, returns to normal state
     '''
+   @onlyOwner
+   @whenNotPaused
     def unpause() -> bool:
-        self.onlyOwner()
-        self.whenPaused()
         self.paused = False
         self.Unpause()
         return True
@@ -1451,36 +1467,37 @@ class ClockAuction(Pausable, ClockAuctionBase)
     # @dev The ERC-165 interface signature for ERC-721.
     #  Ref: https://github.com/ethereum/EIPs/issues/165
     #  Ref: https://github.com/ethereum/EIPs/issues/721
-    bytes4 constant InterfaceSignature_ERC721 = bytes4(0x9a20483d);
-
-    def __init__(self):
-        Pausable.__init__(self)
-        ClockAuctionBase.__init__(self)
-
+    
     # @dev Constructor creates a reference to the NFT ownership contract
     #  and verifies the owner cut is in the valid range.
     # @param _nftAddress - address of a deployed contract implementing
     #  the Nonfungible Interface.
     # @param _cut - percent cut the owner takes on each auction, must be
     #  between 0-10,000.
-    def ClockAuction(_nftAddress: address, _cut: uint256):
+    def __init__(self, _nftAddress: address, _cut: uint256):
         require(_cut <= 10000)
+
+        Pausable.__init__(self)
+        ClockAuctionBase.__init__(self)
+        self.InterfaceSignature_ERC721 = bytes4(b'\x9a\x20\x48\x3d')
+
         self.ownerCut = _cut;
 
         candidateContract = ERC721(_nftAddress)
+        #FIXME:
         require(candidateContract.supportsInterface(InterfaceSignature_ERC721))
         self.nonFungibleContract = candidateContract
-    
+
 
     # @dev Remove all Ether from the contract, which is the owner's cuts
     #  as well as any Ether sent directly to the contract address.
     #  Always transfers to the NFT contract, but can be called either by
     #  the owner or the NFT contract.
     def withdrawBalance():
-        nftAddress = address(nonFungibleContract);
+        nftAddress = address(self.nonFungibleContract);
         require(msg.sender == owner or msg.sender == nftAddress)
         # We are using this boolean method to make sure that even if one fails it will still work
-        res = nftAddress.send(this.balance);
+        res = nftAddress.send(this.balance)
 
     # @dev Creates and begins a new auction.
     # @param _tokenId - ID of token to auction, sender must be owner.
@@ -1489,18 +1506,18 @@ class ClockAuction(Pausable, ClockAuctionBase)
     # @param _duration - Length of time to move between starting
     #  price and ending price (in seconds).
     # @param _seller - Seller, if not the message sender
-    function createAuction(_tokenId: uint256, _startingPrice: uint256,
+    @whenNotPaused
+    function createAuction(self, _tokenId: uint256, _startingPrice: uint256,
                            _endingPrice: uint256,
                             _duration: uint256,
                             _seller: uint256):
-        self.whenNotPaused()
         # Sanity check that no inputs overflow how many bits we've allocated
         # to store them in the auction struct.
         require(_startingPrice == uint256(uint128(_startingPrice)))
         require(_endingPrice == uint256(uint128(_endingPrice)))
         require(_duration == uint256(uint64(_duration)))
 
-        require(_owns(msg.sender, _tokenId))
+        require(self._owns(msg.sender, _tokenId))
         self._escrow(msg.sender, _tokenId)
         auction = Auction(_seller, uint128(_startingPrice), uint128(_endingPrice), 
                           uint64(_duration),
@@ -1510,8 +1527,8 @@ class ClockAuction(Pausable, ClockAuctionBase)
     # @dev Bids on an open auction, completing the auction and transferring
     #  ownership of the NFT if enough Ether is supplied.
     # @param _tokenId - ID of token to bid on.
-    def bid(_tokenId: uint256)
-        self.whenNotPaused()
+    @whenNotPaused
+    def bid(self, _tokenId: uint256):
         # _bid will throw if the bid or funds transfer fails
         self._bid(_tokenId, msg.value);
         self._transfer(msg.sender, _tokenId);
@@ -1521,11 +1538,11 @@ class ClockAuction(Pausable, ClockAuctionBase)
     # @notice This is a state-modifying function that can
     #  be called while the contract is paused.
     # @param _tokenId - ID of token on auction
-    def cancelAuction(_tokenId: uint256)
+    def cancelAuction(self, _tokenId: uint256):
         auction = self.tokenIdToAuction[_tokenId]
         require(self._isOnAuction(auction))
         
-        address seller = auction.seller
+        seller = auction.seller
         require(msg.sender == seller)
         self._cancelAuction(_tokenId, seller)
 
@@ -1533,16 +1550,16 @@ class ClockAuction(Pausable, ClockAuctionBase)
     #  Only the owner may do this, and NFTs are returned to
     #  the seller. This should only be used in emergencies.
     # @param _tokenId - ID of the NFT on auction to cancel.
-    def cancelAuctionWhenPaused(_tokenId: uint256):
-        self.whenPaused()
-        self.onlyOwner()
-        auction = tokenIdToAuction[_tokenId]
-        require(_isOnAuction(auction))
+    @whenPaused
+    @onlyOwner
+    def cancelAuctionWhenPaused(self, _tokenId: uint256):
+        auction = self.tokenIdToAuction[_tokenId]
+        require(self._isOnAuction(auction))
         self._cancelAuction(_tokenId, auction.seller)
 
     # @dev Returns auction info for an NFT on auction.
     # @param _tokenId - ID of NFT on auction.
-    def getAuction(_tokenId: uint256):
+    def getAuction(self, _tokenId: uint256):
         auction = self.tokenIdToAuction[_tokenId]
         require(self._isOnAuction(auction))
         return (
@@ -1550,26 +1567,25 @@ class ClockAuction(Pausable, ClockAuctionBase)
             auction.startingPrice,
             auction.endingPrice,
             auction.duration,
-            auction.startedAt
-        )
+            auction.startedAt)
 
     # @dev Returns the current price of an auction.
     # @param _tokenId - ID of the token price we are checking.
-    def getCurrentPrice(_tokenId: uint256) -> uint256:
+    def getCurrentPrice(self, _tokenId: uint256) -> uint256:
         auction = self.tokenIdToAuction[_tokenId]
-        require(self._isOnAuction(auction));
-        return self._currentPrice(auction);
+        require(self._isOnAuction(auction))
+        return self._currentPrice(auction)
 
 
 # @title Reverse auction modified for siring
 # @notice We omit a fallback function to prevent accidental sends to this contract.
 class SiringClockAuction(ClockAuction):
     # Delegate constructor
-    def __init__(_nftAddr: address, _cut: uint256):
+    def __init__(self, _nftAddr: address, _cut: uint256):
         # @dev Sanity check that allows us to ensure that we are pointing to the
         #  right auction in our setSiringAuctionAddress() call.
-        self.isSiringClockAuction = True
         ClockAuction.__init__(self, _nftAddr, _cut)
+        self.isSiringClockAuction = True
 
     # @dev Creates and begins a new auction. Since this function is wrapped,
     # require sender to be KittyCore contract.
@@ -1578,7 +1594,7 @@ class SiringClockAuction(ClockAuction):
     # @param _endingPrice - Price of item (in wei) at end of auction.
     # @param _duration - Length of auction (in seconds).
     # @param _seller - Seller, if not the message sender
-    def createAuction(_tokenId: uint256, _startingPrice: uint256,
+    def createAuction(self, _tokenId: uint256, _startingPrice: uint256,
         _endingPrice: uint256, _duration: uint256, _seller: address):
         # Sanity check that no inputs overflow how many bits we've allocated
         # to store them in the auction struct.
@@ -1601,7 +1617,7 @@ class SiringClockAuction(ClockAuction):
     # is the KittyCore contract because all bid methods
     # should be wrapped. Also returns the kitty to the
     # seller rather than the winner.
-    def bid(_tokenId: uint256):
+    def bid(self, _tokenId: uint256):
         require(msg.sender == address(self.nonFungibleContract))
         seller = self.tokenIdToAuction[_tokenId].seller
         # _bid checks that token ID is valid and will throw if bid fails
@@ -1614,7 +1630,7 @@ class SiringClockAuction(ClockAuction):
 # @notice We omit a fallback function to prevent accidental sends to this contract.
 class SaleClockAuction(ClockAuction):
     # Delegate constructor
-     def __init__(_nftAddr: address, _cut: uint256):
+     def __init__(self, _nftAddr: address, _cut: uint256):
         ClockAuction.__init__(self, _nftAddr, _cut)
         # @dev Sanity check that allows us to ensure that we are pointing to the
         #  right auction in our setSaleAuctionAddress() call.
@@ -1630,7 +1646,7 @@ class SaleClockAuction(ClockAuction):
     # @param _endingPrice - Price of item (in wei) at end of auction.
     # @param _duration - Length of auction (in seconds).
     # @param _seller - Seller, if not the message sender
-    def createAuction(
+    def createAuction(self,
         _tokenId: uint256,
         _startingPrice: uint256,
         _endingPrice: uint256,
@@ -1655,7 +1671,7 @@ class SaleClockAuction(ClockAuction):
 
     # @dev Updates lastSalePrice if seller is the nft contract
     # Otherwise, works the same as default bid method.
-    def bid(_tokenId: uint256):
+    def bid(self, _tokenId: uint256):
         # _bid verifies token ID size
         seller = self.tokenIdToAuction[_tokenId].seller
         price = self._bid(_tokenId, msg.value)
@@ -1667,7 +1683,7 @@ class SaleClockAuction(ClockAuction):
             self.lastGen0SalePrices[self.gen0SaleCount % 5] = price;
             self.gen0SaleCount++;
 
-    def averageGen0SalePrice() -> uint256:
+    def averageGen0SalePrice(self) -> uint256:
         sum = uint256(0)
         for i in range(5): 
             sum += lastGen0SalePrices[i];
@@ -1686,7 +1702,7 @@ class KittyAuction(KittyBreeding):
     # @dev Sets the reference to the sale auction.
     # @param _address - Address of sale contract.
     @onlyCEO
-    def setSaleAuctionAddress(_address: address):
+    def setSaleAuctionAddress(self, _address: address):
         candidateContract = SaleClockAuction(_address)
 
         # NOTE: verify that a contract is what we expect - https:#github.com/Lunyr/crowdsale-contracts/blob/cfadd15986c30521d8ba7d5b6f57b4fefcc7ac38/contracts/LunyrToken.sol#L117
@@ -1698,7 +1714,7 @@ class KittyAuction(KittyBreeding):
     # @dev Sets the reference to the siring auction.
     # @param _address - Address of siring contract.
     @onlyCEO
-    def setSiringAuctionAddress(_address: address):
+    def setSiringAuctionAddress(self, _address: address):
         candidateContract = SiringClockAuction(_address)
 
         # NOTE: verify that a contract is what we expect - https://github.com/Lunyr/crowdsale-contracts/blob/cfadd15986c30521d8ba7d5b6f57b4fefcc7ac38/contracts/LunyrToken.sol#L117
@@ -1710,7 +1726,7 @@ class KittyAuction(KittyBreeding):
     # @dev Put a kitty up for auction.
     #  Does some ownership trickery to create auctions in one tx.
     @whenNotPaused
-    def createSaleAuction(
+    def createSaleAuction(self,
         _kittyId: uint256,
         _startingPrice: uint256,
         _endingPrice: uint256,
@@ -1737,7 +1753,7 @@ class KittyAuction(KittyBreeding):
     #  Performs checks to ensure the kitty can be sired, then
     #  delegates to reverse auction.
     @whenNotPaused
-    def createSiringAuction(
+    def createSiringAuction(self,
         _kittyId: uint256,
         _startingPrice: uint256,
         _endingPrice: uint256,
@@ -1763,25 +1779,25 @@ class KittyAuction(KittyBreeding):
     # @param _sireId - ID of the sire on auction.
     # @param _matronId - ID of the matron owned by the bidder.
     @whenNotPaused
-    def bidOnSiringAuction(_sireId: uint256, _matronId: uint256):
+    def bidOnSiringAuction(self, _sireId: uint256, _matronId: uint256):
         # Auction contract checks input sizes
         require(_owns(msg.sender, _matronId));
         require(self.isReadyToBreed(_matronId));
         require(self._canBreedWithViaAuction(_matronId, _sireId));
 
         # Define the current price of the auction.
-        currentPrice = self.siringAuction.getCurrentPrice(_sireId);
-        require(msg.value >= currentPrice + self.autoBirthFee);
+        self.currentPrice = self.siringAuction.getCurrentPrice(_sireId);
+        require(msg.value >= self.currentPrice + self.autoBirthFee);
 
         # Siring auction will throw if the bid fails.
-        self.siringAuction.bid.value(msg.value - autoBirthFee)(_sireId);
+        self.siringAuction.bid.value(msg.value - self.autoBirthFee)(_sireId);
         self._breedWith(uint32(_matronId), uint32(_sireId));
 
     # @dev Transfers the balance of the sale auction contract
     # to the KittyCore contract. We use two-step withdrawal to
     # prevent two transfer calls in the auction bid function.
     @onlyCLevel
-    def withdrawAuctionBalances():
+    def withdrawAuctionBalances(self):
         saleAuction.withdrawBalance()
         siringAuction.withdrawBalance()
 
@@ -1812,7 +1828,7 @@ class KittyMinting(KittyAuction):
     # @param _genes the encoded genes of the kitten to be created, any value is accepted
     # @param _owner the future owner of the created kittens. Default to contract COO
     @onlyCOO
-    def createPromoKitty(_genes: uint256, _owner: address):
+    def createPromoKitty(self, _genes: uint256, _owner: address):
         kittyOwner = _owner;
         if kittyOwner == address(0):
              kittyOwner = cooAddress
@@ -1823,7 +1839,7 @@ class KittyMinting(KittyAuction):
     # @dev Creates a new gen0 kitty with the given genes and
     #  creates an auction for it.
     @onlyCOO
-    def createGen0Auction(_genes: uint256):
+    def createGen0Auction(self, _genes: uint256):
         require(gen0CreatedCount < GEN0_CREATION_LIMIT)
 
         kittyId = self._createKitty(0, 0, 0, _genes, address(this))
@@ -1834,9 +1850,8 @@ class KittyMinting(KittyAuction):
             _computeNextGen0Price(),
             0,
             GEN0_AUCTION_DURATION,
-            address(this)
-        );
-        self.gen0CreatedCount++;
+            address(this) )
+        self.gen0CreatedCount+=1
 
     # @dev Computes the next gen0 auction starting price, given
     #  the average of the past 5 prices + 50%.
@@ -1905,16 +1920,16 @@ class KittyCore(KittyMinting):
         super(KittyMinting, self).__init__()
         self.newContractAddress = address(0)
         # Starts paused.
-        self.paused = True;
+        self.paused = True
 
         # the creator of the contract is the initial CEO
-        self.ceoAddress = msg.sender;
+        self.ceoAddress = msg.sender
 
         # the creator of the contract is also the initial COO
-        self.cooAddress = msg.sender;
+        self.cooAddress = msg.sender
 
         # start with the mythical kitten 0 - so we don't have generation-0 parent issues
-        self._createKitty(0, 0, 0, uint256(-1), address(0));
+        self._createKitty(0, 0, 0, uint256(-1), address(0))
 
     # @dev Used to mark the smart contract as upgraded, in case there is a serious
     #  breaking bug. This method does nothing but keep track of the new contract and
@@ -1926,8 +1941,8 @@ class KittyCore(KittyMinting):
     @whenPaused
     def setNewAddress(self, _v2Address: address):
         # See README.md for updgrade plan
-        newContractAddress = _v2Address
-        ContractUpgrade(_v2Address)
+        self.newContractAddress = _v2Address
+        self.ContractUpgrade(_v2Address)
 
     # @notice No tipping!
     # @dev Reject all Ether from being sent here, unless it's from one of the
@@ -1976,7 +1991,7 @@ class KittyCore(KittyMinting):
         require(geneScience != address(0))
         require(newContractAddress == address(0))
         # Actually unpause the contract.
-        super.unpause()
+        super(KittyCore, self).unpause()
 
     # @dev Allows the CFO to capture the balance available to the contract.
     @onlyCFO
@@ -1987,3 +2002,6 @@ class KittyCore(KittyMinting):
 
         if balance > subtractFees:
             cfoAddress.send(balance - subtractFees)
+
+
+

@@ -18,9 +18,9 @@ def init():
         r = eosapi.set_contract('storage','../../programs/pyeos/contracts/storage/storage.py','../../programs/pyeos/contracts/storage/test.abi', 1)
         assert r
 
-def test():
+def test(name='abc'):
     with producer:
-        r = eosapi.push_message('storage','storagetest','abc',{'storage':'active'},rawargs=True)
+        r = eosapi.push_message('storage','storagetest', name ,{'storage':'active'},rawargs=True)
         assert r
 
 def test2(count):

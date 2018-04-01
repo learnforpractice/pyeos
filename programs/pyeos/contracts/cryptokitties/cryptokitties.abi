@@ -1,0 +1,43 @@
+{
+  "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [{
+      "name": "account",
+      "base": "",
+      "fields": [
+         {"name":"balance",   "type":"asset"},
+         {"name":"frozen",    "type":"uint8"},
+         {"name":"whitelist", "type":"uint8"}
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "transfer",
+      "type": "transfer"
+    },{
+      "name": "issue",
+      "type": "issue"
+    }, {
+      "name": "create",
+      "type": "create"
+    }
+
+  ],
+  "tables": [{
+      "name": "accounts",
+      "type": "account",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "stat",
+      "type": "currency_stats",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    }
+  ]
+}
