@@ -13,6 +13,7 @@ class Auction:
         #NOTE: 0 if this auction has been concluded
         self.startedAt = uint64(0)
 
+    #FIXME
     def pack(self):
         pass
 

@@ -99,25 +99,20 @@ def call(name=None):
         r = eosapi.push_message('kitties','call','hello,world',{'kitties':'active'},rawargs=True)
         assert r
 
-def import_test():
-    import kittybreeding
-    import kittycore
-    import clockauction
-    import clockauctionbase
-    import erc721metadata
-    import erc721
-    import genescienceinterface
-    import kitty
-    import kittyaccesscontrol
-    import kittyauction
-    import kittybase
-    import kittybreeding
-    import kittyminting
-    import kittyownership
-    import ownable
-    import pausable
-    import saleclockauction
-    import siringclockauction
+def call3(count):
+    import time
+    import json
+    functions = []
+    args = []
+    per = {'kitties':'active'}
+    for i in range(count):
+        functions.append('call')
+        arg = str(i)
+        args.append(arg)
+    ret, cost = eosapi.push_messages('kitties', functions, args, per, True, rawargs=True)
+    assert ret
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+    eosapi.produce_block()
 
 
 
