@@ -1,47 +1,59 @@
 import ustruct
 from eoslib import *
 
-g_scope = N('storage')
-g_code = N('storage')
-payer = N('storage')
+g_scope = N('cache')
+g_code = N('cache')
+payer = N('cache')
 
-class storage_list(object):
+class CList(object):
     def __init__(self,table_id):
         self._list = []
-        self.table_id = table_id
+        self._dirty_keys = {}
+        self.table_id = N('list.'+str(table_id))
 
-        itr = db_end_i64(g_code, g_scope, table_id)
+    def load(self):
+        itr = db_end_i64(g_code, g_scope, self.table_id)
         if itr == -1: #no value in table
             return
-        print('+++itr:', itr) # itr should be -2
         while True:
             itr, key = db_previous_i64(itr)
             if itr < 0:
                 break
             value = db_get_i64(itr)
-
             value_type = ustruct.unpack('B', value)
+            _value = None
 
             if value_type == 0: #int
                 _value = int.from_bytes(value[2:], 'little')
             elif value_type == 1: #str
                 _value = value[2:]
-            elif value_type == 2: #list
-                table_id = int.from_bytes(value[2:], 'little')
-                _value = storage_list(table_id)
-            elif value_type == 3:#dict
-                table_id = int.from_bytes(value[2:], 'little')
-                _value = storage_dict(table_id)
             else:
                 raise TypeError('unknown key type')
 
-            self._list.insert(0,_value)
+            self._dict[_key] = _value
+
+    def update(self, key, val):
+        id = key
+        value_type, raw_value_length, raw_value_data = self.get_raw_data(val)
+
+        _value = ustruct.pack('B', value_type)
+        _value += raw_value_data
+        
+        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        if itr < 0:
+            db_store_i64(g_scope, self.table_id, payer, id, _value)
+        else:
+            db_update_i64(itr, payer, _value)
+
+    def store(self):
+        for key in self._dirty_keys:
+            self.update(key, self._list[key])
 
     def get_hash(self, v):
         if type(v) is int:
             return v
         elif type(v) in (str, bytes):
-            return hash(v)
+            return hash64(v)
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
@@ -69,32 +81,17 @@ class storage_list(object):
         elif data_type == 1: #str
             raw_length = len(data)
             raw_data = data
-        elif data_type == 2: #list
-            raw_length = 8
-            raw_data = data.table_id
-        elif data_type == 3: #dict
-            raw_length = 8
-            raw_data = data.table_id
         return (data_type, raw_length, raw_data)
-    
+
     def __getitem__(self, index):
         return self._list[index]
 
-    def __setitem__(self, key, val):
-        if key > 0 and key < len(self._list) and val == self._list[key]:
+    def __setitem__(self, index, val):
+        if index < len(self._list) and self._list[index] == val:
             return
-
-        id = key
-
-        value_type, raw_value_length, raw_value_data = self.get_raw_data(val)
-        _value = ustruct.pack('B', value_type)
-        _value += raw_value_data
-        
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
-        if itr < 0:
-            db_store_i64(g_scope, self.table_id, payer, id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            self._list[index] = val
+            self._dirty_keys[index] = True
 
     def __iter__(self):
         return iter(self._list)
@@ -102,10 +99,11 @@ class storage_list(object):
     def __len__(self):
         return len(self._list)
 
-    def __delitem__(self, key):
-        id = key
+    def __delitem__(self, index):
+        id = index
         del self._list[key]
-        itr = db_find_i64(g_code, g_scope, self.table_id, key)
+        del self._dirty_keys[index]
+        itr = db_find_i64(g_code, g_scope, self.table_id, id)
         if itr >= 0:
             db_remove_i64(itr)
 
@@ -113,15 +111,16 @@ class storage_list(object):
         return '%s(%s)' % (type(self).__name__, str(self._list))
 
 # key_type key_length value_type value_length key_data value_data
-class storage_dict(object):
+class cache_dict(object):
     def __init__(self,table_id):
         self._dict = {}
-        self.table_id = table_id
+        self._dirty_keys = {}
+        self.table_id = N('cache.'+str(table_id))
 
-        itr = db_end_i64(g_code, g_scope, table_id)
+    def load(self):
+        itr = db_end_i64(g_code, g_scope, self.table_id);
         if itr == -1: #no value in table
             return
-        print('+++itr:', itr) # itr should be -2
         while True:
             itr, key = db_previous_i64(itr)
             if itr < 0:
@@ -159,11 +158,31 @@ class storage_dict(object):
 
             self._dict[_key] = _value
 
+    def update(self, key, val):
+        id = self.get_hash(key)
+
+        key_type, raw_key_length, raw_key_data = self.get_raw_data(key)
+        value_type, raw_value_length, raw_value_data = self.get_raw_data(val)
+
+        _value = ustruct.pack('BHBH', key_type, raw_key_length, value_type, raw_value_length)
+
+        _value += raw_key_data
+        _value += raw_value_data
+        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        if itr < 0:
+            db_store_i64(g_scope, self.table_id, payer, id, _value)
+        else:
+            db_update_i64(itr, payer, _value)
+
+    def store(self):
+        for key in self._dirty_keys:
+            self.update(key, self._dict[key])
+
     def get_hash(self, v):
         if type(v) is int:
             return v
         elif type(v) in (str, bytes):
-            return hash(v)
+            return hash64(v)
         elif type(v) in (storage_dict, storage_list):
             return v.table_id
         else:
@@ -198,28 +217,16 @@ class storage_dict(object):
             raw_length = 8
             raw_data = int.to_bytes(data.table_id, 8, 'little')
         return (data_type, raw_length, raw_data)
-    
+
     def __getitem__(self, key):
         return self._dict[key]
 
     def __setitem__(self, key, val):
-        if key in self._dict and val == self._dict[key]:
+        if key in self._dict and self._dict[key] == val:
             return
-
-        id = self.get_hash(key)
-
-        key_type, raw_key_length, raw_key_data = self.get_raw_data(key)
-        value_type, raw_value_length, raw_value_data = self.get_raw_data(val)
-
-        _value = ustruct.pack('BHBH', key_type, raw_key_length, value_type, raw_value_length)
-
-        _value += raw_key_data
-        _value += raw_value_data
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
-        if itr < 0:
-            db_store_i64(g_scope, self.table_id, payer, id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            self._dict[key] = val
+            self._dirty_keys[key] = True
 
     def __iter__(self):
         return iter(self._dict)
@@ -230,7 +237,8 @@ class storage_dict(object):
     def __delitem__(self, key):
         id = self.get_hash(key)
         del self._dict[key]
-        itr = db_find_i64(g_code, g_scope, self.table_id, key)
+        del self._dirty_keys[key]
+        itr = db_find_i64(g_code, g_scope, self.table_id, id)
         if itr >= 0:
             db_remove_i64(itr)
 
@@ -239,20 +247,21 @@ class storage_dict(object):
 
 def apply(name, type):
     require_auth(g_code)
-    a = storage_dict(N('a'))
-    b = storage_dict(N('b'))
+    a = cache(123)
+    a.load()
+    print('-----')
     for key in a:
         print(key, a[key])
     a[100] = 'hello'
     a[101] = 'world'
     a['name'] = 'mike'
-    b[0] = '0'
-    b[1] = '1'
-    a['b'] = b
-    
-    msg = read_action()
-    a[msg] = msg
-    b[msg] = msg
     if 101 in a:
         del a[101]
+    msg = read_action()
+    a[msg] = msg
+    a.store()
+    print('+++++++++')
+    for key in a:
+        print(key, a[key])
+
 

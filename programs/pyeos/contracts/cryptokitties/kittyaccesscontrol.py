@@ -20,46 +20,81 @@ class KittyAccessControl:
     # restriction is intentional so that we aren't tempted to use the CEO address frequently out of
     # convenience. The less we use an address, the less likely it is that we somehow compromise the
     # account.
-
-    #/ @dev Emited when contract is upgraded - See README.md for updgrade plan
-    def ContractUpgrade(newContract: address):
+    def __init__(self):
         # The addresses of the accounts (or contracts) that can execute actions within each roles.
-        self._ceoAddress = None
-        self._cfoAddress = None
-        self._cooAddress = None
+        self._ceoAddress = address(0)
+        self._cfoAddress = address(0)
+        self._cooAddress = address(0)
         # @dev Keeps track whether the contract is paused. When that is true, most actions are blocked
         self._paused = False
 
+    #/ @dev Emited when contract is upgraded - See README.md for updgrade plan
+    @event
+    def ContractUpgrade(newContract: address):
+        pass
+
+    def loadAddress(self, name):
+        value = load(name)
+        return address(value)
+
+    def storeAddress(self, name, addr):
+        store(name, addr)
+
     @property
     def ceoAddress(self):
+        if not self._ceoAddress:
+            self._ceoAddress = loadAddress('ceoAddress')
         return self._ceoAddress
 
     @ceoAddress.setter
     def ceoAddress(self, value):
+        if self._ceoAddress == value:
+            return
+        storeAddress('ceoAddress', value)
         self._ceoAddress = value
 
     @property
     def cfoAddress(self):
+        if not self._cfoAddress:
+            self._cfoAddress = loadAddress('cfoAddress')
         return self._cfoAddress
 
     @cfoAddress.setter
     def cfoAddress(self, value):
+        if self._cfoAddress == value:
+            return
+        storeAddress('cfoAddress', value)
         self._cfoAddress = value
 
     @property
     def cooAddress(self):
+        if not self._cooAddress:
+            self._cooAddress = loadAddress('cooAddress')
         return self._cooAddress
 
     @cooAddress.setter
     def cooAddress(self, value):
+        if self._cooAddress == value:
+            return
+        storeAddress('cooAddress', value)
         self._cooAddress = value
 
     @property
     def paused(self):
+        self._paused = load('paused')
+        if self._paused:
+            self._paused = 1
+        else:
+            self._paused = 0
         return self._paused
-
+    
     @paused.setter
     def paused(self, value):
+        if value:
+            value = 1
+        else:
+            value = 0
+        store('paused', value)
         self._paused = value
 
     #/ @dev Assigns a new address to act as the CEO. Only available to the current CEO.
@@ -74,7 +109,7 @@ class KittyAccessControl:
     @onlyCEO
     def setCFO(_newCFO: address):
         require(_newCFO != address(0))
-        self.cfoAddress = _newCFO;
+        self.cfoAddress = _newCFO
 
     #/ @dev Assigns a new address to act as the COO. Only available to the current CEO.
     #/ @param _newCOO The address of the new COO

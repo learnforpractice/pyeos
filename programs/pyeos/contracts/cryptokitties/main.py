@@ -40,6 +40,8 @@ def apply(name, action):
         import pausable
         import saleclockauction
         import siringclockauction
+        import cache
+        import storage
     else:
         pass
     

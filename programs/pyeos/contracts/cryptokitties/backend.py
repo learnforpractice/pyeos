@@ -1,3 +1,4 @@
+import ustruct
 from eoslib import *
 '''
 msg.data (bytes): complete calldata
@@ -7,7 +8,9 @@ msg.sig (bytes4): first four bytes of the calldata (i.e. function identifier)
 msg.value (uint): number of wei sent with the message
 '''
 
-contract_owner = N('cryptokittie') #sorry kitty, max 12 charactor support
+contract_owner = N('kitties')
+receiver = current_receiver()
+g_table_id = N('table.id')
 
 class uint16(int):
     pass
@@ -81,7 +84,7 @@ def balanceOf(address):
     return 99999
 
 def require(condition, msg = ''):
-    eosio_assert(condition)
+    eosio_assert(condition, msg)
 
 class message:
     def __init__(self, data, gas, sender, sig, value):
@@ -125,7 +128,6 @@ class bytes32(bytes):
     pass
 
 class List(object):
-    pass
 
     def __init__(self, size = 0, value = [], value_type = object):
         if value:
@@ -149,7 +151,6 @@ class List(object):
     def length(self):
         return len(self._list)
 
-    
 class Dict(object):
     def __init__(self, value = {}, key_type = object, value_type = object):
         eosio_assert(isinstance(value, list), "bad type")
@@ -166,6 +167,56 @@ class Dict(object):
         eosio_assert(isinstance(val, self.value_type), 'bad value type')
 
         self._list[key] = val
+
+def get_hash(v):
+    if type(v) is int:
+        return v
+    elif type(v) in (str, bytes):
+        return hash64(v)
+
+def to_raw_value(value):
+    if isintance(value, int):
+        _value = b'\x00\x08\x00'
+        _value += int.to_bytes(value, 8, 'little')
+        return _value
+    elif isintance(value, str):
+        _value = b'\x01'
+        _value += int.to_bytes(len(value), 2, 'little')
+        _value += value.encode('utf8')
+        return _value
+    else:
+        require(False, 'unkonwn type')
+
+def from_raw_value(value):
+    require(isintance(value, str) or isintance(value, bytes))
+    type_id = int.from_bytes(value[0], 'little')
+    if isintance(value, int):
+        return ustruct.pack('BQ', 8, value)
+    elif isintance(value, str):
+        _value = ustruct.pack('B', len(value))
+        _value += value.encode('utf8')
+        return _value
+    else:
+        require(False, 'unkonwn type')
+
+def store(key, value):
+    id = get_hash(key)
+    value = to_raw_value(value)
+    code = contract_owner
+    itr = db_find_i64(receiver, receiver, g_table_id, id)
+    if itr >= 0:
+        value = db_update_i64(itr, receiver, value)
+    else:
+        db_store_i64(receiver, g_table_id, receiver, id, value)
+
+def load(key, value):
+    id = get_hash(key)
+    itr = db_find_i64(receiver, receiver, g_table_id, id)
+    value = None
+    if itr >= 0:
+        value = db_get_i64(itr)
+        return from_raw_value(value)
+    return None
 
 this = address(991)
 

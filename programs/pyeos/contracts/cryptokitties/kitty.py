@@ -1,5 +1,5 @@
 from backend import *
-
+import ustruct
 #/*** DATA TYPES ***/
 
 # @dev The main Kitty struct. Every cat in CryptoKitties is represented by a copy
@@ -10,7 +10,7 @@ from backend import *
 
 class Kitty:
     def __init__(self, _genes=uint256(0), _birthTime=uint64(0), _cooldownEndBlock = uint64(0),
-                 _matronId=uint32(0), _sireId=uint32(0), siringWithId=uint32(0), 
+                 _matronId=uint32(0), _sireId=uint32(0), _siringWithId=uint32(0), 
                  _cooldownIndex = uint16(0), _generation = uint16(0)):
         # The Kitty's genetic code is packed into these 256-bits, the format is
         # sooper-sekret! A cat's genes never change.
@@ -60,3 +60,14 @@ class Kitty:
         # (i.e. max(matron.generation, sire.generation) + 1)
         #uint16 generation;
         self.generation = _generation
+
+    def pack(self):
+        genes = ustruct.pack('QQQQ', self.genes)
+        return genes + ustruct.pack('QQQQQQQ', self.birthTime, self.cooldownEndBlock,
+                            self.matronId, self.sireId, self.siringWithId, self.cooldownIndex, self.generation)
+
+    def unpack(self, value):
+        a  = ustruct.unpack('QQQQ', value[:32])
+        b, c, d, e, f, g, h = ustruct.unpack('QQQQQQQ', value[32:])
+        return Kitty(a, b, c, d, e, f, g, h)
+

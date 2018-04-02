@@ -22,7 +22,23 @@ def init():
 
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
+def deploy_depend_libs():
+    depend_libs = ['cache.py', 'storage.py']
+    src_dir = '../../programs/pyeos/contracts/libs'
+    for file_name in depend_libs:
+        src_code = open(os.path.join(src_dir, file_name), 'r').read()
+        mod_name = file_name
+        msg = int.to_bytes(len(mod_name), 1, 'little')
+        msg += mod_name.encode('utf8')
+        msg += src_code.encode('utf8')
+
+        print('++++++++++++++++deply:', file_name)
+        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+        assert r
+    producer.produce_block()
+    
 def deploy_all():
+    deploy_depend_libs()
     src_dir = '../../programs/pyeos/contracts/cryptokitties'
     files = os.listdir(src_dir)
     for file_name in files:

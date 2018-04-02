@@ -1,5 +1,6 @@
 from backend import *
 from basement import *
+from storage import SList
 from kittyaccesscontrol import KittyAccessControl
 # @title Base contract for CryptoKitties. Holds all common structs, events and base variables.
 # @author Axiom Zen (https://www.axiomzen.co)
@@ -35,29 +36,29 @@ class KittyBase(KittyAccessControl):
         #  creature that is both matron and sire... to itself! Has an invalid genetic code.
         #  In other words, cat ID 0 is invalid... ;-)
         #Kitty[] kitties;
-        self.kitties = List()
+        self.kitties = SList()
     
         # @dev A mapping from cat IDs to the address that owns them. All cats have
         #  some valid owner address, even gen0 cats are created with a non-zero owner.
         #mapping (uint256 => address) public kittyIndexToOwner;
-        self.kittyIndexToOwner = List()
+        self.kittyIndexToOwner = SList(object_type = Kitty)
     
         # @dev A mapping from owner address to count of tokens that address owns.
         #  Used internally inside balanceOf() to resolve ownership count.
         #mapping (address => uint256) ownershipTokenCount;
-        self.ownershipTokenCount = Dict()
+        self.ownershipTokenCount = SDict()
     
         # @dev A mapping from KittyIDs to an address that has been approved to call
         #  transferFrom(). Each Kitty can only have one approved address for transfer
         #  at any time. A zero value means no approval is outstanding.
         #mapping (uint256 => address) public kittyIndexToApproved;
-        self.kittyIndexToApproved = Dict()
+        self.kittyIndexToApproved = SDict()
     
         # @dev A mapping from KittyIDs to an address that has been approved to use
         #  this Kitty for siring via breedWith(). Each Kitty can only have one approved
         #  address for siring at any time. A zero value means no approval is outstanding.
         #mapping (uint256 => address) public sireAllowedToAddress;
-        self.sireAllowedToAddress = Dict()
+        self.sireAllowedToAddress = SDict()
     
         # @dev The address of the ClockAuction contract that handles sales of Kitties. This
         #  same contract handles both peer-to-peer sales as well as the gen0 sales which are
@@ -171,3 +172,5 @@ class KittyBase(KittyAccessControl):
         self.onlyCLevel()
         require(secs < cooldowns[0])
         self.secondsPerBlock = secs
+
+
