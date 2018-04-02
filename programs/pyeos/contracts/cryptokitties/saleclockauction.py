@@ -1,6 +1,6 @@
 from backend import *
 from basement import *
-
+from auction import Auction
 from clockauction import ClockAuction
 # @title Clock auction modified for sale of kitties
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -62,5 +62,5 @@ class SaleClockAuction(ClockAuction):
     def averageGen0SalePrice(self) -> uint256:
         sum = uint256(0)
         for i in range(5): 
-            sum += lastGen0SalePrices[i];
+            sum += self.lastGen0SalePrices[i];
         return uint256(sum / 5)

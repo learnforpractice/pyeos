@@ -18,6 +18,7 @@ class KittyMinting(KittyAuction):
         self.PROMO_CREATION_LIMIT = 5000;
         self.GEN0_CREATION_LIMIT = 45000;
         # Constants for gen0 auctions.
+        #FIXME: 
         self.GEN0_STARTING_PRICE = 10 #finney;
         self.GEN0_AUCTION_DURATION = 1 #days;
 
@@ -32,8 +33,8 @@ class KittyMinting(KittyAuction):
     def createPromoKitty(self, _genes: uint256, _owner: address):
         kittyOwner = _owner;
         if kittyOwner == address(0):
-             kittyOwner = cooAddress
-        require(self.promoCreatedCount < PROMO_CREATION_LIMIT)
+             kittyOwner = self.cooAddress
+        require(self.promoCreatedCount < self.PROMO_CREATION_LIMIT)
         self.promoCreatedCount+=1
         self._createKitty(0, 0, 0, _genes, kittyOwner)
 
@@ -41,22 +42,22 @@ class KittyMinting(KittyAuction):
     #  creates an auction for it.
     @onlyCOO
     def createGen0Auction(self, _genes: uint256):
-        require(gen0CreatedCount < GEN0_CREATION_LIMIT)
+        require(self.gen0CreatedCount < self.GEN0_CREATION_LIMIT)
 
         kittyId = self._createKitty(0, 0, 0, _genes, address(this))
-        self._approve(kittyId, saleAuction)
+        self._approve(kittyId, self.saleAuction)
 
-        saleAuction.createAuction(
+        self.saleAuction.createAuction(
             kittyId,
-            _computeNextGen0Price(),
+            self._computeNextGen0Price(),
             0,
-            GEN0_AUCTION_DURATION,
+            self.GEN0_AUCTION_DURATION,
             address(this) )
         self.gen0CreatedCount+=1
 
     # @dev Computes the next gen0 auction starting price, given
     #  the average of the past 5 prices + 50%.
-    def _computeNextGen0Price() -> uint256:
+    def _computeNextGen0Price(self) -> uint256:
         avePrice = self.saleAuction.averageGen0SalePrice()
 
         # Sanity check to ensure we don't overflow arithmetic
@@ -65,7 +66,7 @@ class KittyMinting(KittyAuction):
         nextPrice = avePrice + (avePrice / 2)
 
         # We never auction for less than starting price
-        if nextPrice < GEN0_STARTING_PRICE:
-            nextPrice = GEN0_STARTING_PRICE;
+        if nextPrice < self.GEN0_STARTING_PRICE:
+            nextPrice = self.GEN0_STARTING_PRICE;
 
         return nextPrice;

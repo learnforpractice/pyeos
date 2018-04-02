@@ -44,7 +44,7 @@ def deploy_all():
     for file_name in files:
         if not file_name.endswith('.py'):
             continue
-        if file_name in ('main.py', 'test.py'):
+        if file_name in ('main.py', 'test.py', 'ustruct.py', 'eoslib.py'):
             continue
         src_code = open(os.path.join(src_dir, file_name), 'r').read()
         mod_name = file_name
@@ -104,7 +104,7 @@ def import_test():
     import kittycore
     import clockauction
     import clockauctionbase
-    import erc720metadata
+    import erc721metadata
     import erc721
     import genescienceinterface
     import kitty

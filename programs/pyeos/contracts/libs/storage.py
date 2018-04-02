@@ -121,7 +121,7 @@ class SList(object):
 
 # key_type key_length value_type value_length key_data value_data
 class SDict(object):
-    def __init__(self,table_id):
+    def __init__(self, table_id, key_type = None, value_type = None):
         self._dict = {}
         self.table_id = table_id
 

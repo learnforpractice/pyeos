@@ -2,6 +2,8 @@ from backend import *
 from basement import *
 from kittybase import KittyBase
 from erc721 import ERC721
+from erc721metadata import ERC721Metadata
+
 # @title The facet of the CryptoKitties core contract that manages ownership, ERC-721 (draft) compliant.
 # @author Axiom Zen (https://www.axiomzen.co)
 # @dev Ref: https://github.com/ethereum/EIPs/issues/721
@@ -102,8 +104,8 @@ class KittyOwnership(KittyBase, ERC721):
         # Disallow transfers to the auction contracts to prevent accidental
         # misuse. Auction contracts should only take ownership of kitties
         # through the allow + transferFrom flow.
-        require(_to != address(saleAuction))
-        require(_to != address(siringAuction))
+        require(_to != address(self.saleAuction))
+        require(_to != address(self.siringAuction))
         # You can only send your own cat.
         require(self._owns(msg.sender, _tokenId))
         # Reassign ownership, clear pending approvals, emit Transfer event.
@@ -156,7 +158,7 @@ class KittyOwnership(KittyBase, ERC721):
     # @notice Returns the address currently assigned ownership of a given Kitty.
     # @dev Required for ERC-721 compliance.
     def ownerOf(self, _tokenId: uint256) -> address:
-        owner = kittyIndexToOwner[_tokenId]
+        owner = self.kittyIndexToOwner[_tokenId]
         require(owner != address(0))
         return owner
 
@@ -248,7 +250,7 @@ class KittyOwnership(KittyBase, ERC721):
     #  ERC-721 (https://github.com/ethereum/EIPs/issues/721)
     # @param _tokenId The ID number of the Kitty whose metadata should be returned.
     def tokenMetadata(self, _tokenId: uint256, _preferredTransport: str) -> str:
-        require(erc721Metadata != address(0))
+        require(self.erc721Metadata != address(0))
 #        bytes32[4] memory buffer;
 #        uint256 count;
         buffer, count = self.erc721Metadata.getMetadata(_tokenId, _preferredTransport)

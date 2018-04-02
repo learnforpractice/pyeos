@@ -3,6 +3,8 @@ from basement import *
 
 from kitty import Kitty
 from kittyownership import KittyOwnership
+from genescienceinterface import GeneScienceInterface
+
 # @title A facet of KittyCore that manages Kitty siring, gestation, and birth.
 # @author Axiom Zen (https://www.axiomzen.co)
 # @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.
@@ -122,7 +124,7 @@ class KittyBreeding(KittyOwnership):
     # @param _matronId The matron's ID.
     # @param _sire A reference to the Kitty struct of the potential sire.
     # @param _sireId The sire's ID
-    def _isValidMatingPair(_matron: Kitty, _matronId: uint256, _sire: Kitty, _sireId: uint256) -> bool:
+    def _isValidMatingPair(self, _matron: Kitty, _matronId: uint256, _sire: Kitty, _sireId: uint256) -> bool:
 #        Kitty storage _matron,
       # A Kitty can't breed with itself!
         if _matronId == _sireId:
@@ -251,7 +253,7 @@ class KittyBreeding(KittyOwnership):
     #  new kitten will be ready to breed again. Note that anyone can call this function (if they
     #  are willing to pay the gas!), but the new kitten always goes to the mother's owner.
     @whenNotPaused
-    def giveBirth(_matronId: uint256) -> uint256:
+    def giveBirth(self, _matronId: uint256) -> uint256:
         # Grab a reference to the matron in storage.
         matron = self.kitties[_matronId];
 

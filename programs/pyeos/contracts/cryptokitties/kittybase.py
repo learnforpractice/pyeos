@@ -1,6 +1,8 @@
 from backend import *
 from basement import *
-from storage import SList
+from storage import SList, SDict
+from kitty import Kitty
+
 from kittyaccesscontrol import KittyAccessControl
 # @title Base contract for CryptoKitties. Holds all common structs, events and base variables.
 # @author Axiom Zen (https://www.axiomzen.co)
@@ -76,14 +78,14 @@ class KittyBase(KittyAccessControl):
     #  when a new gen0 cat is created.
     #event Birth(address owner, uint256 kittyId, uint256 matronId, uint256 sireId, uint256 genes);
     @event
-    def Birth(owner: address, kittyId: uint256, matronId: uint256, sireId: uint256, genes: uint256):
+    def Birth(self, owner: address, kittyId: uint256, matronId: uint256, sireId: uint256, genes: uint256):
         pass
 
     # @dev Transfer event as defined in current draft of ERC721. Emitted every time a kitten
     #  ownership is assigned, including births.
     #event Transfer(address from, address to, uint256 tokenId);
     @event
-    def Transfer(_from: address, to: address, tokenId: uint256):
+    def Transfer(self, _from: address, to: address, tokenId: uint256):
         pass
 
     #/*** CONSTANTS ***/
@@ -97,7 +99,7 @@ class KittyBase(KittyAccessControl):
 
 
     # @dev Assigns ownership of a specific Kitty to an address.
-    def _transfer(_from: address, _to: address, _tokenId: uint256):
+    def _transfer(self, _from: address, _to: address, _tokenId: uint256):
         # Since the number of kittens is capped to 2^32 we can't overflow this
         self.ownershipTokenCount[_to]+=1
         # transfer ownership
@@ -122,7 +124,7 @@ class KittyBase(KittyAccessControl):
     # @param _generation The generation number of this cat, must be computed by caller.
     # @param _genes The kitty's genetic code.
     # @param _owner The inital owner of this cat, must be non-zero (except for the unKitty, ID 0)
-    def _createKitty(_matronId: uint256, _sireId: uint256, _generation: uint256, 
+    def _createKitty(self, _matronId: uint256, _sireId: uint256, _generation: uint256, 
                      _genes: uint256, _owner: address) -> uint:
         # These requires are not strictly necessary, our calling code should make
         # sure that these conditions are never broken. However! _createKitty() is already
@@ -147,7 +149,7 @@ class KittyBase(KittyAccessControl):
             _cooldownIndex = cooldownIndex,
             _generation = uint16(_generation) )
 
-        newKittenId = kitties.push(_kitty) - 1
+        newKittenId = self.kitties.push(_kitty) - 1
 
         # It's probably never going to happen, 4 billion cats is A LOT, but
         # let's just be 100% sure we never let this happen.
@@ -168,9 +170,9 @@ class KittyBase(KittyAccessControl):
         return newKittenId
 
     # Any C-level can fix how many seconds per blocks are currently observed.
-    def setSecondsPerBlock(secs: uint256):
+    def setSecondsPerBlock(self, secs: uint256):
         self.onlyCLevel()
-        require(secs < cooldowns[0])
+        require(secs < self.cooldowns[0])
         self.secondsPerBlock = secs
 
 

@@ -1,6 +1,7 @@
 from backend import *
 from basement import *
 
+from auction import Auction
 from clockauction import ClockAuction
 # @title Reverse auction modified for siring
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -27,7 +28,7 @@ class SiringClockAuction(ClockAuction):
         require(_endingPrice == uint256(uint128(_endingPrice)))
         require(_duration == uint256(uint64(_duration)))
 
-        require(msg.sender == address(nonFungibleContract))
+        require(msg.sender == address(self.nonFungibleContract))
         self._escrow(_seller, _tokenId)
         auction = Auction(
             _seller,

@@ -2,7 +2,8 @@ from backend import *
 from basement import *
 from pausable import Pausable
 from clockauctionbase import ClockAuctionBase
-
+from erc721 import ERC721
+from auction import Auction
 
 # @title Clock auction for non-fungible tokens.
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -28,7 +29,7 @@ class ClockAuction(Pausable, ClockAuctionBase):
 
         candidateContract = ERC721(_nftAddress)
         #FIXME:
-        require(candidateContract.supportsInterface(InterfaceSignature_ERC721))
+        require(candidateContract.supportsInterface(self.InterfaceSignature_ERC721))
         self.nonFungibleContract = candidateContract
 
 
@@ -36,9 +37,9 @@ class ClockAuction(Pausable, ClockAuctionBase):
     #  as well as any Ether sent directly to the contract address.
     #  Always transfers to the NFT contract, but can be called either by
     #  the owner or the NFT contract.
-    def withdrawBalance():
+    def withdrawBalance(self):
         nftAddress = address(self.nonFungibleContract)
-        require(msg.sender == owner or msg.sender == nftAddress)
+        require(msg.sender == self.owner or msg.sender == nftAddress)
         # We are using this boolean method to make sure that even if one fails it will still work
         res = nftAddress.send(this.balance)
 

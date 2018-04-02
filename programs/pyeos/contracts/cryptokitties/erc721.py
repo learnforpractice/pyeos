@@ -1,22 +1,25 @@
 from backend import *
+
 class ERC721:
+    def __init__(self):
+        pass
 #     Required methods
     def totalSupply(self) -> uint256:
         pass
-    def balanceOf(_owner: address) -> uint256:
+    def balanceOf(self, _owner: address) -> uint256:
         pass
-    def ownerOf(_tokenId: uint256) -> address:
+    def ownerOf(self, _tokenId: uint256) -> address:
         pass
-    def approve(_to: address, _tokenId: uint256):
+    def approve(self, _to: address, _tokenId: uint256):
         pass
-    def transfer(_to: address, _tokenId: uint256):
+    def transfer(self, _to: address, _tokenId: uint256):
         pass
-    def transferFrom(_from: address, _to: address, _tokenId: uint256):
+    def transferFrom(self, _from: address, _to: address, _tokenId: uint256):
         pass
     # Events
-    def Transfer(_from: address, to: address, tokenId: uint256):
+    def Transfer(self, _from: address, to: address, tokenId: uint256):
         pass
-    def Approval(owner: address, approved: address, tokenId: uint256):
+    def Approval(self, owner: address, approved: address, tokenId: uint256):
         pass
 
     # Optional
@@ -27,6 +30,6 @@ class ERC721:
 
     # ERC-165 Compatibility (https://github.com/ethereum/EIPs/issues/165)
 #    function supportsInterface(bytes4 _interfaceID) external view returns (bool);
-    def supportsInterface(_interfaceID) -> bool:
+    def supportsInterface(self, _interfaceID) -> bool:
         pass
     

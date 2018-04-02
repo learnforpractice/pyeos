@@ -25,7 +25,7 @@ def apply(name, action):
         import basement
         import clockauction
         import clockauctionbase
-        import erc720metadata
+        import erc721metadata
         import erc721
         import genescienceinterface
         import kitty

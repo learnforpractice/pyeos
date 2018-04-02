@@ -3,6 +3,7 @@ from basement import *
 
 from kittybreeding import KittyBreeding
 from saleclockauction import SaleClockAuction
+from siringclockauction import SiringClockAuction
 
 # @title Handles creating auctions for sale and siring of kitties.
 #  This wrapper of ReverseAuction exists only so that users can create
@@ -49,15 +50,15 @@ class KittyAuction(KittyBreeding):
         # Auction contract checks input sizes
         # If kitty is already on any auction, this will throw
         # because it will be owned by the auction contract.
-        require(_owns(msg.sender, _kittyId));
+        require(self._owns(msg.sender, _kittyId));
         # Ensure the kitty is not pregnant to prevent the auction
         # contract accidentally receiving ownership of the child.
         # NOTE: the kitty IS allowed to be in a cooldown.
         require(not self.isPregnant(_kittyId));
-        self._approve(_kittyId, saleAuction);
+        self._approve(_kittyId, self.saleAuction);
         # Sale auction throws if inputs are invalid and clears
         # transfer and sire approval after escrowing the kitty.
-        saleAuction.createAuction(
+        self.saleAuction.createAuction(
             _kittyId,
             _startingPrice,
             _endingPrice,
@@ -76,12 +77,12 @@ class KittyAuction(KittyBreeding):
         # Auction contract checks input sizes
         # If kitty is already on any auction, this will throw
         # because it will be owned by the auction contract.
-        require(_owns(msg.sender, _kittyId))
-        require(isReadyToBreed(_kittyId))
-        self._approve(_kittyId, siringAuction)
+        require(self._owns(msg.sender, _kittyId))
+        require(self.isReadyToBreed(_kittyId))
+        self._approve(_kittyId, self.siringAuction)
         # Siring auction throws if inputs are invalid and clears
         # transfer and sire approval after escrowing the kitty.
-        siringAuction.createAuction(
+        self.siringAuction.createAuction(
             _kittyId,
             _startingPrice,
             _endingPrice,
@@ -96,7 +97,7 @@ class KittyAuction(KittyBreeding):
     @whenNotPaused
     def bidOnSiringAuction(self, _sireId: uint256, _matronId: uint256):
         # Auction contract checks input sizes
-        require(_owns(msg.sender, _matronId));
+        require(self._owns(msg.sender, _matronId));
         require(self.isReadyToBreed(_matronId));
         require(self._canBreedWithViaAuction(_matronId, _sireId));
 
@@ -113,5 +114,5 @@ class KittyAuction(KittyBreeding):
     # prevent two transfer calls in the auction bid function.
     @onlyCLevel
     def withdrawAuctionBalances(self):
-        saleAuction.withdrawBalance()
-        siringAuction.withdrawBalance()
+        self.saleAuction.withdrawBalance()
+        self.siringAuction.withdrawBalance()

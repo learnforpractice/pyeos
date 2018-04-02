@@ -27,6 +27,8 @@ class uint64(int):
 class uint128(int):
     pass
 
+class int256(int):
+    pass
 
 class uint256(object):
     def __init__(self, v):
@@ -77,7 +79,11 @@ class address(int):
     
     def transfer(self, _from, _to):
         pass
+
     def ownerOf(self,address):
+        pass
+    
+    def send(self):
         pass
 
 def balanceOf(address):

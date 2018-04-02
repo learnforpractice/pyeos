@@ -48,7 +48,7 @@ class KittyCore(KittyMinting):
     # Set in case the core contract is broken and an upgrade is required
 
     # @notice Creates the main CryptoKitties smart contract instance.
-    def __init__():
+    def __init__(self):
         super(KittyMinting, self).__init__()
         self.newContractAddress = address(0)
         # Starts paused.
@@ -80,12 +80,12 @@ class KittyCore(KittyMinting):
     # @dev Reject all Ether from being sent here, unless it's from one of the
     #  two auction contracts. (Hopefully, we can prevent user accidents.)
     def __call__(self): # external payable {
-        require(msg.sender == address(saleAuction) or msg.sender == address(siringAuction) )
+        require(msg.sender == address(self.saleAuction) or msg.sender == address(self.siringAuction) )
 
     # @notice Returns all the relevant information about a specific kitty.
     # @param _id The ID of the kitty of interest.
     def getKitty(self, _id: uint256):
-        kit = kitties[_id]
+        kit = self.kitties[_id]
         # if this variable is 0 then it's not gestating
         isGestating = (kit.siringWithId != 0)
         isReady = (kit.cooldownEndBlock <= block.number)
@@ -98,7 +98,7 @@ class KittyCore(KittyMinting):
         generation = uint256(kit.generation)
         genes = kit.genes
 
-        returns (
+        return (
             isGestating,
             isReady,
             cooldownIndex,
@@ -118,10 +118,10 @@ class KittyCore(KittyMinting):
     @onlyCEO
     @whenPaused
     def unpause(self):
-        require(saleAuction != address(0))
-        require(siringAuction != address(0))
-        require(geneScience != address(0))
-        require(newContractAddress == address(0))
+        require(self.saleAuction != address(0))
+        require(self.siringAuction != address(0))
+        require(self.geneScience != address(0))
+        require(self.newContractAddress == address(0))
         # Actually unpause the contract.
         super(KittyCore, self).unpause()
 
@@ -133,4 +133,4 @@ class KittyCore(KittyMinting):
         subtractFees = (self.pregnantKitties + 1) * self.autoBirthFee
 
         if balance > subtractFees:
-            cfoAddress.send(balance - subtractFees)
+            self._cfoAddress.send(balance - subtractFees)

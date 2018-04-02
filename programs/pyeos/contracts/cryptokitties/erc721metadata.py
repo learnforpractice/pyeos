@@ -3,7 +3,7 @@ from backend import *
 #  it has one function that will return the data as bytes.
 class ERC721Metadata:
     # @dev Given a token Id, returns a byte array that is supposed to be converted into string.
-    def getMetadata(_tokenId: uint256) -> (List, uint256):
+    def getMetadata(self, _tokenId: uint256) -> (List, uint256):
         buffer = List(size = 4, value_type=str)
         count = 0
         if _tokenId == 1:

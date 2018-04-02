@@ -1,3 +1,4 @@
+from eoslib import *
 from backend import *
 from basement import *
 class Ownable:
@@ -21,7 +22,7 @@ class Ownable:
         self._owner = addr
 
     @onlyOwner
-    def transferOwnership(newOwner: address):
+    def transferOwnership(self, newOwner: address):
         if newOwner != address(0):
             self.owner = newOwner;
             

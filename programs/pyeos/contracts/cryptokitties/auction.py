@@ -1,4 +1,5 @@
 #Represents an auction on an NFT
+from backend import *
 class Auction:
     def __init__(self):
         self.seller = address(0)
@@ -11,6 +12,13 @@ class Auction:
         #Time when auction started
         #NOTE: 0 if this auction has been concluded
         self.startedAt = uint64(0)
+
+    def pack(self):
+        pass
+
+    def unpack(self):
+        pass
+
     '''
     #Current owner of NFT
     address seller;

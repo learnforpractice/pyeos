@@ -1,6 +1,7 @@
 from backend import *
 from auction import Auction
-
+from erc721 import ERC721
+from storage import SDict
 # @title Auction Core
 # @dev Contains models, variables, and internal methods for the auction.
 # @notice We omit a fallback function to prevent accidental sends to this contract.
@@ -16,7 +17,7 @@ class ClockAuctionBase:
     
         #Map from token ID to their corresponding auction.
         #mapping (uint256 => Auction) tokenIdToAuction;
-        self.tokenIdToAuction = Dict(uint256, Auction)
+        self.tokenIdToAuction = SDict(key_type = uint256, value_type = Auction)
 
     '''FIXME
     event AuctionCreated(uint256 tokenId, uint256 startingPrice, uint256 endingPrice, uint256 duration);
@@ -148,7 +149,7 @@ class ClockAuctionBase:
         #A bit of insurance against negative values (or wraparound).
         #Probably not necessary (since Ethereum guarnatees that the
         #now variable doesn't ever go backwards).
-        if now > _auction.startedAt:
+        if now() > _auction.startedAt:
             self.secondsPassed = now() - _auction.startedAt;
 
         return self._computeCurrentPrice(

@@ -30,53 +30,53 @@ class KittyAccessControl:
 
     #/ @dev Emited when contract is upgraded - See README.md for updgrade plan
     @event
-    def ContractUpgrade(newContract: address):
+    def ContractUpgrade(self, newContract: address):
         pass
 
-    def loadAddress(self, name):
+    def _loadAddress(self, name):
         value = load(name)
         return address(value)
 
-    def storeAddress(self, name, addr):
+    def _storeAddress(self, name, addr):
         store(name, addr)
 
     @property
     def ceoAddress(self):
         if not self._ceoAddress:
-            self._ceoAddress = loadAddress('ceoAddress')
+            self._ceoAddress = self.loadAddress('ceoAddress')
         return self._ceoAddress
 
     @ceoAddress.setter
     def ceoAddress(self, value):
         if self._ceoAddress == value:
             return
-        storeAddress('ceoAddress', value)
+        self._storeAddress('ceoAddress', value)
         self._ceoAddress = value
 
     @property
     def cfoAddress(self):
         if not self._cfoAddress:
-            self._cfoAddress = loadAddress('cfoAddress')
+            self._cfoAddress = self._loadAddress('cfoAddress')
         return self._cfoAddress
 
     @cfoAddress.setter
     def cfoAddress(self, value):
         if self._cfoAddress == value:
             return
-        storeAddress('cfoAddress', value)
+        self._storeAddress('cfoAddress', value)
         self._cfoAddress = value
 
     @property
     def cooAddress(self):
         if not self._cooAddress:
-            self._cooAddress = loadAddress('cooAddress')
+            self._cooAddress = self._loadAddress('cooAddress')
         return self._cooAddress
 
     @cooAddress.setter
     def cooAddress(self, value):
         if self._cooAddress == value:
             return
-        storeAddress('cooAddress', value)
+        self._storeAddress('cooAddress', value)
         self._cooAddress = value
 
     @property
@@ -100,21 +100,21 @@ class KittyAccessControl:
     #/ @dev Assigns a new address to act as the CEO. Only available to the current CEO.
     #/ @param _newCEO The address of the new CEO
     @onlyCEO
-    def setCEO(_newCEO: address):
+    def setCEO(self, _newCEO: address):
         require(_newCEO != address(0))
         self.ceoAddress = _newCEO
 
     #/ @dev Assigns a new address to act as the CFO. Only available to the current CEO.
     #/ @param _newCFO The address of the new CFO
     @onlyCEO
-    def setCFO(_newCFO: address):
+    def setCFO(self, _newCFO: address):
         require(_newCFO != address(0))
         self.cfoAddress = _newCFO
 
     #/ @dev Assigns a new address to act as the COO. Only available to the current CEO.
     #/ @param _newCOO The address of the new COO
     @onlyCEO
-    def setCOO(_newCOO: address):
+    def setCOO(self, _newCOO: address):
         require(_newCOO != address(0))
         self.cooAddress = _newCOO
 
@@ -134,7 +134,7 @@ class KittyAccessControl:
     #/  derived contracts.
     @onlyCEO
     @whenPaused
-    def unpause():
+    def unpause(self):
         # can't unpause if contract was upgraded
         self.paused = False
 
