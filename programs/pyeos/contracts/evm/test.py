@@ -177,12 +177,16 @@ def kitties_test(contract_interface):
     #    r = contract_instance.getValue(call={'from': address})
         r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
+contract_source_code = '''
 
+'''
 def test():
     main_class = '<stdin>:Greeter'
-    contract_interface = compile(contract_source_code, main_class)
-    deploy(contract_interface)
-    call_contract(contract_interface)
+    with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
+        contract_source_code = f.read()
+        contract_interface = compile(contract_source_code, main_class)
+        deploy(contract_interface)
+        call_contract(contract_interface)
 
 def test2():
     main_class = '<stdin>:KittyCore'
