@@ -15,7 +15,6 @@
 #include <chrono>
 #include <appbase/application.hpp>
 
-
 extern "C" {
    mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);
    mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
@@ -64,6 +63,33 @@ micropython_interface& micropython_interface::get() {
    return *python;
 }
 
+void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
+	 auto itr = module_cache.find(_account);
+
+	 if (itr != module_cache.end()) {
+		 fc::sha256 hash = fc::sha256::hash( code.data(), code.size() );
+		 //FIXME: handle hash conflict
+		if (itr->second->hash == hash) {
+			return;
+		}
+	 }
+	 ilog("++++++++++update code");
+	 mp_obj_t obj = nullptr;
+	 if (code.data()[0] == 0) {//py
+		 obj = micropy_load_from_py(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+	 } else if (code.data()[0] == 1) {//mpy
+		 obj = micropy_load_from_mpy(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+	 } else {
+		 FC_ASSERT(false, "unknown micropython code!");
+	 }
+	 if (obj != NULL) {
+		 py_module* mod = new py_module();
+		 mod->obj = obj;
+		 mod->hash = fc::sha256::hash( code.data(), code.size() );
+		 module_cache[_account] = mod;
+	 }
+}
+
 void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
    try {
    		set_current_context(&c);
@@ -71,20 +97,28 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       mp_obj_t obj = nullptr;
        nlr_buf_t nlr;
        if (nlr_push(&nlr) == 0) {
-//               		ilog("${n}", ("n", a.code.data()));
-      	 	 if (code.data()[0] == 0) {//py
-      	 		ilog("load source py file");
-      	 		 obj = micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
-      	 	 } else if (code.data()[0] == 1) {//mpy
-       	 	ilog("load compiled py file");
-      	 		 obj = micropy_load_from_mpy(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+      	 	 auto itr = module_cache.find(c.act.account.value);
+      	 	 if (itr != module_cache.end()) {
+      	 		obj = itr->second->obj;
       	 	 } else {
-      	 		 FC_ASSERT(false, "unknown micropython code!");
-      	 	 }
-           if (obj) {
+         	 	 if (code.data()[0] == 0) {//py
+         	 		 obj = micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+         	 	 } else if (code.data()[0] == 1) {//mpy
+         	 		 obj = micropy_load_from_mpy(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+         	 	 } else {
+         	 		 FC_ASSERT(false, "unknown micropython code!");
+         	 	 }
+         	 	 if (obj != NULL) {
+         	 		 py_module* mod = new py_module();
+         	 		 mod->obj = obj;
+         	 		 mod->hash = fc::sha256::hash( code.data(), code.size() );
+            	 	 module_cache[c.act.account.value] = mod;
+         	 	 }
+      	 	}
+         if (obj) {
               micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
-           }
-           nlr_pop();
+         }
+         nlr_pop();
        } else {
           mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
           throw fc::exception();

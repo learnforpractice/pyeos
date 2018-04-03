@@ -120,6 +120,8 @@ void apply_eosio_setcode(apply_context& context) {
    auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
    if (act.vmtype == 0) {
       wasm_interface::validate(act.code);
+   } else if (act.vmtype == 1) {
+   		micropython_interface::get().on_setcode(act.account, act.code);
    }
 
    if (act.vmtype == 0 || act.vmtype == 1) {//wasm || micropython

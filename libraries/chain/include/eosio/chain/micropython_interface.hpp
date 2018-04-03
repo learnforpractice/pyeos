@@ -19,6 +19,7 @@ extern "C" {
 #include <Runtime/Runtime.h>
 #include "IR/Module.h"
 
+#include <fc/crypto/sha256.hpp>
 
 using namespace std;
 
@@ -40,12 +41,18 @@ class micropython_interface {
 public:
 
    static micropython_interface& get();
+
+   void on_setcode(uint64_t _account, bytes& code);
    void apply(apply_context& c, const shared_vector<char>&  code);
 
    apply_context* current_apply_context = nullptr;
 
 private:
-
+   struct py_module {
+   		void* obj;
+   		fc::sha256 hash;
+   };
+   std::map<uint64_t, py_module*> module_cache;
    micropython_interface();
 };
 
