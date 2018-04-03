@@ -1155,15 +1155,19 @@ void chain_controller::update_resource_usage( transaction_trace& trace, const tr
 
    trace.cpu_usage = calculate_transaction_cpu_usage(trace, meta, chain_configuration);
    trace.net_usage = calculate_transaction_net_usage(trace, meta, chain_configuration);
+   if (appbase::app().is_debug_mode()) {
+   		wlog("trace.cpu_usage: ${n1}, chain_configuration.max_transaction_cpu_usage: ${n2}", ("n1", trace.cpu_usage)("n2", chain_configuration.max_transaction_cpu_usage));
+   		wlog("trace.net_usage: ${n1}, chain_configuration.max_transaction_net_usage: ${n2}", ("n1", trace.net_usage)("n2", chain_configuration.max_transaction_net_usage));
+   } else {
+      // enforce that the system controlled per tx limits are not violated
+      EOS_ASSERT(trace.cpu_usage <= chain_configuration.max_transaction_cpu_usage,
+                 tx_resource_exhausted, "Transaction exceeds the maximum cpu usage [used: ${used}, max: ${max}]",
+                 ("used", trace.cpu_usage)("max", chain_configuration.max_transaction_cpu_usage));
 
-   // enforce that the system controlled per tx limits are not violated
-   EOS_ASSERT(trace.cpu_usage <= chain_configuration.max_transaction_cpu_usage,
-              tx_resource_exhausted, "Transaction exceeds the maximum cpu usage [used: ${used}, max: ${max}]",
-              ("used", trace.cpu_usage)("max", chain_configuration.max_transaction_cpu_usage));
-
-   EOS_ASSERT(trace.net_usage <= chain_configuration.max_transaction_net_usage,
-              tx_resource_exhausted, "Transaction exceeds the maximum net usage [used: ${used}, max: ${max}]",
-              ("used", trace.net_usage)("max", chain_configuration.max_transaction_net_usage));
+      EOS_ASSERT(trace.net_usage <= chain_configuration.max_transaction_net_usage,
+                 tx_resource_exhausted, "Transaction exceeds the maximum net usage [used: ${used}, max: ${max}]",
+                 ("used", trace.net_usage)("max", chain_configuration.max_transaction_net_usage));
+   }
 
    // determine the accounts to bill
    set<std::pair<account_name, permission_name>> authorizations;
