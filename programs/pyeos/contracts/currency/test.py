@@ -10,17 +10,17 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init():
     with producer:
-        if not eosapi.get_account('currency'):
-                r = eosapi.create_account('inita', 'currency', key1, key2)
+        if not eosapi.get_account('currency').permissions:
+                r = eosapi.create_account('eosio', 'currency', initeos.key1, initeos.key2)
                 assert r
-        if not eosapi.get_account('test'):
+        if not eosapi.get_account('test').permissions:
             if not eosapi.get_account('test'):
-                r = eosapi.create_account('inita', 'test', initeos.key1, initeos.key2)
+                r = eosapi.create_account('eosio', 'test', initeos.key1, initeos.key2)
                 assert r
 
     with producer:
-        r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', eosapi.py_vm_type)
-#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
+#        r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', eosapi.py_vm_type)
+        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
         assert r
 
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
@@ -32,6 +32,22 @@ def test():
         assert r
     r = eosapi.get_table('inita','currency','account')
     print(r)
+
+#'issue',{"to":"currency","quantity":"1000.0000 CUR"
+def test2(count):
+    import time
+    import json
+    functions = []
+    args = []
+    per = {b'currency':b'active'}
+    for i in range(count):
+        functions.append(b'issue')
+        arg = str(i)
+        args.append(b'{"to":"currency","quantity":"1000.0000 CUR","memo":""}')
+    ret, cost = eosapi.push_messages(b'currency', functions, args, per, True, rawargs=True)
+    assert ret
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+    eosapi.produce_block()
 
 def test_performance():
     import wallet

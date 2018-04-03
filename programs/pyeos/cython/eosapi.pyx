@@ -430,7 +430,7 @@ def push_messages(string& contract, vector[string]& functions, args, permissions
         key = permissions[per]
         _permissions[per] = key
     for arg in args:
-        if not isinstance(arg, str):
+        if isinstance(arg, dict):
             arg = json.dumps(arg)
         _args.push_back(arg)
 

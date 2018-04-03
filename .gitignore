@@ -1,3 +1,4 @@
+*.mpy
 *.a
 *.sw*
 *.dylib

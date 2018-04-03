@@ -222,6 +222,7 @@ PyObject* push_actions(std::vector<chain::action>&& actions, bool skip_sign, pac
    signed_transaction trx;
    trx.actions = std::forward<decltype(actions)>(actions);
 
+   wlog("++++++++++++++++++++++push_transaction");
    return push_transaction(trx, skip_sign, 10000000, compression);
 }
 
@@ -609,7 +610,7 @@ static uint64_t get_microseconds() {
 PyObject* push_messages_(string& contract, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
                         bool sign, bool rawargs, uint64_t& cost_time) {
    signed_transaction trx;
-   wlog("+++++++++++++++++push_message:${n}", ("n", contract));
+   ilog("+++++++++++++++++push_message:${n}", ("n", contract));
    try {
       //		ilog("Converting argument to binary...");
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
@@ -655,7 +656,6 @@ PyObject* push_messages_(string& contract, vector<string>& functions, vector<str
       if (tx_force_unique) {
          actions.emplace_back( generate_nonce() );
       }
-
       cost_time = get_microseconds();
       PyObject* ret = send_actions(std::move(actions), !sign);
       cost_time = get_microseconds() - cost_time;
