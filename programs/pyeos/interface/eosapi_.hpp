@@ -122,3 +122,7 @@ string convert_from_eth_address(string& eth_address);
 
 PyObject* push_messages_(string& contract, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
                         bool sign, bool rawargs, uint64_t& cost_time);
+
+extern "C" int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+
+

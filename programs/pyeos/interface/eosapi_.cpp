@@ -720,39 +720,47 @@ PyObject* push_evm_message_(string& contract, string& args, map<string, string>&
 }
 
 
-PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
+PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
                         int vm_type, bool sign) {
    try {
-      std::string wast;
+      std::string _src;
       contracts::setcode handler;
       handler.vmtype = vm_type;
       if (vm_type == 0) {
          std::cout << localized("Reading WAST...") << std::endl;
-         fc::read_file_contents(wastPath, wast);
+         fc::read_file_contents(srcPath, _src);
 
          vector<uint8_t> wasm;
          const string binary_wasm_header = "\x00\x61\x73\x6d";
-         if(wast.compare(0, 4, binary_wasm_header) == 0) {
+         if(_src.compare(0, 4, binary_wasm_header) == 0) {
             std::cout << localized("Using already assembled WASM...") << std::endl;
-            wasm = vector<uint8_t>(wast.begin(), wast.end());
+            wasm = vector<uint8_t>(_src.begin(), _src.end());
          }
          else {
             std::cout << localized("Assembling WASM...") << std::endl;
-            wasm = assemble_wast(wast);
+            wasm = assemble_wast(_src);
          }
          handler.account = account;
          handler.code.assign(wasm.begin(), wasm.end());
       } else if (vm_type == 1) {
-         fc::read_file_contents(wastPath, wast);
+         fc::read_file_contents(srcPath, _src);
          handler.account = account;
-         handler.code.assign(wast.begin(), wast.end());
+         handler.code.resize(0);
+         handler.code.resize(_src.length()+1);
+         if (srcPath[srcPath.length() - 3] == 'm') {//compiled code
+         		handler.code.data()[0] = '\x01';
+         } else {
+         		handler.code.data()[0] = '\x00';
+         }
+         memcpy(&handler.code.data()[1], _src.c_str(), _src.length());
+//         handler.code.assign(_src.begin(), _src.end());
       } else if (vm_type == 2) {
-         fc::read_file_contents(wastPath, wast);
-         wast = fc::trim(wast);
+         fc::read_file_contents(srcPath, _src);
+         _src = fc::trim(_src);
          bytes bin;
          bin.resize(0);
-         bin.resize(wast.size()/2);
-         fc::from_hex(wast, bin.data(), bin.size());
+         bin.resize(_src.size()/2);
+         fc::from_hex(_src, bin.data(), bin.size());
          handler.account = account;
          handler.code.assign(bin.begin(), bin.end());
       }

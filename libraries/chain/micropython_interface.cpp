@@ -17,7 +17,8 @@
 
 
 extern "C" {
-   mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len);
+   mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);
+   mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
    mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
    mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
 }
@@ -71,7 +72,15 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
        nlr_buf_t nlr;
        if (nlr_push(&nlr) == 0) {
 //               		ilog("${n}", ("n", a.code.data()));
-           obj = micropy_load(c.act.account.to_string().c_str(), (const char*)code.data(), code.size());
+      	 	 if (code.data()[0] == 0) {//py
+      	 		ilog("load source py file");
+      	 		 obj = micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+      	 	 } else if (code.data()[0] == 1) {//mpy
+       	 	ilog("load compiled py file");
+      	 		 obj = micropy_load_from_mpy(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+      	 	 } else {
+      	 		 FC_ASSERT(false, "unknown micropython code!");
+      	 	 }
            if (obj) {
               micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
            }

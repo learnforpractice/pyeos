@@ -177,24 +177,7 @@ def kitties_test(contract_interface):
     #    r = contract_instance.getValue(call={'from': address})
         r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
-contract_source_code = '''
-pragma solidity ^0.4.0;
-contract Greeter {
-    mapping(address => uint) public mymap;
 
-    function Greeter() {
-        mymap[msg.sender] = 100;
-    }
-
-    function getValue() public returns (uint) {
-        return mymap[msg.sender];
-    }
-
-    function setValue(uint v) public {
-        mymap[msg.sender] = v;
-    }
-}
-'''
 def test():
     main_class = '<stdin>:Greeter'
     contract_interface = compile(contract_source_code, main_class)

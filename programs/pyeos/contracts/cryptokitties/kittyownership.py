@@ -27,7 +27,7 @@ class KittyOwnership(KittyBase, ERC721):
 
         self.InterfaceSignature_ERC721 = bytes4(keccak256('InterfaceSignature_ERC721(bytes4)'));
 
-        '''TODO
+        '''FIXME
         bytes4 constant InterfaceSignature_ERC721 =
             bytes4(keccak256('name()')) ^
             bytes4(keccak256('symbol()')) ^

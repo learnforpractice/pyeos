@@ -3,6 +3,7 @@ import time
 import wallet
 import eosapi
 import initeos
+import subprocess
 
 producer = eosapi.Producer()
 
@@ -30,6 +31,7 @@ def deploy_depend_libs():
         mod_name = file_name
         msg = int.to_bytes(len(mod_name), 1, 'little')
         msg += mod_name.encode('utf8')
+        msg += int.to_bytes(0, 1, 'little') # source code
         msg += src_code.encode('utf8')
 
         print('++++++++++++++++deply:', file_name)
@@ -50,6 +52,7 @@ def deploy_all():
         mod_name = file_name
         msg = int.to_bytes(len(mod_name), 1, 'little')
         msg += mod_name.encode('utf8')
+        msg += int.to_bytes(0, 1, 'little') # source code
         msg += src_code.encode('utf8')
 
         print('++++++++++++++++deply:', file_name)
@@ -57,20 +60,59 @@ def deploy_all():
         assert r
     producer.produce_block()
 
-
 def deploy(src_file):
     src_dir = '../../programs/pyeos/contracts/cryptokitties'
 
-    src_code = open(os.path.join(src_dir, src_file), 'r').read()
+    src_code = open(os.path.join(src_dir, src_file), 'rb').read()
     mod_name = src_file
     msg = int.to_bytes(len(mod_name), 1, 'little')
     msg += mod_name.encode('utf8')
-    msg += src_code.encode('utf8')
+    msg += int.to_bytes(0, 1, 'little') # source code
+    msg += src_code
     with producer:
         print('++++++++++++++++deply:', src_file)
         r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
         assert r
 
+def deploy_all_mpy():
+    src_dir = '../../programs/pyeos/contracts/cryptokitties'
+    files = os.listdir(src_dir)
+    for file_name in files:
+        if not file_name.endswith('.py'):
+            continue
+        if file_name in ('main.py', 'test.py', 'ustruct.py', 'eoslib.py'):
+            continue
+
+
+        src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
+        file_name = file_name.replace('.py', '.mpy')
+        mod_name = file_name
+        msg = int.to_bytes(len(mod_name), 1, 'little')
+        msg += mod_name.encode('utf8')
+        msg += int.to_bytes(1, 1, 'little') # compiled code
+        msg += src_code
+
+        print('++++++++++++++++deply:', file_name)
+        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+        assert r
+    producer.produce_block()
+
+def deploy_mpy(file_name):
+    src_dir = '../../programs/pyeos/contracts/cryptokitties'
+
+    src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
+    file_name = file_name.replace('.py', '.mpy')
+    mod_name = file_name
+    msg = int.to_bytes(len(mod_name), 1, 'little')
+    msg += mod_name.encode('utf8')
+    msg += int.to_bytes(1, 1, 'little') # compiled code
+    msg += src_code
+
+    print('++++++++++++++++deply:', file_name)
+    r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+    assert r
+
+    producer.produce_block()
 
 def test(name=None):
     with producer:
