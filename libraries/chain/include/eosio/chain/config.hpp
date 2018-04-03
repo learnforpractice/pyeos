@@ -26,6 +26,7 @@ const static uint64_t eosio_all_scope        = N(eosio.all);
 
 const static uint64_t active_name = N(active);
 const static uint64_t owner_name  = N(owner);
+const static uint64_t eosio_any_name = N(eosio.any);
 
 const static int      block_interval_ms = 500;
 const static int      block_interval_us = block_interval_ms*1000;
@@ -77,7 +78,7 @@ const static uint32_t   overhead_per_row_ram_bytes         = 512;    ///< overhe
 const static uint32_t   overhead_per_account_ram_bytes     = 2*1024; ///< overhead accounts for basic account storage and pre-pays features like account recovery
 const static uint32_t   setcode_ram_bytes_multiplier       = 10;     ///< multiplier on contract size to account for multiple copies and cached compilation
 
-const static eosio::chain::wasm_interface::vm_type default_wasm_runtime = eosio::chain::wasm_interface::vm_type::wavm;
+const static eosio::chain::wasm_interface::vm_type default_wasm_runtime = eosio::chain::wasm_interface::vm_type::binaryen;
 
 /**
  *  The number of sequential blocks produced by a single producer
@@ -87,7 +88,7 @@ const static int producer_repetitions = 12;
 /**
  * In block production, at the begining of each block we schedule deferred transactions until reach this time
  */
-const static uint32_t deffered_transactions_max_time_per_block_us = 20*1000; //20ms
+const static uint32_t deferred_transactions_max_time_per_block_us = 20*1000; //20ms
 
 /**
  * The number of blocks produced per round is based upon all producers having a chance

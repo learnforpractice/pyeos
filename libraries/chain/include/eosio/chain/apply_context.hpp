@@ -10,6 +10,7 @@
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>
+#include <set>
 
 namespace chainbase { class database; }
 
@@ -477,9 +478,9 @@ class apply_context {
        *
        * @throws tx_missing_auth If no sufficient permission was found
        */
-      void require_authorization(const account_name& account)const;
-      bool has_authorization(const account_name& account)const;
-      void require_authorization(const account_name& account, const permission_name& permission)const;
+      void require_authorization(const account_name& account);
+      bool has_authorization(const account_name& account) const;
+      void require_authorization(const account_name& account, const permission_name& permission);
       void require_write_lock(const scope_name& scope);
       void require_read_lock(const account_name& account, const scope_name& scope);
 
@@ -571,7 +572,6 @@ class apply_context {
       generic_index<contracts::index_double_object> idx_double;
 
       uint32_t                                    recurse_depth;  // how deep inline actions can recurse
-
 
       bool get_code(uint64_t _account, std::vector<uint8_t>& v);
       bool get_code_size(uint64_t _account, int& size);

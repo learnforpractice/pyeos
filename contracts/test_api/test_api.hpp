@@ -102,6 +102,7 @@ struct test_action {
   static void require_auth();
   static void assert_false();
   static void assert_true();
+  static void assert_true_cf();
   static void now();
   static void test_abort() __attribute__ ((noreturn)) ;
   static void test_current_receiver(uint64_t receiver, uint64_t code, uint64_t action);
@@ -199,6 +200,7 @@ struct test_transaction {
   static void send_transaction_empty();
   static void send_transaction_max();
   static void send_transaction_large();
+  static void send_transaction_expiring_late();
   static void send_action_sender();
   static void deferred_print();
   static void send_deferred_transaction();
