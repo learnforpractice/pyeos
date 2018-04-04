@@ -3,6 +3,7 @@
 #include <fc/time.hpp>
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/chain/wast_to_wasm.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -738,7 +739,11 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
          }
          else {
             std::cout << localized("Assembling WASM...") << std::endl;
-            wasm = assemble_wast(_src);
+            if (false) {
+               wasm = assemble_wast(_src);
+            } else {
+               wasm = wast_to_wasm(_src);
+            }
          }
          handler.account = account;
          handler.code.assign(wasm.begin(), wasm.end());
