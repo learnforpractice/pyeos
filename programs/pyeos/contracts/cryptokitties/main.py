@@ -21,7 +21,7 @@ def apply(name, action):
         print('+++++++++++++++++src_code type:', int.from_bytes(src_code[0], 'little'))
         deploy(mod_name, src_code)
     elif action == N('call'):
-        print('++++++++++++call')
+#        print('++++++++++++call')
         import backend
         import auction
         import basement

@@ -1,6 +1,14 @@
 from eoslib import *
 from backend import *
 from basement import *
+
+#Ownable
+def onlyOwner(func):
+    def func_wrapper(self, *args):
+        require_auth(self.owner)
+        return func(self, *args)
+    return func_wrapper
+
 class Ownable:
     def __init__(self):
         self._owner = address(0)

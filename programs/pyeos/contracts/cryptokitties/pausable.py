@@ -48,8 +48,8 @@ class Pausable(Ownable):
     '''
     @onlyOwner
     @whenNotPaused
-    def pause() -> bool:
-        self.paused = true;
+    def pause(self) -> bool:
+        self.paused = True;
         self.Pause();
         return True;
 
@@ -58,7 +58,7 @@ class Pausable(Ownable):
     '''
     @onlyOwner
     @whenNotPaused
-    def unpause() -> bool:
+    def unpause(self) -> bool:
         self.paused = False
         self.Unpause()
         return True

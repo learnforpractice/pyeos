@@ -28,10 +28,8 @@ def init():
 
 def test():
     with producer:
-        r = eosapi.push_message('currency','transfer','{"from":"currency","to":"inita","quantity":1000}',['currency','inita'],{'currency':'active'})
+        r = eosapi.push_message('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
         assert r
-    r = eosapi.get_table('inita','currency','account')
-    print(r)
 
 #'issue',{"to":"currency","quantity":"1000.0000 CUR"
 def test2(count):
@@ -43,8 +41,8 @@ def test2(count):
     for i in range(count):
         functions.append(b'issue')
         arg = str(i)
-        args.append(b'{"to":"currency","quantity":"1000.0000 CUR","memo":""}')
-    ret, cost = eosapi.push_messages(b'currency', functions, args, per, True, rawargs=True)
+        args.append({"to":"currency","quantity":"1000.0000 CUR","memo":""})
+    ret, cost = eosapi.push_messages(b'currency', functions, args, per, True, rawargs=False)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()

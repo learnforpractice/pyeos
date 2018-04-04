@@ -181,7 +181,7 @@ def test2(count):
     args = []
     per = {'kitties':'active'}
     for i in range(count):
-        functions.append('sayhello')
+        functions.append('call')
         arg = str(i)
         args.append(arg)
     ret, cost = eosapi.push_messages('kitties', functions, args, per, True, rawargs=True)

@@ -1,4 +1,5 @@
 from backend import *
+from basement import *
 from auction import Auction
 from erc721 import ERC721
 from storage import SDict
@@ -19,11 +20,16 @@ class ClockAuctionBase:
         #mapping (uint256 => Auction) tokenIdToAuction;
         self.tokenIdToAuction = SDict(key_type = uint256, value_type = Auction)
 
-    '''FIXME
-    event AuctionCreated(uint256 tokenId, uint256 startingPrice, uint256 endingPrice, uint256 duration);
-    event AuctionSuccessful(uint256 tokenId, uint256 totalPrice, address winner);
-    event AuctionCancelled(uint256 tokenId);
-    '''
+
+    @event
+    def AuctionCreated(self, tokenId: uint256, startingPrice: uint256, endingPrice: uint256, duration: uint256): pass
+
+    @event
+    def AuctionSuccessful(self, tokenId: uint256, totalPrice: uint256, winner: address): pass
+    
+    @event
+    def AuctionCancelled(self, tokenId: uint256): pass
+
 
     # @dev Returns true if the claimant owns the token.
     # @param _claimant - Address claiming to own the token.

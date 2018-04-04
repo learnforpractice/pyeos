@@ -1,5 +1,51 @@
 from backend import *
 from basement import *
+
+#KittyAccessControl
+
+#/ @dev Access modifier for CEO-only functionality
+def onlyCEO(func):
+    def func_wrapper(self, *args):
+        require_auth(self._ceoAddress)
+        return func(self, *args)
+    return func_wrapper
+
+#/ @dev Access modifier for CFO-only functionality
+def onlyCFO(func):
+    def func_wrapper(self, *args):
+        require_auth(self._cfoAddress)
+        return func(self, *args)
+    return func_wrapper
+
+#/ @dev Access modifier for COO-only functionality
+def onlyCOO(func):
+    def func_wrapper(self, *args):
+        require_auth(self._cooAddress)
+        return func(self, *args)
+    return func_wrapper
+
+def onlyCLevel(func):
+    def func_wrapper(self, *args):
+        eosio_assert(msg.sender == self._cooAddress or 
+                        msg.sender == self._ceoAddress or 
+                        msg.sender == self._cfoAddress, "only clevel")
+        return func(self, *args)
+    return func_wrapper
+
+#/ @dev Modifier to allow actions only when the contract IS NOT paused
+def whenNotPaused(func):
+    def func_wrapper(self, *args):
+        require(not self._paused)
+        return func(self, *args)
+    return func_wrapper
+
+#/ @dev Modifier to allow actions only when the contract IS paused
+def whenPaused(func):
+    def func_wrapper(self, *args):
+        require(self._paused)
+        return func(self, *args)
+    return func_wrapper
+
 #/ @title A facet of KittyCore that manages special access privileges.
 #/ @author Axiom Zen (https://www.axiomzen.co)
 #/ @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.

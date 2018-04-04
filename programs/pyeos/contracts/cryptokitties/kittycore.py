@@ -79,6 +79,7 @@ class KittyCore(KittyMinting):
     # @notice No tipping!
     # @dev Reject all Ether from being sent here, unless it's from one of the
     #  two auction contracts. (Hopefully, we can prevent user accidents.)
+    #FIXME
     def __call__(self): # external payable {
         require(msg.sender == address(self.saleAuction) or msg.sender == address(self.siringAuction) )
 

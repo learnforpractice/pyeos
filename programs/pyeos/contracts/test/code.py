@@ -35,6 +35,11 @@ class Account(object):
     def load(self):
         self.balance = eoslib.load_u64(self.scope, Account.code, Account.table, Account.key)
 
+def calc_test():
+    n = 0
+    for i in range(1000):
+        n += i
+
 def test_rw_db():
     
     a = Account('test')

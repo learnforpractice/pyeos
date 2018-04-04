@@ -116,3 +116,4 @@ class KittyAuction(KittyBreeding):
     def withdrawAuctionBalances(self):
         self.saleAuction.withdrawBalance()
         self.siringAuction.withdrawBalance()
+

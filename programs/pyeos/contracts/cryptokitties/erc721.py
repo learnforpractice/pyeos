@@ -1,5 +1,5 @@
 from backend import *
-
+from basement import *
 class ERC721:
     def __init__(self):
         pass
@@ -16,9 +16,12 @@ class ERC721:
         pass
     def transferFrom(self, _from: address, _to: address, _tokenId: uint256):
         pass
-    # Events
+
+    @event
     def Transfer(self, _from: address, to: address, tokenId: uint256):
         pass
+
+    @event
     def Approval(self, owner: address, approved: address, tokenId: uint256):
         pass
 

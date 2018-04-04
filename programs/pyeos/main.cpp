@@ -132,7 +132,8 @@ void interactive_console() {
    PyRun_SimpleString("from cryptokitties import test as kt");
    PyRun_SimpleString("from evm import test as et");
    PyRun_SimpleString("from storage import test as st");
-   PyRun_SimpleString("from cache import test as ct");
+   PyRun_SimpleString("from currency import test as ct");
+   PyRun_SimpleString("from cache import test as cct");
    PyRun_SimpleString("from hello import test as ht");
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
