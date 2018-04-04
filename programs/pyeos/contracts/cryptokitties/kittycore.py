@@ -51,19 +51,28 @@ class KittyCore(KittyMinting):
     # @notice Creates the main CryptoKitties smart contract instance.
     def __init__(self):
         super(KittyCore, self).__init__()
+
         self.newContractAddress = address(0)
+
         # Starts paused.
         self.paused = True
 
         # the creator of the contract is the initial CEO
-        self.ceoAddress = msg.sender
+        self.ceoAddress = self._loadAddress('ceoAddress')
 
         # the creator of the contract is also the initial COO
-        self.cooAddress = msg.sender
+        self.cooAddress = self._loadAddress('ceoAddress')
 
+    def onCreate(self):
+        self.paused = True
+        # the creator of the contract is the initial CEO
+        self.ceoAddress = msg.sender
+        # the creator of the contract is also the initial COO
+        self.cooAddress = msg.sender
         # start with the mythical kitten 0 - so we don't have generation-0 parent issues
         self._createKitty(0, 0, 0, uint256(-1), address(0))
 
+    
     # @dev Used to mark the smart contract as upgraded, in case there is a serious
     #  breaking bug. This method does nothing but keep track of the new contract and
     #  emit a message indicating that the new address is set. It's up to clients of this

@@ -104,7 +104,11 @@ class KittyBase(KittyAccessControl):
     # @dev Assigns ownership of a specific Kitty to an address.
     def _transfer(self, _from: address, _to: address, _tokenId: uint256):
         # Since the number of kittens is capped to 2^32 we can't overflow this
-        self.ownershipTokenCount[_to]+=1
+        try:
+            self.ownershipTokenCount[_to]+=1
+        except KeyError:
+            self.ownershipTokenCount[_to] = 1
+
         # transfer ownership
         self.kittyIndexToOwner[_tokenId] = _to
         # When creating new kittens _from is 0x0, but we can't account that address.

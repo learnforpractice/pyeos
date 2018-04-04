@@ -110,6 +110,14 @@ class SList(object):
         else:
             db_update_i64(itr, payer, _value)
 
+    def push(self, value):
+        self._list.append(value)
+        return len(self._list)
+
+    @property
+    def length(self):
+        return len(self._list)
+    
     def __iter__(self):
         return iter(self._list)
     

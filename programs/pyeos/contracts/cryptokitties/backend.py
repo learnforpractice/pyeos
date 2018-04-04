@@ -12,28 +12,14 @@ contract_owner = N('kitties')
 receiver = current_receiver()
 g_table_id = N('table.id')
 
-class uint16(int):
-    pass
-
-class uint(int):
-    pass
-
-class uint32(int):
-    pass
-
-class uint64(int):
-    pass
-
-class uint128(int):
-    pass
-
-class int256(int):
-    pass
-
-class uint256(object):
+class baseint(object):
     def __init__(self, v):
-        assert isinstance(v, int)
-        self._v = v
+        if isinstance(v, int):
+            self._v = v
+        elif isinstance(v, baseint):
+            self._v = v._v
+        else:
+            raise Exception("unknown type")
 
     def __add__(self, other):
         if isinstance(other, int):
@@ -63,15 +49,66 @@ class uint256(object):
             self._v /= other._v
         return self.__class__(self._v)
 
-    def __truediv__(self,other):
+    def __truediv__(self, other):
         if isinstance(other, int):
             self._v = int(self._v / other)
         else:
             self._v = int(self._v / other._v)
         return self.__class__(self._v)
 
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return self._v == other
+        else:
+            return self._v == other._v
+
+    def __gt__(self,other):
+        if isinstance(other, int):
+            return self._v > other
+        else:
+            return self._v > other._v
+
+    def __ge__(self,other):
+        if isinstance(other, int):
+            return self._v >= other
+        else:
+            return self._v >= other._v
+
+    def __lt__(self,other):
+        if isinstance(other, int):
+            return self._v < other
+        else:
+            return self._v < other._v
+
+    def __le__(self,other):
+        if isinstance(other, int):
+            return self._v <= other
+        else:
+            return self._v <= other._v
+
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, str(self._v))
+
+class uint16(baseint):
+    pass
+
+class uint(baseint):
+    pass
+
+class uint32(baseint):
+    pass
+
+class uint64(baseint):
+    pass
+
+class uint128(baseint):
+    pass
+
+class int256(baseint):
+    pass
+
+class uint256(baseint):
+    pass
 
 class address(int):
     def __init__(self, value):
