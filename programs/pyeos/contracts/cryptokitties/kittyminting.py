@@ -1,11 +1,12 @@
 from backend import *
 from basement import *
+from kittyaccesscontrol import *
 
 from kittyauction import KittyAuction
 # @title all functions related to creating kittens
 class KittyMinting(KittyAuction):
     def __init__(self):
-        super(KittyAuction, self).__init__()
+        super(KittyMinting, self).__init__()
     # Limits the number of cats the contract owner can ever create.
         '''FIXME: constant
         uint256 public constant PROMO_CREATION_LIMIT = 5000;
@@ -25,7 +26,6 @@ class KittyMinting(KittyAuction):
     # Counts the number of cats the contract owner has created.
         self.promoCreatedCount = uint256(0)
         self.en0CreatedCount = uint256(0)
-
     # @dev we can create promo kittens, up to a limit. Only callable by COO
     # @param _genes the encoded genes of the kitten to be created, any value is accepted
     # @param _owner the future owner of the created kittens. Default to contract COO

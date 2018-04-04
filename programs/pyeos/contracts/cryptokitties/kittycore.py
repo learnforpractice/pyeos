@@ -1,5 +1,6 @@
 from backend import *
 from basement import *
+from kittyaccesscontrol import *
 
 from kittyminting import KittyMinting
 # @title CryptoKitties: Collectible, breedable, and oh-so-adorable cats on the Ethereum blockchain.
@@ -49,7 +50,7 @@ class KittyCore(KittyMinting):
 
     # @notice Creates the main CryptoKitties smart contract instance.
     def __init__(self):
-        super(KittyMinting, self).__init__()
+        super(KittyCore, self).__init__()
         self.newContractAddress = address(0)
         # Starts paused.
         self.paused = True

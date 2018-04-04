@@ -3,13 +3,16 @@ from basement import *
 from storage import SList, SDict
 from kitty import Kitty
 
-from kittyaccesscontrol import KittyAccessControl
+#from kittyaccesscontrol import KittyAccessControl
+from kittyaccesscontrol import *
+
 # @title Base contract for CryptoKitties. Holds all common structs, events and base variables.
 # @author Axiom Zen (https://www.axiomzen.co)
 # @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.
 class KittyBase(KittyAccessControl):
     #/*** EVENTS ***/
     def __init__(self):
+        super(KittyBase, self).__init__()
         '''FIXME:
         self.cooldowns = [
             uint32(1 minutes),

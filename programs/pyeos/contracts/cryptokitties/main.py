@@ -22,28 +22,8 @@ def apply(name, action):
         deploy(mod_name, src_code)
     elif action == N('call'):
 #        print('++++++++++++call')
-        import backend
-        import auction
-        import basement
-        import clockauction
-        import clockauctionbase
-        import erc721metadata
-        import erc721
-        import genescienceinterface
-        import kitty
-        import kittyaccesscontrol
-        import kittyauction
-        import kittybase
-        import kittybreeding
-        import kittycore
-        import kittyminting
-        import kittyownership
-        import ownable
-        import pausable
-        import saleclockauction
-        import siringclockauction
-        import cache
-        import storage
+        from kittycore import KittyCore
+        core = KittyCore()
     else:
         pass
     

@@ -1,6 +1,6 @@
 from backend import *
 from basement import *
-
+from kittyaccesscontrol import *
 from kittybreeding import KittyBreeding
 from saleclockauction import SaleClockAuction
 from siringclockauction import SiringClockAuction
@@ -9,6 +9,9 @@ from siringclockauction import SiringClockAuction
 #  This wrapper of ReverseAuction exists only so that users can create
 #  auctions with only one transaction.
 class KittyAuction(KittyBreeding):
+
+    def __init__(self):
+        super(KittyAuction, self).__init__()
 
     # @notice The auction contract variables are defined in KittyBase to allow
     #  us to refer to them in KittyOwnership to prevent accidental transfers.

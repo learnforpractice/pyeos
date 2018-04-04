@@ -43,7 +43,7 @@ def db_end_i64( code, scope, table ):
 def hash64(v):
     pass
 
-def isintance(a, b):
+def isinstance(a, b):
     pass
 
 

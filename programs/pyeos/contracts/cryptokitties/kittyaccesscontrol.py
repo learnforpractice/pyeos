@@ -26,9 +26,13 @@ def onlyCOO(func):
 
 def onlyCLevel(func):
     def func_wrapper(self, *args):
+        print("++++++++onlyCLevel++++++++++++++")
+        #FIXME
+        '''
         eosio_assert(msg.sender == self._cooAddress or 
                         msg.sender == self._ceoAddress or 
                         msg.sender == self._cfoAddress, "only clevel")
+        '''
         return func(self, *args)
     return func_wrapper
 

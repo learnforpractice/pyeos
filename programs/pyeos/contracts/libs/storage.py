@@ -6,11 +6,18 @@ g_code = N('storage')
 payer = N('storage')
 
 class SList(object):
-    def __init__(self,table_id, object_type = None):
+    #FIXME
+    table_id_counter = 0
+    def __init__(self,table_id = None, object_type = None):
         self._list = []
-        self.table_id = table_id
-        self.object_type = object_type
+        if table_id:
+            self.table_id = table_id
+        else:
+            SList.table_id_counter += 1
+            table_id = SList.table_id_counter
 
+        self.object_type = object_type
+        
         itr = db_end_i64(g_code, g_scope, table_id)
         if itr == -1: #no value in table
             return
@@ -121,9 +128,15 @@ class SList(object):
 
 # key_type key_length value_type value_length key_data value_data
 class SDict(object):
-    def __init__(self, table_id, key_type = None, value_type = None):
+    table_id_counter = 0
+    def __init__(self, table_id = None, key_type = None, value_type = None):
         self._dict = {}
-        self.table_id = table_id
+        if table_id:
+            self.table_id = table_id
+        else:
+            SDict.table_id_counter += 1
+            self.table_id = SDict.table_id_counter
+            table_id = self.table_id
 
         itr = db_end_i64(g_code, g_scope, table_id)
         if itr == -1: #no value in table

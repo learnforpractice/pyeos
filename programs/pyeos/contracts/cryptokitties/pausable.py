@@ -1,21 +1,22 @@
 from backend import *
 from basement import *
-from ownable import Ownable
+#from ownable import Ownable
+from ownable import *
 
 def whenNotPaused(func):
-   def func_wrapper(self, *args):
-       require(not self.paused)
-       return func(self, *args)
-   return func_wrapper
-    
+    def func_wrapper(self, *args):
+        require(not self.paused)
+        return func(self, *args)
+    return func_wrapper
+
 '''
 * @dev modifier to allow actions only when the contract IS NOT paused
 '''
 def whenPaused(func):
-   def func_wrapper(self, *args):
-       require(self.paused)
-       return func(self, *args)
-   return func_wrapper
+    def func_wrapper(self, *args):
+        require(self.paused)
+        return func(self, *args)
+    return func_wrapper
 
    
 '''

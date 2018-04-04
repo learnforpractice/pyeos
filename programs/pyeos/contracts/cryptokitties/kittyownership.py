@@ -1,5 +1,8 @@
 from backend import *
 from basement import *
+from pausable import *
+from kittyaccesscontrol import *
+
 from kittybase import KittyBase
 from erc721 import ERC721
 from erc721metadata import ERC721Metadata

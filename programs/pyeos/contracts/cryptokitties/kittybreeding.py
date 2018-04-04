@@ -1,5 +1,6 @@
 from backend import *
 from basement import *
+from kittyaccesscontrol import *
 
 from kitty import Kitty
 from kittyownership import KittyOwnership
@@ -10,6 +11,7 @@ from genescienceinterface import GeneScienceInterface
 # @dev See the KittyCore contract documentation to understand how the various contract facets are arranged.
 class KittyBreeding(KittyOwnership):
     def __init__(self):
+        super(KittyBreeding, self).__init__()
         # @notice The minimum payment required to use breedWithAuto(). This fee goes towards
         #  the gas cost paid by whatever calls giveBirth(), and can be dynamically updated by
         #  the COO role as the gas price changes.

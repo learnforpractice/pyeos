@@ -11,17 +11,6 @@ producer = eosapi.Producer()
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init():
-    with producer:
-        if not eosapi.get_account('kitties').permissions:
-            r = eosapi.create_account('eosio', 'kitties', initeos.key1, initeos.key2)
-            assert r
-
-    with producer:
-        r = eosapi.set_contract('kitties','../../programs/pyeos/contracts/cryptokitties/main.py','../../programs/pyeos/contracts/cryptokitties/cryptokitties.abi', 1)
-#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-        assert r
-
 class Sync(object):
     def __init__(self, _dir = None, _ignore = []):
         self.last_sync = {}
@@ -151,6 +140,19 @@ class Sync(object):
 sync = Sync(_ignore = ('main.py', 'test.py', 'ustruct.py', 'eoslib.py'))
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
+def init():
+    with producer:
+        if not eosapi.get_account('kitties').permissions:
+            r = eosapi.create_account('eosio', 'kitties', initeos.key1, initeos.key2)
+            assert r
+            sync.clean()
+
+    with producer:
+        r = eosapi.set_contract('kitties','../../programs/pyeos/contracts/cryptokitties/main.py','../../programs/pyeos/contracts/cryptokitties/cryptokitties.abi', 1)
+#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
+        assert r
+        sync.clean()
+
 
 def deploy_depend_libs():
     sync.deploy_depend_libs()
@@ -166,6 +168,9 @@ def deploy_all_mpy():
 
 def deploy_mpy(file_name):
     sync.deploy_mpy(file_name)
+
+def clean():
+    sync.clean()
 
 def test(name=None):
     with producer:

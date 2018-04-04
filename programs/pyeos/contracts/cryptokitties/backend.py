@@ -90,7 +90,10 @@ def balanceOf(address):
     return 99999
 
 def require(condition, msg = ''):
-    eosio_assert(condition, msg)
+    print("++++++++++++++require:",condition)
+    if not condition:
+        raise Exception(msg)
+    #eosio_assert(condition, msg)
 
 class message:
     def __init__(self, data, gas, sender, sig, value):
@@ -181,11 +184,11 @@ def get_hash(v):
         return hash64(v)
 
 def to_raw_value(value):
-    if isintance(value, int):
+    if isinstance(value, int):
         _value = b'\x00\x08\x00'
         _value += int.to_bytes(value, 8, 'little')
         return _value
-    elif isintance(value, str):
+    elif isinstance(value, str):
         _value = b'\x01'
         _value += int.to_bytes(len(value), 2, 'little')
         _value += value.encode('utf8')
@@ -194,11 +197,11 @@ def to_raw_value(value):
         require(False, 'unkonwn type')
 
 def from_raw_value(value):
-    require(isintance(value, str) or isintance(value, bytes))
+    require(isinstance(value, str) or isinstance(value, bytes))
     type_id = int.from_bytes(value[0], 'little')
-    if isintance(value, int):
+    if isinstance(value, int):
         return ustruct.pack('BQ', 8, value)
-    elif isintance(value, str):
+    elif isinstance(value, str):
         _value = ustruct.pack('B', len(value))
         _value += value.encode('utf8')
         return _value
@@ -215,7 +218,7 @@ def store(key, value):
     else:
         db_store_i64(receiver, g_table_id, receiver, id, value)
 
-def load(key, value):
+def load(key):
     id = get_hash(key)
     itr = db_find_i64(receiver, receiver, g_table_id, id)
     value = None
