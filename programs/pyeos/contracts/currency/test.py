@@ -19,17 +19,48 @@ def init():
                 assert r
 
     with producer:
-#        r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', eosapi.py_vm_type)
-        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
+        r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', 1)
+#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
         assert r
 
 #eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
 
-def test():
+def test_issue():
     with producer:
         r = eosapi.push_message('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
         assert r
+
+'''
+account_name           issuer;
+asset                  maximum_supply;
+// array<char,32>         issuer_agreement_hash;
+uint8_t                issuer_can_freeze     = true;
+uint8_t                issuer_can_recall     = true;
+uint8_t                issuer_can_whitelist  = true;
+'''
+def test_create():
+    args = {"issuer":"currency",
+            "maximum_supply":"1000000000.0000 CUR",
+            "issuer_can_freeze":'1',
+            "issuer_can_recall":'1',
+            "issuer_can_whitelist":'1' 
+            }
+    with producer:
+        r = eosapi.push_message('currency','create',args,{'currency':'active'})
+        assert r
+'''
+account_name from;
+account_name to;
+asset        quantity;
+string       memo;
+'''
+def test_transfer():
+    args = {"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
+    with producer:
+        r = eosapi.push_message('currency','transfer',args,{'currency':'active'})
+        assert r
+
 
 #'issue',{"to":"currency","quantity":"1000.0000 CUR"
 def test2(count):

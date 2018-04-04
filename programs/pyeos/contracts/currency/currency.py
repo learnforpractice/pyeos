@@ -1,63 +1,41 @@
-import eoslib
+from eoslib import read_action, N
+
 try:
-    import struct
-except Exception as e:
-#load struct module in micropython
     import ustruct as struct 
+except Exception as e:
+    import struct
 
-code = eoslib.N(b'currency')
-table = eoslib.N(b'account')
+code = N(b'currency')
+table = N(b'account')
 
-class Account(object):
-    key = eoslib.N(b'account')
-    key = int.to_bytes(key, 8, 'little')
-    def __init__(self, scope, balance=0): 
-        self.scope = scope
-        if balance == 0:
-            self.load() 
-        else:
-            self.balance = balance
+#{"to":"currency","quantity":"1000.0000 CUR","memo":""}
+def issue():
+    msg = read_action()
+    _to, _amount, _symbol = struct.unpack('QQQ', msg)
+    memo = msg[24:]
+    print(_to, _amount, _symbol)
 
-    def isEmpty(self):
-        return self.balance == 0
+#{"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
+def transfer():
+    msg = read_action()
+    _from, _to, _amount, _symbol = struct.unpack('QQQQ', msg)
+    memo = msg[32:]
+    print(_from, _to, _amount, _symbol)
 
-    def store(self):
-        value = int.to_bytes(self.balance, 8, 'little')
-        eoslib.store(self.scope, table, Account.key, 0, value)
-    
-    def load(self):
-        value = bytes(8)
-        eoslib.load(self.scope, code, table, Account.key, 0, 0, value)
-        self.balance = int.from_bytes(value, 'little')
-
-def init():
-    print('hello from currency.init')
-    a = Account(code)
-    # avoid overwrite balance already exists.
-    if a.balance == 0:
-        a.balance = 100000
-        a.store()
+def create():
+    msg = read_action()
+    _issuer, _amount, _symbol = struct.unpack('QQQ', msg)
+    _can_freeze = msg[25]
+    _can_recall = msg[26]
+    _can_whitelist = msg[27]
+    print(_issuer, _amount, _symbol, _can_freeze, _can_recall, _can_whitelist)
 
 def apply(name, type):
-#    print('hello from python apply',name,type)
-    print(eoslib.n2s(name),eoslib.n2s(type))
-    if type == eoslib.N(b'transfer'):
-        msg = eoslib.read_message()
-        result = struct.unpack('QQQ', msg)
-#         print(result)
-        from_ = result[0]
-        to_ = result[1]
-        amount = result[2]
+    if type == N('transfer'):
+        transfer()
+    elif type == N('issue'):
+        issue()
+    elif type == n('create'):
+        create()
 
-        eoslib.require_auth(from_);
-        eoslib.require_notice(from_);
-        eoslib.require_notice(to_)
-
-        from_ = Account(from_)
-        to_ = Account(to_)
-        if from_.balance >= amount:
-            from_.balance -= amount
-            to_.balance += amount
-            from_.store()
-            to_.store()
 

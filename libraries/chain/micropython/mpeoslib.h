@@ -90,6 +90,8 @@ int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 
 uint64_t get_action_account();
 
+uint64_t string_to_symbol( uint8_t precision, const char* str );
+
 struct eosapi {
 	uint32_t (*now)();
 	void (*abort_)();

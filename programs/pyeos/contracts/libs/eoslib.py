@@ -1,6 +1,8 @@
 def N(a):
     pass
 
+def S(a): pass
+
 def now():
     pass
 
