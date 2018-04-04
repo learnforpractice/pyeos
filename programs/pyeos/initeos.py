@@ -1,6 +1,7 @@
 import os
 import sys
 import wallet
+import eosapi
 
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
@@ -29,4 +30,9 @@ def init():
             wallet.import_key('mywallet', priv_key)
 
     sys.path.append('/Users/newworld/dev/pyeos/programs/pyeos/contracts/cryptokitties')
-
+    for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
+        if not eosapi.get_account(account).permissions:
+                r = eosapi.create_account('eosio', account, key1, key2)
+                assert r
+                eosapi.produce_block()
+                
