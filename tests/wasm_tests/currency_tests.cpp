@@ -490,9 +490,7 @@ BOOST_FIXTURE_TEST_CASE( test_deferred_failure, currency_tester ) try {
       trx.actions.emplace_back(std::move(setowner_act));
 
       set_transaction_headers(trx);
-
       trx.sign(get_private_key(N(alice), "active"), chain_id_type());
-
       push_transaction(trx);
       produce_block();
       BOOST_REQUIRE_EQUAL(true, chain_has_transaction(trx.id()));

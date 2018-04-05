@@ -27,7 +27,6 @@
 
 #include <eosio/chain/resource_limits.hpp>
 
-
 namespace eosio { namespace chain { namespace contracts {
 
 void validate_authority_precondition( const apply_context& context, const authority& auth ) {
@@ -79,10 +78,9 @@ void apply_eosio_newaccount(apply_context& context) {
       a.creation_date = context.controller.head_block_time();
    });
    resources.initialize_account(create.name);
-   resources.add_account_ram_usage(
-      create.name,
-      (int64_t)config::overhead_per_account_ram_bytes,
-      "New Account ${n}", _V("n", create.name)
+   resources.add_pending_account_ram_usage(
+      create.creator,
+      (int64_t)config::overhead_per_account_ram_bytes
    );
 
    auto create_permission = [owner=create.name, &db, &context, &resources](const permission_name& name, permission_object::id_type parent, authority &&auth) {
@@ -93,10 +91,9 @@ void apply_eosio_newaccount(apply_context& context) {
          p.auth = std::move(auth);
       });
 
-      resources.add_account_ram_usage(
+      resources.add_pending_account_ram_usage(
          owner,
-         (int64_t)(sizeof(permission_object) + result.auth.get_billable_size()),
-         "New Permission ${a}@${p}", _V("a", owner)("p",name)
+         (int64_t)(config::billable_size_v<permission_object> + result.auth.get_billable_size())
       );
 
       return result;
@@ -107,25 +104,122 @@ void apply_eosio_newaccount(apply_context& context) {
    const auto& owner_permission = create_permission(config::owner_name, 0, std::move(create.owner));
    create_permission(config::active_name, owner_permission.id, std::move(create.active));
 
+
 } FC_CAPTURE_AND_RETHROW( (create) ) }
 
-void apply_eosio_setcode(apply_context& context) {
+void apply_eosio_setcode_py(apply_context& context) {
    auto& db = context.mutable_db;
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    auto  act = context.act.data_as<setcode>();
-
    context.require_authorization(act.account);
    context.require_write_lock( config::eosio_auth_scope );
 
-   FC_ASSERT( act.vmtype == 0 || act.vmtype == 1 || act.vmtype == 2);
+   FC_ASSERT( act.vmtype == 1);
    FC_ASSERT( act.vmversion == 0 );
 
    auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
-   if (act.vmtype == 0) {
-      wasm_interface::validate(act.code);
-   } else if (act.vmtype == 1) {
-   		micropython_interface::get().on_setcode(act.account, act.code);
+
+   	micropython_interface::get().on_setcode(act.account, act.code);
+
+   const auto& account = db.get<account_object,by_name>(act.account);
+
+
+   int64_t code_size = (int64_t)act.code.size();
+   int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
+   int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
+
+	FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
+//   wlog( "set code: ${size}", ("size",act.code.size()));
+	db.modify( account, [&]( auto& a ) {
+			a.vm_type = act.vmtype.convert_to<uint8_t>();
+		/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+		#warning TODO: update setcode message to include the hash, then validate it in validate
+		a.code_version = code_id;
+		// Added resize(0) here to avoid bug in boost vector container
+		a.code.resize( 0 );
+		a.code.resize( code_size );
+		a.last_code_update = context.controller.head_block_time();
+		memcpy( a.code.data(), act.code.data(), code_size );
+
+	});
+
+   if (new_size != old_size) {
+      resources.add_pending_account_ram_usage(
+         act.account,
+         new_size - old_size
+      );
    }
+}
+
+void apply_eosio_setcode_evm(apply_context& context) {
+   auto& db = context.mutable_db;
+   auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
+   auto  act = context.act.data_as<setcode>();
+   context.require_authorization(act.account);
+   context.require_write_lock( config::eosio_auth_scope );
+
+   FC_ASSERT( act.vmtype == 2);
+   FC_ASSERT( act.vmversion == 0 );
+
+   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
+
+   const auto& account = db.get<account_object,by_name>(act.account);
+
+
+   int64_t code_size = (int64_t)act.code.size();
+   int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
+   int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
+
+	bytes code;
+	bytes args(act.code.begin(), act.code.end());
+		bytes output_code;
+	evm_interface::get().run_code(context, code, args, output_code);
+	FC_ASSERT(output_code.size() > 0, "evm return empty code");
+
+//   wlog( "set code: ${size}", ("size",act.code.size()));
+	db.modify( account, [&]( auto& a ) {
+		/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+		#warning TODO: update setcode message to include the hash, then validate it in validate
+		a.vm_type = act.vmtype.convert_to<uint8_t>();
+			a.code_version = code_id;
+		// Added resize(0) here to avoid bug in boost vector container
+		a.code.resize( 0 );
+		a.code.resize( output_code.size() );
+		a.last_code_update = context.controller.head_block_time();
+		ilog( "code.size(): ${n}", ("n", output_code.size()) );
+
+		memcpy( a.code.data(), output_code.data(), output_code.size() );
+	});
+
+   if (new_size != old_size) {
+      resources.add_pending_account_ram_usage(
+         act.account,
+         new_size - old_size
+      );
+   }
+}
+
+void apply_eosio_setcode(apply_context& context) {
+   auto  act = context.act.data_as<setcode>();
+
+	if (act.vmtype == 1) {
+		apply_eosio_setcode_py(context);
+		return;
+	} else if (act.vmtype == 2) {
+		apply_eosio_setcode_evm(context);
+		return;
+	}
+   auto& db = context.mutable_db;
+   auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
+   context.require_authorization(act.account);
+   context.require_write_lock( config::eosio_auth_scope );
+
+   FC_ASSERT( act.vmtype == 0 );
+   FC_ASSERT( act.vmversion == 0 );
+
+   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
+
+   wasm_interface::validate(act.code);
 
    const auto& account = db.get<account_object,by_name>(act.account);
 
@@ -133,62 +227,25 @@ void apply_eosio_setcode(apply_context& context) {
    int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
    int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
 
-   if (act.vmtype == 0 || act.vmtype == 1) {//wasm || micropython
-      const auto& account = db.get<account_object,by_name>(act.account);
 
-      FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
-   //   wlog( "set code: ${size}", ("size",act.code.size()));
-      db.modify( account, [&]( auto& a ) {
-      		a.vm_type = act.vmtype.convert_to<uint8_t>();
-         /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-         #warning TODO: update setcode message to include the hash, then validate it in validate
-         a.code_version = code_id;
-         // Added resize(0) here to avoid bug in boost vector container
-         a.code.resize( 0 );
-         a.code.resize( code_size );
-         a.last_code_update = context.controller.head_block_time();
-         memcpy( a.code.data(), act.code.data(), code_size );
+   FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
+//   wlog( "set code: ${size}", ("size",act.code.size()));
+   db.modify( account, [&]( auto& a ) {
+      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+      #warning TODO: update setcode message to include the hash, then validate it in validate
+      a.code_version = code_id;
+      // Added resize(0) here to avoid bug in boost vector container
+      a.code.resize( 0 );
+      a.code.resize( code_size );
+      a.last_code_update = context.controller.head_block_time();
+      memcpy( a.code.data(), act.code.data(), code_size );
 
-      });
-      if (new_size != old_size) {
-         resources.add_account_ram_usage(
-            act.account,
-            new_size - old_size,
-            "Update Contract Code to ${v} [new size=${new}, old size=${old}]", _V("v",account.code_version)("new", new_size)("old",old_size)
-         );
-      }
-   } else if (act.vmtype == 2) { //evm
-		bytes code;
-		bytes args(act.code.begin(), act.code.end());
-   		bytes output_code;
-		evm_interface::get().run_code(context, code, args, output_code);
-		FC_ASSERT(output_code.size() > 0, "evm return empty code");
-
-		const auto& account = db.get<account_object,by_name>(act.account);
-	//   wlog( "set code: ${size}", ("size",act.code.size()));
-		db.modify( account, [&]( auto& a ) {
-			/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-			#warning TODO: update setcode message to include the hash, then validate it in validate
-			a.vm_type = act.vmtype.convert_to<uint8_t>();
-				a.code_version = code_id;
-			// Added resize(0) here to avoid bug in boost vector container
-			a.code.resize( 0 );
-			a.code.resize( output_code.size() );
-			a.last_code_update = context.controller.head_block_time();
-			ilog( "code.size(): ${n}", ("n", output_code.size()) );
-
-			memcpy( a.code.data(), output_code.data(), output_code.size() );
-		});
-
-   } else {
-   		FC_ASSERT( false, "unkown vm type" );
-   }
+   });
 
    if (new_size != old_size) {
-      resources.add_account_ram_usage(
+      resources.add_pending_account_ram_usage(
          act.account,
-         new_size - old_size,
-         "Update Contract Code to ${v} [new size=${new}, old size=${old}]", _V("v",account.code_version)("new", new_size)("old",old_size)
+         new_size - old_size
       );
    }
 }
@@ -219,10 +276,9 @@ void apply_eosio_setabi(apply_context& context) {
    });
 
    if (new_size != old_size) {
-      resources.add_account_ram_usage(
+      resources.add_pending_account_ram_usage(
          act.account,
-         new_size - old_size,
-         "Update Contract ABI [new size=${new}, old size=${old}]", _V("new", new_size)("old",old_size)
+         new_size - old_size
       );
    }
 }
@@ -292,11 +348,7 @@ void apply_eosio_updateauth(apply_context& context) {
                  "Changing parent authority is not currently supported");
 
 
-
-      // TODO: Depending on an implementation detail like sizeof(permission_object) for consensus-affecting side effects like
-      //       RAM usage seems like a bad idea. For example, an upgrade of the implementation of boost::interprocess::vector
-      //       could cause a hardfork unless the old size calculation behavior was also carefully replicated in the same upgrade.
-      int64_t old_size = (int64_t)(sizeof(permission_object) + permission->auth.get_billable_size());
+      int64_t old_size = (int64_t)(config::billable_size_v<permission_object> + permission->auth.get_billable_size());
 
       // TODO/QUESTION: If we are updating an existing permission, should we check if the message declared
       // permission satisfies the permission we want to modify?
@@ -307,12 +359,11 @@ void apply_eosio_updateauth(apply_context& context) {
          po.delay = fc::seconds(update.delay);
       });
 
-      int64_t new_size = (int64_t)(sizeof(permission_object) + permission->auth.get_billable_size());
+      int64_t new_size = (int64_t)(config::billable_size_v<permission_object> + permission->auth.get_billable_size());
 
-      resources.add_account_ram_usage(
+      resources.add_pending_account_ram_usage(
          permission->owner,
-         new_size - old_size,
-         "Update Permission ${a}@${p} [new size=${new}, old size=${old}] ", _V("a", permission->owner)("p",permission->name)
+         new_size - old_size
       );
    } else {
       // TODO/QUESTION: If we are creating a new permission, should we check if the message declared
@@ -326,10 +377,9 @@ void apply_eosio_updateauth(apply_context& context) {
          po.delay = fc::seconds(update.delay);
       });
 
-      resources.add_account_ram_usage(
+      resources.add_pending_account_ram_usage(
          p.owner,
-         (int64_t)(sizeof(permission_object) + p.auth.get_billable_size()),
-         "New Permission ${a}@${p}", _V("a", p.owner)("p",p.name)
+         (int64_t)(config::billable_size_v<permission_object> + p.auth.get_billable_size())
       );
 
    }
@@ -363,9 +413,9 @@ void apply_eosio_deleteauth(apply_context& context) {
                  "Cannot delete a linked authority. Unlink the authority first");
    }
 
-   resources.add_account_ram_usage(
+   resources.add_pending_account_ram_usage(
       permission.owner,
-      -(int64_t)(sizeof(permission_object) + permission.auth.get_billable_size())
+      -(int64_t)(config::billable_size_v<permission_object> + permission.auth.get_billable_size())
    );
    db.remove(permission);
 }
@@ -408,10 +458,9 @@ void apply_eosio_linkauth(apply_context& context) {
             link.required_permission = requirement.requirement;
          });
 
-         resources.add_account_ram_usage(
+         resources.add_pending_account_ram_usage(
             l.account,
-            (int64_t)(sizeof(permission_link_object)),
-            "New Permission Link ${code}::${act} -> ${a}@${p}", _V("code", l.code)("act",l.message_type)("a", l.account)("p",l.required_permission)
+            (int64_t)(config::billable_size_v<permission_link_object>)
          );
       }
   } FC_CAPTURE_AND_RETHROW((requirement))
@@ -427,9 +476,9 @@ void apply_eosio_unlinkauth(apply_context& context) {
    auto link_key = boost::make_tuple(unlink.account, unlink.code, unlink.type);
    auto link = db.find<permission_link_object, by_action_name>(link_key);
    EOS_ASSERT(link != nullptr, action_validate_exception, "Attempting to unlink authority, but no link found");
-   resources.add_account_ram_usage(
+   resources.add_pending_account_ram_usage(
       link->account,
-      -(int64_t)(sizeof(permission_link_object))
+      -(int64_t)(config::billable_size_v<permission_link_object>)
    );
 
    db.remove(*link);
@@ -437,7 +486,7 @@ void apply_eosio_unlinkauth(apply_context& context) {
 
 
 void apply_eosio_onerror(apply_context& context) {
-   assert(context.trx_meta.sender);
+   FC_ASSERT(context.trx_meta.sender.valid(), "onerror action cannot be called directly");
    context.require_recipient(*context.trx_meta.sender);
 }
 
@@ -529,8 +578,7 @@ void apply_eosio_postrecovery(apply_context& context) {
       .data = recover_act.data
    }, update);
 
-   uint32_t request_id = context.get_next_sender_id();
-
+   const uint128_t request_id = context.controller.transaction_id_to_sender_id(context.trx_meta.id);
    auto record_data = mutable_variant_object()
       ("account", account)
       ("request_id", request_id)
@@ -538,10 +586,10 @@ void apply_eosio_postrecovery(apply_context& context) {
       ("memo", recover_act.memo);
 
    deferred_transaction dtrx;
-   dtrx.sender = config::system_account_name;
+   dtrx.sender    = config::system_account_name;
    dtrx.sender_id = request_id;
-   dtrx.payer = config::system_account_name; // NOTE: we pre-reserve capacity for this during create account
-   dtrx.region = 0;
+   dtrx.payer     = config::system_account_name; // NOTE: we pre-reserve capacity for this during create account
+   dtrx.region    = 0;
    dtrx.execute_after = context.controller.head_block_time() + delay_lock;
    dtrx.set_reference_block(context.controller.head_block_id());
    dtrx.expiration = dtrx.execute_after + fc::seconds(60);
@@ -550,11 +598,11 @@ void apply_eosio_postrecovery(apply_context& context) {
 
    context.execute_deferred(std::move(dtrx));
 
-
    auto data = get_abi_serializer().variant_to_binary("pending_recovery", record_data);
    const uint64_t id = account;
    const uint64_t table = N(recovery);
    const auto payer = account;
+
    const auto iter = context.db_find_i64(config::system_account_name, account, table, id);
    if (iter == -1) {
       context.db_store_i64(account, table, payer, id, (const char*)data.data(), data.size());
@@ -591,7 +639,7 @@ void apply_eosio_passrecovery(apply_context& context) {
    context.execute_inline(move(act));
 
    remove_pending_recovery(context, account);
-   context.console_append_formatted("Account ${account} successfully recoverd!\n", mutable_variant_object()("account", account));
+   context.console_append_formatted("Account ${account} successfully recovered!\n", mutable_variant_object()("account", account));
 }
 
 void apply_eosio_vetorecovery(apply_context& context) {
@@ -604,7 +652,7 @@ void apply_eosio_vetorecovery(apply_context& context) {
    FC_ASSERT(maybe_recovery, "No pending recovery found for account ${account}", ("account", account));
    auto recovery = *maybe_recovery;
 
-   context.cancel_deferred(recovery["request_id"].as<uint32_t>());
+   context.cancel_deferred(recovery["request_id"].as<uint128_t>());
 
    remove_pending_recovery(context, account);
    context.console_append_formatted("Recovery for account ${account} vetoed!\n", mutable_variant_object()("account", account));
@@ -612,12 +660,13 @@ void apply_eosio_vetorecovery(apply_context& context) {
 
 void apply_eosio_canceldelay(apply_context& context) {
    auto cancel = context.act.data_as<canceldelay>();
-   const auto sender_id = cancel.sender_id;
+   const auto& trx_id = cancel.trx_id;
+
    const auto& generated_transaction_idx = context.controller.get_database().get_index<generated_transaction_multi_index>();
-   const auto& generated_index = generated_transaction_idx.indices().get<by_sender_id>();
-   const auto& itr = generated_index.lower_bound(boost::make_tuple(config::system_account_name, sender_id));
-   FC_ASSERT (itr != generated_index.end() && itr->sender == config::system_account_name && itr->sender_id == sender_id,
-              "cannot cancel sender_id=${sid}, there is no deferred transaction with that sender_id",("sid",sender_id));
+   const auto& generated_index = generated_transaction_idx.indices().get<by_trx_id>();
+   const auto& itr = generated_index.lower_bound(trx_id);
+   FC_ASSERT (itr != generated_index.end() && itr->sender == config::system_account_name && itr->trx_id == trx_id,
+              "cannot cancel trx_id=${tid}, there is no deferred transaction with that transaction id",("tid", trx_id));
 
    auto dtrx = fc::raw::unpack<deferred_transaction>(itr->packed_trx.data(), itr->packed_trx.size());
    set<account_name> accounts;
@@ -637,11 +686,8 @@ void apply_eosio_canceldelay(apply_context& context) {
 
    FC_ASSERT (found, "canceldelay action must be signed with the \"active\" permission for one of the actors"
                      " provided in the authorizations on the original transaction");
-   context.cancel_deferred(sender_id);
-}
 
-void apply_eosio_mindelay(apply_context& context) {
-   // all processing is performed in chain_controller::check_authorization
+   context.cancel_deferred(context.controller.transaction_id_to_sender_id(trx_id));
 }
 
 } } } // namespace eosio::chain::contracts

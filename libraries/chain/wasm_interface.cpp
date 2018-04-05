@@ -128,9 +128,9 @@ class privileged_api : public context_aware_api {
        * @param cpu_weight - the weight for determining share of compute capacity
        */
       void set_resource_limits( account_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight) {
-         EOS_ASSERT(ram_bytes >= -1 && ram_bytes <= INT64_MAX, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
-         EOS_ASSERT(net_weight >= -1 && net_weight <= INT64_MAX, wasm_execution_error, "invalid value for net resource weight expected [-1,INT64_MAX]");
-         EOS_ASSERT(cpu_weight >= -1 && cpu_weight <= INT64_MAX, wasm_execution_error, "invalid value for cpu resource weight expected [-1,INT64_MAX]");
+         EOS_ASSERT(ram_bytes >= -1, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
+         EOS_ASSERT(net_weight >= -1, wasm_execution_error, "invalid value for net resource weight expected [-1,INT64_MAX]");
+         EOS_ASSERT(cpu_weight >= -1, wasm_execution_error, "invalid value for cpu resource weight expected [-1,INT64_MAX]");
          context.mutable_controller.get_mutable_resource_limits_manager().set_account_limits(account, ram_bytes, net_weight, cpu_weight);
       }
 
@@ -545,7 +545,7 @@ class softfloat_api : public context_aware_api {
       }
       int32_t _eosio_f32_trunc_i32s( float af ) {
          float32_t a = to_softfloat32(af);
-         if (_eosio_f32_ge(af, 2147483648.0f) || _eosio_f32_le(af, -2147483649.0f))
+         if (_eosio_f32_ge(af, 2147483648.0f) || _eosio_f32_lt(af, -2147483648.0f))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f32.convert_s/i32 overflow" );
 
          if (is_nan(a))
@@ -554,7 +554,7 @@ class softfloat_api : public context_aware_api {
       }
       int32_t _eosio_f64_trunc_i32s( double af ) {
          float64_t a = to_softfloat64(af);
-         if (_eosio_f64_ge(af, 2147483648.0) || _eosio_f64_le(af, -2147483649.0))
+         if (_eosio_f64_ge(af, 2147483648.0) || _eosio_f64_lt(af, -2147483648.0))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f64.convert_s/i32 overflow");
          if (is_nan(a))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f64.convert_s/i32 unrepresentable");
@@ -578,7 +578,7 @@ class softfloat_api : public context_aware_api {
       }
       int64_t _eosio_f32_trunc_i64s( float af ) {
          float32_t a = to_softfloat32(af);
-         if (_eosio_f32_ge(af, 9223372036854775808.0f) || _eosio_f32_le(af, -9223372036854775809.0f))
+         if (_eosio_f32_ge(af, 9223372036854775808.0f) || _eosio_f32_lt(af, -9223372036854775808.0f))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f32.convert_s/i64 overflow");
          if (is_nan(a))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f32.convert_s/i64 unrepresentable");
@@ -586,7 +586,7 @@ class softfloat_api : public context_aware_api {
       }
       int64_t _eosio_f64_trunc_i64s( double af ) {
          float64_t a = to_softfloat64(af);
-         if (_eosio_f64_ge(af, 9223372036854775808.0) || _eosio_f64_le(af, -9223372036854775809.0))
+         if (_eosio_f64_ge(af, 9223372036854775808.0) || _eosio_f64_lt(af, -9223372036854775808.0))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f64.convert_s/i64 overflow");
          if (is_nan(a))
             FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, f64.convert_s/i64 unrepresentable");
@@ -1048,28 +1048,14 @@ class transaction_api : public context_aware_api {
          context.execute_context_free_inline(std::move(act));
       }
 
-      void send_deferred( const unsigned __int128& val, account_name payer, const fc::time_point_sec& execute_after, array_ptr<char> data, size_t data_len ) {
-         account_name actual_payer = payer;
-         if (actual_payer != account_name(0)) {
-            const auto* paying_account = context.db.find<account_object, by_name>(payer);
-            EOS_ASSERT(paying_account, tx_unknown_argument, "The account for the payer: ${a}, does not exist!", ("a", payer));
-         } else {
-            actual_payer = context.receiver;
-         }
-
+      void send_deferred( const uint128_t& sender_id, account_name payer, array_ptr<char> data, size_t data_len ) {
          try {
-            fc::uint128_t sender_id(val>>64, uint64_t(val) );
-            const auto& gpo = context.controller.get_global_properties();
-            FC_ASSERT(data_len < gpo.configuration.max_generated_transaction_size, "generated transaction too big");
-
             deferred_transaction dtrx;
             fc::raw::unpack<transaction>(data, data_len, dtrx);
             dtrx.sender = context.receiver;
-            dtrx.sender_id = (unsigned __int128)sender_id;
-            dtrx.execute_after = std::max( execute_after,
-                                           time_point_sec( (context.controller.head_block_time() + fc::seconds(dtrx.delay_sec))
-                                                             + fc::microseconds(999'999) ) /* rounds up to nearest second */ );
-            dtrx.payer = actual_payer;
+            dtrx.sender_id = sender_id;
+            dtrx.execute_after = time_point_sec( (context.controller.head_block_time() + fc::seconds(dtrx.delay_sec)) + fc::microseconds(999'999) ); // rounds up to nearest second
+            dtrx.payer = payer;
             context.execute_deferred(std::move(dtrx));
          } FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
       }
@@ -1113,6 +1099,11 @@ class context_free_transaction_api : public context_aware_api {
          return context.get_action( type, index, buffer, buffer_size );
       }
 
+      void check_auth( array_ptr<char> trx_data, size_t trx_size, array_ptr<char> perm_data, size_t perm_size ) {
+         transaction trx = fc::raw::unpack<transaction>( trx_data, trx_size );
+         vector<permission_level> perm = fc::raw::unpack<vector<permission_level>>( perm_data, perm_size );
+         return context.check_auth( trx, perm );
+      }
 };
 
 class compiler_builtins : public context_aware_api {
@@ -1558,6 +1549,7 @@ REGISTER_INTRINSICS(apply_context,
    (require_read_lock,     void(int64_t, int64_t) )
    (require_recipient,     void(int64_t)          )
    (require_authorization, void(int64_t), "require_auth", void(apply_context::*)(const account_name&))
+   (require_authorization, void(int64_t, int64_t), "require_auth2", void(apply_context::*)(const account_name&, const permission_name& permission))
    (has_authorization,     int(int64_t), "has_auth", bool(apply_context::*)(const account_name&)const)
    (is_account,            int(int64_t)           )
 );
@@ -1582,13 +1574,14 @@ REGISTER_INTRINSICS(context_free_transaction_api,
    (tapos_block_prefix,     int()                    )
    (tapos_block_num,        int()                    )
    (get_action,             int (int, int, int, int) )
+   (check_auth,              void(int, int, int, int) )
 );
 
 REGISTER_INTRINSICS(transaction_api,
-   (send_inline,               void(int, int)                    )
-   (send_context_free_inline,  void(int, int)                    )
-   (send_deferred,             void(int, int64_t, int, int, int) )
-   (cancel_deferred,           void(int)                         )
+   (send_inline,               void(int, int)               )
+   (send_context_free_inline,  void(int, int)               )
+   (send_deferred,             void(int, int64_t, int, int) )
+   (cancel_deferred,           void(int)                    )
 );
 
 REGISTER_INTRINSICS(context_free_api,

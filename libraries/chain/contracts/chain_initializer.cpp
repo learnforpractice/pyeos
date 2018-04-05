@@ -46,7 +46,6 @@ void chain_initializer::register_types(chain_controller& chain, chainbase::datab
    SET_APP_HANDLER( eosio, eosio, passrecovery, eosio );
    SET_APP_HANDLER( eosio, eosio, vetorecovery, eosio );
    SET_APP_HANDLER( eosio, eosio, canceldelay, eosio );
-   SET_APP_HANDLER( eosio, eosio, mindelay, eosio );
 }
 
 
@@ -62,21 +61,23 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
    eos_abi.types.push_back( type_def{"fields","field[]"} );
    eos_abi.types.push_back( type_def{"time_point_sec","time"} );
 
-   eos_abi.actions.push_back( action_def{name("setcode"), "setcode"} );
-   eos_abi.actions.push_back( action_def{name("setabi"), "setabi"} );
-   eos_abi.actions.push_back( action_def{name("linkauth"), "linkauth"} );
-   eos_abi.actions.push_back( action_def{name("unlinkauth"), "unlinkauth"} );
-   eos_abi.actions.push_back( action_def{name("updateauth"), "updateauth"} );
-   eos_abi.actions.push_back( action_def{name("deleteauth"), "deleteauth"} );
-   eos_abi.actions.push_back( action_def{name("newaccount"), "newaccount"} );
-   eos_abi.actions.push_back( action_def{name("postrecovery"), "postrecovery"} );
-   eos_abi.actions.push_back( action_def{name("passrecovery"), "passrecovery"} );
-   eos_abi.actions.push_back( action_def{name("vetorecovery"), "vetorecovery"} );
-   eos_abi.actions.push_back( action_def{name("onerror"), "onerror"} );
-   eos_abi.actions.push_back( action_def{name("onblock"), "onblock"} );
-   eos_abi.actions.push_back( action_def{name("canceldelay"), "canceldelay"} );
-   eos_abi.actions.push_back( action_def{name("mindelay"), "mindelay"} );
-
+   // TODO add ricardian contracts
+   eos_abi.actions.push_back( action_def{name("setcode"), "setcode",""} );
+   eos_abi.actions.push_back( action_def{name("setabi"), "setabi",""} );
+   eos_abi.actions.push_back( action_def{name("linkauth"), "linkauth",""} );
+   eos_abi.actions.push_back( action_def{name("unlinkauth"), "unlinkauth",""} );
+   eos_abi.actions.push_back( action_def{name("updateauth"), "updateauth",""} );
+   eos_abi.actions.push_back( action_def{name("deleteauth"), "deleteauth",""} );
+   eos_abi.actions.push_back( action_def{name("newaccount"), "newaccount",""} );
+   eos_abi.actions.push_back( action_def{name("postrecovery"), "postrecovery",""} );
+   eos_abi.actions.push_back( action_def{name("passrecovery"), "passrecovery",""} );
+   eos_abi.actions.push_back( action_def{name("vetorecovery"), "vetorecovery",""} );
+   eos_abi.actions.push_back( action_def{name("onerror"), "onerror",""} );
+   eos_abi.actions.push_back( action_def{name("onblock"), "onblock",""} );
+   eos_abi.actions.push_back( action_def{name("canceldelay"), "canceldelay",""} );
+   
+   // TODO add any clauses 
+   //
    // ACTION PAYLOADS
 
 
@@ -162,13 +163,7 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
 
    eos_abi.structs.emplace_back( struct_def {
       "canceldelay", "", {
-         {"sender_id", "uint32"},
-      }
-   });
-
-   eos_abi.structs.emplace_back( struct_def {
-      "mindelay", "", {
-         {"delay", "uint32"},
+         {"trx_id", "transaction_id_type"},
       }
    });
 
@@ -177,7 +172,7 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
    eos_abi.structs.emplace_back( struct_def {
       "pending_recovery", "", {
          {"account",    "name"},
-         {"request_id", "uint32"},
+         {"request_id", "uint128"},
          {"update",     "updateauth"},
          {"memo",       "string"}
       }
@@ -238,8 +233,8 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
          {"region", "uint16"},
          {"ref_block_num", "uint16"},
          {"ref_block_prefix", "uint32"},
-         {"net_usage_words", "varuint32"},
-         {"kcpu_usage", "varuint32"},
+         {"max_net_usage_words", "varuint32"},
+         {"max_kcpu_usage", "varuint32"},
          {"delay_sec", "varuint32"}
       }
    });
@@ -272,7 +267,12 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
          {"accounts", "permission_level_weight[]"}
       }
    });
-
+   eos_abi.structs.emplace_back( struct_def {
+         "clause_pair", "", {
+            {"id", "string"},
+            {"body", "string"} 
+         }
+   });
    eos_abi.structs.emplace_back( struct_def {
       "type_def", "", {
          {"new_type_name", "type_name"},
@@ -283,7 +283,8 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
    eos_abi.structs.emplace_back( struct_def {
       "action_def", "", {
          {"name", "action_name"},
-         {"type", "type_name"}
+         {"type", "type_name"},
+         {"ricardian_contract", "string"}
       }
    });
 
@@ -302,7 +303,8 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
          {"types", "type_def[]"},
          {"structs", "struct_def[]"},
          {"actions", "action_def[]"},
-         {"tables", "table_def[]"}
+         {"tables", "table_def[]"},
+         {"clauses", "clause_pair[]"}
       }
    });
 

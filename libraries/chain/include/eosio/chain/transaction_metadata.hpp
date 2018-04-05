@@ -39,10 +39,11 @@ class transaction_metadata {
 
       transaction_id_type                   id;
 
-      uint32_t                              region_id       = 0;
-      uint32_t                              cycle_index     = 0;
-      uint32_t                              shard_index     = 0;
-      uint32_t                              bandwidth_usage = 0;
+      uint32_t                              region_id             = 0;
+      uint32_t                              cycle_index           = 0;
+      uint32_t                              shard_index           = 0;
+      uint32_t                              billable_packed_size  = 0;
+      uint32_t                              signature_count       = 0;
       time_point                            published;
       fc::microseconds                      delay;
 
@@ -81,4 +82,4 @@ class transaction_metadata {
 
 } } // eosio::chain
 
-FC_REFLECT( eosio::chain::transaction_metadata, (raw_trx)(signing_keys)(id)(region_id)(cycle_index)(shard_index)(bandwidth_usage)(published)(sender)(sender_id)(is_implicit))
+FC_REFLECT( eosio::chain::transaction_metadata, (raw_trx)(signing_keys)(id)(region_id)(cycle_index)(shard_index)(billable_packed_size)(published)(sender)(sender_id)(is_implicit))

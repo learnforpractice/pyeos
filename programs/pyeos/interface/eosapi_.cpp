@@ -15,6 +15,15 @@
 using namespace eosio::client::localize;
 using namespace eosio::chain;
 
+auto tx_expiration = fc::seconds(30);
+bool tx_force_unique = false;
+
+uint32_t tx_cf_cpu_usage = 0;
+uint32_t tx_net_usage = 0;
+
+uint32_t tx_max_cpu_usage = 0;
+uint32_t tx_max_net_usage = 0;
+
 uint64_t string_to_uint64_(string str) {
    try {
       return name(str).value;
@@ -113,13 +122,6 @@ read_only::get_info_results get_info() {
        db.head_block_producer()};
 }
 
-auto tx_expiration = fc::seconds(30);
-bool tx_force_unique = false;
-
-uint32_t tx_cf_cpu_usage = 0;
-uint32_t tx_net_usage = 0;
-
-
 string generate_nonce_value() {
    return fc::to_string(fc::time_point::now().time_since_epoch().count());
 }
@@ -149,33 +151,6 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
    return fc::variant(results.required_keys);
 }
 
-static uint32_t estimate_transaction_context_free_kilo_cpu_usage( const signed_transaction& trx, int32_t extra_kcpu = 1000 ) {
-   if (tx_cf_cpu_usage != 0) {
-      return (uint32_t)(tx_cf_cpu_usage + 1023UL) / (uint32_t)1024UL;
-   }
-
-   const uint32_t estimated_per_action_usage = config::default_base_per_action_cpu_usage * 10;
-   return extra_kcpu + (uint32_t)(trx.context_free_actions.size() * estimated_per_action_usage + 1023) / (uint32_t)1024;
-}
-
-static uint32_t estimate_transaction_net_usage_words( const signed_transaction& trx, packed_transaction::compression_type compression, size_t num_keys ) {
-   if (tx_net_usage != 0) {
-      return tx_net_usage / (uint32_t)8UL;
-   }
-
-   uint32_t sigs =  (uint32_t)5 +  // the maximum encoded size of the unsigned_int for the size of the signature block
-                    (uint32_t)(num_keys * sizeof(signature_type));
-
-   uint32_t packed_size_drift = compression == packed_transaction::none ?
-           4 :  // there is 1 variably encoded ints we haven't set yet, this size it can grow by 4 bytes
-           256; // allow for drift in the compression due to new data
-
-   uint32_t estimated_packed_size = (uint32_t)packed_transaction(trx, compression).data.size() + packed_size_drift;
-
-   return (uint32_t)(sigs + estimated_packed_size + (uint32_t)trx.context_free_data.size() + 7) / (uint32_t)8;
-}
-//bool   tx_skip_sign = false;
-
 PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
@@ -188,8 +163,8 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extr
    auto required_keys = determine_required_keys(trx);
    size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
 
-   trx.kcpu_usage = estimate_transaction_context_free_kilo_cpu_usage(trx, extra_kcpu );
-   trx.net_usage_words = estimate_transaction_net_usage_words(trx, compression, num_keys);
+   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+   trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
 
    if (!skip_sign) {
       sign_transaction(trx);
@@ -199,7 +174,6 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extr
    chain_apis::read_write::push_transaction_results result;
 
    bool success = false;
-//   PyThreadState* state = PyEval_SaveThread();
    try {
    		result = rw.push_transaction(fc::variant(packed_transaction(trx, compression)).get_object());
       success = true;
@@ -210,8 +184,6 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extr
    } catch (boost::exception& ex) {
       elog(boost::diagnostic_information(ex));
    }
-
-//   PyEval_RestoreThread(state);
 
    if (success) {
       return python::json::to_string(result);

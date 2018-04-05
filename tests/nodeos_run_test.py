@@ -81,7 +81,7 @@ if amINoon:
     WalletdName="keosd"
     ClientName="cleos"
     # noon branch requires longer mongo sync time.
-    testUtils.Utils.setMongoSyncTime(50)
+    # testUtils.Utils.setMongoSyncTime(50)
 else:
     testUtils.Utils.iAmNotNoon()
 
@@ -139,6 +139,8 @@ try:
     if testWallet is None:
         cmdError("eos wallet create")
         errorExit("Failed to create wallet %s." % (testWalletName))
+
+    Print("Wallet \"%s\" password=%s." % (testWalletName, testWallet.password.encode("utf-8")))
 
     for account in accounts:
         Print("Importing keys for account %s into wallet %s." % (account.name, testWallet.name))
@@ -379,8 +381,8 @@ try:
     amountVal=None
     if amINoon:
         if not enableMongo:
-            typeVal=  transaction["transaction"]["data"]["actions"][0]["name"]
-            amountVal=transaction["transaction"]["data"]["actions"][0]["data"]["quantity"]
+            typeVal=  transaction["transaction"]["transaction"]["actions"][0]["name"]
+            amountVal=transaction["transaction"]["transaction"]["actions"][0]["data"]["quantity"]
             amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
         else:
             typeVal=  transaction["name"]
