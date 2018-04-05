@@ -59,12 +59,7 @@ typedef uint64_t TableName;
 uint64_t string_to_uint64_(const char* str) {
    try {
       return name(str).value;
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
+   } catch (...) {
    }
    return 0;
 }
