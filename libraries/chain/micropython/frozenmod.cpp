@@ -33,6 +33,19 @@ int get_debug_mode() {
 	return s_debug_mode;
 }
 
+#include <string>
+#include <vector>
+#include <boost/filesystem.hpp>
+
+
+std::vector<std::string> split_path(const char* str_path) {
+    std::vector<std::string> v;
+    const boost::filesystem::path _path(str_path);
+    for (const auto &p : _path) {
+        v.push_back(p.filename().string());
+    }
+    return v;
+}
 
 extern "C" {
 
@@ -44,12 +57,29 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
 	if (get_debug_mode()) {
 		return MP_FROZEN_NONE;
 	}
-	uint64_t code = get_action_account();
-   uint64_t id = XXH64(mod_name, len, 0);
+
+	std::vector<std::string> _path = split_path(mod_name);
+	ilog("${n}", ("n", _path.size()));
+
+	uint64_t code;
+	uint64_t id;
+
+	if (_path.size() == 1) {
+		code = get_action_account();
+	   id = XXH64(mod_name, len, 0);
+	} else if (_path.size() == 2) {
+		code = string_to_uint64_(_path[0].c_str());
+	   id = XXH64(_path[1].c_str(), _path[1].length(), 0);
+	   ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _path[0])("n2", _path[1]));
+	} else {
+		return MP_FROZEN_NONE;
+	}
+
    int itr = db_find_i64(code, code, code, id);
    if (itr < 0) {
    		return MP_FROZEN_NONE;
    }
+
    	int size = db_get_i64(itr, code_data, sizeof(code_data));
    	eosio_assert(size < sizeof(code_data), "source file too large!");
    	ilog("+++++++++code_data: ${n1} ${n2}", ("n1", code_data[0])("n2", size));
@@ -70,6 +100,7 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
    	}
 
    return ret;
+
 }
 
 const char *mp_find_frozen_str(const char *str, size_t *len) {
@@ -82,10 +113,34 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
 		return MP_IMPORT_STAT_NO_EXIST;
 	}
 
-	uint64_t code = get_action_account();
+	uint64_t code;
+	uint64_t id;
+
+	std::vector<std::string> _dirs = split_path(mod_name);
+	ilog("${n}", ("n", _dirs.size()));
+
+	if (_dirs.size() == 1) {
+		uint64_t _account = string_to_uint64_(_dirs[0].c_str());
+		ilog("+++++++++account: ${n1}", ("n1", _account));
+
+		if (is_account(_account)) {
+			ilog("+++++++++importing module from a account: ${n1}", ("n1", mod_name));
+			return MP_IMPORT_STAT_DIR;
+	   }
+
+		code = get_action_account();
+	   id = XXH64(_dirs[0].c_str(), _dirs[0].length(), 0);
+
+	} else if (_dirs.size() == 2) {
+		code = string_to_uint64_(_dirs[0].c_str());
+	   id = XXH64(_dirs[1].c_str(), _dirs[1].length(), 0);
+	   ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _dirs[0])("n2", _dirs[1]));
+	} else {
+		return MP_IMPORT_STAT_NO_EXIST;
+	}
+
 	mp_import_stat_t ret;
 
-	uint64_t id = XXH64(mod_name, strlen(mod_name), 0);
    int itr = db_find_i64(code, code, code, id);
    if (itr < 0) {
    		ret = MP_IMPORT_STAT_NO_EXIST;

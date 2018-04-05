@@ -1,6 +1,8 @@
-import ustruct
 from eoslib import *
-code = N('kitties')
+
+code = N('backyard')
+def sayHello():
+    print('hello, master')
 
 def deploy(mod_name, src_code):
     print('++++++++++++deploy:mod_name', mod_name)
@@ -12,6 +14,7 @@ def deploy(mod_name, src_code):
         db_update_i64(itr, code, src_code)
 
 def apply(name, action):
+    print(n2s(name), n2s(action))
     if action == N('deploy'):
         require_auth(code)
         msg = read_action()
@@ -20,10 +23,5 @@ def apply(name, action):
         src_code = msg[1+length:]
         print('+++++++++++++++++src_code type:', src_code[0])
         deploy(mod_name, src_code)
-    elif action == N('call'):
-#        print('++++++++++++call')
-        from kittycore import KittyCore
-        core = KittyCore()
-    else:
-        pass
-    
+
+

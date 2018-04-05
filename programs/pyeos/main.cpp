@@ -135,6 +135,7 @@ void interactive_console() {
    PyRun_SimpleString("from currency import test as ct");
    PyRun_SimpleString("from cache import test as cct");
    PyRun_SimpleString("from hello import test as ht");
+   PyRun_SimpleString("from backyard import test as bt");
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 

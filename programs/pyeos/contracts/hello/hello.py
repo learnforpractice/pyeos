@@ -4,7 +4,6 @@ def sayHello():
     n = N('hello')
     id = N('name')
 
-
     name = read_action()
     print('hello', name)
 
@@ -16,7 +15,13 @@ def sayHello():
     else:
         db_store_i64(n, n, n, id, name)
 
+def play():
+    from backyard import garden
+    garden.play()
+
 def apply(name, type):
     if type == N('sayhello'):
         sayHello()
+    elif type == N('play'):
+        play()
 

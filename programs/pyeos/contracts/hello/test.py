@@ -28,6 +28,10 @@ def init(mpy=True):
 
 def test(name=None):
     with producer:
+        if not eosapi.get_account('hello').permissions:
+            r = eosapi.create_account('eosio', 'hello', initeos.key1, initeos.key2)
+            assert r
+    with producer:
         if not name:
             name = 'mike'
         r = eosapi.push_message('hello','sayhello',name,{'hello':'active'},rawargs=True)
