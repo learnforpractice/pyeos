@@ -1,5 +1,33 @@
 from eoslib import eosio_assert, N, S
 
+   static constexpr uint32_t symbol_name_length( symbol_name tmp ) {
+      tmp >>= 8; /// skip precision
+      uint32_t length = 0;
+      while( tmp & 0xff && length <= 7) {
+         ++length;
+         tmp >>= 8;
+      }
+
+      return length;
+   }
+
+class symbol_type(object):
+    def __init__(self, _symbol):
+        self.symbol = _symbol
+
+    def is_valid() -> bool:
+        #FIXME
+#        return is_valid_symbol( value )
+        return True
+
+    def precision(self):
+        return self.symbol[0]
+
+    def name(self):
+        return bytes(self.symbol[1:], 'utf8')
+    #FIXME
+#    uint32_t name_length()const { return symbol_name_length( value ); }
+
 class asset(object):
     max_amount    = (1 << 62) - 1;
     def __init__(self, a = 0, s = 'EOS'):

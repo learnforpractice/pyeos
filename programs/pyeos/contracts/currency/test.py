@@ -42,9 +42,9 @@ uint8_t                issuer_can_whitelist  = true;
 def test_create():
     args = {"issuer":"currency",
             "maximum_supply":"1000000000.0000 CUR",
-            "issuer_can_freeze":'1',
-            "issuer_can_recall":'1',
-            "issuer_can_whitelist":'1' 
+            "can_freeze":'1',
+            "can_recall":'1',
+            "can_whitelist":'1'
             }
     with producer:
         r = eosapi.push_message('currency','create',args,{'currency':'active'})
