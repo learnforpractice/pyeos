@@ -28,7 +28,7 @@ class chain_controller;
  */
 class evm_interface {
 public:
-	void init();
+   void init();
    static evm_interface& get();
    void apply(apply_context& c, const shared_vector<char>&  code);
 

@@ -30,23 +30,23 @@ extern "C" void execution_end();
 namespace eosio { namespace chain {
 
 bool apply_context::get_code(uint64_t _account, std::vector<uint8_t>& v) {
-	try {
-	   const auto &a = mutable_controller.get_database().get<account_object, by_name>(name(_account));
-		v = std::vector<uint8_t>(a.code.begin(), a.code.end());
-		return true;
-	} catch (...) {
-		return false;
-	}
+   try {
+      const auto &a = mutable_controller.get_database().get<account_object, by_name>(name(_account));
+      v = std::vector<uint8_t>(a.code.begin(), a.code.end());
+      return true;
+   } catch (...) {
+      return false;
+   }
 }
 
 bool apply_context::get_code_size(uint64_t _account, int& size) {
-	try {
-	   const auto &a = mutable_controller.get_database().get<account_object, by_name>(name(_account));
-		size = a.code.size();
-		return true;
-	} catch (...) {
-		return false;
-	}
+   try {
+      const auto &a = mutable_controller.get_database().get<account_object, by_name>(name(_account));
+      size = a.code.size();
+      return true;
+   } catch (...) {
+      return false;
+   }
 }
 
 
@@ -78,15 +78,15 @@ void apply_context::exec_one()
                   py.apply(*this, a.code);
                   execution_end();
                } catch (...) {
-               		execution_end();
-               		throw;
+                  execution_end();
+                  throw;
                }
             } else if (a.vm_type == 2) {
-            		bytes code(a.code.begin(), a.code.end());
-            		bytes args(act.data.begin(), act.data.end());
-            		bytes output;
-            		evm_interface::get().run_code(*this, code, args, output);
-            		ilog("${n}",("n", output.size()));
+               bytes code(a.code.begin(), a.code.end());
+               bytes args(act.data.begin(), act.data.end());
+               bytes output;
+               evm_interface::get().run_code(*this, code, args, output);
+               ilog("${n}",("n", output.size()));
             }
          }
       }

@@ -87,8 +87,8 @@ void application::set_program_options()
    options_description app_cfg_opts( "Application Config Options" );
    options_description app_cli_opts( "Application Command Line Options" );
    app_cfg_opts.add_options()
-				("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
-         		("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
+         ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
+         ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()
          ("help,h", "Print this help message and exit.")

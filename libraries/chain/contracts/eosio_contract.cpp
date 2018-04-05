@@ -119,7 +119,7 @@ void apply_eosio_setcode_py(apply_context& context) {
 
    auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
 
-   	micropython_interface::get().on_setcode(act.account, act.code);
+   micropython_interface::get().on_setcode(act.account, act.code);
 
    const auto& account = db.get<account_object,by_name>(act.account);
 
@@ -128,21 +128,19 @@ void apply_eosio_setcode_py(apply_context& context) {
    int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
    int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
 
-	FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
+   FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
 //   wlog( "set code: ${size}", ("size",act.code.size()));
-	db.modify( account, [&]( auto& a ) {
-			a.vm_type = act.vmtype.convert_to<uint8_t>();
-		/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-		#warning TODO: update setcode message to include the hash, then validate it in validate
-		a.code_version = code_id;
-		// Added resize(0) here to avoid bug in boost vector container
-		a.code.resize( 0 );
-		a.code.resize( code_size );
-		a.last_code_update = context.controller.head_block_time();
-		memcpy( a.code.data(), act.code.data(), code_size );
-
-	});
-
+   db.modify( account, [&]( auto& a ) {
+      a.vm_type = act.vmtype.convert_to<uint8_t>();
+      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+      #warning TODO: update setcode message to include the hash, then validate it in validate
+      a.code_version = code_id;
+      // Added resize(0) here to avoid bug in boost vector container
+      a.code.resize( 0 );
+      a.code.resize( code_size );
+      a.last_code_update = context.controller.head_block_time();
+      memcpy( a.code.data(), act.code.data(), code_size );
+   });
    if (new_size != old_size) {
       resources.add_pending_account_ram_usage(
          act.account,
@@ -170,26 +168,26 @@ void apply_eosio_setcode_evm(apply_context& context) {
    int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
    int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
 
-	bytes code;
-	bytes args(act.code.begin(), act.code.end());
-		bytes output_code;
-	evm_interface::get().run_code(context, code, args, output_code);
-	FC_ASSERT(output_code.size() > 0, "evm return empty code");
+   bytes code;
+   bytes args(act.code.begin(), act.code.end());
+   bytes output_code;
+   evm_interface::get().run_code(context, code, args, output_code);
+   FC_ASSERT(output_code.size() > 0, "evm return empty code");
 
-//   wlog( "set code: ${size}", ("size",act.code.size()));
-	db.modify( account, [&]( auto& a ) {
-		/** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-		#warning TODO: update setcode message to include the hash, then validate it in validate
-		a.vm_type = act.vmtype.convert_to<uint8_t>();
-			a.code_version = code_id;
-		// Added resize(0) here to avoid bug in boost vector container
-		a.code.resize( 0 );
-		a.code.resize( output_code.size() );
-		a.last_code_update = context.controller.head_block_time();
-		ilog( "code.size(): ${n}", ("n", output_code.size()) );
+   //   wlog( "set code: ${size}", ("size",act.code.size()));
+   db.modify( account, [&]( auto& a ) {
+      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+      #warning TODO: update setcode message to include the hash, then validate it in validate
+      a.vm_type = act.vmtype.convert_to<uint8_t>();
+      a.code_version = code_id;
+      // Added resize(0) here to avoid bug in boost vector container
+      a.code.resize( 0 );
+      a.code.resize( output_code.size() );
+      a.last_code_update = context.controller.head_block_time();
+      ilog( "code.size(): ${n}", ("n", output_code.size()) );
 
-		memcpy( a.code.data(), output_code.data(), output_code.size() );
-	});
+      memcpy( a.code.data(), output_code.data(), output_code.size() );
+   });
 
    if (new_size != old_size) {
       resources.add_pending_account_ram_usage(
@@ -202,13 +200,13 @@ void apply_eosio_setcode_evm(apply_context& context) {
 void apply_eosio_setcode(apply_context& context) {
    auto  act = context.act.data_as<setcode>();
 
-	if (act.vmtype == 1) {
-		apply_eosio_setcode_py(context);
-		return;
-	} else if (act.vmtype == 2) {
-		apply_eosio_setcode_evm(context);
-		return;
-	}
+   if (act.vmtype == 1) {
+      apply_eosio_setcode_py(context);
+      return;
+   } else if (act.vmtype == 2) {
+      apply_eosio_setcode_evm(context);
+      return;
+   }
    auto& db = context.mutable_db;
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    context.require_authorization(act.account);

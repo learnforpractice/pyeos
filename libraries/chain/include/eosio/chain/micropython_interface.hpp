@@ -49,8 +49,8 @@ public:
 
 private:
    struct py_module {
-   		void* obj;
-   		fc::sha256 hash;
+      void* obj;
+      fc::sha256 hash;
    };
    std::map<uint64_t, py_module*> module_cache;
    micropython_interface();

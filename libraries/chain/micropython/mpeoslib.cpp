@@ -183,19 +183,19 @@ class database_api {
    public:
 //      using context_aware_api::context_aware_api;
 
-		apply_context*     context;
+      apply_context*     context;
 
-		database_api(apply_context& ctx) : context(&ctx) {}
+      database_api(apply_context& ctx) : context(&ctx) {}
 
-		static database_api& get() {
-			static database_api* instance = nullptr;
-			if (!instance) {
-					instance = new database_api(*get_current_context());
-			} else {
-				instance->context = get_current_context();
-			}
-			return *instance;
-		}
+      static database_api& get() {
+         static database_api* instance = nullptr;
+         if (!instance) {
+            instance = new database_api(*get_current_context());
+         } else {
+            instance->context = get_current_context();
+         }
+         return *instance;
+      }
 
       int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
          return context->db_store_i64( scope, table, payer, id, buffer, buffer_size );
@@ -286,15 +286,15 @@ int db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //context_free_transaction_api
 int read_transaction( char* data, size_t data_len ) {
-	bytes trx = get_apply_ctx().get_packed_transaction();
-	if (data_len >= trx.size()) {
-		memcpy(data, trx.data(), trx.size());
-	}
-	return trx.size();
+   bytes trx = get_apply_ctx().get_packed_transaction();
+   if (data_len >= trx.size()) {
+      memcpy(data, trx.data(), trx.size());
+   }
+   return trx.size();
 }
 
 int transaction_size() {
-	return get_apply_ctx().get_packed_transaction().size();
+   return get_apply_ctx().get_packed_transaction().size();
 }
 
 int expiration() {
@@ -309,7 +309,7 @@ int tapos_block_prefix() {
 }
 
 int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size ) {
-	return get_apply_ctx().get_action( type, index, buffer, buffer_size );
+   return get_apply_ctx().get_action( type, index, buffer, buffer_size );
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -344,36 +344,36 @@ uint64_t current_sender() {
 
 //apply_context
 void require_auth(uint64_t account) {
-	get_apply_ctx().require_authorization(account_name(account));
+   get_apply_ctx().require_authorization(account_name(account));
 }
 
 void require_auth_ex(uint64_t account, uint64_t permission) {
-	get_apply_ctx().require_authorization(account_name(account), name(permission));
+   get_apply_ctx().require_authorization(account_name(account), name(permission));
 }
 
 void require_write_lock(uint64_t scope) {
-	get_apply_ctx().require_write_lock(name(scope));
+   get_apply_ctx().require_write_lock(name(scope));
 }
 
 void require_read_lock(uint64_t account, uint64_t scope) {
-	get_apply_ctx().require_read_lock(name(account), name(scope));
+   get_apply_ctx().require_read_lock(name(account), name(scope));
 }
 
 int is_account(uint64_t account) {
-	return get_apply_ctx().is_account(name(account));
+   return get_apply_ctx().is_account(name(account));
 }
 
 void require_recipient(uint64_t account) {
-	get_apply_ctx().require_recipient(name(account));
+   get_apply_ctx().require_recipient(name(account));
 }
 
 //producer_api
 int get_active_producers(uint64_t* producers, size_t datalen) {
-	auto active_producers = get_apply_ctx().get_active_producers();
-	size_t len = active_producers.size();
-	size_t cpy_len = std::min(datalen, len);
-	memcpy(producers, active_producers.data(), cpy_len * sizeof(chain::account_name) );
-	return len;
+   auto active_producers = get_apply_ctx().get_active_producers();
+   size_t len = active_producers.size();
+   size_t cpy_len = std::min(datalen, len);
+   memcpy(producers, active_producers.data(), cpy_len * sizeof(chain::account_name) );
+   return len;
 }
 
 
@@ -411,26 +411,26 @@ extern "C" mp_obj_t send_inline(size_t n_args, const mp_obj_t *args) {
 
 #if 0
 void send_inline( array_ptr<char> data, size_t data_len ) {
-	// TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
-	FC_ASSERT( data_len < config::default_max_inline_action_size, "inline action too big" );
+   // TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
+   FC_ASSERT( data_len < config::default_max_inline_action_size, "inline action too big" );
 
-	action act;
-	fc::raw::unpack<action>(data, data_len, act);
-	context.execute_inline(std::move(act));
+   action act;
+   fc::raw::unpack<action>(data, data_len, act);
+   context.execute_inline(std::move(act));
 }
 
 void send_deferred( uint32_t sender_id, const fc::time_point_sec& execute_after, array_ptr<char> data, size_t data_len ) {
-	try {
-		// TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
-		FC_ASSERT(data_len < config::default_max_gen_trx_size, "generated transaction too big");
+   try {
+   // TODO: use global properties object for dynamic configuration of this default_max_gen_trx_size
+      FC_ASSERT(data_len < config::default_max_gen_trx_size, "generated transaction too big");
 
-		deferred_transaction dtrx;
-		fc::raw::unpack<transaction>(data, data_len, dtrx);
-		dtrx.sender = context.receiver;
-		dtrx.sender_id = sender_id;
-		dtrx.execute_after = execute_after;
-		context.execute_deferred(std::move(dtrx));
-	} FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
+      deferred_transaction dtrx;
+      fc::raw::unpack<transaction>(data, data_len, dtrx);
+      dtrx.sender = context.receiver;
+      dtrx.sender_id = sender_id;
+      dtrx.execute_after = execute_after;
+      context.execute_deferred(std::move(dtrx));
+   } FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
 }
 #endif
 
@@ -452,78 +452,78 @@ void eosio_assert(int condition, const char* str) {
 
 //class crypto_api
 void assert_recover_key( const char* data, size_t data_len, const char* sig, size_t siglen, const char* pub, size_t publen ) {
-	fc::sha256 digest( data, data_len);
-	fc::crypto::signature s;
-	fc::crypto::public_key p;
-	fc::datastream<const char*> ds( sig, siglen );
-	fc::datastream<const char*> pubds( pub, publen );
+   fc::sha256 digest( data, data_len);
+   fc::crypto::signature s;
+   fc::crypto::public_key p;
+   fc::datastream<const char*> ds( sig, siglen );
+   fc::datastream<const char*> pubds( pub, publen );
 
-	fc::raw::unpack(ds, s);
-	fc::raw::unpack(pubds, p);
+   fc::raw::unpack(ds, s);
+   fc::raw::unpack(pubds, p);
 
-	auto check = fc::crypto::public_key( s, digest, false );
-	FC_ASSERT( check == p, "Error expected key different than recovered key" );
+   auto check = fc::crypto::public_key( s, digest, false );
+   FC_ASSERT( check == p, "Error expected key different than recovered key" );
 }
 
 mp_obj_t recover_key(const char* data, size_t size, const char* sig, size_t siglen ) {
-	char pub[256];
-	fc::sha256 digest(data, size);
-	fc::crypto::signature s;
-	fc::datastream<const char*> ds( sig, siglen );
-	fc::datastream<char*> pubds( pub, sizeof(pub) );
+   char pub[256];
+   fc::sha256 digest(data, size);
+   fc::crypto::signature s;
+   fc::datastream<const char*> ds( sig, siglen );
+   fc::datastream<char*> pubds( pub, sizeof(pub) );
 
-	fc::raw::unpack(ds, s);
-	fc::raw::pack( pubds, fc::crypto::public_key( s, digest, false ) );
+   fc::raw::unpack(ds, s);
+   fc::raw::pack( pubds, fc::crypto::public_key( s, digest, false ) );
 
-	return mp_obj_new_str(pub, pubds.tellp());
+   return mp_obj_new_str(pub, pubds.tellp());
 }
 
 void assert_sha256(const char* data, size_t datalen, const char* hash, size_t hash_len) {
-	auto result = fc::sha256::hash( data, datalen );
-	fc::sha256 hash_val( hash, hash_len );
-	FC_ASSERT( result == hash_val, "hash miss match" );
+   auto result = fc::sha256::hash( data, datalen );
+   fc::sha256 hash_val( hash, hash_len );
+   FC_ASSERT( result == hash_val, "hash miss match" );
 }
 
 void assert_sha1(const char* data, size_t datalen, const char* hash, size_t hash_len) {
-	auto result = fc::sha1::hash( data, datalen );
-	fc::sha1 hash_val( string(hash, hash_len) );
-	FC_ASSERT( result == hash_val, "hash miss match" );
+   auto result = fc::sha1::hash( data, datalen );
+   fc::sha1 hash_val( string(hash, hash_len) );
+   FC_ASSERT( result == hash_val, "hash miss match" );
 }
 
 void assert_sha512(const char* data, size_t datalen, const char* hash, size_t hash_len) {
-	auto result = fc::sha512::hash( data, datalen );
-	fc::sha512 hash_val( string(hash, hash_len) );
-	FC_ASSERT( result == hash_val, "hash miss match" );
+   auto result = fc::sha512::hash( data, datalen );
+   fc::sha512 hash_val( string(hash, hash_len) );
+   FC_ASSERT( result == hash_val, "hash miss match" );
 }
 
 void assert_ripemd160(const char* data, size_t datalen, const char* hash, size_t hash_len) {
-	auto result = fc::ripemd160::hash( data, datalen );
-	fc::ripemd160 hash_val( string(hash, hash_len) );
-	FC_ASSERT( result == hash_val, "hash miss match" );
+   auto result = fc::ripemd160::hash( data, datalen );
+   fc::ripemd160 hash_val( string(hash, hash_len) );
+   FC_ASSERT( result == hash_val, "hash miss match" );
 }
 
 mp_obj_t sha1(const char* data, size_t datalen) {
-	string str_hash = fc::sha1::hash( data, datalen ).str();
-	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+   string str_hash = fc::sha1::hash( data, datalen ).str();
+   return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
 mp_obj_t sha256(const char* data, size_t datalen) {
-	string str_hash = fc::sha256::hash( data, datalen ).str();
-	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+   string str_hash = fc::sha256::hash( data, datalen ).str();
+   return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
 mp_obj_t sha512(const char* data, size_t datalen) {
-	string str_hash = fc::sha512::hash( data, datalen ).str();
-	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+   string str_hash = fc::sha512::hash( data, datalen ).str();
+   return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
 mp_obj_t ripemd160(const char* data, size_t datalen) {
-	string str_hash = fc::ripemd160::hash( data, datalen ).str();
-	return mp_obj_new_str(str_hash.c_str(), str_hash.size());
+   string str_hash = fc::ripemd160::hash( data, datalen ).str();
+   return mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
 uint64_t get_action_account() {
-	return get_apply_ctx().act.account.value;
+   return get_apply_ctx().act.account.value;
 }
 
 
@@ -547,62 +547,62 @@ uint64_t string_to_symbol( uint8_t precision, const char* str ) {
 static struct eosapi s_eosapi;
 
 void init_eosapi() {
-	s_eosapi.now = now;
-	s_eosapi.abort_ = abort;
-	s_eosapi.eosio_assert = eosio_assert;
-	s_eosapi.assert_recover_key = assert_recover_key;
+   s_eosapi.now = now;
+   s_eosapi.abort_ = abort;
+   s_eosapi.eosio_assert = eosio_assert;
+   s_eosapi.assert_recover_key = assert_recover_key;
 
-	s_eosapi.recover_key = recover_key;
-	s_eosapi.assert_sha256 = assert_sha256;
-	s_eosapi.assert_sha1 = assert_sha1;
-	s_eosapi.assert_sha512 = assert_sha512;
-	s_eosapi.assert_ripemd160 = assert_ripemd160;
-	s_eosapi.sha1 = sha1;
-	s_eosapi.sha256 = sha256;
-	s_eosapi.sha512 = sha512;
-	s_eosapi.ripemd160 = ripemd160;
+   s_eosapi.recover_key = recover_key;
+   s_eosapi.assert_sha256 = assert_sha256;
+   s_eosapi.assert_sha1 = assert_sha1;
+   s_eosapi.assert_sha512 = assert_sha512;
+   s_eosapi.assert_ripemd160 = assert_ripemd160;
+   s_eosapi.sha1 = sha1;
+   s_eosapi.sha256 = sha256;
+   s_eosapi.sha512 = sha512;
+   s_eosapi.ripemd160 = ripemd160;
 
-	s_eosapi.string_to_uint64_ = string_to_uint64_;
-	s_eosapi.uint64_to_string_ = uint64_to_string_;
+   s_eosapi.string_to_uint64_ = string_to_uint64_;
+   s_eosapi.uint64_to_string_ = uint64_to_string_;
 
-	s_eosapi.pack_ = pack_;
-	s_eosapi.unpack_ = unpack_;
+   s_eosapi.pack_ = pack_;
+   s_eosapi.unpack_ = unpack_;
 
-//	s_eosapi.get_account_balance_
-//	s_eosapi.get_active_producers_
+//   s_eosapi.get_account_balance_
+//   s_eosapi.get_active_producers_
 
-	s_eosapi.read_transaction = read_transaction;
-	s_eosapi.transaction_size = transaction_size;
-	s_eosapi.expiration = expiration;
-	s_eosapi.tapos_block_num = tapos_block_num;
-	s_eosapi.tapos_block_prefix = tapos_block_prefix;
-	s_eosapi.get_action = get_action;
-
-
-	s_eosapi.require_auth = require_auth;
-	s_eosapi.require_auth_ex = require_auth_ex;
-	s_eosapi.require_write_lock = require_write_lock;
-	s_eosapi.require_read_lock = require_read_lock;
-	s_eosapi.is_account = is_account;
-	s_eosapi.require_recipient = require_recipient;
+   s_eosapi.read_transaction = read_transaction;
+   s_eosapi.transaction_size = transaction_size;
+   s_eosapi.expiration = expiration;
+   s_eosapi.tapos_block_num = tapos_block_num;
+   s_eosapi.tapos_block_prefix = tapos_block_prefix;
+   s_eosapi.get_action = get_action;
 
 
-	s_eosapi.read_action = read_action;
-	s_eosapi.action_size = action_size;
-	s_eosapi.current_receiver = current_receiver;
-	s_eosapi.publication_time = publication_time;
-	s_eosapi.current_sender = current_sender;
+   s_eosapi.require_auth = require_auth;
+   s_eosapi.require_auth_ex = require_auth_ex;
+   s_eosapi.require_write_lock = require_write_lock;
+   s_eosapi.require_read_lock = require_read_lock;
+   s_eosapi.is_account = is_account;
+   s_eosapi.require_recipient = require_recipient;
 
-	s_eosapi.db_store_i64 = db_store_i64;
-	s_eosapi.db_update_i64 = db_update_i64;
-	s_eosapi.db_remove_i64 = db_remove_i64;
-	s_eosapi.db_get_i64 = db_get_i64;
-	s_eosapi.db_next_i64 = db_next_i64;
-	s_eosapi.db_previous_i64 = db_previous_i64;
-	s_eosapi.db_find_i64 = db_find_i64;
-	s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
-	s_eosapi.db_upperbound_i64 = db_upperbound_i64;
-	s_eosapi.db_end_i64 = db_end_i64;
+
+   s_eosapi.read_action = read_action;
+   s_eosapi.action_size = action_size;
+   s_eosapi.current_receiver = current_receiver;
+   s_eosapi.publication_time = publication_time;
+   s_eosapi.current_sender = current_sender;
+
+   s_eosapi.db_store_i64 = db_store_i64;
+   s_eosapi.db_update_i64 = db_update_i64;
+   s_eosapi.db_remove_i64 = db_remove_i64;
+   s_eosapi.db_get_i64 = db_get_i64;
+   s_eosapi.db_next_i64 = db_next_i64;
+   s_eosapi.db_previous_i64 = db_previous_i64;
+   s_eosapi.db_find_i64 = db_find_i64;
+   s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
+   s_eosapi.db_upperbound_i64 = db_upperbound_i64;
+   s_eosapi.db_end_i64 = db_end_i64;
 }
 
 
