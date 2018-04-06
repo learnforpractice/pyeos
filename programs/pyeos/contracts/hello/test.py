@@ -37,6 +37,16 @@ def test(name=None):
         r = eosapi.push_message('hello','sayhello',name,{'hello':'active'},rawargs=True)
         assert r
 
+def play():
+    with producer:
+        if not eosapi.get_account('hello').permissions:
+            r = eosapi.create_account('eosio', 'hello', initeos.key1, initeos.key2)
+            assert r
+    with producer:
+        r = eosapi.push_message('hello','play','',{'hello':'active'},rawargs=True)
+        assert r
+
+
 def test2(count):
     import time
     import json
