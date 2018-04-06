@@ -56,6 +56,8 @@ class Sync(object):
             print('++++++++++:', src_file, "up to date")
             return
 
+        self.del_mod(src_file.replace('.py', '.mpy'))
+
         src_code = open(_abs_file_path, 'rb').read()
         mod_name = src_file #os.path.basename(src_file)
         msg = int.to_bytes(len(mod_name), 1, 'little')
@@ -67,6 +69,12 @@ class Sync(object):
             r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
             assert r
         self.save()
+
+    def del_mod(self, mod_name):
+        with producer:
+            print('++++++++++++++++del:', mod_name)
+            r = eosapi.push_message('kitties', 'del', mod_name, {'kitties':'active'},rawargs=True)
+            assert r
 
     def deploy_depend_libs(self):
         depend_libs = ['cache.py', 'storage.py']
@@ -105,7 +113,9 @@ class Sync(object):
             print('++++++++++:', file_name, "up to date")
             return
 
-        src_code = eosapi.mp_compile(os.path.join(self.src_dir, file_name))
+        self.del_mod(file_name)
+
+        src_code = eosapi.mp_compile(_abs_file_path)
         file_name = file_name.replace('.py', '.mpy')
         mod_name = file_name
         msg = int.to_bytes(len(mod_name), 1, 'little')
@@ -131,7 +141,6 @@ class Sync(object):
                 if file_name in self.ignore_files:
                     continue
                 self.deploy_mpy(file_name)
-
     def clean(self):
         self.last_sync = {}
         self.save()

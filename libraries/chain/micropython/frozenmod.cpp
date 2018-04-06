@@ -80,9 +80,10 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
          return MP_FROZEN_NONE;
    }
 
-      int size = db_get_i64(itr, code_data, sizeof(code_data));
-      eosio_assert(size < sizeof(code_data), "source file too large!");
-      ilog("+++++++++code_data: ${n1} ${n2}", ("n1", code_data[0])("n2", size));
+   int size = db_get_i64(itr, code_data, sizeof(code_data));
+   eosio_assert(size < sizeof(code_data), "source file too large!");
+   ilog("+++++++++code_data: ${n1} ${n2}", ("n1", code_data[0])("n2", size));
+   if (size > 0) {
       int code_type = code_data[0];
       if (code_type == 0) {//py
          wlog("+++++++++load source code");
@@ -98,7 +99,7 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
       } else {
          FC_ASSERT(false, "unknown micropython code");
       }
-
+   }
    return ret;
 
 }
@@ -117,7 +118,7 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
    uint64_t id;
 
    std::vector<std::string> _dirs = split_path(mod_name);
-   ilog("${n}", ("n", _dirs.size()));
+//   ilog("${n}", ("n", _dirs.size()));
 
    if (_dirs.size() == 1) {
       uint64_t _account = string_to_uint64_(_dirs[0].c_str());

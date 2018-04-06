@@ -24,6 +24,12 @@ def apply(name, action):
 #        print('++++++++++++call')
         from kittycore import KittyCore
         core = KittyCore()
+    elif action == N('del'):
+        mod_name = read_action()
+        id = hash64(mod_name)
+        itr = db_find_i64(code, code, code, id)
+        if itr >= 0:
+            db_remove_i64(itr)
     else:
         pass
     
