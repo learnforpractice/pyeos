@@ -26,14 +26,19 @@ def test(name='abc'):
 def test2(count):
     import time
     import json
+    contracts = []
     functions = []
     args = []
-    per = {'storage':'active'}
+    per = []
     for i in range(count):
         functions.append('sayhello')
         arg = str(i)
         args.append(arg)
-    ret, cost = eosapi.push_messages('storage', functions, args, per, True, rawargs=True)
+        contracts.append('storage')
+        per.append({'storage':'active'})
+        
+    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
     assert ret
+    cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()

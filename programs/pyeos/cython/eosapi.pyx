@@ -61,7 +61,9 @@ cdef extern from "eosapi_.hpp":
 
     object traceback_()
 
-    object push_messages_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs, uint64_t& cost_time)
+    object push_messages_(vector[string]& contract, vector[string]& functions, vector[string]& args, vector[map[string, string]]& permissions,bool sign, bool rawargs)
+
+    object push_messages_ex_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
 
     int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
@@ -421,21 +423,42 @@ def on_python_exit():
 atexit.register(on_python_exit)
 
 
-def push_messages(string& contract, vector[string]& functions, args, permissions,bool sign, bool rawargs):
-    cdef map[string, string] _permissions
+def push_messages(vector[string]& contracts, vector[string]& functions, args, permissions,bool sign, bool rawargs):
+    cdef vector[map[string, string]] _permissions
+    cdef map[string, string] __permissions;
     cdef vector[string] _args
-    cdef uint64_t cost_time = 0
     
-    for per in permissions:
-        key = permissions[per]
-        _permissions[per] = key
+    for per in permissions:#list
+        __permissions = map[string, string]()
+        for _key in per: #dict
+            value = per[_key]
+            __permissions[_key] = value
+        _permissions.push_back(__permissions)
+
     for arg in args:
         if isinstance(arg, dict):
             arg = json.dumps(arg)
         _args.push_back(arg)
 
-    ret = push_messages_(contract, functions, _args, _permissions,sign, rawargs, cost_time)
-    return (ret, cost_time)
+    ret = push_messages_(contracts, functions, _args, _permissions,sign, rawargs)
+    return (ret)
+
+def push_messages_ex(string& contract, vector[string]& functions, args, permissions,bool sign, bool rawargs):
+    cdef map[string, string] _permissions
+    cdef vector[string] _args
+    
+    for per in permissions:
+        key = permissions[per]
+        _permissions[per] = key
+
+    for arg in args:
+        if isinstance(arg, dict):
+            arg = json.dumps(arg)
+        _args.push_back(arg)
+
+    ret = push_messages_ex_(contract, functions, _args, _permissions,sign, rawargs)
+    return (ret)
+
 
 def mp_compile(py_file):
     cdef vector[char] buffer

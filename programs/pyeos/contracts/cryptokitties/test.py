@@ -191,17 +191,23 @@ def test(name=None):
 def test2(count):
     import time
     import json
+    contracts = []
     functions = []
     args = []
-    per = {'kitties':'active'}
+    per = []
+
     for i in range(count):
         functions.append('call')
         arg = str(i)
         args.append(arg)
-    ret, cost = eosapi.push_messages('kitties', functions, args, per, True, rawargs=True)
+        contracts.append('kitties')
+        per.append({'kitties':'active'})
+
+    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
     assert ret
-    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+    cost = ret['cost_time']
     eosapi.produce_block()
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 def call(name=None):
     with producer:
@@ -211,14 +217,19 @@ def call(name=None):
 def call3(count):
     import time
     import json
+
+    contracts = []
     functions = []
     args = []
-    per = {'kitties':'active'}
+    pers = []
     for i in range(count):
         functions.append('call')
         arg = str(i)
         args.append(arg)
-    ret, cost = eosapi.push_messages('kitties', functions, args, per, True, rawargs=True)
+        contracts.append('kitties')
+        pers.append({'kitties':'active'})
+
+    ret, cost = eosapi.push_messages(contracts, functions, args, pers, True, rawargs=True)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
