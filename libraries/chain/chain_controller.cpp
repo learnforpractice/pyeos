@@ -1249,10 +1249,10 @@ void chain_controller::update_resource_usage( transaction_trace& trace, const tr
    trace.cpu_usage = calculate_transaction_cpu_usage(trace, meta, chain_configuration);
    trace.net_usage = calculate_transaction_net_usage(trace, meta, chain_configuration);
    if (appbase::app().is_debug_mode()) {
-      if (trace.cpu_usage <= chain_configuration.max_transaction_cpu_usage) {
+      if (trace.cpu_usage > chain_configuration.max_transaction_cpu_usage) {
          wlog("cpu usage [used: ${used}, max: ${max}]", ("used", trace.cpu_usage)("max", chain_configuration.max_transaction_cpu_usage));
       }
-      if (trace.net_usage <= chain_configuration.max_transaction_net_usage) {
+      if (trace.net_usage > chain_configuration.max_transaction_net_usage) {
          wlog("net usage [used: ${used}, max: ${max}]", ("used", trace.net_usage)("max", chain_configuration.max_transaction_net_usage));
       }
    } else {

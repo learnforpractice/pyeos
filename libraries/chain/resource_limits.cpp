@@ -117,10 +117,10 @@ void resource_limits_manager::add_transaction_usage(const vector<account_name>& 
       rls.pending_net_usage += net_usage;
    });
    if (appbase::app().is_debug_mode()) {
-      if (state.pending_cpu_usage <= config.cpu_limit_parameters.max) {
+      if (state.pending_cpu_usage > config.cpu_limit_parameters.max) {
          wlog("++++++pending_cpu_usage: ${n1}, max: ${n2}", ("n1", state.pending_cpu_usage)("n2", config.cpu_limit_parameters.max));
       }
-      if (state.pending_net_usage <= config.net_limit_parameters.max) {
+      if (state.pending_net_usage > config.net_limit_parameters.max) {
          wlog("++++++pending_net_usage: ${n1}, max: ${n2}", ("n1", state.pending_net_usage)("n2", config.net_limit_parameters.max));
       }
    } else {
