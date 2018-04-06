@@ -67,7 +67,7 @@ message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
 target_link_libraries( eosio_chain PUBLIC micropython eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime 
-        wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} )
+        wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} python3-ss)
 
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"

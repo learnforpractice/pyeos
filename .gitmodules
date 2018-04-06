@@ -30,3 +30,7 @@
 [submodule "externals/magic_get"]
 	path = externals/magic_get
 	url = https://github.com/EOSIO/magic_get
+[submodule "libraries/python-single-thread"]
+	path = libraries/python-single-thread
+	url = https://github.com/learnforpractice/cpython
+	branch = python-v3.6.3-single-thread

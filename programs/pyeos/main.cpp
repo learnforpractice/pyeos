@@ -163,7 +163,12 @@ void init_smart_contract(fn_eos_main eos_main, fn_interactive_console console);
 
 extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
 
+typedef void (*fn_init_modules)(void);
+extern "C" int init_mypy(fn_init_modules init_modules);
+
 int main(int argc, char** argv) {
+   init_mypy(NULL);
+
    g_argc = argc;
    g_argv = argv;
    main_micropython(argc, argv);
