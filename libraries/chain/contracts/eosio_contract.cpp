@@ -231,6 +231,7 @@ void apply_eosio_setcode(apply_context& context) {
    db.modify( account, [&]( auto& a ) {
       /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
       #warning TODO: update setcode message to include the hash, then validate it in validate
+      a.vm_type = act.vmtype.convert_to<uint8_t>();
       a.code_version = code_id;
       // Added resize(0) here to avoid bug in boost vector container
       a.code.resize( 0 );
