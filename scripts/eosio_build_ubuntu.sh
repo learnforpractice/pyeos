@@ -115,13 +115,12 @@
 #		printf "\tBoost 1.66 found at ${HOME}/opt/boost_1_66_0\n"
 #	fi
 
-
 	printf "\n\tChecking MongoDB installation.\n"
     if [ ! -e ${MONGOD_CONF} ]; then
 		printf "\n\tInstalling MongoDB 3.6.3.\n"
 		cd ${HOME}/opt
-		curl -OL https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.6.3.tgz
-		if [ $? -ne 0 ]; then
+		STATUS=$(curl -LO -w '%{http_code}' --connect-timeout 30 https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.6.3.tgz)
+		if [ $STATUS -ne 200 ]; then
 			printf "\tUnable to download MongoDB at this time.\n"
 			printf "\tExiting now.\n\n"
 			exit;
@@ -154,9 +153,9 @@ mongodconf
     if [ ! -e /usr/local/lib/libmongocxx-static.a ]; then
 		printf "\n\tInstalling MongoDB C & C++ drivers.\n"
 		cd ${TEMP_DIR}
-		curl -LO https://github.com/mongodb/mongo-c-driver/releases/download/1.9.3/mongo-c-driver-1.9.3.tar.gz
-		if [ $? -ne 0 ]; then
-			rm -f ${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz 2>/dev/null
+		STATUS=$(curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.9.3/mongo-c-driver-1.9.3.tar.gz)
+		if [ $STATUS -ne 200 ]; then
+			rm -f ${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz
 			printf "\tUnable to download MongoDB C driver at this time.\n"
 			printf "\tExiting now.\n\n"
 			exit;
@@ -223,6 +222,11 @@ mongodconf
 		printf "\tInstalling secp256k1-zkp (Cryptonomex branch)\n"
 		cd ${TEMP_DIR}
 		git clone https://github.com/cryptonomex/secp256k1-zkp.git
+		if [ $? -ne 0 ]; then
+			printf "\tUnable to clone repo secp256k1-zkp @ https://github.com/cryptonomex/secp256k1-zkp.git.\n"
+			printf "\tExiting now.\n\n"
+			exit;
+		fi
 		cd secp256k1-zkp
 		./autogen.sh
 		if [ $? -ne 0 ]; then
@@ -251,8 +255,18 @@ mongodconf
 		mkdir llvm-compiler  2>/dev/null
 		cd llvm-compiler
 		git clone --depth 1 --single-branch --branch release_40 https://github.com/llvm-mirror/llvm.git
+		if [ $? -ne 0 ]; then
+			printf "\tUnable to clone llvm repo @ https://github.com/llvm-mirror/llvm.git.\n"
+			printf "\tExiting now.\n\n"
+			exit;
+		fi
 		cd llvm/tools
 		git clone --depth 1 --single-branch --branch release_40 https://github.com/llvm-mirror/clang.git
+		if [ $? -ne 0 ]; then
+			printf "\tUnable to clone clang repo @ https://github.com/llvm-mirror/clang.git.\n"
+			printf "\tExiting now.\n\n"
+			exit;
+		fi
 		cd ..
 		mkdir build
 		cd build
