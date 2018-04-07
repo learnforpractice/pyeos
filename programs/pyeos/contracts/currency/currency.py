@@ -57,18 +57,20 @@ class create():
 #{"to":"currency","quantity":"1000.0000 CUR","memo":""}
 def issue_():
     iss = issue()
-    iss.p()
+#    iss.p()
 
 #{"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
 def transfer_():
     t = transfer()
-    t.p()
+#    t.p()
 
 def create_():
     c = create()
-    c.p()
+#    c.p()
 
 def apply(name, type):
+    return
+#    print('++++++apply:', n2s(name))
     if type == N('transfer'):
         transfer_()
     elif type == N('issue'):

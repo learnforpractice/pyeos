@@ -9,7 +9,7 @@ class CList(object):
     def __init__(self,table_id):
         self._list = []
         self._dirty_keys = {}
-        self.table_id = N('list.'+str(table_id))
+        self.table_id = N('list'+str(table_id))
 
     def load(self):
         itr = db_end_i64(g_code, g_scope, self.table_id)
@@ -115,7 +115,7 @@ class cache_dict(object):
     def __init__(self,table_id):
         self._dict = {}
         self._dirty_keys = {}
-        self.table_id = N('cache.'+str(table_id))
+        self.table_id = N('cache'+str(table_id))
 
     def load(self):
         itr = db_end_i64(g_code, g_scope, self.table_id);

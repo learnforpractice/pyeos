@@ -10,7 +10,7 @@ msg.value (uint): number of wei sent with the message
 
 contract_owner = N('kitties')
 receiver = current_receiver()
-g_table_id = N('table.id')
+g_table_id = N('tableid')
 
 class baseint(object):
     def __init__(self, v):

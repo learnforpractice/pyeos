@@ -129,6 +129,7 @@ void interactive_console() {
 
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.init()");
+   PyRun_SimpleString("from apitest import test as at");
    PyRun_SimpleString("from cryptokitties import test as kt");
    PyRun_SimpleString("from evm import test as et");
    PyRun_SimpleString("from storage import test as st");

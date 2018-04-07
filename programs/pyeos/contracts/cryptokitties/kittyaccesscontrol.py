@@ -84,7 +84,7 @@ class KittyAccessControl:
         pass
 
     def _loadAddress(self, name):
-        value = load(name)
+        value = None #load(name)
         if value:
             return address(value)
         return address(0)

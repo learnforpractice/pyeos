@@ -43,6 +43,9 @@
 
 #include <appbase/application.hpp>
 
+extern void timeit_start();
+extern double timeit_end();
+
 namespace eosio { namespace chain {
 
 bool chain_controller::is_start_of_round( block_num_type block_num )const  {
@@ -958,6 +961,7 @@ void chain_controller::__apply_block(const signed_block& next_block)
    _finalize_block( next_block_trace, signing_producer );
 } FC_CAPTURE_AND_RETHROW( (next_block.block_num()) )  }
 
+
 flat_set<public_key_type> chain_controller::get_required_keys(const transaction& trx,
                                                               const flat_set<public_key_type>& candidate_keys)const
 {
@@ -965,7 +969,7 @@ flat_set<public_key_type> chain_controller::get_required_keys(const transaction&
                                      noop_permission_visitor(),
                                      get_global_properties().configuration.max_authority_depth,
                                      candidate_keys);
-
+//   timeit_start();
    for (const auto& act : trx.actions ) {
       for (const auto& declared_auth : act.authorization) {
          if (!checker.satisfied(declared_auth)) {
@@ -975,7 +979,8 @@ flat_set<public_key_type> chain_controller::get_required_keys(const transaction&
          }
       }
    }
-
+//   double duration = timeit_end();
+//   wlog("++++++++++++get_required_keys, duration :${n}", ("n", duration));
    return checker.used_keys();
 }
 

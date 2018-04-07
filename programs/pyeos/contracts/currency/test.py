@@ -165,7 +165,18 @@ def test3(count, d=0):
                 r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.mpy','../../contracts/currency/currency.abi', 1)
             elif d == 3:
                 wast = '../../build/contracts/currency/currency.wast'
-                r = eosapi.set_contract(currency, wast, '../../build/contracts/currency/currency.abi',0)
+                key_words = b"hello,world\\00"
+                wast = '../../build/contracts/currency/currency.wast'
+                with open(wast, 'rb') as f:
+                    data = f.read()
+                    #data.find(key_words)
+                    replace_str = b"%s\\00"%(currency.encode('utf8'),)
+                    replace_str.zfill(len(key_words))
+                    #replace key works with custom words to break the effect of code cache mechanism
+                    data = data.replace(key_words, replace_str)
+                    with open('currency2.wast', 'wb') as f:
+                        f.write(data)
+                r = eosapi.set_contract(currency, 'currency2.wast', '../../build/contracts/currency/currency.abi',0)
             else:
                 assert 0
 

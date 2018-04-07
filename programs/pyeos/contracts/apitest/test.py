@@ -17,10 +17,11 @@ def init():
     with producer:
         r = eosapi.set_contract('test','../../programs/pyeos/contracts/apitest/apitest.py','../../programs/pyeos/contracts/apitest/test.abi', 1)
         assert r
+    eosapi.produce_block()
 
-def db_test():
-    init()
+def test():
     with producer:
         r = eosapi.push_message('test','dbtest','',{'test':'active'},rawargs=True)
         assert r
+    eosapi.produce_block()
 
