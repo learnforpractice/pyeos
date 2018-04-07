@@ -11,6 +11,14 @@ def deploy(mod_name, src_code):
     else:
         db_update_i64(itr, code, src_code)
 
+    if mod_name.endswith('.mpy'):
+        #try to remove py source to prevent micropython loading the wrong source
+        mod_name = mod_name[:-3] + 'py'
+        id = hash64(mod_name)
+        itr = db_find_i64(code, code, code, id)
+        if itr >= 0:
+            db_remove_i64(itr)
+
 def apply(name, action):
     if action == N('deploy'):
         require_auth(code)
@@ -24,12 +32,6 @@ def apply(name, action):
 #        print('++++++++++++call')
         from kittycore import KittyCore
         core = KittyCore()
-    elif action == N('del'):
-        mod_name = read_action()
-        id = hash64(mod_name)
-        itr = db_find_i64(code, code, code, id)
-        if itr >= 0:
-            db_remove_i64(itr)
     else:
         pass
     
