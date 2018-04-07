@@ -1,5 +1,5 @@
 from eoslib import *
-import ustruct
+import ustruct as struct
 
 '''
 int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
@@ -129,17 +129,70 @@ def db_test_idx64():
 
     for i in range(len(records)):
         id = records[i][0]
-        secondary = ustruct.pack('Q', records[i][1])
-        db_idx64_store(receiver, table, receiver, id, secondary);
+        secondary = struct.pack('Q', records[i][1])
+        ret = db_idx64_store(receiver, table, receiver, id, secondary)
+        print('idx64_store:', ret)
 
+    #find_primary
     sec = 0;
-    itr, sec = db_idx64_find_primary(receiver, receiver, table, 999);
-    eosio_assert(itr < 0 and sec == 0, "idx64_general - db_idx64_find_primary");
+    itr, sec = db_idx64_find_primary(receiver, receiver, table, 999)
+    sec, = struct.unpack('Q', sec)
+    print(itr, sec)
+    eosio_assert(itr < 0 and sec == 0, "idx64_general - db_idx64_find_primary")
 
+    itr, sec = db_idx64_find_primary(receiver, receiver, table, 110)
+    sec, = struct.unpack('Q', sec)
+    eosio_assert(itr >= 0 and sec == N('joe'), "idx64_general - db_idx64_find_primary")
+
+    itr_next, prim_next = db_idx64_next(itr)
+    eosio_assert(itr_next < 0 and prim_next == 0, "idx64_general - db_idx64_find_primary")
+
+    itr, sec = db_idx64_find_primary(receiver, receiver, table, 110)
+    
+    secondary = struct.pack('Q', N('joe'))
+    itr, primary = db_idx64_find_secondary(receiver, receiver, table, secondary)
+    print(itr, primary)
+
+def db_test_idx256():
+    table = N('myindextable')
+    receiver = code
+    records = [[265, N('alice')],
+               [781, N('bob')],
+               [234, N('charlie')],
+               [650, N('allyson')],
+               [540, N('bob')],
+               [976, N('emily')],
+               [110, N('joe')]
+               ];
+    if 0:
+        for i in range(len(records)):
+            id = records[i][0]
+            secondary = struct.pack('QQQQ', records[i][1], 1, 1, 1)
+            ret = db_idx256_store(receiver, table, receiver, id, secondary)
+            print('idx256_store:', ret)
+
+    #find_primary
+    sec = 0;
+    itr, sec = db_idx256_find_primary(receiver, receiver, table, 999)
+    print('db_idx256_find_primary', itr, sec)
+    eosio_assert(itr < 0 , "idx256_general - db_idx256_find_primary")
+
+    itr, sec = db_idx256_find_primary(receiver, receiver, table, 110)
+    print('db_idx256_find_primary', itr, sec)
+    eosio_assert(itr >= 0, "idx256_general - db_idx256_find_primary")
+
+    itr_next, prim_next = db_idx256_next(itr)
+    eosio_assert(itr_next < 0 and prim_next == 0, "idx256_general - db_idx256_find_primary")
+
+    itr, sec = db_idx256_find_primary(receiver, receiver, table, 110)
+    
+    secondary = struct.pack('QQQQ', N('joe'), 1, 1, 1)
+    itr, primary = db_idx256_find_secondary(receiver, receiver, table, secondary)
+    print('db_idx256_find_secondary', itr, primary)
 
 def apply(name, type):
     if type == N('dbtest'):
 #        db_test()
-        db_test_idx64()
+        db_test_idx256()
 
     

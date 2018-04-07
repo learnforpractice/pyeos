@@ -142,7 +142,11 @@ int db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 #define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(IDX, TYPE)\
       int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* secondary , size_t len) {\
          FC_ASSERT(len == sizeof(TYPE), "bad length"); \
-         return ctx().IDX.store( scope, table, payer, id, *((TYPE*)secondary) );\
+         try { \
+            return ctx().IDX.store( scope, table, payer, id, *((TYPE*)secondary) );\
+         } catch (...) { \
+            return -1; \
+         } \
       }\
       void db_##IDX##_update( int iterator, uint64_t payer, const char* secondary , size_t len ) {\
          FC_ASSERT(len == sizeof(TYPE), "bad length"); \
