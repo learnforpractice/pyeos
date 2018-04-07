@@ -335,7 +335,7 @@ def get_code(name):
 
     vm_type = 0
     if 0 == get_code_(name, wast, abi, code_hash, vm_type):
-        return [wast, abi, code_hash, vm_type]
+        return [<bytes>wast, <bytes>abi, code_hash, vm_type]
     return []
 
 def get_table(string& scope, string& code, string& table):

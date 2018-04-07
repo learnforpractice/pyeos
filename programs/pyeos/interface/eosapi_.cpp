@@ -624,8 +624,8 @@ PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, v
       } else {
          eosio::chain_apis::read_only::abi_json_to_bin_params params;
          for (int i=0;i<functions.size();i++) {
-               string action = functions[i];
-               string arg = args[i];
+               string& action = functions[i];
+               string& arg = args[i];
                if (!rawargs) {
                params = {contracts[i], action, fc::json::from_string(arg)};
             } else {
