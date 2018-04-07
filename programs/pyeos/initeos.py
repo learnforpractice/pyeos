@@ -31,10 +31,13 @@ def init():
 
     src_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.join(src_dir, '/contracts/cryptokitties'))
-
+    contracts_path = os.path.join(src_dir, '../../build', 'contracts') 
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         if not eosapi.get_account(account).permissions:
-                r = eosapi.create_account('eosio', account, key1, key2)
-                assert r
-                eosapi.produce_block()
-                
+            r = eosapi.create_account('eosio', account, key1, key2)
+            assert r
+        if not eosapi.get_code(account):
+            wast = os.path.join(contracts_path, account, account+'.wast')
+            abi = os.path.join(contracts_path, account, account+'.abi')
+            r = eosapi.set_contract(account, wast, abi,0)
+        eosapi.produce_block()
