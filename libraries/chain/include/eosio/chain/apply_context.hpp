@@ -594,6 +594,7 @@ class apply_context {
 
       void exec_one();
 
+      const name& get_receiver();
       using table_id_object = contracts::table_id_object;
       const table_id_object* find_table( name code, name scope, name table );
       const table_id_object& find_or_create_table( name code, name scope, name table, const account_name &payer );
