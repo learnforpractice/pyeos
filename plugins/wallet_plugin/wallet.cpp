@@ -240,11 +240,11 @@ string wallet_api::get_wallet_filename() const
    return my->get_wallet_filename();
 }
 
-bool wallet_api::import_key(string wif_key)
+bool wallet_api::import_key(string wif_key, bool save)
 {
    FC_ASSERT(!is_locked());
 
-   if( my->import_key(wif_key) )
+   if( my->import_key(wif_key) && save )
    {
       save_wallet_file();
       return true;

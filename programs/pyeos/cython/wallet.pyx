@@ -4,6 +4,7 @@ from cython.operator cimport dereference as deref, preincrement as inc
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
+from libcpp cimport bool
 
 from eostypes_ cimport * 
 
@@ -15,6 +16,8 @@ cdef extern from * :
 
 cdef extern from "wallet_.h":
     object wallet_create_(string& name);
+    object wallet_save_(string& name);
+
     object wallet_open_(string& name);
     object wallet_set_dir_(string& path_name);
     object wallet_set_timeout_(int secs);
@@ -24,13 +27,16 @@ cdef extern from "wallet_.h":
     object wallet_lock_all_();
     object wallet_lock_(string& name);
     object wallet_unlock_(string& name, string& password);
-    object wallet_import_key_(string& name, string& wif_key);
+    object wallet_import_key_(string& name, string& wif_key, bool save);
 
     object sign_transaction_(void *signed_trx)
 
 
 def create(string& name) :
     return wallet_create_(name)
+
+def save(string& name) :
+    return wallet_save_(name)
 
 def open(string& name) -> bool:
     return wallet_open_(name)
@@ -59,8 +65,8 @@ def lock(string& name) -> bool:
 def unlock(string& name, string& password) -> bool:
     return wallet_unlock_(name, password)
 
-def import_key(string& name, string& wif_key) -> bool:
-    return wallet_import_key_(name, wif_key)
+def import_key(string& name, string& wif_key, save=True) -> bool:
+    return wallet_import_key_(name, wif_key, save)
 
 def sign_transaction(signed_trx):
     cdef uint64_t ptr

@@ -49,6 +49,11 @@ using namespace eosio;
      const auto& vs = fc::json::json::from_string(body).as<fc::variants>(); \
      auto result = api_handle.call_name(vs.at(0).as<in_param0>(), vs.at(1).as<in_param1>(), vs.at(2).as<in_param2>());
 
+#define INVOKE_V_R_R_R(api_handle, call_name, in_param0, in_param1, in_param2) \
+     const auto& vs = fc::json::json::from_string(body).as<fc::variants>(); \
+     api_handle.call_name(vs.at(0).as<in_param0>(), vs.at(1).as<in_param1>(), vs.at(2).as<in_param2>()); \
+     eosio::detail::wallet_api_plugin_empty result;
+
 #define INVOKE_R_V(api_handle, call_name) \
      auto result = api_handle.call_name();
 
@@ -78,6 +83,8 @@ void wallet_api_plugin::plugin_startup() {
             INVOKE_R_R_R_R(wallet_mgr, sign_transaction, chain::signed_transaction, flat_set<public_key_type>, chain::chain_id_type), 201),
        CALL(wallet, wallet_mgr, create,
             INVOKE_R_R(wallet_mgr, create, std::string), 201),
+       CALL(wallet, wallet_mgr, save,
+            INVOKE_V_R(wallet_mgr, save_wallet, std::string), 201),
        CALL(wallet, wallet_mgr, open,
             INVOKE_V_R(wallet_mgr, open, std::string), 200),
        CALL(wallet, wallet_mgr, lock_all,
@@ -87,7 +94,7 @@ void wallet_api_plugin::plugin_startup() {
        CALL(wallet, wallet_mgr, unlock,
             INVOKE_V_R_R(wallet_mgr, unlock, std::string, std::string), 200),
        CALL(wallet, wallet_mgr, import_key,
-            INVOKE_V_R_R(wallet_mgr, import_key, std::string, std::string), 201),
+            INVOKE_V_R_R_R(wallet_mgr, import_key, std::string, std::string, bool), 201),
        CALL(wallet, wallet_mgr, list_wallets,
             INVOKE_R_V(wallet_mgr, list_wallets), 200),
        CALL(wallet, wallet_mgr, list_keys,

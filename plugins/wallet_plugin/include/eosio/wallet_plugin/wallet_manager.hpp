@@ -60,6 +60,8 @@ public:
    /// @throws fc::exception if wallet with name already exists (or filename already exists)
    std::string create(const std::string& name);
 
+   void save_wallet(const std::string& name);
+
    /// Open an existing wallet file dir/{name}.wallet.
    /// Note this does not unlock the wallet, see wallet_manager::unlock.
    /// @param name of the wallet file (minus ext .wallet) to open.
@@ -97,7 +99,7 @@ public:
    /// @param name the name of the wallet to import into.
    /// @param wif_key the WIF Private Key to import, e.g. 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
    /// @throws fc::exception if wallet not found or locked.
-   void import_key(const std::string& name, const std::string& wif_key);
+   void import_key(const std::string& name, const std::string& wif_key, bool save=true);
 
 private:
    /// Verify timeout has not occurred and reset timeout if not.

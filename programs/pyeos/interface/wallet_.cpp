@@ -198,9 +198,21 @@ PyObject* wallet_unlock_(string& name, string& password) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_import_key_(string& name, string& wif_key) {
+PyObject* wallet_import_key_(string& name, string& wif_key, bool save) {
    try {
-      wm().import_key(name, wif_key);
+      wm().import_key(name, wif_key, save);
+   } catch (fc::exception& ex) {
+      elog(ex.to_detail_string());
+      return py_new_bool(false);
+   } catch (...) {
+      return py_new_bool(false);
+   }
+   return py_new_bool(true);
+}
+
+PyObject* wallet_save_(string& name) {
+   try {
+      wm().save_wallet(name);
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
       return py_new_bool(false);

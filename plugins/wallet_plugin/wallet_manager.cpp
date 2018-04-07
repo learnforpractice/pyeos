@@ -155,7 +155,7 @@ void wallet_manager::unlock(const std::string& name, const std::string& password
    w->unlock(password);
 }
 
-void wallet_manager::import_key(const std::string& name, const std::string& wif_key) {
+void wallet_manager::import_key(const std::string& name, const std::string& wif_key, bool save) {
    check_timeout();
    if (wallets.count(name) == 0) {
       EOS_THROW(chain::wallet_nonexistent_exception, "Wallet not found: ${w}", ("w", name));
@@ -164,7 +164,16 @@ void wallet_manager::import_key(const std::string& name, const std::string& wif_
    if (w->is_locked()) {
       EOS_THROW(chain::wallet_locked_exception, "Wallet is locked: ${w}", ("w", name));
    }
-   w->import_key(wif_key);
+   w->import_key(wif_key, save);
+}
+
+void wallet_manager::save_wallet(const std::string& name) {
+   check_timeout();
+   auto& w = wallets.at(name);
+   if (w->is_locked()) {
+      EOS_THROW(chain::wallet_locked_exception, "Wallet is locked: ${w}", ("w", name));
+   }
+   w->save_wallet_file();
 }
 
 chain::signed_transaction

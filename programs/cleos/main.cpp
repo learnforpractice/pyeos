@@ -960,6 +960,16 @@ int main( int argc, char** argv ) {
       std::cout << localized("Opened: ${wallet_name}", ("wallet_name", wallet_name)) << std::endl;
    });
 
+   //
+   auto saveWallet = wallet->add_subcommand("save", localized("Save keys to wallet locally"), false);
+   saveWallet->add_option("-n,--name", wallet_name, localized("The name of the new wallet"), true);
+   saveWallet->set_callback([&wallet_name] {
+      const auto& v = call(wallet_host, wallet_port, wallet_save, wallet_name);
+      std::cout << localized("Saving wallet: ${wallet_name}", ("wallet_name", wallet_name)) << std::endl;
+      std::cout << fc::json::to_pretty_string(v) << std::endl;
+   });
+
+
    // lock wallet
    auto lockWallet = wallet->add_subcommand("lock", localized("Lock wallet"), false);
    lockWallet->add_option("-n,--name", wallet_name, localized("The name of the wallet to lock"));
@@ -1000,10 +1010,13 @@ int main( int argc, char** argv ) {
 
    // import keys into wallet
    string wallet_key_str;
+   bool dontsave = false;
    auto importWallet = wallet->add_subcommand("import", localized("Import private key into wallet"), false);
    importWallet->add_option("-n,--name", wallet_name, localized("The name of the wallet to import key into"));
+   importWallet->add_flag( "--dontsave", dontsave, localized("Don't save key after the import. DO NOT FORGET to call save after you specify this flag"));
    importWallet->add_option("key", wallet_key_str, localized("Private key in WIF format to import"))->required();
-   importWallet->set_callback([&wallet_name, &wallet_key_str] {
+
+   importWallet->set_callback([&wallet_name, &wallet_key_str, &dontsave] {
       private_key_type wallet_key;
       try {
          wallet_key = private_key_type( wallet_key_str );
@@ -1012,7 +1025,7 @@ int main( int argc, char** argv ) {
       }
       public_key_type pubkey = wallet_key.get_public_key();
 
-      fc::variants vs = {fc::variant(wallet_name), fc::variant(wallet_key)};
+      fc::variants vs = {fc::variant(wallet_name), fc::variant(wallet_key), fc::variant(!dontsave)};
       const auto& v = call(wallet_host, wallet_port, wallet_import_key, vs);
       std::cout << localized("imported private key for: ${pubkey}", ("pubkey", std::string(pubkey))) << std::endl;
       //std::cout << fc::json::to_pretty_string(v) << std::endl;

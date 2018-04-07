@@ -149,7 +149,7 @@ class wallet_api
        *
        * @param wif_key the WIF Private Key to import
        */
-      bool import_key( string wif_key );
+      bool import_key( string wif_key ,bool save=true);
 
       std::shared_ptr<detail::wallet_api_impl> my;
       void encrypt_keys();

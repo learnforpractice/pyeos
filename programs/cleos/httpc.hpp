@@ -38,6 +38,7 @@ namespace eosio { namespace client { namespace http {
    const string wallet_func_base = "/v1/wallet";
    const string wallet_create = wallet_func_base + "/create";
    const string wallet_open = wallet_func_base + "/open";
+   const string wallet_save = wallet_func_base + "/save";
    const string wallet_list = wallet_func_base + "/list_wallets";
    const string wallet_list_keys = wallet_func_base + "/list_keys";
    const string wallet_public_keys = wallet_func_base + "/get_public_keys";
