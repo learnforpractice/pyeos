@@ -21,7 +21,7 @@ def init():
 
 def test():
     with producer:
-        r = eosapi.push_message('test','dbtest','',{'test':'active'},rawargs=True)
+        r = eosapi.push_message('test','dbtest','',{'test':'active','hello':'active'},rawargs=True)
         assert r
     eosapi.produce_block()
 

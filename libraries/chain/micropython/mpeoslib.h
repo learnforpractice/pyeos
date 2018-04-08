@@ -20,6 +20,36 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
+typedef __uint128_t uint128_t;
+
+struct mp_action {
+   uint64_t                   account;
+   uint64_t                   name;
+   uint64_t*                  auth;
+   size_t                     auth_len;
+   unsigned char *            data;
+   size_t                     data_len;
+};
+
+struct mp_transaction {
+   struct mp_action**      context_free_actions;
+   size_t                 free_actions_len;
+   struct mp_action**      actions;
+   size_t                 actions_len;
+
+   uint32_t               expiration;   ///< the time at which a transaction expires
+   uint16_t               region              ; ///< the computational memory region this transaction applies to.
+   uint16_t               ref_block_num       ; ///< specifies a block num in the last 2^16 blocks.
+   uint32_t               ref_block_prefix    ; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
+   uint32_t               max_net_usage_words ; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
+   uint32_t               max_kcpu_usage      ; /// upper limit on the total number of kilo CPU usage units billed for this transaction
+   uint32_t               delay_sec           ; /// number of seconds to delay this transaction for during which it may be canceled.
+};
+
+void send_inline( struct mp_action* mp_act );
+void send_context_free_inline(struct mp_action* mp_act);
+void send_deferred( uint128_t sender_id, uint64_t payer, struct mp_transaction* mp_trx );
+void cancel_deferred( uint128_t  val );
 
 uint32_t now();
 void abort_();
