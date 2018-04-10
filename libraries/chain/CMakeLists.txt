@@ -11,9 +11,9 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.pyx
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.pyx
 )
 
 
@@ -32,8 +32,8 @@ add_library( eosio_chain
              micropython_interface.cpp
              
              rpc_interface/rpc_interface.cpp
-             rpc_interface/rpc_interface.wrap.cpp
-             
+             rpc_interface/rpc_interface_.wrap.cpp
+
 #             wasm_eosio_constraints.cpp
 
              wasm_eosio_validation.cpp

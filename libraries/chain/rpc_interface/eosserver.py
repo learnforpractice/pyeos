@@ -20,6 +20,7 @@ try:
     import eoslib_
 except:
     pass
+import rpc_interface_
 
 HOST = 'localhost'
 APPLY_PORT = 9091
@@ -110,7 +111,7 @@ class DBServer(TServer.TServer, Thread):
                 continue
             print('client connected', client)
 
-            eoslib_.start_eos()
+            rpc_interface_.start_eos()
 
             itrans = self.inputTransportFactory.getTransport(client)
             otrans = self.outputTransportFactory.getTransport(client)

@@ -9,7 +9,9 @@
 #include "rpc_interface.hpp"
 
 extern "C" void PyInit_eoslib_();
-extern "C" void PyInit_rpc_interface();
+extern "C" void PyInit_rpc_interface_();
+extern "C" void PyInit_mytest();
+
 
 void eos_main();
 typedef void (*fn_init)();
@@ -30,14 +32,16 @@ extern "C" int init_mypy(fn_init _init) {
 #endif
 
    PyInit_eoslib_();
-   PyInit_rpc_interface();
+   PyInit_rpc_interface_();
    PyRun_SimpleString("import eoslib_");
 
    PyRun_SimpleString(
        "import sys;"
         "sys.path.append('../../libraries/chain/rpc_interface');"
    );
-   PyRun_SimpleString("import eosserver;eosserver.start()");
+   if (appbase::app().rpc_enabled()) {
+      PyRun_SimpleString("import eosserver;eosserver.start()");
+   }
 
    while(true) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
