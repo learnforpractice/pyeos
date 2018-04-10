@@ -810,6 +810,13 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
          fc::from_hex(_src, bin.data(), bin.size());
          handler.account = account;
          handler.code.assign(bin.begin(), bin.end());
+      }  else if (vm_type == 3) {
+         fc::read_file_contents(srcPath, _src);
+         handler.account = account;
+         handler.code.resize(0);
+         handler.code.resize(_src.length());
+         memcpy(handler.code.data(), _src.c_str(), _src.length());
+//         handler.code.assign(_src.begin(), _src.end());
       }
 
       vector<chain::action> actions;

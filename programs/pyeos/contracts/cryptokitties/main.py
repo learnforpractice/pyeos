@@ -29,9 +29,11 @@ def apply(name, action):
         print('+++++++++++++++++src_code type:', src_code[0])
         deploy(mod_name, src_code)
     elif action == N('call'):
-#        print('++++++++++++call')
+        print('++++++++++++call')
         from kittycore import KittyCore
         core = KittyCore()
+    elif action == N('sayhello'):
+        print('hello,world')
     else:
         pass
-    
+

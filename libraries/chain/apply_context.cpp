@@ -9,6 +9,9 @@
 #include <eosio/chain/scope_sequence_object.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include "rpc_interface/rpc_interface.hpp"
+
+
 extern "C" {
 #include <stdio.h>
 #include <string.h>
@@ -87,6 +90,13 @@ void apply_context::exec_one()
                bytes output;
                evm_interface::get().run_code(*this, code, args, output);
                ilog("${n}",("n", output.size()));
+            } else if (a.vm_type == 3) {
+               auto &rpc = rpc_interface::get();
+               try {
+                  rpc.apply(*this, a.code);
+               } catch (...) {
+                  throw;
+               }
             }
          }
       }

@@ -2,6 +2,21 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.h
 
 find_package(LevelDB)
 
+set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
+ 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface.pyx
+)
+
+
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
              chain_config.cpp
@@ -15,6 +30,10 @@ add_library( eosio_chain
 
              evm_interface.cpp
              micropython_interface.cpp
+             
+             rpc_interface/rpc_interface.cpp
+             rpc_interface/rpc_interface.wrap.cpp
+             
 #             wasm_eosio_constraints.cpp
 
              wasm_eosio_validation.cpp
@@ -47,6 +66,9 @@ add_library( eosio_chain
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
 
+             eoslib/eoslib.wrap.cpp
+             eoslib/eoslib_.cpp
+
              ${HEADERS}
              transaction_metadata.cpp)
 
@@ -67,12 +89,14 @@ message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
 target_link_libraries( eosio_chain PUBLIC micropython eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime 
-        wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} python3-ss)
+        wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} python3)
 
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod

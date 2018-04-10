@@ -55,8 +55,10 @@ static int g_argc = 0;
 static char** g_argv = NULL;
 
 
+extern "C" int init_mypy();
 
 void eos_main() {
+   init_mypy();
    try {
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
@@ -91,6 +93,13 @@ void eos_main() {
 }
 
 void interactive_console() {
+   while (!init_finished) {
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+   if (shutdown_finished) {
+      return;
+   }
+
    Py_Initialize();
    PyEval_InitThreads();
 
@@ -118,25 +127,19 @@ void interactive_console() {
 
    ilog("+++++++++++++interactive_console: init_finished ${n}", ("n", init_finished));
 
-   while (!init_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
 
-   if (shutdown_finished) {
-      Py_Finalize();
-      return;
-   }
 
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.init()");
    PyRun_SimpleString("from apitest import test as at");
    PyRun_SimpleString("from cryptokitties import test as kt");
-   PyRun_SimpleString("from evm import test as et");
+//   PyRun_SimpleString("from evm import test as et");
    PyRun_SimpleString("from storage import test as st");
    PyRun_SimpleString("from currency import test as ct");
    PyRun_SimpleString("from cache import test as cct");
    PyRun_SimpleString("from hello import test as ht");
    PyRun_SimpleString("from backyard import test as bt");
+   PyRun_SimpleString("from rpctest import test as rt");
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
@@ -164,17 +167,11 @@ void init_smart_contract(fn_eos_main eos_main, fn_interactive_console console);
 
 extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
 
-typedef void (*fn_init_modules)(void);
-extern "C" int init_mypy(fn_init_modules init_modules);
-
 int main(int argc, char** argv) {
-   init_mypy(NULL);
-
    g_argc = argc;
    g_argv = argv;
    main_micropython(argc, argv);
 //   init_smart_contract(eos_main, interactive_console);
-
    boost::thread t( eos_main );
    interactive_console();
    return 0;

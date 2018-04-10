@@ -11,6 +11,9 @@ cdef extern from "../interface/debug_.hpp":
     void debug_test();
     void set_debug_mode(int mode);
 
+    void run_code_(string code)
+
+
 cdef extern from "py/gc.h":
     ctypedef int size_t 
     cdef struct gc_info_t:
@@ -41,3 +44,7 @@ def evm_test(string _code, string _data):
 
 def test():
     debug_test()
+
+def run_code(string code):
+    run_code_(code)
+  

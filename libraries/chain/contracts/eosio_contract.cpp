@@ -197,6 +197,46 @@ void apply_eosio_setcode_evm(apply_context& context) {
    }
 }
 
+void apply_eosio_setcode_rpc(apply_context& context) {
+   auto& db = context.mutable_db;
+   auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
+   auto  act = context.act.data_as<setcode>();
+   context.require_authorization(act.account);
+   context.require_write_lock( config::eosio_auth_scope );
+
+   FC_ASSERT( act.vmtype == 3);
+   FC_ASSERT( act.vmversion == 0 );
+
+   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
+
+   const auto& account = db.get<account_object,by_name>(act.account);
+
+
+   int64_t code_size = (int64_t)act.code.size();
+   int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
+   int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
+
+   FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
+//   wlog( "set code: ${size}", ("size",act.code.size()));
+   db.modify( account, [&]( auto& a ) {
+      a.vm_type = act.vmtype.convert_to<uint8_t>();
+      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
+      #warning TODO: update setcode message to include the hash, then validate it in validate
+      a.code_version = code_id;
+      // Added resize(0) here to avoid bug in boost vector container
+      a.code.resize( 0 );
+      a.code.resize( code_size );
+      a.last_code_update = context.controller.head_block_time();
+      memcpy( a.code.data(), act.code.data(), code_size );
+   });
+   if (new_size != old_size) {
+      resources.add_pending_account_ram_usage(
+         act.account,
+         new_size - old_size
+      );
+   }
+}
+
 void apply_eosio_setcode(apply_context& context) {
    auto  act = context.act.data_as<setcode>();
 
@@ -205,6 +245,9 @@ void apply_eosio_setcode(apply_context& context) {
       return;
    } else if (act.vmtype == 2) {
       apply_eosio_setcode_evm(context);
+      return;
+   } else if (act.vmtype == 3) {
+      apply_eosio_setcode_rpc(context);
       return;
    }
    auto& db = context.mutable_db;
