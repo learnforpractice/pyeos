@@ -55,11 +55,13 @@ static int g_argc = 0;
 static char** g_argv = NULL;
 
 
-extern "C" int init_mypy();
+typedef void (*fn_init)();
+extern "C" int init_mypy(fn_init _init);
+
 
 void eos_main() {
-   init_mypy();
    try {
+
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
@@ -141,6 +143,8 @@ void interactive_console() {
    PyRun_SimpleString("from backyard import test as bt");
    PyRun_SimpleString("from rpctest import test as rt");
 
+//   PyRun_SimpleString("debug.run_code('import initrpc;initrpc.init()')");
+
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
    ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
@@ -166,11 +170,17 @@ typedef void (*fn_interactive_console)();
 void init_smart_contract(fn_eos_main eos_main, fn_interactive_console console);
 
 extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
-
+void init() {
+   boost::thread eos( eos_main );
+   boost::thread console( interactive_console );
+}
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
    main_micropython(argc, argv);
+   init_mypy(init);
+   return 0;
+
 //   init_smart_contract(eos_main, interactive_console);
    boost::thread t( eos_main );
    interactive_console();

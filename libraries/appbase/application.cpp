@@ -28,7 +28,7 @@ class application_impl {
 
       uint64_t                _version;
       bool _debug = false;
-
+      bool _rpc = false;
 };
 
 application::application()
@@ -88,6 +88,7 @@ void application::set_program_options()
    options_description app_cli_opts( "Application Command Line Options" );
    app_cfg_opts.add_options()
          ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
+         ("rpc", bpo::bool_switch()->notifier([this](bool e){my->_rpc = e;}), "enable remote rpc processing.")
          ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()
@@ -198,6 +199,10 @@ void application::quit() {
 
 bool application::is_debug_mode() const {
    return my->_debug;
+}
+
+bool application::rpc_enabled() const {
+   return my->_rpc;
 }
 
 void application::exec() {

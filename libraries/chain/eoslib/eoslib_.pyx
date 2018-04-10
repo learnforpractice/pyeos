@@ -4,6 +4,17 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from threading import Thread
 
+cdef extern from "../rpc_interface/rpc_interface.hpp":
+    void init_eos() nogil
+
+started = False
+def start_eos():
+    global started
+    if started:
+        return
+    init_eos()
+
+
 cdef extern from "eoslib_.hpp":
     ctypedef unsigned long long uint64_t
     ctypedef int int32_t

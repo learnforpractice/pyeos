@@ -71,6 +71,7 @@ namespace appbase {
          void                 exec();
          void                 quit();
          bool                 is_debug_mode() const;
+         bool                 rpc_enabled() const;
 
          static application&  instance();
 

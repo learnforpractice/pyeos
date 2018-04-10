@@ -5,9 +5,9 @@ find_package(LevelDB)
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
  
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib.pyx
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.pyx
 )
 
 add_custom_command(
@@ -66,7 +66,7 @@ add_library( eosio_chain
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
 
-             eoslib/eoslib.wrap.cpp
+             eoslib/eoslib_.wrap.cpp
              eoslib/eoslib_.cpp
 
              ${HEADERS}

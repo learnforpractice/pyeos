@@ -1,33 +1,48 @@
 #include <Python.h>
 #include <stdio.h>
+#include <boost/thread/thread.hpp>
 
 #include <eosio/chain/apply_context.hpp>
 #include <fc/exception/exception.hpp>
+#include <appbase/application.hpp>
 
 #include "rpc_interface.hpp"
 
-extern "C" void PyInit_utility();
-extern "C" void PyInit_eoslib();
+extern "C" void PyInit_eoslib_();
 extern "C" void PyInit_rpc_interface();
 
-extern "C" int init_mypy() {
+void eos_main();
+typedef void (*fn_init)();
+static fn_init s_init_eos = 0;
+
+void init_eos() {
+   if (s_init_eos) {
+      s_init_eos();
+   }
+}
+extern "C" int init_mypy(fn_init _init) {
    Py_InitializeEx(0);
 //   _Py_InitializeEx_Private(0, 1);
+   s_init_eos = _init;
 
 #ifdef WITH_THREAD
    PyEval_InitThreads();
 #endif
 
-   PyInit_utility();
-   PyInit_eoslib();
+   PyInit_eoslib_();
+   PyInit_rpc_interface();
+   PyRun_SimpleString("import eoslib_");
+
    PyRun_SimpleString(
        "import sys;"
         "sys.path.append('../../libraries/chain/rpc_interface');"
-         "import eosserver;"
    );
-   PyInit_rpc_interface();
-   PyRun_SimpleString("import initrpc");
-   PyRun_SimpleString("initrpc.init()");
+   PyRun_SimpleString("import eosserver;eosserver.start()");
+
+   while(true) {
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+//   PyRun_SimpleString("initrpc.init()");
 
 //   Py_Finalize();
    return 0;
@@ -53,6 +68,8 @@ rpc_interface& rpc_interface::get() {
 
 void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
 }
+
+
 
 void rpc_interface::apply(apply_context& c, const shared_vector<char>& code) {
    string _code = string(code.data(), code.size());

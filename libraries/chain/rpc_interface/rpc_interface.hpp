@@ -48,3 +48,6 @@ void set_current_context(apply_context* context);
 
 }
 } // eos::chain
+
+//defined in pyeos/main.cpp
+void init_eos();

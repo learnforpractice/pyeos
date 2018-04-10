@@ -1,6 +1,5 @@
 from multiprocessing import Process
 import os
-import eosserver
 
 
 def f(name):
@@ -11,9 +10,10 @@ p = None
 def init():
     global p
     print('+++++++++++initrpc++++++++++++++')
+    import eosserver
     eosserver.start()
-    p = Process(target=f, args=('',))
-    p.start()
+#    p = Process(target=f, args=('',))
+#    p.start()
 
 if __name__ == '__main__':
     init()

@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import imp
 import logging
+from threading import Thread, Timer, Event
 from struct import pack, unpack
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -22,8 +23,8 @@ from thrift.server import TServer
 import eoslib
 
 HOST = 'localhost'
-APPLY_PORT = 8080
-DB_PORT = 8081
+APPLY_PORT = 9091
+DB_PORT = 9092
 
 def n2s(value):
     charmap = ".12345abcdefghijklmnopqrstuvwxyz";
@@ -59,34 +60,22 @@ class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
 class RequestHandler(object):
     def __init__(self):
         self.modules = {}
-        self.client = self.set_client()
 
-    def set_client(self):
-        tsocket = TSocket.TSocket(HOST, DB_PORT)
-        transport = TTransport.TBufferedTransport(tsocket)
-        protocol = MyBinaryProtocol(transport)
-        client = Client(protocol)
-        transport.open()
-        eoslib.set_client(client)
-        
-    def apply(self, _account, _action, code: bytes ):
+    def apply(self, _account, _action, _code ):
         account = n2s(_account)
         action = n2s(_action)
-        print(account, action, len(code))
-
+        if _code == None:
+            return 0
+        print(account, action, len(_code))
 
         if account in self.modules:
-            print('++++++++apply2')
             self.modules[account][0].apply(account, action)
-            print('++++++++apply2 end')
         else:
             module_name = account
             new_module = imp.new_module(module_name)
-            exec(code,vars(new_module))
-            self.modules[account] = [new_module, code]
-            print('+++apply')
+            exec(_code,vars(new_module))
+            self.modules[account] = [new_module, _code]
             new_module.apply(_account, _action)
-            print('+++apply end')
 
 #        ret = client.db_get_i64(1)
 #        print(ret)
@@ -121,15 +110,46 @@ class TaskProcessor(TServer.TServer):
             itrans.close()
             otrans.close()
 
+class MyTimer(Timer):
+    def __init__(self):
+        super(MyTimer, self).__init__()
+
+    def run(self):
+        
+        Timer.run(self)
+
+class MyTimer(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        while True:
+            try:
+                tsocket = TSocket.TSocket(HOST, DB_PORT)
+                transport = TTransport.TBufferedTransport(tsocket)
+                protocol = MyBinaryProtocol(transport)
+                client = Client(protocol)
+                transport.open()
+                eoslib.set_client(client)
+                print('eosserver connected')
+                break
+            except Exception as e:
+                print(e, 'try again!')
+                client = None
+            time.sleep(3.0)
+
 def start():
+    t = MyTimer()
+    t.start()
+
     handler = RequestHandler()
     processor = rpc_interface.Processor(handler)
     transport = TSocket.TServerSocket(HOST, APPLY_PORT)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    
+
     rpcServer = TaskProcessor(processor,transport, tfactory, pfactory)
-    
+
     print('Listening for task:', HOST,':', APPLY_PORT)
     rpcServer.serve()
 

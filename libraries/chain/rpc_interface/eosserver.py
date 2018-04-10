@@ -17,13 +17,13 @@ from idl.rpc_interface import Result
 
 import time
 try:
-    import eoslib
+    import eoslib_
 except:
     pass
 
 HOST = 'localhost'
-APPLY_PORT = 8080
-DB_PORT = 8081
+APPLY_PORT = 9091
+DB_PORT = 9092
 
 
 '''
@@ -73,24 +73,45 @@ class RequestHandler(object):
     def db_end_i64(self, code: int, scope: int, table: int ):
         return eoslib.end_i64(code, scope, table)
 
+client = None
+def open_client():
+    global client
+    while True:
+        try:
+            tsocket = TSocket.TSocket(HOST, APPLY_PORT)
+            transport = TTransport.TBufferedTransport(tsocket)
+            protocol = MyBinaryProtocol(transport)
+            client = Client(protocol)
+            transport.open()
+            print('open client return')
+            break
+        except Exception as e:
+            print('+++++++exception occur:',e)
+            time.sleep(3.0)
+
+def send_apply():
+    client.apply(0, 0, None)
+
 class DBServer(TServer.TServer, Thread):
-    """Simple single-threaded server that just pumps around one transport."""
 
     def __init__(self, *args):
-        Thread.__init__(self)
+        Thread.__init__(self, daemon=True)
         TServer.TServer.__init__(self, *args)
 
     def run(self):
         self.serve()
 
     def serve(self):
-        print('Starting the rpc server at', HOST,':', DB_PORT)
+        print('//Starting the rpc server at', HOST,':', DB_PORT)
         self.serverTransport.listen()
         while True:
             client = self.serverTransport.accept()
             if not client:
                 continue
             print('client connected', client)
+
+            eoslib_.start_eos()
+
             itrans = self.inputTransportFactory.getTransport(client)
             otrans = self.outputTransportFactory.getTransport(client)
             iprot = self.inputProtocolFactory.getProtocol(itrans)
@@ -105,7 +126,8 @@ class DBServer(TServer.TServer, Thread):
             print('clinet disconnected')
             itrans.close()
             otrans.close()
-
+        print('server out!')
+        
 class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
     def writeI64(self, i64):
         buff = pack("!Q", i64)
@@ -116,25 +138,21 @@ class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
         val, = unpack('!Q', buff)
         return val
 
+rpcServer = None
 def start():
+    global rpcServer
+    open_client()
+    print('start server')
     handler = RequestHandler()
     
     processor = eoslib_service.Processor(handler)
     transport = TSocket.TServerSocket(HOST, DB_PORT)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    
-    rpcServer = DBServer(processor,transport, tfactory, pfactory)
-    rpcServer.start()
 
-client = None
-def open_client():
-    global client
-    tsocket = TSocket.TSocket(HOST, APPLY_PORT)
-    transport = TTransport.TBufferedTransport(tsocket)
-    protocol = MyBinaryProtocol(transport)
-    client = Client(protocol)
-    transport.open()
+    rpcServer = DBServer(processor,transport, tfactory, pfactory)
+#    rpcServer.start()
+    rpcServer.serve()
 
 def apply(account, action, code):
     global client
@@ -150,9 +168,10 @@ def apply(account, action, code):
         open_client()
         ret = client.apply(account, action, code)
 
-    print('done!', ret)
+#    print('done!', ret)
     return ret
 
 if __name__ == '__main__':
-    apply(1234, 234, b'hello,mike')
+    start()
+    rpcServer.join()
 
