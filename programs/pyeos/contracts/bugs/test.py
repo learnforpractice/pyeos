@@ -21,7 +21,14 @@ def init():
 
 def t():
     with producer:
-        r = eosapi.push_message('bugs','test','',{'bugs':'active'},rawargs=True)
+        r = eosapi.push_message('bugs','t1','',{'bugs':'active'},rawargs=True)
+        assert r
+    eosapi.produce_block()
+
+#test deeply recursive generators
+def t2():
+    with producer:
+        r = eosapi.push_message('bugs','t2','',{'bugs':'active'},rawargs=True)
         assert r
     eosapi.produce_block()
 
