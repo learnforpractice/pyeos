@@ -18,7 +18,7 @@ def N(name):
     _len = len(name);
     value = 0;
     
-    for i in range(12):
+    for i in range(13):
         c = 0
         if i < _len and i <= 12:
             c = char_to_symbol(name[i])
@@ -30,7 +30,7 @@ def N(name):
             c &= 0x0f;
             value |= c;
     
-    return value;
+    return value
 
 def set_client(_client):
     global client

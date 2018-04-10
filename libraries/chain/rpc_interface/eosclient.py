@@ -31,7 +31,7 @@ def n2s(value):
     name = []
     
     tmp = value;
-    for i in range(12):
+    for i in range(13):
         if i == 0:
             c = charmap[tmp & 0x0f]
         else:
@@ -44,7 +44,7 @@ def n2s(value):
         else:
             tmp >>= 5
     name.reverse()
-    return ''.join(name)
+    return ''.join(name).rstrip('.')
 
 class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
     def writeI64(self, i64):
@@ -59,30 +59,38 @@ class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
 class RequestHandler(object):
     def __init__(self):
         self.modules = {}
-    def apply(self, _account, _action, code: bytes ):
-        account = n2s(_account)
-        action = n2s(_action)
-        print(account, action, code)
+        self.client = self.set_client()
 
+    def set_client(self):
         tsocket = TSocket.TSocket(HOST, DB_PORT)
         transport = TTransport.TBufferedTransport(tsocket)
         protocol = MyBinaryProtocol(transport)
         client = Client(protocol)
         transport.open()
         eoslib.set_client(client)
+        
+    def apply(self, _account, _action, code: bytes ):
+        account = n2s(_account)
+        action = n2s(_action)
+        print(account, action, len(code))
+
 
         if account in self.modules:
+            print('++++++++apply2')
             self.modules[account][0].apply(account, action)
+            print('++++++++apply2 end')
         else:
             module_name = account
             new_module = imp.new_module(module_name)
             exec(code,vars(new_module))
             self.modules[account] = [new_module, code]
-            new_module.apply(account, action)
+            print('+++apply')
+            new_module.apply(_account, _action)
+            print('+++apply end')
 
-        ret = client.db_get_i64(1)
-        print(ret)
-        return 1;
+#        ret = client.db_get_i64(1)
+#        print(ret)
+        return 1122;
 
 class TaskProcessor(TServer.TServer):
     """Simple single-threaded server that just pumps around one transport."""

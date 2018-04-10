@@ -127,15 +127,29 @@ def start():
     rpcServer = DBServer(processor,transport, tfactory, pfactory)
     rpcServer.start()
 
-def apply(account, action, code):
+client = None
+def open_client():
+    global client
     tsocket = TSocket.TSocket(HOST, APPLY_PORT)
     transport = TTransport.TBufferedTransport(tsocket)
     protocol = MyBinaryProtocol(transport)
     client = Client(protocol)
     transport.open()
 
+def apply(account, action, code):
+    global client
+    if not client:
+        open_client()
+    ret = None
 #    account = int.to_bytes(account, 8, 'little')
-    ret = client.apply(account, action, code)
+    try:
+        ret = client.apply(account, action, code)
+    except Exception as e:
+        print(e)
+        #try again
+        open_client()
+        ret = client.apply(account, action, code)
+
     print('done!', ret)
     return ret
 
