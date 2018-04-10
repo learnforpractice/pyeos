@@ -88,7 +88,7 @@ void application::set_program_options()
    options_description app_cli_opts( "Application Command Line Options" );
    app_cfg_opts.add_options()
          ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
-         ("rpc", bpo::bool_switch()->notifier([this](bool e){my->_rpc = e;}), "enable remote rpc processing.")
+         ("rpc-interface", bpo::bool_switch()->notifier([this](bool e){my->_rpc = e;}), "enable remote rpc processing.")
          ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()

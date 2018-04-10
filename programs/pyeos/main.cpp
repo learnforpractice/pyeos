@@ -26,6 +26,11 @@ using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
+static bool rpc_enabled = false;
+
+bool is_init_finished() {
+   return init_finished;
+}
 
 
 void quit_app_() {
@@ -56,11 +61,11 @@ static char** g_argv = NULL;
 
 
 typedef void (*fn_init)();
-extern "C" int init_mypy(fn_init _init);
-
+extern "C" int init_mypy(fn_init _init, bool rpc_enabled);
 
 void eos_main() {
    try {
+      main_micropython(g_argc, g_argv);
 
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
@@ -177,8 +182,14 @@ void init() {
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
-   main_micropython(argc, argv);
-   init_mypy(init);
+   for (int i=0; i<argc; i++) {
+      if (0 == strcmp(argv[i], "--rpc-interface")) {
+         wlog("rpc enabled");
+         rpc_enabled = true;
+      }
+   }
+
+   init_mypy(init, rpc_enabled);
    return 0;
 
 //   init_smart_contract(eos_main, interactive_console);

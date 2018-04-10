@@ -22,7 +22,7 @@ void init_eos() {
       s_init_eos();
    }
 }
-extern "C" int init_mypy(fn_init _init) {
+extern "C" int init_mypy(fn_init _init, bool rpc_enabled) {
    Py_InitializeEx(0);
 //   _Py_InitializeEx_Private(0, 1);
    s_init_eos = _init;
@@ -39,14 +39,19 @@ extern "C" int init_mypy(fn_init _init) {
        "import sys;"
         "sys.path.append('../../libraries/chain/rpc_interface');"
    );
-   if (appbase::app().rpc_enabled()) {
+   if (rpc_enabled) {
+      wlog("run eosserver");
       PyRun_SimpleString("import eosserver;eosserver.start()");
+   } else {
+      wlog("init_eos");
+      init_eos();
    }
 
    while(true) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000000));
    }
-//   PyRun_SimpleString("initrpc.init()");
+
+   //   PyRun_SimpleString("initrpc.init()");
 
 //   Py_Finalize();
    return 0;
