@@ -65,7 +65,6 @@ extern "C" int init_mypy(fn_init _init, bool rpc_enabled);
 
 void eos_main() {
    try {
-      main_micropython(g_argc, g_argv);
 
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
@@ -100,6 +99,9 @@ void eos_main() {
 }
 
 void interactive_console() {
+
+   main_micropython(0, NULL);
+
    while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
@@ -108,8 +110,10 @@ void interactive_console() {
    }
 
    Py_Initialize();
-   PyEval_InitThreads();
 
+#ifdef WITH_THREAD
+   PyEval_InitThreads();
+#endif
    PyRun_SimpleString("import readline");
    PyInit_wallet();
    PyInit_eosapi();
@@ -154,13 +158,11 @@ void interactive_console() {
 
    ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
 
-//   PyThreadState*  state = tiny_PyEval_SaveThread();
    if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");
       PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
    }
-//   tiny_PyEval_RestoreThread(state);
 
    while (!shutdown_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
@@ -172,16 +174,18 @@ void interactive_console() {
 typedef void (*fn_eos_main)();
 typedef void (*fn_interactive_console)();
 
-void init_smart_contract(fn_eos_main eos_main, fn_interactive_console console);
-
 extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
 void init() {
    boost::thread eos( eos_main );
    boost::thread console( interactive_console );
+//   interactive_console();
 }
+
+
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
+
    for (int i=0; i<argc; i++) {
       if (0 == strcmp(argv[i], "--rpc-interface")) {
          wlog("rpc enabled");
