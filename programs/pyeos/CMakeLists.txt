@@ -102,7 +102,7 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
-    python3 eosio_chain)
+    python3-ss eosio_chain)
 endif( APPLE )
 
 
