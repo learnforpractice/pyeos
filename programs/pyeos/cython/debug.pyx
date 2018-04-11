@@ -8,10 +8,13 @@ cdef extern from "<eosio/chain/evm_interface.hpp>":
     void evm_test_(string _code, string _data);
 
 cdef extern from "../interface/debug_.hpp":
+    cdef struct mpapi:
+        void *(*execute_from_str)(const char *str)
+
     void debug_test();
     void set_debug_mode(int mode);
-
     void run_code_(string code)
+    mpapi& get_mpapi();
 
 
 cdef extern from "py/gc.h":
@@ -29,15 +32,7 @@ cdef extern from "py/gc.h":
     void gc_collect()
     
 def eval(const char* code):
-    set_debug_mode(1)
-    execute_from_str(code)
-    set_debug_mode(0)
-
-def collect():
-    gc_collect()
-    
-def dump_info():
-    gc_dump_info()
+    get_mpapi().execute_from_str(code)
 
 def evm_test(string _code, string _data):
     evm_test_(_code, _data)

@@ -12,7 +12,7 @@ extern "C" {
 #include "py/compile.h"
 }
 
-
+#include <thread>
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
 
@@ -52,7 +52,8 @@ private:
       void* obj;
       fc::sha256 hash;
    };
-   std::map<uint64_t, py_module*> module_cache;
+
+   std::map<std::thread::id, std::map<uint64_t, py_module*>> module_cache;
    micropython_interface();
 };
 

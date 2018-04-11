@@ -98,9 +98,11 @@ void eos_main() {
    shutdown_finished = true;
 }
 
+extern "C" void init_api();
+
 void interactive_console() {
 
-   main_micropython(0, NULL);
+   init_api();
 
    while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
@@ -190,6 +192,7 @@ int main(int argc, char** argv) {
       if (0 == strcmp(argv[i], "--rpc-interface")) {
          wlog("rpc enabled");
          rpc_enabled = true;
+         break;
       }
    }
 

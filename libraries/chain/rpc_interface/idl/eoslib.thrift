@@ -1,9 +1,6 @@
 //thrift -out .. --gen py eoslib.thrift
 namespace py idl
 
-struct Data {
-    1: string text
-}
 struct Result {
   1: i32 status = 0,
   2: binary value,

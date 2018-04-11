@@ -19,6 +19,7 @@
 #include "py/objstringio.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/parse.h"
 
 typedef __uint128_t uint128_t;
 
@@ -71,7 +72,7 @@ mp_obj_t ripemd160(const char* data, size_t datalen);
 
 
 uint64_t string_to_uint64_(const char* str);
-mp_obj_t uint64_to_string_(uint64_t n);
+//mp_obj_t uint64_to_string_(uint64_t n);
 
 #define Name uint64_t
 
@@ -106,7 +107,7 @@ uint64_t publication_time();
 uint64_t current_sender();
 
 uint64_t get_action_account();
-uint64_t string_to_symbol( uint8_t precision, const char* str );
+//uint64_t string_to_symbol( uint8_t precision, const char* str );
 
 
 
@@ -153,6 +154,8 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx_double, uint64_t)
 
 
 struct eosapi {
+   uint64_t (*string_to_symbol)( uint8_t precision, const char* str );
+   void (*eosio_delay)(int ms);
    uint32_t (*now)();
    void (*abort_)();
    void (*eosio_assert)(int condition, const char* str);
@@ -215,10 +218,94 @@ struct eosapi {
    int (*db_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
    int (*db_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
    int (*db_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
+
+   int (*db_idx64_store)( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* secondary , size_t len);
+   void (*db_idx64_update)( int iterator, uint64_t payer, const char* secondary , size_t len );
+   void (*db_idx64_remove)( int iterator );
+   int (*db_idx64_find_secondary)( uint64_t code, uint64_t scope, uint64_t table, const char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx64_find_primary)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t primary );
+   int (*db_idx64_lowerbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx64_upperbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx64_end)( uint64_t code, uint64_t scope, uint64_t table );
+   int (*db_idx64_next)( int iterator, uint64_t* primary  );
+   int (*db_idx64_previous)( int iterator, uint64_t* primary );
+
+   int (*db_idx128_store)( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* secondary , size_t len);
+   void (*db_idx128_update)( int iterator, uint64_t payer, const char* secondary , size_t len );
+   void (*db_idx128_remove)( int iterator );
+   int (*db_idx128_find_secondary)( uint64_t code, uint64_t scope, uint64_t table, const char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx128_find_primary)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t primary );
+   int (*db_idx128_lowerbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx128_upperbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx128_end)( uint64_t code, uint64_t scope, uint64_t table );
+   int (*db_idx128_next)( int iterator, uint64_t* primary  );
+   int (*db_idx128_previous)( int iterator, uint64_t* primary );
+
+   int (*db_idx256_store)( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* secondary , size_t len);
+   void (*db_idx256_update)( int iterator, uint64_t payer, const char* secondary , size_t len );
+   void (*db_idx256_remove)( int iterator );
+   int (*db_idx256_find_secondary)( uint64_t code, uint64_t scope, uint64_t table, const char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx256_find_primary)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t primary );
+   int (*db_idx256_lowerbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx256_upperbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx256_end)( uint64_t code, uint64_t scope, uint64_t table );
+   int (*db_idx256_next)( int iterator, uint64_t* primary  );
+   int (*db_idx256_previous)( int iterator, uint64_t* primary );
+
+   int (*db_idx_double_store)( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* secondary , size_t len);
+   void (*db_idx_double_update)( int iterator, uint64_t payer, const char* secondary , size_t len );
+   void (*db_idx_double_remove)( int iterator );
+   int (*db_idx_double_find_secondary)( uint64_t code, uint64_t scope, uint64_t table, const char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx_double_find_primary)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t primary );
+   int (*db_idx_double_lowerbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx_double_upperbound)( uint64_t code, uint64_t scope, uint64_t table, char* secondary , size_t len, uint64_t* primary );
+   int (*db_idx_double_end)( uint64_t code, uint64_t scope, uint64_t table );
+   int (*db_idx_double_next)( int iterator, uint64_t* primary  );
+   int (*db_idx_double_previous)( int iterator, uint64_t* primary );
+
+   void (*send_inline)( struct mp_action* mp_act );
+   void (*send_context_free_inline)(struct mp_action* mp_act);
+   void (*send_deferred)( uint128_t sender_id, uint64_t payer, struct mp_transaction* mp_trx );
+   void (*cancel_deferred)( uint128_t  val );
+
+   int (*split_path)(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
+
+   uint64_t (*get_action_account)();
 };
+
+
+
+struct mpapi {
+   mp_obj_t (*mp_obj_new_str)(const char* data, size_t len);
+   mp_obj_t (*micropy_load_from_py)(const char *mod_name, const char *data, size_t len);
+   mp_obj_t (*micropy_load_from_mpy)(const char *mod_name, const char *data, size_t len);
+   mp_obj_t (*micropy_call_0)(mp_obj_t module_obj, const char *func);
+   mp_obj_t (*micropy_call_2)(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
+   void* (*execute_from_str)(const char *str);
+
+   //defined in vm.c
+   void (*execution_start)();
+   void (*execution_end)();
+
+   //main_eos.c
+   int (*main_micropython)(int argc, char **argv);
+   mp_obj_t (*mp_call_function_0)(mp_obj_t fun);
+   mp_obj_t (*mp_compile)(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
+   int (*compile_and_save_to_buffer)(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+
+};
+
+
+typedef void (*fn_mp_register_eosapi)(struct eosapi * _api);
+typedef void (*fn_mp_obtain_mpapi)(struct mpapi * _api);
+typedef int (*fn_main_micropython)(int argc, char **argv);
 
 #ifdef __cplusplus
    }
+#endif
+
+#ifdef __cplusplus
+   struct mpapi& get_mpapi();
 #endif
 
 

@@ -65,7 +65,7 @@ cdef extern from "eosapi_.hpp":
 
     object push_messages_ex_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
 
-    int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+    int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -471,7 +471,7 @@ def mp_compile(py_file):
         src_data = f.read()
     src_data = src_data.encode('utf8')
     file_name = os.path.basename(py_file)
-    mpy_size = compile_and_save_to_buffer(file_name, src_data, len(src_data), buffer.data(), buffer.size())
+    mpy_size = compile_and_save_to_buffer_(file_name, src_data, len(src_data), buffer.data(), buffer.size())
     s = string(buffer.data(), mpy_size)
     return <bytes>s
 

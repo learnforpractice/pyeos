@@ -4,6 +4,7 @@
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
+#include "micropython/mpeoslib.h"
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -934,6 +935,9 @@ int get_table_(string& scope, string& code, string& table, string& result) {
    return -1;
 }
 
+int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
+   return get_mpapi().compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
+}
 
 
 

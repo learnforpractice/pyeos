@@ -96,7 +96,7 @@ target_link_libraries( pyeos appbase account_history_api_plugin account_history_
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
-    python3-ss eosio_chain)
+    python3-ss eosio_chain intl)
 else( APPLE )
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
@@ -110,6 +110,7 @@ target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-single-thread/Include
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-single-thread
+                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/interface"

@@ -126,6 +126,6 @@ PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, v
 PyObject* push_messages_ex_(string& contracts, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
                          bool sign, bool rawargs);
 
-extern "C" int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
 

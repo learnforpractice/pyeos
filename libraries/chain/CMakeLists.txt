@@ -56,7 +56,6 @@ add_library( eosio_chain
              contracts/abi_serializer.cpp
 
              micropython/mpeoslib.cpp
-             micropython/frozenmod.cpp
 
              evm/EosState.cpp
              evm/EosExecutive.cpp
@@ -88,7 +87,7 @@ set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
-target_link_libraries( eosio_chain PUBLIC micropython eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime 
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime 
         wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} python3)
 
 target_include_directories( eosio_chain

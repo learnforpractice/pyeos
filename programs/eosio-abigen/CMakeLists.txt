@@ -17,7 +17,7 @@ if( GPERFTOOLS_FOUND )
     list( APPEND PLATFORM_SPECIFIC_LIBS tcmalloc )
 endif()
 
-target_link_libraries(eosio-abigen eosio_chain micropython abi_generator)
+target_link_libraries(eosio-abigen eosio_chain abi_generator)
 
 
 install( TARGETS
