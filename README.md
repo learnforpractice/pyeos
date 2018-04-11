@@ -1,3 +1,5 @@
+Please refer [pyeos.md](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md) to see the difference between eos and pyeos
+
 # EOSIO - The Most Powerful Infrastructure for Decentralized Applications
 
 [![Build Status](https://jenkins.eos.io/buildStatus/icon?job=eosio/master)](https://jenkins.eos.io/job/eosio/job/master/)
