@@ -28,7 +28,7 @@ def N(name):
             c <<= 64-5*(i+1)
         else:
             c &= 0x0f;
-            value |= c;
+        value |= c;
     
     return value
 

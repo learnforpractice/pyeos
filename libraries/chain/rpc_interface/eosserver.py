@@ -6,6 +6,8 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
+from base import  MyBinaryProtocol, MyBinaryProtocolFactory
+
 #server side
 from thrift.server import TServer
 from idl import eoslib_service
@@ -88,7 +90,7 @@ def open_client():
             print('open client return')
             break
         except Exception as e:
-            print('+++++++exception occur:',e)
+            print('+++++++exception occurred:',e)
             time.sleep(3.0)
 
 def send_apply():
@@ -129,16 +131,6 @@ class DBServer(TServer.TServer, Thread):
             itrans.close()
             otrans.close()
         print('server out!')
-        
-class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
-    def writeI64(self, i64):
-        buff = pack("!Q", i64)
-        self.trans.write(buff)
-
-    def readI64(self):
-        buff = self.trans.readAll(8)
-        val, = unpack('!Q', buff)
-        return val
 
 rpcServer = None
 def start():
@@ -150,13 +142,14 @@ def start():
     processor = eoslib_service.Processor(handler)
     transport = TSocket.TServerSocket(HOST, DB_PORT)
     tfactory = TTransport.TBufferedTransportFactory()
-    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+    pfactory = MyBinaryProtocolFactory()
 
     rpcServer = DBServer(processor,transport, tfactory, pfactory)
 #    rpcServer.start()
     rpcServer.serve()
 
 def apply(account, action, code):
+    
     global client
     if not client:
         open_client()

@@ -7,11 +7,12 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
+from base import  MyBinaryProtocol, MyBinaryProtocolFactory
+
 #client side
 from idl.eoslib_service import Client
 from idl.eoslib_service import Result
 import time
-
 
 #//server side
 from idl import eoslib_service
@@ -47,16 +48,6 @@ def n2s(value):
     name.reverse()
     return ''.join(name).rstrip('.')
 
-class MyBinaryProtocol(TBinaryProtocol.TBinaryProtocol):
-    def writeI64(self, i64):
-        buff = pack("!Q", i64)
-        self.trans.write(buff)
-
-    def readI64(self):
-        buff = self.trans.readAll(8)
-        val, = unpack('!Q', buff)
-        return val
-
 class RequestHandler(object):
     def __init__(self):
         self.modules = {}
@@ -66,7 +57,6 @@ class RequestHandler(object):
         action = n2s(_action)
         if _code == None:
             return 0
-        print(account, action, len(_code))
 
         if account in self.modules:
             self.modules[account][0].apply(account, action)
@@ -146,7 +136,7 @@ def start():
     processor = rpc_interface.Processor(handler)
     transport = TSocket.TServerSocket(HOST, APPLY_PORT)
     tfactory = TTransport.TBufferedTransportFactory()
-    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+    pfactory = MyBinaryProtocolFactory()
 
     rpcServer = TaskProcessor(processor,transport, tfactory, pfactory)
 
