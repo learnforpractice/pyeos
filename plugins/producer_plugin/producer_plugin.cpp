@@ -348,7 +348,7 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
       return block_production_condition::low_participation;
    }
 
-   if (app().is_debug_mode())
+   if (app().debug_mode())
    {
 
    } else {

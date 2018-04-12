@@ -66,7 +66,7 @@ void resource_limits_manager::set_block_parameters(const elastic_limit_parameter
    });
 }
 
-void resource_limits_manager::add_transaction_usage(const vector<account_name>& accounts, uint64_t cpu_usage, uint64_t net_usage, uint32_t time_slot ) {
+void resource_limits_manager::add_transaction_usage(const flat_set<account_name>& accounts, uint64_t cpu_usage, uint64_t net_usage, uint32_t time_slot ) {
    const auto& state = _db.get<resource_limits_state_object>();
    const auto& config = _db.get<resource_limits_config_object>();
    set<std::pair<account_name, permission_name>> authorizing_accounts;
@@ -116,7 +116,7 @@ void resource_limits_manager::add_transaction_usage(const vector<account_name>& 
       rls.pending_cpu_usage += cpu_usage;
       rls.pending_net_usage += net_usage;
    });
-   if (appbase::app().is_debug_mode()) {
+   if (appbase::app().debug_mode()) {
       if (state.pending_cpu_usage > config.cpu_limit_parameters.max) {
          wlog("++++++pending_cpu_usage: ${n1}, max: ${n2}", ("n1", state.pending_cpu_usage)("n2", config.cpu_limit_parameters.max));
       }

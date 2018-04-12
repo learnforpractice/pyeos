@@ -126,6 +126,29 @@ void init_console() {
 
 }
 
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+void py_exit();
+void my_handler(int s){
+   printf("Caught signal %d, exiting... \n",s);
+   py_exit();
+}
+
+int install_ctrl_c_handler()
+{
+   struct sigaction sigIntHandler;
+
+   sigIntHandler.sa_handler = my_handler;
+   sigemptyset(&sigIntHandler.sa_mask);
+   sigIntHandler.sa_flags = 0;
+
+   sigaction(SIGINT, &sigIntHandler, NULL);
+   return 0;
+}
+
 void interactive_console() {
    while (!init_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
@@ -191,7 +214,7 @@ int main(int argc, char** argv) {
    g_argv = argv;
 
    for (int i=0; i<argc; i++) {
-      if (0 == strcmp(argv[i], "--rpc-interface")) {
+      if (0 == strcmp(argv[i], "--rpc-server")) {
          wlog("rpc enabled");
          rpc_enabled = true;
          break;
@@ -202,11 +225,12 @@ int main(int argc, char** argv) {
 
    if (rpc_enabled) {
       init_rpcserver(init);
+      //should not return to here
+      assert(0);
    } else {
       boost::thread t( eos_main );
+      interactive_console();
    }
-
-   interactive_console();
 
    return 0;
 

@@ -41,13 +41,11 @@ extern "C" int init_rpcserver(fn_init _init) {
         "sys.path.append('../../libraries/chain/rpc_interface');"
    );
 
-   wlog("run console");
-   PyRun_SimpleString("import rpc_interface_;rpc_interface_.run_console()");
-
-   PyRun_SimpleString("eosapi.register_signal_handler()");
+//   PyRun_SimpleString("eosapi.register_signal_handler()");
 
    wlog("run eosserver");
    PyRun_SimpleString("import eosserver;eosserver.start()");
+
 
  /*
    while(true) {
