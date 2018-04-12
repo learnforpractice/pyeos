@@ -51,3 +51,4 @@ void set_current_context(apply_context* context);
 
 //defined in pyeos/main.cpp
 void init_eos();
+void install_ctrl_c_handler();

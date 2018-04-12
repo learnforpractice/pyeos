@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from struct import pack, unpack
 
-from threading import Thread
+from threading import Thread, Event
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
@@ -101,25 +101,38 @@ class DBServer(TServer.TServer, Thread):
     def __init__(self, *args):
         Thread.__init__(self, daemon=True)
         TServer.TServer.__init__(self, *args)
+        self._shutdown = False
+        self.shutdownevent = Event()
+
+        self.itrans = None
+        self.otrans = None
 
     def run(self):
         self.serve()
 
     def serve(self):
-        print('//Starting the rpc server at', HOST,':', DB_PORT)
+        print('//Starting the rpc server at', HOST,':', DB_PORT, ', waiting for connection')
         self.serverTransport.listen()
         while True:
             client = self.serverTransport.accept()
+            print('accpet return: ', client)
+            if self._shutdown:
+                self.shutdownevent.set()
+                return
             if not client:
                 continue
             print('client connected', client)
+            self.client = client
 
-#            rpc_interface_.start_eos()
+            rpc_interface_.start_eos()
 
             itrans = self.inputTransportFactory.getTransport(client)
             otrans = self.outputTransportFactory.getTransport(client)
             iprot = self.inputProtocolFactory.getProtocol(itrans)
             oprot = self.outputProtocolFactory.getProtocol(otrans)
+            self.itrans = itrans
+            self.otrans = otrans
+            
             try:
                 while True:
                     self.processor.process(iprot, oprot)
@@ -127,10 +140,27 @@ class DBServer(TServer.TServer, Thread):
                 pass
             except Exception as x:
                 logger.exception(x)
+
             print('clinet disconnected')
+
+            if self._shutdown:
+                self.shutdownevent.set()
+                return
+
             itrans.close()
             otrans.close()
         print('server out!')
+
+    def shutdown(self):
+        self._shutdown = True
+        self.client.close()
+
+        if self.itrans:
+            self.itrans.close()
+            self.otrans.close()
+        print("wait for shutdown")
+        self.shutdownevent.wait(2.0)
+        print("wait for shutdown return")
 
 rpcServer = None
 def start():
@@ -147,6 +177,14 @@ def start():
     rpcServer = DBServer(processor,transport, tfactory, pfactory)
 #    rpcServer.start()
     rpcServer.serve()
+
+def shutdown():
+    global rpcServer
+    if rpcServer:
+        print('rpc server is shutting down');
+#        rpcServer.shutdown()
+        rpcServer.stop()
+
 
 def apply(account, action, code):
     

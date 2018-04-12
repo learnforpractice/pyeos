@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from threading import Thread
 cdef extern from "rpc_interface.hpp":
     void init_eos() nogil
+    void install_ctrl_c_handler()
 
 cdef extern int rpc_interface_apply(unsigned long long account, unsigned long long action, string& code) with gil:
 #    _account = int.to_bytes(account, 8, 'little')
@@ -20,7 +21,7 @@ class Consolethread(Thread):
     def run(self):
         init_eos();
 
-def run_console():
+def start_eos():
     t = Consolethread()
     t.start()
 
