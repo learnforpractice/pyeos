@@ -61,7 +61,7 @@ static char** g_argv = NULL;
 
 
 typedef void (*fn_init)();
-extern "C" int init_mypy(fn_init _init, bool rpc_enabled);
+extern "C" int init_rpcserver(fn_init _init);
 
 void eos_main() {
    try {
@@ -100,16 +100,8 @@ void eos_main() {
 
 extern "C" void init_api();
 
-void interactive_console() {
-
+void init_console() {
    init_api();
-
-   while (!init_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
-   if (shutdown_finished) {
-      return;
-   }
 
    Py_Initialize();
 
@@ -124,7 +116,6 @@ void interactive_console() {
 //   PyInit_blockchain();
 //   PyInit_util();
    PyInit_debug();
-
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
 //   PyRun_SimpleString("import database;");
@@ -132,6 +123,17 @@ void interactive_console() {
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
+
+}
+
+void interactive_console() {
+   while (!init_finished) {
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+   if (shutdown_finished) {
+      return;
+   }
+
    PyRun_SimpleString(
        "import sys;"
         "sys.path.append('../../programs/pyeos');"
@@ -162,7 +164,7 @@ void interactive_console() {
 
    if (app().get_plugin<py_plugin>().interactive) {
       ilog("start interactive python.");
-      PyRun_SimpleString("eosapi.register_signal_handler()");
+//      PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
    }
 
@@ -179,10 +181,10 @@ typedef void (*fn_interactive_console)();
 extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
 void init() {
    boost::thread eos( eos_main );
-   boost::thread console( interactive_console );
-//   interactive_console();
+//   boost::thread console( interactive_console );
+   wlog("+++++++=start console");
+   interactive_console();
 }
-
 
 int main(int argc, char** argv) {
    g_argc = argc;
@@ -196,7 +198,16 @@ int main(int argc, char** argv) {
       }
    }
 
-   init_mypy(init, rpc_enabled);
+   init_console();
+
+   if (rpc_enabled) {
+      init_rpcserver(init);
+   } else {
+      boost::thread t( eos_main );
+   }
+
+   interactive_console();
+
    return 0;
 
 //   init_smart_contract(eos_main, interactive_console);

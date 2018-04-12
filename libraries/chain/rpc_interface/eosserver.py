@@ -26,6 +26,7 @@ HOST = 'localhost'
 APPLY_PORT = 9091
 DB_PORT = 9092
 
+rpc_enabled = False
 
 '''
 i32 db_store_i64( i64 scope, i64 table, i64 payer, i64 id, 5:binary buffer );

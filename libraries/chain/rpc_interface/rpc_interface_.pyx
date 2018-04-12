@@ -1,6 +1,6 @@
 # cython: c_string_type=bytes, c_string_encoding=ascii
 from libcpp.string cimport string
-
+from threading import Thread
 cdef extern from "rpc_interface.hpp":
     void init_eos() nogil
 
@@ -12,11 +12,15 @@ cdef extern int rpc_interface_apply(unsigned long long account, unsigned long lo
 
 cdef extern void run_code_(string code):
     exec(code)
- 
 
-started = False
-def start_eos():
-    global started
-    if started:
-        return
-    init_eos()
+class Consolethread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        init_eos();
+
+def run_console():
+    t = Consolethread()
+    t.start()
+
