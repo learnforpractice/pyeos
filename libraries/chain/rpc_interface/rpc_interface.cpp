@@ -57,7 +57,7 @@ extern "C" int init_mypy(fn_init _init, bool rpc_enabled) {
    return 0;
 }
 
-int rpc_interface_apply(uint64_t account, uint64_t action, string& code);
+int rpc_interface_apply(unsigned long long account, unsigned long long action, string& code);
 
 namespace eosio {
 namespace chain {
