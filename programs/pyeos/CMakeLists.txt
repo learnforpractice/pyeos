@@ -91,18 +91,22 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
 #    wrap/eostypes.wrap.cpp
 #    wrap/blockchain.wrap.cpp
 
+set(PYTHON_LIB "${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a")
+
+
 if( APPLE )
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
-    python3 eosio_chain intl)
+    python3 eosio_chain intl )
 else( APPLE )
 target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
-    python3 eosio_chain util)
+    python3 eosio_chain util -Xlinker -export-dynamic)
+
 endif( APPLE )
 
 
