@@ -38,6 +38,7 @@
 	ARCH=$( uname )
 	DISK_MIN=20
 	TIME_BEGIN=$( date -u +%s )
+	DOXYGEN=false #set to true to build docs
 
 	txtbld=$(tput bold)
 	bldred=${txtbld}$(tput setaf 1)
@@ -49,6 +50,13 @@
 	printf "\tgit head id: $( cat .git/refs/heads/master )\n"
 	printf "\tCurrent branch: $( git branch | grep \* )\n"
 	printf "\n\tARCHITECTURE: ${ARCH}\n"
+
+	STALE_SUBMODS=$(( `git submodule status | grep -c "^[+\-]"` ))
+	if [ $STALE_SUBMODS -gt 0 ]; then
+		printf "\ngit submodules are not up to date\n"
+		printf "\tPlease run the command 'git submodule update --init --recursive'\n"
+		exit 1
+	fi
 
 	if [ $ARCH == "Linux" ]; then
 		
