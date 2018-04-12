@@ -112,7 +112,7 @@ class DBServer(TServer.TServer, Thread):
                 continue
             print('client connected', client)
 
-            rpc_interface_.start_eos()
+#            rpc_interface_.start_eos()
 
             itrans = self.inputTransportFactory.getTransport(client)
             otrans = self.outputTransportFactory.getTransport(client)
