@@ -347,7 +347,7 @@ extern "C" {
    }
 
    int is_debug_mode() {
-      return appbase::app().is_debug_mode();
+      return appbase::app().debug_mode();
    }
 
 }

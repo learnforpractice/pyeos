@@ -1,0 +1,50 @@
+{
+  "types": [{
+      "newTypeName": "AccountName",
+      "type": "Name"
+    }
+  ],
+  "structs": [{
+      "name": "transfer",
+      "base": "",
+      "fields": {
+        "from": "AccountName",
+        "to": "AccountName",
+        "amount": "UInt64"
+      }
+    },{
+      "name": "account",
+      "base": "",
+      "fields": {
+        "account": "Name",
+        "balance": "UInt64"
+      }
+    },{
+      "name": "raw",
+      "base": "",
+      "fields": {
+        "data": "Bytes",
+      }
+    },{
+      "name": "network",
+      "base": "",
+      "fields": {
+        "name":"Name",
+        "data": "Bytes",
+      }
+    }
+  ],
+  "actions": [{
+      "action": "train",
+      "type": "Bytes"
+    }
+  ],
+  "tables": [{
+      "table": "network",
+      "type": "network",
+      "indextype": "i64",
+      "keynames" : ["name"],
+      "keytypes" : ["Name"]
+    }
+  ]
+}

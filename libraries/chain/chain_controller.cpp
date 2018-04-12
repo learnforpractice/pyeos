@@ -1281,7 +1281,7 @@ void chain_controller::update_resource_usage( transaction_trace& trace, const tr
    trace.kcpu_usage      = trace.cpu_usage / 1024;
    trace.net_usage_words = trace.net_usage / 8;
 
-   if (appbase::app().is_debug_mode()) {
+   if (appbase::app().debug_mode()) {
       if (trace.cpu_usage > chain_configuration.max_transaction_cpu_usage) {
          wlog("cpu usage [used: ${used}, max: ${max}]", ("used", trace.cpu_usage)("max", chain_configuration.max_transaction_cpu_usage));
       }

@@ -29,6 +29,7 @@ class application_impl {
       uint64_t                _version;
       bool _debug = false;
       bool _rpc = false;
+      bool _client = false;
 };
 
 application::application()
@@ -87,8 +88,8 @@ void application::set_program_options()
    options_description app_cfg_opts( "Application Config Options" );
    options_description app_cli_opts( "Application Command Line Options" );
    app_cfg_opts.add_options()
-         ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "enable debug.")
-         ("rpc-interface", bpo::bool_switch()->notifier([this](bool e){my->_rpc = e;}), "enable remote rpc processing.")
+         ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "Enable debugging.")
+         ("client", bpo::bool_switch()->notifier([this](bool e){my->_client = e;}), "Setup a eosnode in client mode.")
          ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()
@@ -197,8 +198,12 @@ void application::quit() {
    io_serv->stop();
 }
 
-bool application::is_debug_mode() const {
+bool application::debug_mode() const {
    return my->_debug;
+}
+
+bool application::client_mode() const {
+   return my->_client;
 }
 
 bool application::rpc_enabled() const {
