@@ -71,11 +71,12 @@ class RequestHandler(object):
 #        print(ret)
         return 1122;
 
-class TaskProcessor(TServer.TServer):
+class TaskProcessor(TServer.TServer, Thread):
     """Simple single-threaded server that just pumps around one transport."""
 
     def __init__(self, *args):
         TServer.TServer.__init__(self, *args)
+        Thread.__init__(self)
 
     def serve(self):
         self.serverTransport.listen()
@@ -99,6 +100,9 @@ class TaskProcessor(TServer.TServer):
             print('clinet disconnected')
             itrans.close()
             otrans.close()
+
+    def run(self):
+        self.serve()
 
 class MyTimer(Timer):
     def __init__(self):
@@ -128,8 +132,34 @@ class MyTimer(Thread):
                 client = None
             time.sleep(3.0)
 
+from code import InteractiveConsole
+from imp import new_module
+ 
+class Console(InteractiveConsole):
+ 
+    def __init__(self, names=None):
+        names = names or {}
+        names['console'] = self
+        InteractiveConsole.__init__(self, names)
+        self.superspace = new_module('superspace')
+ 
+    def enter(self, source):
+        source = self.preprocess(source)
+        self.runcode(source)
+ 
+    @staticmethod
+    def preprocess(source):
+        return source
+ 
+def start_console():
+    console = Console()
+    console.interact()
+
 def start():
-    t = MyTimer()
+#    t = MyTimer()
+#    t.start()
+
+    t = Thread(target= start_console)
     t.start()
 
     handler = RequestHandler()
@@ -142,6 +172,7 @@ def start():
 
     print('Listening for task:', HOST,':', APPLY_PORT)
     rpcServer.serve()
+
 
 if __name__ == '__main__':
     start()

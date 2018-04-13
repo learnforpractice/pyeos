@@ -48,6 +48,12 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx
+)
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
@@ -77,9 +83,12 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/math_.cpp  
     interface/common.cpp
     interface/debug_.cpp
+    interface/debug_.cpp
+    interface/database_api.cpp
 #    interface/codelimit.c 
     wrap/eosapi.wrap.cpp 
     wrap/database.wrap.cpp 
+    wrap/database_api.wrap.cpp 
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/debug.wrap.cpp)
@@ -90,8 +99,6 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
 #   interface/blockchain_.cpp
 #    wrap/eostypes.wrap.cpp
 #    wrap/blockchain.wrap.cpp
-
-set(PYTHON_LIB "${CMAKE_SOURCE_DIR}/libraries/python/libpython3.6m.a")
 
 
 if( APPLE )

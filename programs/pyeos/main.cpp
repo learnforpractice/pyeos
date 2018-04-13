@@ -26,7 +26,8 @@ using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
-static bool rpc_enabled = false;
+static bool rpc_server = false;
+static bool rpc_client = false;
 
 bool is_init_finished() {
    return init_finished;
@@ -46,6 +47,7 @@ extern "C" {
    PyObject* PyInit_wallet();
    //extern "C" PyObject* PyInit_hello();
    PyObject* PyInit_database();
+   PyObject* PyInit_database_api();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
    PyObject* PyInit_debug();
@@ -112,14 +114,16 @@ void init_console() {
    PyInit_wallet();
    PyInit_eosapi();
 //   PyInit_eostypes();
-//   PyInit_database();
+   PyInit_database();
+   PyInit_database_api();
 //   PyInit_blockchain();
 //   PyInit_util();
    PyInit_debug();
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
-//   PyRun_SimpleString("import database;");
-//   PyRun_SimpleString("import util;");
+   PyRun_SimpleString("import database;");
+   PyRun_SimpleString("import database_api;");
+   //   PyRun_SimpleString("import util;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
@@ -150,9 +154,11 @@ int install_ctrl_c_handler()
 }
 
 void interactive_console() {
+
    while (!init_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
+
    if (shutdown_finished) {
       return;
    }
@@ -162,10 +168,6 @@ void interactive_console() {
         "sys.path.append('../../programs/pyeos');"
         "sys.path.append('../../programs/pyeos/contracts');"
    );
-
-   ilog("+++++++++++++interactive_console: init_finished ${n}", ("n", init_finished));
-
-
 
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.init()");
@@ -179,23 +181,24 @@ void interactive_console() {
    PyRun_SimpleString("from backyard import test as bt");
    PyRun_SimpleString("from rpctest import test as rt");
 
+   if (app().get_plugin<py_plugin>().interactive ) {
+      ilog("start interactive python.");
+//      PyRun_SimpleString("eosapi.register_signal_handler()");
+      PyRun_InteractiveLoop(stdin, "<stdin>");
+      Py_Finalize();
+   } else {
+      while (!shutdown_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      }
+   }
+
+
 //   PyRun_SimpleString("debug.run_code('import initrpc;initrpc.init()')");
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
-   ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
+//   ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
 
-   if (app().get_plugin<py_plugin>().interactive) {
-      ilog("start interactive python.");
-//      PyRun_SimpleString("eosapi.register_signal_handler()");
-      PyRun_InteractiveLoop(stdin, "<stdin>");
-   }
-
-   while (!shutdown_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
-
-   Py_Finalize();
 }
 
 typedef void (*fn_eos_main)();
@@ -216,14 +219,23 @@ int main(int argc, char** argv) {
    for (int i=0; i<argc; i++) {
       if (0 == strcmp(argv[i], "--rpc-server")) {
          wlog("rpc enabled");
-         rpc_enabled = true;
-         break;
+         rpc_server = true;
+      } else  if (0 == strcmp(argv[i], "--rpc-client")) {
+         wlog("rpc enabled");
+         rpc_client = true;
       }
    }
 
    init_console();
 
-   if (rpc_enabled) {
+   if (rpc_client) {
+      PyRun_SimpleString(
+         "import sys;"
+         "sys.path.append('../../libraries/chain/rpc_interface');"
+      );
+      PyRun_SimpleString("import eosclient;eosclient.start()");
+      return 0;
+   } else  if (rpc_server) {
       init_rpcserver(init);
       //should not return to here
       assert(0);
