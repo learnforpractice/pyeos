@@ -59,7 +59,7 @@ class RequestHandler(object):
             return 0
 
         if account in self.modules:
-            self.modules[account][0].apply(account, action)
+            self.modules[account][0].apply(_account, _action)
         else:
             module_name = account
             new_module = imp.new_module(module_name)
@@ -156,8 +156,8 @@ def start_console():
     console.interact()
 
 def start():
-#    t = MyTimer()
-#    t.start()
+    t = MyTimer()
+    t.start()
 
     t = Thread(target= start_console)
     t.start()
@@ -207,5 +207,4 @@ def db_upperbound_i64(self, code: int, scope: int, table: int, id: int ):
 
 def db_end_i64(self, code: int, scope: int, table: int ):
     return 4
-
 '''

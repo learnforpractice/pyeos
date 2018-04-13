@@ -28,18 +28,27 @@ static bool init_finished = false;
 static bool shutdown_finished = false;
 static bool rpc_server = false;
 static bool rpc_client = false;
+static bool eos_started = false;
+
+//rpc_interface.cpp
 
 bool is_init_finished() {
    return init_finished;
 }
 
+//eosapi_.cpp
+int produce_block_();
 
 void quit_app_() {
-   app().quit();
-   while (!shutdown_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   if (eos_started) {
+      produce_block_();
+      app().quit();
+      while (!shutdown_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      }
    }
 }
+
 
 extern "C" {
    void PyInit_eosapi();
@@ -67,7 +76,7 @@ extern "C" int init_rpcserver(fn_init _init);
 
 void eos_main() {
    try {
-
+      eos_started = true;
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
@@ -225,6 +234,8 @@ int main(int argc, char** argv) {
          rpc_client = true;
       }
    }
+
+   install_ctrl_c_handler();
 
    init_console();
 

@@ -12,15 +12,23 @@ extern "C" void PyInit_eoslib_();
 extern "C" void PyInit_rpc_interface_();
 extern "C" void PyInit_mytest();
 
-
 void eos_main();
 typedef void (*fn_init)();
 static fn_init s_init_eos = 0;
+static bool client_connected = false;
 
 void init_eos() {
    if (s_init_eos) {
       s_init_eos();
    }
+}
+
+void set_client_connected() {
+   client_connected = true;
+}
+
+bool is_client_connected() {
+   return client_connected;
 }
 
 extern "C" int init_rpcserver(fn_init _init) {
@@ -63,6 +71,7 @@ int rpc_interface_apply(unsigned long long account, unsigned long long action, s
 namespace eosio {
 namespace chain {
 
+void set_current_context(apply_context* context);
 
 rpc_interface::rpc_interface() {
 }
@@ -82,6 +91,7 @@ void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
 
 
 void rpc_interface::apply(apply_context& c, const shared_vector<char>& code) {
+   set_current_context(&c);
    string _code = string(code.data(), code.size());
 
    try {

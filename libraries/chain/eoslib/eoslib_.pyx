@@ -9,7 +9,6 @@ cdef extern from "eoslib_.hpp":
     ctypedef unsigned long long uint64_t
     ctypedef int int32_t
     ctypedef unsigned int uint32_t
-
     int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size )
     void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size )
     void db_remove_i64( int itr )
@@ -21,6 +20,16 @@ cdef extern from "eoslib_.hpp":
     int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
     int db_end_i64( uint64_t code, uint64_t scope, uint64_t table )
 
+    int read_action_(char* memory, size_t size);
+
+
+def read_action():
+    cdef char buffer[128]
+    cdef int size
+    cdef string s;
+    size = read_action_(buffer, sizeof(buffer))
+    s = string(buffer, size)
+    return s
 
 def store_i64( scope, table, payer, id , string buffer):
     return db_store_i64( scope, table, payer, id, buffer.c_str(), buffer.length() )

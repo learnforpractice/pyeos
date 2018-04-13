@@ -21,7 +21,8 @@ def init():
 
 def test(name=None):
     with producer:
-        r = eosapi.push_message('rpctest','sayhello', 'hello,world',{'rpctest':'active'},rawargs=True)
+        print('rpctest')
+        r = eosapi.push_message('rpctest','sayhello', 'hello,wwww',{'rpctest':'active'},rawargs=True)
         assert r
 
 def test2(count):

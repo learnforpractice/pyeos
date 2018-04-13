@@ -7,6 +7,8 @@ struct Result {
 }
 
 service eoslib_service {
+    binary read_action();
+    
     i32 db_store_i64( 1:i64 scope, 2:i64 table, 3:i64 payer, 4:i64 id, 5:binary buffer );
     void db_update_i64( 1:i32 itr, 2:i64 payer, 3:binary buffer );
     void db_remove_i64( 1:i32 itr );

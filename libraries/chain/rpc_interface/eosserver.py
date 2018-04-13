@@ -44,38 +44,40 @@ i32 db_end_i64( i64 code, i64 scope, i64 table );
 '''
 
 class RequestHandler(object):
+    def read_action(self):
+        return eoslib_.read_action()
 
     def db_store_i64(self, scope: int, table: int, payer: int, id: int, buffer: bytes ):
-        return eoslib.store_i64(scope, table, payer, id, buffer)
+        return eoslib_.store_i64(scope, table, payer, id, buffer)
 
     def db_update_i64(self, itr: int, payer: int, buffer: bytes ):
-        eoslib.update_i64(itr, payer, buffer)
+        eoslib_.update_i64(itr, payer, buffer)
 
     def db_remove_i64(self, itr: int ):
-        eoslib.remove_i64(itr) 
+        eoslib_.remove_i64(itr) 
 
     def db_get_i64(self, itr: int ):
-        return b'hello, world' #eoslib.get_i64(itr)
+        return eoslib_.get_i64(itr)
 
     def db_next_i64(self, itr: int):
-        itr_next, primary = eoslib.next_i64(itr)
+        itr_next, primary = eoslib_.next_i64(itr)
         return Result(itr_next, primary)
 
     def db_previous_i64(self, itr: int ):
-        itr_next, primary = eoslib.previous_i64(itr)
+        itr_next, primary = eoslib_.previous_i64(itr)
         return Result(itr_next, primary)
 
     def db_find_i64(self, code: int, scope: int, table: int, id: int ):
-        return eoslib.find_i64(code, scope, table, id)
+        return eoslib_.find_i64(code, scope, table, id)
     
     def db_lowerbound_i64(self, code: int, scope: int, table: int, id: int ):
-        return eoslib.lowerbound_i64(code, scope, table, id)
+        return eoslib_.lowerbound_i64(code, scope, table, id)
     
     def db_upperbound_i64(self, code: int, scope: int, table: int, id: int ):
-        return eoslib.upperbound_i64(code, scope, table, id)
+        return eoslib_.upperbound_i64(code, scope, table, id)
 
     def db_end_i64(self, code: int, scope: int, table: int ):
-        return eoslib.end_i64(code, scope, table)
+        return eoslib_.end_i64(code, scope, table)
 
 client = None
 def open_client():

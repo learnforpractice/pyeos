@@ -24,6 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
+    print('  string read_action()')
     print('  i32 db_store_i64(i64 scope, i64 table, i64 payer, i64 id, string buffer)')
     print('  void db_update_i64(i32 itr, i64 payer, string buffer)')
     print('  void db_remove_i64(i32 itr)')
@@ -113,7 +114,13 @@ protocol = TBinaryProtocol(transport)
 client = eoslib_service.Client(protocol)
 transport.open()
 
-if cmd == 'db_store_i64':
+if cmd == 'read_action':
+    if len(args) != 0:
+        print('read_action requires 0 args')
+        sys.exit(1)
+    pp.pprint(client.read_action())
+
+elif cmd == 'db_store_i64':
     if len(args) != 5:
         print('db_store_i64 requires 5 args')
         sys.exit(1)

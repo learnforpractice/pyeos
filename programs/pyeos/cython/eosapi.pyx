@@ -419,7 +419,6 @@ def register_signal_handler():
     signal.signal(signal.SIGINT, signal_handler)
 
 def on_python_exit():
-    produce_block()
     quit_app_()
 
 atexit.register(on_python_exit)
