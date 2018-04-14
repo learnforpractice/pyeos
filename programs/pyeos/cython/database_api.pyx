@@ -1,4 +1,5 @@
 # cython: c_string_type=bytes, c_string_encoding=utf8
+from libcpp.string cimport string
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
@@ -51,8 +52,9 @@ int db_idx256_previous( int iterator, uint64_t& primary )
 '''
 def get_i64( int iterator ):
     cdef char buffer[256]
-    itr = db_get_i64( iterator, buffer, sizeof(buffer) )
-    return (itr, buffer)
+    cdef int size
+    size = db_get_i64( iterator, buffer, sizeof(buffer) )
+    return string(buffer,size)
 
 def next_i64( int iterator):
     cdef uint64_t primary
