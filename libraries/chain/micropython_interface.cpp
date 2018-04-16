@@ -28,21 +28,12 @@ extern "C" void print_time() {
 namespace eosio {
 namespace chain {
 
-static apply_context* s_context(0);
-
-void set_current_context(apply_context* context) {
-   s_context = context;
-}
-
-apply_context* get_current_context() {
-   return s_context;
-}
 
 bool get_code(uint64_t _account, std::vector<uint8_t>& v) {
-   return s_context->get_code(_account, v);
+   return apply_context::ctx().get_code(_account, v);
 }
 bool get_code_size(uint64_t _account, int& size) {
-   return s_context->get_code_size(_account, size);
+   return apply_context::ctx().get_code_size(_account, size);
 }
 
 micropython_interface::micropython_interface() {
@@ -95,7 +86,6 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
 
 void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
    try {
-      set_current_context(&c);
       current_apply_context = &c;
       mp_obj_t obj = nullptr;
       nlr_buf_t nlr;

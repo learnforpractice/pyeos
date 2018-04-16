@@ -34,9 +34,6 @@ using namespace dev;
 namespace eosio {
 namespace chain {
 
-apply_context* get_current_context();
-void set_current_context(apply_context* context);
-
 evm_interface::evm_interface() {
    init();
 }
@@ -103,7 +100,6 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    Address contractDestination;;
    Address sender;
 
-   set_current_context(&context);
    if (code.empty()) { //setcode
       auto act = context.act.data_as<eosio::chain::contracts::setcode>();
       memcpy(contractDestination.data(), &act.account.value, sizeof(act.account.value));

@@ -42,6 +42,9 @@ def get_client():
     global client
     return client
 
+def get_code(account):
+    return database_api.get_code(account)
+
 def read_action():
     return client.read_action()
 

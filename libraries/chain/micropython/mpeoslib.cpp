@@ -137,7 +137,7 @@ namespace eosio { namespace micropython {
 
 
 static inline apply_context& ctx() {
-   return *get_current_context();
+   return apply_context::ctx();
 }
 
 }
