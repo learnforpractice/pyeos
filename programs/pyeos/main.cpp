@@ -57,6 +57,7 @@ extern "C" {
    //extern "C" PyObject* PyInit_hello();
    PyObject* PyInit_database();
    PyObject* PyInit_database_api();
+   PyObject* PyInit_ipc();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
    PyObject* PyInit_debug();
@@ -125,10 +126,12 @@ void init_console() {
 //   PyInit_eostypes();
    PyInit_database();
    PyInit_database_api();
+   PyInit_ipc();
 //   PyInit_blockchain();
 //   PyInit_util();
    PyInit_debug();
    PyRun_SimpleString("import wallet");
+   PyRun_SimpleString("import ipc");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import database;");
    PyRun_SimpleString("import database_api;");
@@ -190,7 +193,7 @@ void interactive_console() {
    PyRun_SimpleString("from backyard import test as bt");
    PyRun_SimpleString("from rpctest import test as rt");
 
-   if (app().get_plugin<py_plugin>().interactive ) {
+   if (true) {//(app().interactive_mode()) {
       ilog("start interactive python.");
 //      PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
@@ -246,7 +249,7 @@ int main(int argc, char** argv) {
       );
       PyRun_SimpleString("import eosclient;eosclient.start()");
       return 0;
-   } else  if (rpc_server) {
+   } else if (rpc_server) {
       init_rpcserver(init);
       //should not return to here
       assert(0);

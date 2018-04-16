@@ -54,6 +54,12 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx
+)
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
@@ -85,7 +91,10 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/debug_.cpp
     interface/debug_.cpp
     interface/database_api.cpp
+    interface/wasm_.cpp
+    interface/ipc_.cpp
 #    interface/codelimit.c 
+    wrap/ipc.wrap.cpp 
     wrap/eosapi.wrap.cpp 
     wrap/database.wrap.cpp 
     wrap/database_api.wrap.cpp 
