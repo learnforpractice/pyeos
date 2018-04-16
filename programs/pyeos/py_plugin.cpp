@@ -49,19 +49,20 @@ py_plugin::~py_plugin() {}
 
 void py_plugin::set_program_options(options_description&,
                                     options_description& cfg) {
-
+/*
    cfg.add_options()("interactive,i", bpo::bool_switch()->default_value(false),
-                     "enter interactive mode")(
-       "option-name", bpo::value<string>()->default_value("default value"),
-       "Option Description");
+                     "enter interactive mode")("option-name", bpo::value<string>()->default_value("default value"), "Option Description");
+*/
 }
 
 void py_plugin::plugin_initialize(const variables_map& options) {
+/*
    if (options.count("interactive")) {
       if (options.at("interactive").as<bool>()) {
          interactive = true;
       }
    }
+   */
 }
 
 extern "C" void c_printf(const char* s);

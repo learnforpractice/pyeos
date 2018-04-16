@@ -23,6 +23,7 @@ try:
 except:
     pass
 import rpc_interface_
+import ipc
 
 HOST = 'localhost'
 APPLY_PORT = 9091
@@ -188,20 +189,19 @@ def shutdown():
         rpcServer.stop()
 
 
-def apply(account, action, code):
-    
+def apply(account, action):
     global client
     if not client:
         open_client()
     ret = None
 #    account = int.to_bytes(account, 8, 'little')
     try:
-        ret = client.apply(account, action, code)
+        ret = client.apply(account, action)
     except Exception as e:
         print(e)
         #try again
         open_client()
-        ret = client.apply(account, action, code)
+        ret = client.apply(account, action)
 
 #    print('done!', ret)
     return ret

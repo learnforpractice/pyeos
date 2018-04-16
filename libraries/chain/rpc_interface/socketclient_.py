@@ -52,15 +52,14 @@ class RequestHandler(object):
     def __init__(self):
         self.modules = {}
 
-    def apply(self, _account, _action, _code ):
+    def apply(self, _account, _action ):
         account = n2s(_account)
         action = n2s(_action)
-        if _code == None:
-            return 0
 
         if account in self.modules:
             self.modules[account][0].apply(_account, _action)
         else:
+            _code = eoslib.get_code(_account)
             module_name = account
             new_module = imp.new_module(module_name)
             exec(_code,vars(new_module))
