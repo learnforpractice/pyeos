@@ -31,6 +31,7 @@ class application_impl {
       bool _rpc = false;
       bool _client = false;
       bool _server = false;
+      bool _interactive = false;
 };
 
 application::application()
@@ -92,6 +93,7 @@ void application::set_program_options()
          ("debug", bpo::bool_switch()->notifier([this](bool e){my->_debug = e;}), "Enable debugging.")
          ("rpc-server", bpo::bool_switch()->notifier([this](bool e){my->_server = e;}), "Setup a eosnode in rpc server mode.")
          ("rpc-client", bpo::bool_switch()->notifier([this](bool e){my->_client = e;}), "Setup a eosnode in rpc client mode.")
+         ("interactive,i", bpo::bool_switch()->notifier([this](bool e){my->_interactive = e;}), "Enter in an interactive console.")
          ("plugin", bpo::value< vector<string> >()->composing(), "Plugin(s) to enable, may be specified multiple times");
 
    app_cli_opts.add_options()
@@ -212,12 +214,20 @@ bool application::rpc_enabled() const {
    return my->_rpc;
 }
 
+bool application::interactive_mode() const {
+   return my->_interactive;
+}
+
 void application::exec() {
-   std::shared_ptr<boost::asio::signal_set> sigint_set(new boost::asio::signal_set(*io_serv, SIGINT));
-   sigint_set->async_wait([sigint_set,this](const boost::system::error_code& err, int num) {
-     quit();
-     sigint_set->cancel();
-   });
+   if (app().interactive_mode()) {
+
+   } else {
+      std::shared_ptr<boost::asio::signal_set> sigint_set(new boost::asio::signal_set(*io_serv, SIGINT));
+      sigint_set->async_wait([sigint_set,this](const boost::system::error_code& err, int num) {
+        quit();
+        sigint_set->cancel();
+      });
+   }
 
    std::shared_ptr<boost::asio::signal_set> sigterm_set(new boost::asio::signal_set(*io_serv, SIGTERM));
    sigterm_set->async_wait([sigterm_set,this](const boost::system::error_code& err, int num) {

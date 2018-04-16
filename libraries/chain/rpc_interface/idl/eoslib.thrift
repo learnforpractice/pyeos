@@ -22,5 +22,5 @@ service eoslib_service {
 }
 
 service rpc_interface {
-    i32 apply( 1:i64 account, 2:i64 action, 3:binary buffer );
+    i32 apply( 1:i64 account, 2:i64 action);
 }

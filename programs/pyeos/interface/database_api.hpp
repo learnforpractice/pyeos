@@ -399,6 +399,9 @@ class database_api {
          }
          return *_instance;
       }
+
+      void get_code(uint64_t account, string& code);
+
       /**
        * @brief Require @ref account to have approved of this message
        * @param account The account whose approval is required
@@ -554,6 +557,7 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx_double, uint64_t)
 
 //using apply_handler = std::function<void(database_api&)>;
 
+void get_code_( uint64_t account, string& code );
 
 int db_get_i64( int iterator, char* buffer, size_t buffer_size );
 int db_next_i64( int iterator, uint64_t& primary );

@@ -55,9 +55,15 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
    }
 }
 
+apply_context* apply_context::current_context = 0;
+apply_context& apply_context::ctx() {
+   return *current_context;
+}
 
 void apply_context::exec_one()
 {
+   current_context = this;
+
    auto start = fc::time_point::now();
    _cpu_usage = 0;
    try {
@@ -96,7 +102,7 @@ void apply_context::exec_one()
             } else if (a.vm_type == 3) {
                auto &rpc = rpc_interface::get();
                try {
-                  rpc.apply(*this, a.code);
+                  rpc.apply(*this);
                } catch (...) {
                   throw;
                }

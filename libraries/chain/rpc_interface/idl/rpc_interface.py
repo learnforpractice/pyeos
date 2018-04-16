@@ -19,12 +19,11 @@ all_structs = []
 
 
 class Iface(object):
-    def apply(self, account, action, buffer):
+    def apply(self, account, action):
         """
         Parameters:
          - account
          - action
-         - buffer
         """
         pass
 
@@ -36,22 +35,20 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def apply(self, account, action, buffer):
+    def apply(self, account, action):
         """
         Parameters:
          - account
          - action
-         - buffer
         """
-        self.send_apply(account, action, buffer)
+        self.send_apply(account, action)
         return self.recv_apply()
 
-    def send_apply(self, account, action, buffer):
+    def send_apply(self, account, action):
         self._oprot.writeMessageBegin('apply', TMessageType.CALL, self._seqid)
         args = apply_args()
         args.account = account
         args.action = action
-        args.buffer = buffer
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -99,7 +96,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = apply_result()
         try:
-            result.success = self._handler.apply(args.account, args.action, args.buffer)
+            result.success = self._handler.apply(args.account, args.action)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -124,14 +121,12 @@ class apply_args(object):
     Attributes:
      - account
      - action
-     - buffer
     """
 
 
-    def __init__(self, account=None, action=None, buffer=None,):
+    def __init__(self, account=None, action=None,):
         self.account = account
         self.action = action
-        self.buffer = buffer
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -152,11 +147,6 @@ class apply_args(object):
                     self.action = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.buffer = iprot.readBinary()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -174,10 +164,6 @@ class apply_args(object):
         if self.action is not None:
             oprot.writeFieldBegin('action', TType.I64, 2)
             oprot.writeI64(self.action)
-            oprot.writeFieldEnd()
-        if self.buffer is not None:
-            oprot.writeFieldBegin('buffer', TType.STRING, 3)
-            oprot.writeBinary(self.buffer)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -200,7 +186,6 @@ apply_args.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'account', None, None, ),  # 1
     (2, TType.I64, 'action', None, None, ),  # 2
-    (3, TType.STRING, 'buffer', 'BINARY', None, ),  # 3
 )
 
 

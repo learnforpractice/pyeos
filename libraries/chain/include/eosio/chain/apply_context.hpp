@@ -471,6 +471,8 @@ class apply_context {
        recurse_depth(depth)
        {}
 
+      static apply_context* current_context;
+      static apply_context& ctx();
       void exec();
 
       void execute_inline( action &&a );

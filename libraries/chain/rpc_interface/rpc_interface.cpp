@@ -51,9 +51,8 @@ extern "C" int init_rpcserver(fn_init _init) {
 
 //   PyRun_SimpleString("eosapi.register_signal_handler()");
 
-   wlog("run eosserver");
+   wlog("run ipcserver");
    PyRun_SimpleString("import eosserver;eosserver.start()");
-
 
  /*
    while(true) {
@@ -66,12 +65,10 @@ extern "C" int init_rpcserver(fn_init _init) {
    return 0;
 }
 
-int rpc_interface_apply(unsigned long long account, unsigned long long action, string& code);
+int rpc_interface_apply(unsigned long long account, unsigned long long action);
 
 namespace eosio {
 namespace chain {
-
-void set_current_context(apply_context* context);
 
 rpc_interface::rpc_interface() {
 }
@@ -90,12 +87,11 @@ void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
 
 
 
-void rpc_interface::apply(apply_context& c, const shared_vector<char>& code) {
-   set_current_context(&c);
-   string _code = string(code.data(), code.size());
+void rpc_interface::apply(apply_context& c) {
+//   string _code = string(code.data(), code.size());
 
    try {
-      rpc_interface_apply(c.act.account.value, c.act.name.value, _code);
+      rpc_interface_apply(c.act.account.value, c.act.name.value);
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    } catch (boost::exception& ex) {

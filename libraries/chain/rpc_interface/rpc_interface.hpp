@@ -30,7 +30,7 @@ public:
    static rpc_interface& get();
 
    void on_setcode(uint64_t _account, bytes& code);
-   void apply(apply_context& c, const shared_vector<char>&  code);
+   void apply(apply_context& c);
 
    apply_context* current_apply_context = nullptr;
 
@@ -42,9 +42,6 @@ private:
    std::map<uint64_t, py_module*> module_cache;
    rpc_interface();
 };
-
-apply_context* get_current_context();
-void set_current_context(apply_context* context);
 
 }
 } // eos::chain
