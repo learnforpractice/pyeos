@@ -3,28 +3,25 @@ import wallet
 import eosapi
 import initeos
 
-producer = eosapi.Producer()
+from common import init_, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init():
-    with producer:
-        if not eosapi.get_account('rpctest').permissions:
-            r = eosapi.create_account('eosio', 'rpctest', initeos.key1, initeos.key2)
-            assert r
+def init(func):
+    def func_wrapper(*args):
+        init_('rpctest', 'rpctest.py', 'rpctest.abi', __file__)
+        return func(*args)
+    return func_wrapper
 
-    with producer:
-        r = eosapi.set_contract('rpctest','../../programs/pyeos/contracts/rpctest/rpctest.py','../../programs/pyeos/contracts/rpctest/rpctest.abi', 3)
-#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-        assert r
-
+@init
 def test(name=None):
     with producer:
         print('rpctest')
         r = eosapi.push_message('rpctest','sayhello', 'hello,wwww',{'rpctest':'active'},rawargs=True)
         assert r
 
+@init
 def test2(count):
     import time
     import json

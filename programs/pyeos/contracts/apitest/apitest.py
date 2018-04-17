@@ -13,10 +13,10 @@ int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t i
 int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 '''
-scope = N('test')
-code = N('test')
-table = N('test')
-payer = N('test')
+scope = N('apitest')
+code = N('apitest')
+table = N('apitest')
+payer = N('apitest')
 
 def db_test_i64():
     count = 100
@@ -254,14 +254,9 @@ def deffer_send():
     ref_block_prefix = 0
     send_deferred(sender_id, payer, now()+15, 0, ref_block, ref_block_prefix, 100000, 100000, 2 , free_actions, actions);
 
-class T(object):
-    def __init__(self):
-        super(self, T).__init__()
-
 def apply(name, type):
 #    eosio_delay(190)
     if type == N('dbtest'):
-        t = T()
 #        db_test()
 #        db_test_i64()
 #        db_test_idx64()

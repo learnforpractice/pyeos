@@ -3,25 +3,20 @@ import wallet
 import eosapi
 import initeos
 
-producer = eosapi.Producer()
-
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init():
-    if not eosapi.get_account('test').permissions:
-        with producer:
-            r = eosapi.create_account('eosio', 'test', initeos.key1, initeos.key2)
-            assert r
+from common import init_, producer
 
-    with producer:
-        r = eosapi.set_contract('test','../../programs/pyeos/contracts/apitest/apitest.py','../../programs/pyeos/contracts/apitest/test.abi', 1)
-        assert r
-    eosapi.produce_block()
+def init(func):
+    def func_wrapper(*args):
+        init_('apitest', 'apitest.py', 'apitest.abi', __file__)
+        return func(*args)
+    return func_wrapper
 
+@init
 def test():
     with producer:
-        r = eosapi.push_message('test','dbtest','',{'test':'active','hello':'active'},rawargs=True)
+        r = eosapi.push_message('apitest','dbtest','',{'apitest':'active'},rawargs=True)
         assert r
-    eosapi.produce_block()
 

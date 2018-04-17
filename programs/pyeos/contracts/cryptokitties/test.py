@@ -6,10 +6,16 @@ import initeos
 import subprocess
 import pickle
 
-producer = eosapi.Producer()
+from common import init_, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
+
+def init(func):
+    def func_wrapper(*args):
+        init_('kitties', 'main.py', 'cryptokitties.abi', __file__, mpy=True)
+        return func(*args)
+    return func_wrapper
 
 class Sync(object):
     def __init__(self, _dir = None, _ignore = []):
@@ -21,7 +27,6 @@ class Sync(object):
             self.src_dir = _dir
         else:
             self.src_dir = os.path.dirname(os.path.abspath(__file__))
-#            self.src_dir = os.path.dirname(self.src_dir)
 
         self._sync_file = os.path.join(self.src_dir, '.last_sync')
 
@@ -137,40 +142,31 @@ class Sync(object):
         print('clean done')
 
 sync = Sync(_ignore = ('main.py', 'test.py', 'ustruct.py', 'eoslib.py'))
-#eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
 
-def init():
-    with producer:
-        if not eosapi.get_account('kitties').permissions:
-            r = eosapi.create_account('eosio', 'kitties', initeos.key1, initeos.key2)
-            assert r
-            sync.clean()
-
-    with producer:
-        r = eosapi.set_contract('kitties','../../programs/pyeos/contracts/cryptokitties/main.py','../../programs/pyeos/contracts/cryptokitties/cryptokitties.abi', 1)
-#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-        assert r
-        sync.clean()
-
-
+@init
 def deploy_depend_libs():
     sync.deploy_depend_libs()
 
+@init
 def deploy_all():
     sync.deploy_all()
-    
+
+@init
 def deploy(src_file):
     sync.deploy(src_file)
-    
+
+@init
 def deploy_all_mpy():
     sync.deploy_all_mpy()
 
+@init
 def deploy_mpy(file_name):
     sync.deploy_mpy(file_name)
 
 def clean():
     sync.clean()
 
+@init
 def test(name=None):
     with producer:
         if not name:
@@ -178,6 +174,7 @@ def test(name=None):
         r = eosapi.push_message('kitties','sayhello',name,{'kitties':'active'},rawargs=True)
         assert r
 
+@init
 def test2(count):
     import time
     import json
@@ -185,7 +182,6 @@ def test2(count):
     functions = []
     args = []
     per = []
-
     for i in range(count):
         functions.append('call')
         arg = str(i)
@@ -198,31 +194,4 @@ def test2(count):
     cost = ret['cost_time']
     eosapi.produce_block()
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-
-def call(name=None):
-    with producer:
-        r = eosapi.push_message('kitties','call','hello,world',{'kitties':'active'},rawargs=True)
-        assert r
-
-def call3(count):
-    import time
-    import json
-
-    contracts = []
-    functions = []
-    args = []
-    pers = []
-    for i in range(count):
-        functions.append('call')
-        arg = str(i)
-        args.append(arg)
-        contracts.append('kitties')
-        pers.append({'kitties':'active'})
-
-    ret, cost = eosapi.push_messages(contracts, functions, args, pers, True, rawargs=True)
-    assert ret
-    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-    eosapi.produce_block()
-
-
 

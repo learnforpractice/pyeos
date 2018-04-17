@@ -6,35 +6,20 @@ import database_api
 
 from eosapi import N
 
-producer = eosapi.Producer()
+from common import init_, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init(mpy=True):
-    with producer:
-        if not eosapi.get_account('counter').permissions:
-            r = eosapi.create_account('eosio', 'counter', initeos.key1, initeos.key2)
-            assert r
 
-    with producer:
-        if mpy:
-            with open('../../programs/pyeos/contracts/counter/counter.mpy', 'wb') as f:
-                f.write(eosapi.mp_compile('../../programs/pyeos/contracts/counter/counter.py'))
-            r = eosapi.set_contract('counter','../../programs/pyeos/contracts/counter/counter.mpy','../../programs/pyeos/contracts/counter/counter.abi', 1)
-        else:
-            r = eosapi.set_contract('counter','../../programs/pyeos/contracts/counter/counter.py','../../programs/pyeos/contracts/counter/counter.abi', 1)
-#        r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-            assert r
+def init(func):
+    def func_wrapper(*args):
+        init_('counter', 'counter.py', 'counter.abi', __file__)
+        return func(*args)
+    return func_wrapper
 
-#eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-
+@init
 def test(name=None):
-    with producer:
-        if not eosapi.get_account('counter').permissions:
-            r = eosapi.create_account('eosio', 'counter', initeos.key1, initeos.key2)
-            assert r
-
     code = N('counter')
     counter_id = N('counter')
     counter_begin = 0
@@ -63,6 +48,9 @@ def test(name=None):
 def test2(count):
     import time
     import json
+
+    if not eosapi.get_account('counter').permissions:
+        init()
 
     code = N('counter')
     counter_id = N('counter')

@@ -4,32 +4,19 @@ import wallet
 import eosapi
 import initeos
 
-producer = eosapi.Producer()
+from common import init_, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init(wasm = False):
-    with producer:
-        if not eosapi.get_account('currency').permissions:
-                r = eosapi.create_account('eosio', 'currency', initeos.key1, initeos.key2)
-                assert r
-        if not eosapi.get_account('test').permissions:
-            if not eosapi.get_account('test'):
-                r = eosapi.create_account('eosio', 'test', initeos.key1, initeos.key2)
-                assert r
 
-    with producer:
-        if wasm:
-            r = eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-            assert r
-        else:
-            r = eosapi.set_contract('currency','../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', 1)
-            assert r
+def init(func):
+    def func_wrapper(*args):
+        init_('currency', 'currency.py', 'currency.abi', __file__, 0)
+        return func(*args)
+    return func_wrapper
 
-#eosapi.set_contract('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi',0)
-
-
+@init
 def test_issue():
     with producer:
         r = eosapi.push_message('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
@@ -43,6 +30,7 @@ uint8_t                issuer_can_freeze     = true;
 uint8_t                issuer_can_recall     = true;
 uint8_t                issuer_can_whitelist  = true;
 '''
+@init
 def test_create():
     args = {"issuer":"currency",
             "maximum_supply":"1000000000.0000 CUR",
@@ -59,12 +47,13 @@ account_name to;
 asset        quantity;
 string       memo;
 '''
+@init
 def test_transfer():
     args = {"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
     with producer:
         r = eosapi.push_message('currency','transfer',args,{'currency':'active'})
         assert r
-
+@init
 def test():
     args = {"to":"currency","quantity":"1000.0000 CUR","memo":""}
     r = eosapi.push_message('currency','issue',args,{'currency':'active'})
@@ -115,6 +104,7 @@ def load_keys():
         wallet.import_key('mywallet', priv_key)
 
 #'issue',{"to":"currency","quantity":"1000.0000 CUR"
+@init
 def test2(count):
     import time
     import json
@@ -143,6 +133,7 @@ def n2s(n, max_digits=5):
         _num.append(number_map[int(n/(10**i) % 10)])
     return ''.join(_num)
 
+@init
 def test3(count, d=0):
     keys = list(wallet.list_keys().keys())
     for i in range(0, count):

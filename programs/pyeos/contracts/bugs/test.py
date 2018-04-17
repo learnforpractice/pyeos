@@ -3,22 +3,19 @@ import wallet
 import eosapi
 import initeos
 
-producer = eosapi.Producer()
+from common import init_, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init():
-    if not eosapi.get_account('bugs').permissions:
-        with producer:
-            r = eosapi.create_account('eosio', 'bugs', initeos.key1, initeos.key2)
-            assert r
 
-    with producer:
-        r = eosapi.set_contract('bugs','../../programs/pyeos/contracts/bugs/bugs.py','../../programs/pyeos/contracts/bugs/bugs.abi', 1)
-        assert r
-    eosapi.produce_block()
+def init(func):
+    def func_wrapper(*args):
+        init_('bugs', 'bugs.py', 'bugs.abi', __file__)
+        return func(*args)
+    return func_wrapper
 
+@init
 def t():
     with producer:
         r = eosapi.push_message('bugs','t1','',{'bugs':'active'},rawargs=True)
@@ -26,6 +23,7 @@ def t():
     eosapi.produce_block()
 
 #test deeply recursive generators
+@init
 def t2():
     with producer:
         r = eosapi.push_message('bugs','t2','',{'bugs':'active'},rawargs=True)

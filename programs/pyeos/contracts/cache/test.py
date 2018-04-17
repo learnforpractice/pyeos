@@ -14,9 +14,8 @@ def init():
             r = eosapi.create_account('eosio', 'cache', initeos.key1, initeos.key2)
             assert r
 
-    with producer:
-        r = eosapi.set_contract('cache','../../programs/pyeos/contracts/cache/cache.py','../../programs/pyeos/contracts/cache/test.abi', 1)
-        assert r
+            r = eosapi.set_contract('cache','../../programs/pyeos/contracts/libs/cache.py','../../programs/pyeos/contracts/cache/test.abi', 1)
+            assert r
 
 counter = 0
 def test():
