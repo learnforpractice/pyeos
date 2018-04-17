@@ -1,0 +1,20 @@
+package bridge
+
+import "fmt"
+import "unsafe"
+
+// #cgo CFLAGS: ${CFLAGS}
+// #cgo LDFLAGS: ${LDFLAGS}
+// #include <world.h>
+// #include <stdlib.h>
+import "C"
+
+func PrintWorld() {
+	fmt.Printf("(Invoking c statically linked library...)\n")
+	C.printworld(10)
+
+    str_ptr := C.CString("Gooo0000000000000000 string")
+    C.printstr(str_ptr)
+    C.free(unsafe.Pointer(str_ptr))
+    fmt.Printf("(Done)\n")
+}

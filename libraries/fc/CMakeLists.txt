@@ -25,7 +25,7 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE}: +++++++++++++++++++++++++++"${Secp25
 IF( ECC_IMPL STREQUAL openssl )
   SET( ECC_REST src/crypto/elliptic_impl_pub.cpp )
 ELSE( ECC_IMPL STREQUAL openssl )
-  SET( ECC_LIB ${Secp256k1_LIBRARY} ${GMP_LIBRARIES} )
+  SET( ECC_LIB ${Secp256k1_LIBRARY}  ) #${GMP_LIBRARIES}
   IF( ECC_IMPL STREQUAL mixed )
     SET( ECC_REST src/crypto/elliptic_impl_priv.cpp src/crypto/elliptic_impl_pub.cpp )
   ELSE( ECC_IMPL STREQUAL mixed )
