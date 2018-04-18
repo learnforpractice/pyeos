@@ -17,10 +17,6 @@ def init(func):
 @init
 def test(name=None):
     with producer:
-        if not eosapi.get_account('hello').permissions:
-            r = eosapi.create_account('eosio', 'hello', initeos.key1, initeos.key2)
-            assert r
-    with producer:
         if not name:
             name = 'mike'
         r = eosapi.push_message('hello','sayhello',name,{'hello':'active'},rawargs=True)
@@ -29,11 +25,7 @@ def test(name=None):
 @init
 def play():
     with producer:
-        if not eosapi.get_account('hello').permissions:
-            r = eosapi.create_account('eosio', 'hello', initeos.key1, initeos.key2)
-            assert r
-    with producer:
-        r = eosapi.push_message('hello','play','',{'hello':'active'},rawargs=True)
+        r = eosapi.push_message('hello','play','',{'counter':'active'},rawargs=True)
         assert r
 
 @init
@@ -59,7 +51,7 @@ def test2(count):
 
 @init
 def deploy_mpy():
-    src_dir = '../../programs/pyeos/contracts/hello'
+    src_dir = os.path.dirname(os.path.abspath(__file__))
     file_name = 'hello.py'
     
     src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
