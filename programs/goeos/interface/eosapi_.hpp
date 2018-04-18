@@ -47,7 +47,7 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 
 #include <Python.h>
 #include <boost/thread.hpp>
-#include <eos/py_plugin/py_plugin.hpp>
+#include "../../goeos/include/eos/py_plugin/py_plugin.hpp"
 #include <fc/log/logger_config.hpp>
 
 #include <eosio/chain/exceptions.hpp>

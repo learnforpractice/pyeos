@@ -1,5 +1,5 @@
+#include "../../goeos/interface/hashtable.h"
 #include "Python.h"
-#include "hashtable.h"
 #include "frameobject.h"
 #include "pythread.h"
 #include "osdefs.h"

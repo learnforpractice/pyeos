@@ -1,5 +1,6 @@
-#include "db_handling.hpp"
-#include "util_.hpp"
+#include "../../goeos/interface/util_.hpp"
+
+#include "../../goeos/util/db_handling.hpp"
 
 typedef uint64_t TableName;
 

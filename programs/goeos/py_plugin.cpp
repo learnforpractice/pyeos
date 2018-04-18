@@ -1,3 +1,5 @@
+#include "../goeos/include/eos/py_plugin/py_plugin.hpp"
+
 #include <boost/asio.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/json.hpp>
@@ -26,7 +28,6 @@
 
 #include <Python.h>
 #include <boost/thread.hpp>
-#include <eos/py_plugin/py_plugin.hpp>
 #include <fc/log/logger_config.hpp>
 
 #include <eosio/chain/exceptions.hpp>

@@ -7,7 +7,6 @@
 #include <eosio/http_plugin/http_plugin.hpp>
 #include <eosio/net_plugin/net_plugin.hpp>
 #include <eosio/producer_plugin/producer_plugin.hpp>
-#include <eos/py_plugin/py_plugin.hpp>
 #include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
@@ -20,6 +19,7 @@
 
 
 #include <Python.h>
+#include "../goeos/include/eos/py_plugin/py_plugin.hpp"
 
 using namespace appbase;
 using namespace eosio;
@@ -71,8 +71,7 @@ void eos_main() {
       app().register_plugin<producer_plugin>();
       app().register_plugin<account_history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
-      app().register_plugin<py_plugin>();
-      if (!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(g_argc, g_argv)) {
+      if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
@@ -160,9 +159,7 @@ void interactive_console() {
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
-   ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
-
-   if (app().get_plugin<py_plugin>().interactive) {
+   if (true) {
       ilog("start interactive python.");
 //      PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
@@ -186,7 +183,7 @@ void init() {
    interactive_console();
 }
 
-int main(int argc, char** argv) {
+extern "C" int goeos_main_(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 

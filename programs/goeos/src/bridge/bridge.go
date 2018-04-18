@@ -3,8 +3,8 @@ package bridge
 import "os"
 import "unsafe"
 
-// #cgo CFLAGS: ${CFLAGS}
-// #cgo LDFLAGS: ${LDFLAGS}
+// #cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include
+// #cgo LDFLAGS: -L/Users/newworld/dev/pyeos/build/programs/goeos /Users/newworld/dev/pyeos/build/programs/goeos/libgoeos.dylib
 // #include <goeos.h>
 // #include <stdlib.h>
 import "C"

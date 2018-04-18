@@ -1,7 +1,7 @@
 #pragma once
 #include <fc/filesystem.hpp>
 #include <fc/variant.hpp>
-#include "pyobject.hpp"
+#include "../../goeos/interface/pyobject.hpp"
 
 namespace python {
 using namespace fc;

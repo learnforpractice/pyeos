@@ -1,4 +1,4 @@
-#include "math_.hpp"
+#include "../../goeos/interface/math_.hpp"
 
 void mul64_(void* n1, void* n2, void* out) {
    ((uint64_t*)out)[0] = ((uint64_t*)n1)[0] * ((uint64_t*)n2)[0];

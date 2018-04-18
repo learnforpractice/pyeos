@@ -1,4 +1,5 @@
-#include "json.hpp"
+#include "../../goeos/interface/json.hpp"
+
 #include <fc/exception/exception.hpp>
 //#include <fc/io/fstream.hpp>
 //#include <fc/io/sstream.hpp>

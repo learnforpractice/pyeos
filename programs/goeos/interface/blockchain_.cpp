@@ -4,6 +4,8 @@
  *  Created on: Oct 26, 2017
  *      Author: newworld
  */
+#include "../../goeos/interface/blockchain_.hpp"
+
 #include <eosio/chain/chain_controller.hpp>
 #include <eos/types/generated.hpp>
 #include <appbase/application.hpp>
@@ -13,7 +15,6 @@
 
 #include <eosio/chain/account_object.hpp>
 
-#include "blockchain_.hpp"
 
 using namespace eosio;
 using namespace eosio::chain;

@@ -1,4 +1,5 @@
-#include "db_handling.hpp"
+#include "../../goeos/util/db_handling.hpp"
+
 #include <chainbase/chainbase.hpp>
 
 #include <eos/utilities/parallel_markers.hpp>

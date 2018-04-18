@@ -1,4 +1,4 @@
-#include "database_.hpp"
+#include "../../goeos/interface/database_.hpp"
 
 #include <fc/filesystem.hpp>
 
@@ -23,7 +23,7 @@
 #include <boost/signals2/signal.hpp>
 #include <fc/log/logger.hpp>
 
-#include "pyobject.hpp"
+#include "../../goeos/interface/pyobject.hpp"
 
 using namespace chainbase;
 using namespace fc;

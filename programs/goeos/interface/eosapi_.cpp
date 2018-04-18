@@ -1,16 +1,16 @@
-#include "eosapi_.hpp"
+#include "../../goeos/interface/eosapi_.hpp"
 
 #include <fc/time.hpp>
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
+#include "../../goeos/interface/json.hpp"
+#include "../../goeos/interface/localize.hpp"
+#include "../../goeos/interface/pyobject.hpp"
+#include "../../goeos/interface/wallet_.h"
 #include "micropython/mpeoslib.h"
 
 #include "fc/bitutil.hpp"
-#include "json.hpp"
-#include "pyobject.hpp"
-#include "wallet_.h"
-
 #include "localize.hpp"
 
 using namespace eosio::client::localize;

@@ -18,7 +18,7 @@
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
 #include <Python.h>
-#include "pyobject.hpp"
+#include "../../goeos/interface/pyobject.hpp"
 
 using namespace std;
 using namespace eosio;

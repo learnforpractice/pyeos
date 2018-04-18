@@ -1,4 +1,5 @@
-#include "debug_.hpp"
+#include "../../goeos/interface/debug_.hpp"
+
 #include <libdevcore/CommonData.h>
 #include <fc/log/logger.hpp>
 

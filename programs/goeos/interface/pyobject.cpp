@@ -4,7 +4,7 @@
  *  Created on: Sep 8, 2017
  *      Author: newworld
  */
-#include "pyobject.hpp"
+#include "../../goeos/interface/pyobject.hpp"
 
 PyArray::PyArray() { arr = array_create(); }
 PyArray::~PyArray() { Py_XDECREF(arr); }
