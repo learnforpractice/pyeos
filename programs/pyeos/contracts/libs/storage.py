@@ -21,7 +21,7 @@ class SList(object):
         itr = db_end_i64(g_code, g_scope, table_id)
         if itr == -1: #no value in table
             return
-        print('+++itr:', itr) # itr should be -2
+#        print('+++itr:', itr) # itr should be -2
         while True:
             itr, key = db_previous_i64(itr)
             if itr < 0:
@@ -37,7 +37,7 @@ class SList(object):
             if value_type == 0: #int
                 _value = int.from_bytes(value[2:], 'little')
             elif value_type == 1: #str
-                _value = value[2:]
+                _value = value[2:].decode('utf8')
             elif value_type == 2: #list
                 table_id = int.from_bytes(value[2:], 'little')
                 _value = SList(table_id)
@@ -62,7 +62,7 @@ class SList(object):
     def get_type(self,val):
         if type(val) == int:
             return 0
-        elif type(val) == str:
+        elif type(val) in (str, bytes):
             return 1
         elif type(val) == SList:
             return 2
@@ -80,7 +80,7 @@ class SList(object):
             raw_data = int.to_bytes(data, 8, 'little')
         elif data_type == 1: #str
             raw_length = len(data)
-            raw_data = data
+            raw_data = data.encode('utf8')
         elif data_type == 2: #list
             raw_length = 8
             raw_data = data.table_id
@@ -149,7 +149,7 @@ class SDict(object):
         itr = db_end_i64(g_code, g_scope, table_id)
         if itr == -1: #no value in table
             return
-        print('+++itr:', itr) # itr should be -2
+#        print('+++itr:', itr) # itr should be -2
         while True:
             itr, key = db_previous_i64(itr)
             if itr < 0:
@@ -162,7 +162,7 @@ class SDict(object):
             if key_type == 0: #int
                 _key = int.from_bytes(value[8:8+key_length], 'little')
             elif key_type == 1: #str
-                _key = value[8:8+key_length:]
+                _key = value[8:8+key_length:].decode('utf8')
             elif key_type == 2: #list
                 table_id = int.from_bytes(value[8:8+key_length], 'little')
                 _key = SList(table_id)
@@ -175,7 +175,7 @@ class SDict(object):
             if value_type == 0: #int
                 _value = int.from_bytes(value[8+key_length:], 'little')
             elif value_type == 1: #str
-                _value = value[8+key_length:]
+                _value = value[8+key_length:].decode('utf8')
             elif value_type == 2: #list
                 table_id = int.from_bytes(value[8+key_length:], 'little')
                 _value = SList(table_id)
@@ -188,9 +188,9 @@ class SDict(object):
             self._dict[_key] = _value
 
     def get_hash(self, v):
-        if type(v) is int:
+        if type(v) == int:
             return v
-        elif type(v) in (str, bytes):
+        elif type(v) == str:
             return hash64(v)
         elif type(v) in (SDict, SList):
             return v.table_id
@@ -207,7 +207,7 @@ class SDict(object):
         elif type(val) == SDict:
             return 3
         else:
-            raise TypeError('unsupported type')
+            raise TypeError('unsupported type' + str(type(val)))
 
     def get_raw_data(self, data):
         data_type = self.get_type(data)
@@ -218,14 +218,14 @@ class SDict(object):
             raw_data = int.to_bytes(data, 8, 'little')
         elif data_type == 1: #str
             raw_length = len(data)
-            raw_data = data
+            raw_data = data.encode('utf8')
         elif data_type == 2: #list
             raw_length = 8
             raw_data = int.to_bytes(data.table_id, 8, 'little')
         elif data_type == 3: #dict
             raw_length = 8
             raw_data = int.to_bytes(data.table_id, 8, 'little')
-        return (data_type, raw_length, raw_data)
+        return (data_type, raw_length, raw_data) 
 
     def __getitem__(self, key):
         return self._dict[key]
@@ -279,6 +279,7 @@ def apply(name, type):
     a['b'] = b
     
     msg = read_action()
+    msg = msg.decode('utf8')
     a[msg] = msg
     b[msg] = msg
     if 101 in a:

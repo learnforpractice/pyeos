@@ -1,3 +1,4 @@
+import os
 import time
 import wallet
 import eosapi
@@ -8,14 +9,15 @@ print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init():
-
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+    
     if not eosapi.get_account('storage').permissions:
         with producer:
             r = eosapi.create_account('eosio', 'storage', initeos.key1, initeos.key2)
             assert r
 
     with producer:
-        r = eosapi.set_contract('storage','../../programs/pyeos/contracts/storage/storage.py','../../programs/pyeos/contracts/storage/test.abi', 1)
+        r = eosapi.set_contract('storage', src_dir+'/../libs/storage.py', src_dir+'/test.abi', 1)
         assert r
 
 def test(name='abc'):
