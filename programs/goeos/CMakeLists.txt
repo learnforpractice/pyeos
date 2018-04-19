@@ -38,6 +38,18 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx
+)
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
@@ -63,13 +75,18 @@ add_custom_command(
 )
 
 add_library(goeos SHARED goeos.c main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
-    interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
+    interface/wallet_.cpp interface/pyobject.cpp 
+    interface/database_.cpp
+    interface/database_api.cpp
     interface/math_.cpp  
     interface/common.cpp
     interface/debug_.cpp
+    interface/ipc_.cpp
 #    interface/codelimit.c 
     wrap/eosapi.wrap.cpp 
-    wrap/database.wrap.cpp 
+    wrap/database.wrap.cpp
+    wrap/ipc.wrap.cpp
+    wrap/database_api.wrap.cpp
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/debug.wrap.cpp)
@@ -205,11 +222,16 @@ add_custom_command(
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/none
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
+set(GOSRC src/goeos/main.go
+src/goeos/server.go 
+src/goeos/client.go 
+src/bridge/bridge.go.in
+)
 
 add_custom_target( goinstall ALL
   ${GOFULLCMD}
   COMMENT "Running ${GOCMDPP}"
-  DEPENDS goeos ${OUTFILE} ${CMAKE_CURRENT_SOURCE_DIR}/src/bridge/bridge.go.in ${CMAKE_CURRENT_SOURCE_DIR}/none
+  DEPENDS goeos ${OUTFILE} ${GOSRC}
 )
 
 install( TARGETS

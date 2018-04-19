@@ -1,0 +1,4 @@
+package idl
+func test() {
+    
+}

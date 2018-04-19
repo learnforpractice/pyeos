@@ -7,6 +7,7 @@
 #include <eosio/http_plugin/http_plugin.hpp>
 #include <eosio/net_plugin/net_plugin.hpp>
 #include <eosio/producer_plugin/producer_plugin.hpp>
+#include <eos/py_plugin/py_plugin.hpp>
 #include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
@@ -19,26 +20,35 @@
 
 
 #include <Python.h>
-#include "../goeos/include/eos/py_plugin/py_plugin.hpp"
 
 using namespace appbase;
 using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
-static bool rpc_enabled = false;
+static bool rpc_server = false;
+static bool rpc_client = false;
+static bool eos_started = false;
+
+//rpc_interface.cpp
 
 bool is_init_finished() {
    return init_finished;
 }
 
+//eosapi_.cpp
+int produce_block_();
 
 void quit_app_() {
-   app().quit();
-   while (!shutdown_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   if (eos_started) {
+      produce_block_();
+      app().quit();
+      while (!shutdown_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      }
    }
 }
+
 
 extern "C" {
    void PyInit_eosapi();
@@ -46,6 +56,8 @@ extern "C" {
    PyObject* PyInit_wallet();
    //extern "C" PyObject* PyInit_hello();
    PyObject* PyInit_database();
+   PyObject* PyInit_database_api();
+   PyObject* PyInit_ipc();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
    PyObject* PyInit_debug();
@@ -65,13 +77,14 @@ extern "C" int init_rpcserver(fn_init _init);
 
 void eos_main() {
    try {
-
+      eos_started = true;
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
       app().register_plugin<account_history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
-      if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
+      app().register_plugin<py_plugin>();
+      if (!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
@@ -111,24 +124,53 @@ void init_console() {
    PyInit_wallet();
    PyInit_eosapi();
 //   PyInit_eostypes();
-//   PyInit_database();
+   PyInit_database();
+   PyInit_database_api();
+   PyInit_ipc();
 //   PyInit_blockchain();
 //   PyInit_util();
    PyInit_debug();
    PyRun_SimpleString("import wallet");
+   PyRun_SimpleString("import ipc");
    PyRun_SimpleString("import eosapi;");
-//   PyRun_SimpleString("import database;");
-//   PyRun_SimpleString("import util;");
+   PyRun_SimpleString("import database;");
+   PyRun_SimpleString("import database_api;");
+   //   PyRun_SimpleString("import util;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
 
 }
 
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+void py_exit();
+void my_handler(int s){
+   printf("Caught signal %d, exiting... \n",s);
+   py_exit();
+}
+
+int install_ctrl_c_handler()
+{
+   struct sigaction sigIntHandler;
+
+   sigIntHandler.sa_handler = my_handler;
+   sigemptyset(&sigIntHandler.sa_mask);
+   sigIntHandler.sa_flags = 0;
+
+   sigaction(SIGINT, &sigIntHandler, NULL);
+   return 0;
+}
+
 void interactive_console() {
+
    while (!init_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
+
    if (shutdown_finished) {
       return;
    }
@@ -138,10 +180,6 @@ void interactive_console() {
         "sys.path.append('../../programs/pyeos');"
         "sys.path.append('../../programs/pyeos/contracts');"
    );
-
-   ilog("+++++++++++++interactive_console: init_finished ${n}", ("n", init_finished));
-
-
 
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.init()");
@@ -155,21 +193,24 @@ void interactive_console() {
    PyRun_SimpleString("from backyard import test as bt");
    PyRun_SimpleString("from rpctest import test as rt");
 
+   if (true) {//(app().interactive_mode()) {
+      ilog("start interactive python.");
+//      PyRun_SimpleString("eosapi.register_signal_handler()");
+      PyRun_InteractiveLoop(stdin, "<stdin>");
+      Py_Finalize();
+   } else {
+      while (!shutdown_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      }
+   }
+
+
 //   PyRun_SimpleString("debug.run_code('import initrpc;initrpc.init()')");
 
 //   PyRun_SimpleString("from main import chain_controller as ctrl");
 
-   if (true) {
-      ilog("start interactive python.");
-//      PyRun_SimpleString("eosapi.register_signal_handler()");
-      PyRun_InteractiveLoop(stdin, "<stdin>");
-   }
+//   ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
 
-   while (!shutdown_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
-
-   Py_Finalize();
 }
 
 typedef void (*fn_eos_main)();
@@ -184,26 +225,39 @@ void init() {
 }
 
 extern "C" int goeos_main_(int argc, char** argv) {
+
    g_argc = argc;
    g_argv = argv;
 
    for (int i=0; i<argc; i++) {
-      if (0 == strcmp(argv[i], "--rpc-interface")) {
+      if (0 == strcmp(argv[i], "--rpc-server")) {
          wlog("rpc enabled");
-         rpc_enabled = true;
-         break;
+         rpc_server = true;
+      } else  if (0 == strcmp(argv[i], "--rpc-client")) {
+         wlog("rpc enabled");
+         rpc_client = true;
       }
    }
 
+   install_ctrl_c_handler();
+
    init_console();
 
-   if (rpc_enabled) {
+   if (rpc_client) {
+      PyRun_SimpleString(
+         "import sys;"
+         "sys.path.append('../../libraries/chain/rpc_interface');"
+      );
+      PyRun_SimpleString("import eosclient;eosclient.start()");
+      return 0;
+   } else if (rpc_server) {
       init_rpcserver(init);
+      //should not return to here
+      assert(0);
    } else {
       boost::thread t( eos_main );
+      interactive_console();
    }
-
-   interactive_console();
 
    return 0;
 

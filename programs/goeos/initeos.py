@@ -10,7 +10,7 @@ def init():
 
     psw = 'PW5Kk1h8RqDwf8CB8mKcz7WZ8r6MF9of9CYvrC96XdBL5Z1SwBVx9'
     
-    if not os.path.exists('config-dir/mywallet.wallet'):
+    if not os.path.exists('data-dir/mywallet.wallet'):
         psw = wallet.create('mywallet')
         print(psw)
     

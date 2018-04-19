@@ -402,22 +402,23 @@ def push_transaction2(signed_trx,sign=True):
     return push_transaction2_(<void*>ptr,sign)
 
 def traceback():
-    return traceback_();
-
+    return traceback_()
 
 def quit_app():
-    quit_app_();
+    quit_app_()
 
 exit_by_signal_handler = False
 
 def signal_handler(signal, frame):
     exit()
-    
+
+cdef extern void py_exit() with gil:
+    exit()
+
 def register_signal_handler():
     signal.signal(signal.SIGINT, signal_handler)
 
 def on_python_exit():
-    produce_block()
     quit_app_()
 
 atexit.register(on_python_exit)
