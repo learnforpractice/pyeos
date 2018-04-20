@@ -945,6 +945,21 @@ BOOST_FIXTURE_TEST_CASE(db_tests, TESTER) { try {
                       N(testapi) );
    BOOST_CHECK_EQUAL( res, success() );
 
+   CALL_TEST_FUNCTION_AND_CHECK_EXCEPTION( *this, "test_db", "idx_double_nan_create_fail", {},
+                                           transaction_exception, "NaN is not an allowed value for a secondary key");
+   CALL_TEST_FUNCTION_AND_CHECK_EXCEPTION( *this, "test_db", "idx_double_nan_modify_fail", {},
+                                           transaction_exception, "NaN is not an allowed value for a secondary key");
+
+   uint32_t lookup_type = 0; // 0 for find, 1 for lower bound, and 2 for upper bound;
+   CALL_TEST_FUNCTION_AND_CHECK_EXCEPTION( *this, "test_db", "idx_double_nan_lookup_fail", fc::raw::pack(lookup_type),
+                                           transaction_exception, "NaN is not an allowed value for a secondary key");
+   lookup_type = 1;
+   CALL_TEST_FUNCTION_AND_CHECK_EXCEPTION( *this, "test_db", "idx_double_nan_lookup_fail", fc::raw::pack(lookup_type),
+                                           transaction_exception, "NaN is not an allowed value for a secondary key");
+   lookup_type = 2;
+   CALL_TEST_FUNCTION_AND_CHECK_EXCEPTION( *this, "test_db", "idx_double_nan_lookup_fail", fc::raw::pack(lookup_type),
+                                           transaction_exception, "NaN is not an allowed value for a secondary key");
+
    BOOST_REQUIRE_EQUAL( validate(), true );
 } FC_LOG_AND_RETHROW() }
 
@@ -1170,6 +1185,37 @@ BOOST_FIXTURE_TEST_CASE(memory_tests, TESTER) { try {
    CALL_TEST_FUNCTION( *this, "test_memory", "test_memcpy_overlap_end", {} );
    produce_blocks(1000);
    CALL_TEST_FUNCTION( *this, "test_memory", "test_memcmp", {} );
+   produce_blocks(1000);
+
+#define test_memory_oob(func) \
+   try { \
+      CALL_TEST_FUNCTION( *this, "test_memory", func, {} ); \
+      BOOST_FAIL("assert failed in test out of bound memory in " func); \
+   } catch (...) { \
+      BOOST_REQUIRE_EQUAL(true, true); \
+   }
+
+#define test_memory_oob2(func) \
+   try { \
+      CALL_TEST_FUNCTION( *this, "test_memory", func, {} );\
+   } catch (const fc::exception& e) {\
+     if (!expect_assert_message(e, "access violation")) throw; \
+   }
+
+   test_memory_oob("test_outofbound_0");
+   test_memory_oob("test_outofbound_1");
+   test_memory_oob("test_outofbound_2");
+   test_memory_oob("test_outofbound_3");
+   test_memory_oob("test_outofbound_4");
+   test_memory_oob("test_outofbound_5");
+   test_memory_oob("test_outofbound_6");
+   test_memory_oob("test_outofbound_7");
+   test_memory_oob("test_outofbound_8");
+   test_memory_oob("test_outofbound_9");
+   test_memory_oob("test_outofbound_10");
+   test_memory_oob("test_outofbound_11");
+   test_memory_oob("test_outofbound_12");
+   test_memory_oob("test_outofbound_13");
 
    BOOST_REQUIRE_EQUAL( validate(), true );
 } FC_LOG_AND_RETHROW() }

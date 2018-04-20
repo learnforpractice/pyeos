@@ -113,7 +113,7 @@ inline bool validate( const Authority& auth ) {
       else if( pa->permission < a.permission ) return false;
       total_weight += a.weight;
    }
-   return total_weight > 0 && total_weight >= auth.threshold;
+   return auth.threshold > 0 && total_weight >= auth.threshold;
 }
 
 } } // namespace eosio::chain
