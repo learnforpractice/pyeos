@@ -28,6 +28,13 @@ class binaryen_instantiated_module : public wasm_instantiated_module_interface {
          call("apply", args, context);
       }
 
+      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) {
+         LiteralList args;
+         for(auto& arg: _args) {
+            args.push_back(Literal(uint64_t(arg)));
+         }
+         call(entry_point, args, context);
+      }
    private:
       linear_memory_type&        _shared_linear_memory;      
       std::vector<uint8_t>       _initial_memory;

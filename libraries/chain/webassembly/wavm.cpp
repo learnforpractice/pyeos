@@ -42,6 +42,13 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
          //_instance is deleted via WAVM's object garbage collection when wavm_rutime is deleted
       }
 
+      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) {
+         vector<Value> args;
+         for(auto& arg: _args) {
+            args.push_back(Value(uint64_t(arg)));
+         }
+         call(entry_point, args, context);
+      }
    private:
       void call(const string &entry_point, const vector <Value> &args, apply_context &context) {
          try {
