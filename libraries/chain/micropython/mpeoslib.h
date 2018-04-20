@@ -147,11 +147,23 @@ int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
       int db_##IDX##_next( int iterator, uint64_t* primary  ); \
       int db_##IDX##_previous( int iterator, uint64_t* primary );
 
+#define DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(IDX, TYPE)\
+      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const TYPE& secondary ); \
+      void db_##IDX##_update( int iterator, uint64_t payer, const TYPE& secondary ); \
+      void db_##IDX##_remove( int iterator ); \
+      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary ); \
+      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t primary ); \
+      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary ); \
+      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary ); \
+      int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ); \
+      int db_##IDX##_next( int iterator, uint64_t& primary  ); \
+      int db_##IDX##_previous( int iterator, uint64_t& primary );
+
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx64,  uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx128, eosio::chain::uint128_t)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_DEF(idx256, 2, eosio::chain::uint128_t)
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx_double, uint64_t)
-
+//DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(idx_double, uint64_t)
+//DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, float64_t)
 
 struct eosapi {
    uint64_t (*string_to_symbol)( uint8_t precision, const char* str );
