@@ -128,4 +128,6 @@ PyObject* push_messages_ex_(string& contracts, vector<string>& functions, vector
 
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
+void wast2wasm_( string& wast ,string& result);
+
 

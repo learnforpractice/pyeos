@@ -525,7 +525,6 @@ PyObject* transfer_(string& sender, string& recipient, int amount, string memo, 
 
 PyObject* push_message_(string& contract, string& action, string& args, map<string, string>& permissions,
                         bool sign, bool rawargs) {
-   signed_transaction trx;
    wlog("+++++++++++++++++push_message:${n}", ("n", contract));
    try {
       //      ilog("Converting argument to binary...");
@@ -938,6 +937,15 @@ int get_table_(string& scope, string& code, string& table, string& result) {
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
    return get_mpapi().compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
 }
+
+void wast2wasm_( string& wast ,string& result) {
+   try {
+      auto wasm = wast_to_wasm(wast);
+      result = string((char *)wasm.data(), wasm.size());
+   } catch (...) {
+   }
+}
+
 
 
 

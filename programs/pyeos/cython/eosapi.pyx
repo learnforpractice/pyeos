@@ -20,7 +20,13 @@ from typing import Dict, Tuple, List
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(char* log)
 
-    
+cdef extern from "<fc/crypto/xxhash.h>":
+    uint64_t XXH64(const char *data, size_t length, uint64_t seed);
+
+cdef extern from "<eosio/chain/wast_to_wasm.hpp>":
+    ctypedef unsigned char uint8_t
+    vector[uint8_t] wast_to_wasm( string& wast )
+
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
 
@@ -66,6 +72,9 @@ cdef extern from "eosapi_.hpp":
     object push_messages_ex_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
 
     int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+
+    void wast2wasm_( string& wast ,string& result)
+
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -475,4 +484,12 @@ def mp_compile(py_file):
     mpy_size = compile_and_save_to_buffer_(file_name, src_data, len(src_data), buffer.data(), buffer.size())
     s = string(buffer.data(), mpy_size)
     return <bytes>s
+
+def hash64(data, uint64_t seed):
+   return XXH64(data, len(data), seed)
+
+def wast2wasm( string& wast ):
+    cdef string wasm
+    wast2wasm_(wast, wasm)
+    return <bytes>wasm
 
