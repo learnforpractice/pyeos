@@ -48,7 +48,7 @@ namespace eosio { namespace chain {
 database_api *database_api::_instance = 0;
 
 database_api::database_api(const action& a)
-: db(fc::path("config-dir/shared_mem"), chainbase::database::read_only, config::default_shared_memory_size),
+: db(fc::path("data-dir/shared_mem"), chainbase::database::read_only, config::default_shared_memory_size),
  act(a),
  used_authorizations(act.authorization.size(), false),
  idx64(*this),
