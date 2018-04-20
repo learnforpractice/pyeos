@@ -8,9 +8,9 @@ key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 
 def init():
 
-    psw = 'PW5Kk1h8RqDwf8CB8mKcz7WZ8r6MF9of9CYvrC96XdBL5Z1SwBVx9'
+    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
     
-    if not os.path.exists('data-dir/mywallet.wallet'):
+    if not os.path.exists('mywallet.wallet'):
         psw = wallet.create('mywallet')
         print(psw)
     
@@ -40,4 +40,4 @@ def init():
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi,0)
-        eosapi.produce_block()
+    eosapi.produce_block()

@@ -11,13 +11,16 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 
 def init(func):
-    def func_wrapper(*args):
-        init_('currency', 'currency.py', 'currency.abi', __file__, 0)
+    def func_wrapper(*args, **kw_args):
+        if 'wasm' in kw_args and kw_args['wasm']:
+            init_('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', __file__, 0)
+        else:
+            init_('currency', 'currency.py', 'currency.abi', __file__, 2)
         return func(*args)
     return func_wrapper
 
 @init
-def test_issue():
+def test_issue(wasm=False):
     with producer:
         r = eosapi.push_message('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
         assert r
@@ -31,7 +34,7 @@ uint8_t                issuer_can_recall     = true;
 uint8_t                issuer_can_whitelist  = true;
 '''
 @init
-def test_create():
+def test_create(wasm=False):
     args = {"issuer":"currency",
             "maximum_supply":"1000000000.0000 CUR",
             "can_freeze":'1',
@@ -48,13 +51,13 @@ asset        quantity;
 string       memo;
 '''
 @init
-def test_transfer():
+def test_transfer(wasm=False):
     args = {"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
     with producer:
         r = eosapi.push_message('currency','transfer',args,{'currency':'active'})
         assert r
 @init
-def test():
+def test(wasm=False):
     args = {"to":"currency","quantity":"1000.0000 CUR","memo":""}
     r = eosapi.push_message('currency','issue',args,{'currency':'active'})
     assert r
@@ -81,7 +84,7 @@ def create_keys(n=100):
         if pub in exist_keys:
             continue
         priv_key = keys[pub]
-        print(priv_key)
+#        print(priv_key)
         wallet.import_key('mywallet', priv_key, False)
     wallet.save('mywallet')
 
@@ -105,7 +108,7 @@ def load_keys():
 
 #'issue',{"to":"currency","quantity":"1000.0000 CUR"
 @init
-def test2(count):
+def test2(count, wasm=False):
     import time
     import json
     
@@ -122,9 +125,10 @@ def test2(count):
 
     ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=False)
     assert ret
+    eosapi.produce_block()
+    
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-    eosapi.produce_block()
 
 def n2s(n, max_digits=5):
     number_map = ['1', '2', '3', '4', '5', 'a', 'b', 'c' , 'd', 'e']
@@ -133,7 +137,33 @@ def n2s(n, max_digits=5):
         _num.append(number_map[int(n/(10**i) % 10)])
     return ''.join(_num)
 
-@init
+def deploy_contract(currency, contract_type = 0):
+    if contract_type <= 0:
+        return
+    if contract_type==1:
+        r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', 1)
+    elif contract_type == 2:
+        with open('../../programs/pyeos/contracts/currency/currency.mpy', 'wb') as f:
+            data = eosapi.mp_compile('../../programs/pyeos/contracts/currency/currency.py')
+            f.write(data)
+        r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.mpy','../../contracts/currency/currency.abi', 1)
+    elif contract_type == 3:
+        wast = '../../build/contracts/currency/currency.wast'
+        key_words = b"hello,world\\00"
+        wast = '../../build/contracts/currency/currency.wast'
+        with open(wast, 'rb') as f:
+            data = f.read()
+            #data.find(key_words)
+            replace_str = b"%s\\00"%(currency.encode('utf8'),)
+            replace_str.zfill(len(key_words))
+            #replace key works with custom words to break the effect of code cache mechanism
+            data = data.replace(key_words, replace_str)
+            with open('currency2.wast', 'wb') as f:
+                f.write(data)
+        r = eosapi.set_contract(currency, 'currency2.wast', '../../build/contracts/currency/currency.abi',0)
+    else:
+        assert 0
+
 def test3(count, d=0):
     keys = list(wallet.list_keys().keys())
     for i in range(0, count):
@@ -146,32 +176,11 @@ def test3(count, d=0):
         if not eosapi.get_account(currency).permissions:
             r = eosapi.create_account('eosio', currency, key1, key2)
             assert r
-        if d:
-            if d==1:
-                r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.py','../../contracts/currency/currency.abi', 1)
-            elif d == 2:
-                with open('../../programs/pyeos/contracts/currency/currency.mpy', 'wb') as f:
-                    data = eosapi.mp_compile('../../programs/pyeos/contracts/currency/currency.py')
-                    f.write(data)
-                r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.mpy','../../contracts/currency/currency.abi', 1)
-            elif d == 3:
-                wast = '../../build/contracts/currency/currency.wast'
-                key_words = b"hello,world\\00"
-                wast = '../../build/contracts/currency/currency.wast'
-                with open(wast, 'rb') as f:
-                    data = f.read()
-                    #data.find(key_words)
-                    replace_str = b"%s\\00"%(currency.encode('utf8'),)
-                    replace_str.zfill(len(key_words))
-                    #replace key works with custom words to break the effect of code cache mechanism
-                    data = data.replace(key_words, replace_str)
-                    with open('currency2.wast', 'wb') as f:
-                        f.write(data)
-                r = eosapi.set_contract(currency, 'currency2.wast', '../../build/contracts/currency/currency.abi',0)
-            else:
-                assert 0
+        deploy_contract(currency, d)
 
     eosapi.produce_block()
+
+    time.sleep(0.5)
 
     accounts = []
     functions = []
@@ -188,9 +197,8 @@ def test3(count, d=0):
     ret = eosapi.push_messages(accounts, functions, args, per, True, rawargs=False)
 
     assert ret
-    if ret:
-        cost = ret['cost_time']
     eosapi.produce_block()
 
+    cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
