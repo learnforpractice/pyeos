@@ -186,9 +186,7 @@ void interactive_console() {
    PyRun_SimpleString("from apitest import test as at");
    PyRun_SimpleString("from cryptokitties import test as kt");
 //   PyRun_SimpleString("from evm import test as et");
-   PyRun_SimpleString("from storage import test as st");
    PyRun_SimpleString("from currency import test as ct");
-   PyRun_SimpleString("from cache import test as cct");
    PyRun_SimpleString("from hello import test as ht");
    PyRun_SimpleString("from backyard import test as bt");
    PyRun_SimpleString("from rpctest import test as rt");

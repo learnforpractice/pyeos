@@ -258,7 +258,7 @@ def apply(name, type):
 #    eosio_delay(190)
     if type == N('dbtest'):
 #        db_test()
-#        db_test_i64()
+        db_test_i64()
 #        db_test_idx64()
 #        db_test_idx256()
         '''
@@ -266,7 +266,7 @@ def apply(name, type):
         inline_send()
         print('inline_send return')
         '''
-        deffer_send()
+#        deffer_send()
     elif type == N('sayhello'):
         act = read_action()
         print('read_action return:', act)

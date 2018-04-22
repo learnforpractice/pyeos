@@ -25,7 +25,7 @@ def test(name=None):
 @init
 def play():
     with producer:
-        r = eosapi.push_message('hello','play','',{'counter':'active'},rawargs=True)
+        r = eosapi.push_message('hello','play','',{'hello':'active'},rawargs=True)
         assert r
 
 @init
