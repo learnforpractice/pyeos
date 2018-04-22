@@ -4,7 +4,11 @@ from libcpp.string cimport string
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
-    
+
+cdef extern from "<fc/log/logger.hpp>":
+    void ilog(char* log)
+    void elog(char* log)
+
 cdef extern from "database_api.hpp" namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
     
@@ -57,10 +61,15 @@ def get_code(uint64_t account):
     get_code_( account, code )
     return code
 
+cdef char buffer[1024*128]
+
 def get_i64( int iterator ):
-    cdef char buffer[256]
+#    cdef char buffer[256]
     cdef int size
     size = db_get_i64( iterator, buffer, sizeof(buffer) )
+    if size > sizeof(buffer):
+        size = sizeof(buffer)
+        elog("buffer not enough!")
     return string(buffer,size)
 
 def next_i64( int iterator):

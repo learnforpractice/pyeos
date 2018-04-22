@@ -3,8 +3,6 @@
 #include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/micropython_interface.hpp>
 
-#include <eosio/chain/evm_interface.hpp>
-
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/scope_sequence_object.hpp>
 #include <boost/container/flat_set.hpp>
