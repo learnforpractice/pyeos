@@ -29,8 +29,11 @@ def init():
         if not priv_key in exist_priv_keys:
             wallet.import_key('mywallet', priv_key)
 
+    from backyard import test
+    test.deploy_mpy()
+    
     src_dir = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(src_dir, '/contracts/cryptokitties'))
+
     contracts_path = os.path.join(src_dir, '../../build', 'contracts') 
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         if not eosapi.get_account(account).permissions:
