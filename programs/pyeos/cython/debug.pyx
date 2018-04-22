@@ -2,17 +2,18 @@
 from libcpp.string cimport string
 
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
-    void* execute_from_str(const char *str);
+    void* execute_from_str(const char* str);
 
 cdef extern from "<eosio/chain/evm_interface.hpp>":
     void evm_test_(string _code, string _data);
 
 cdef extern from "../interface/debug_.hpp":
     cdef struct mpapi:
-        void *(*execute_from_str)(const char *str)
+        void* (*execute_from_str)(const char* str)
+        void (*set_debug_mode)(int mode)
 
     void debug_test();
-    void set_debug_mode(int mode);
+    
     void run_code_(string code)
     mpapi& get_mpapi();
 
@@ -30,9 +31,11 @@ cdef extern from "py/gc.h":
     void gc_info(gc_info_t *info);
     void gc_dump_info();
     void gc_collect()
-    
+
 def eval(const char* code):
+    get_mpapi().set_debug_mode(1)
     get_mpapi().execute_from_str(code)
+    get_mpapi().set_debug_mode(0)
 
 def evm_test(string _code, string _data):
     evm_test_(_code, _data)

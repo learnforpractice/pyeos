@@ -626,6 +626,14 @@ int apply_context::db_get_i64( int iterator, char* buffer, size_t buffer_size ) 
    return obj.value.size();
 }
 
+int apply_context::db_get_i64_ex( int iterator, uint64_t& primary, char* buffer, size_t buffer_size ) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+   memcpy( buffer, obj.value.data(), std::min(obj.value.size(), buffer_size) );
+
+   primary = obj.primary_key;
+   return obj.value.size();
+}
+
 int apply_context::db_next_i64( int iterator, uint64_t& primary ) {
    if( iterator < -1 ) return -1; // cannot increment past end iterator of table
 

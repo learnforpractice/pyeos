@@ -115,6 +115,7 @@ int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, c
 void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
 void db_remove_i64( int itr );
 int db_get_i64( int itr, char* buffer, size_t buffer_size );
+int db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
 int db_next_i64( int itr, uint64_t* primary );
 int db_previous_i64( int itr, uint64_t* primary );
 int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
@@ -224,6 +225,7 @@ struct eosapi {
    void (*db_update_i64)( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
    void (*db_remove_i64)( int itr );
    int (*db_get_i64)( int itr, char* buffer, size_t buffer_size );
+   int (*db_get_i64_ex)( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
    int (*db_next_i64)( int itr, uint64_t* primary );
    int (*db_previous_i64)( int itr, uint64_t* primary );
    int (*db_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
@@ -304,6 +306,7 @@ struct mpapi {
    mp_obj_t (*mp_call_function_0)(mp_obj_t fun);
    mp_obj_t (*mp_compile)(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
    int (*compile_and_save_to_buffer)(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+   void (*set_debug_mode)(int mode);
 
 };
 

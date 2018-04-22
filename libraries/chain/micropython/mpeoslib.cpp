@@ -56,9 +56,14 @@ static struct eosapi s_eosapi;
 
 std::map<std::thread::id, struct mpapi*> api_map;
 
+#include <mutex>
+
+static std::mutex g_load_mutex;
 
 static int counter = 0;
 struct mpapi& get_mpapi() {
+   std::lock_guard<std::mutex> guard(g_load_mutex);
+
    std::thread::id this_id = std::this_thread::get_id();
    auto itr = api_map.find(this_id);
    if ( itr != api_map.end()) {
@@ -91,6 +96,8 @@ struct mpapi& get_mpapi() {
 
    mp_obtain_mpapi(api);
    api_map[this_id] = api;
+
+//   api->execute_from_str("import sys;sys.path.append('../../programs/pyeos/contracts/libs')");
    return *api;
 }
 
@@ -632,6 +639,12 @@ void db_remove_i64( int itr ) {
 int db_get_i64( int itr, char* buffer, size_t buffer_size ) {
    return ctx().db_get_i64( itr, buffer, buffer_size );
 }
+
+int db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size ) {
+   return ctx().db_get_i64_ex( itr, *primary, buffer, buffer_size );
+}
+
+
 int db_next_i64( int itr, uint64_t* primary ) {
    return ctx().db_next_i64(itr, *primary);
 }
@@ -1202,6 +1215,7 @@ void init_eosapi() {
    s_eosapi.db_update_i64 = db_update_i64;
    s_eosapi.db_remove_i64 = db_remove_i64;
    s_eosapi.db_get_i64 = db_get_i64;
+   s_eosapi.db_get_i64_ex = db_get_i64_ex;
    s_eosapi.db_next_i64 = db_next_i64;
    s_eosapi.db_previous_i64 = db_previous_i64;
    s_eosapi.db_find_i64 = db_find_i64;
