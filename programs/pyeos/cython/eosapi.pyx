@@ -485,7 +485,7 @@ def mp_compile(py_file):
     s = string(buffer.data(), mpy_size)
     return <bytes>s
 
-def hash64(data, uint64_t seed):
+def hash64(data, uint64_t seed = 0):
    return XXH64(data, len(data), seed)
 
 def wast2wasm( string& wast ):
