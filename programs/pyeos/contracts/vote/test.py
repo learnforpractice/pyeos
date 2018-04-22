@@ -1,4 +1,6 @@
 import time
+import struct
+
 import wallet
 import eosapi
 import initeos
@@ -14,13 +16,23 @@ def init(func):
         return func(*args)
     return func_wrapper
 
+@init
+def test_all():
+    addProposal('mike')
+    addProposal('jack')
+    giveRightToVote('hello')
+    delegate('john')
+    vote('hello', 0)
 
 @init
 def addProposal(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('vote','addproposal',name,{'vote':'active'},rawargs=True)
+        sender = eosapi.N('hello')
+        msg = int.to_bytes(sender, 8, 'little')
+        msg += 'mike'.encode('utf8')
+        r = eosapi.push_message('vote', 'addproposal', msg, {'vote':'active'}, rawargs=True)
         assert r
 
 @init
@@ -28,22 +40,23 @@ def giveRightToVote(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('vote','giveright',name,{'vote':'active'},rawargs=True)
+        msg = struct.pack('QQ', eosapi.N('vote'), eosapi.N('hello'))
+        r = eosapi.push_message('vote', 'giveright', msg, {'vote':'active'}, rawargs=True)
         assert r
 
 @init
 def delegate(name=None):
     with producer:
         if not name:
-            name = 'mike'
-        r = eosapi.push_message('vote','delegate',name,{'vote':'active'},rawargs=True)
+            name = 'hello'
+        msg = struct.pack('QQ', eosapi.N('vote'), eosapi.N(name))
+        r = eosapi.push_message('vote', 'delegate', msg, {'vote':'active'}, rawargs=True)
         assert r
 @init
-def vote(name=None):
+def vote(voter, proposal_index):
     with producer:
-        if not name:
-            name = 'mike'
-        r = eosapi.push_message('vote','vote',name,{'vote':'active'},rawargs=True)
+        msg = struct.pack('QQ', eosapi.N(voter), proposal_index)
+        r = eosapi.push_message('vote', 'vote', msg, {'vote':'active'}, rawargs=True)
         assert r
 
 @init

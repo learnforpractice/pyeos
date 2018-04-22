@@ -181,15 +181,8 @@ void interactive_console() {
         "sys.path.append('../../programs/pyeos/contracts');"
    );
 
-   PyRun_SimpleString("import initeos");
-   PyRun_SimpleString("initeos.init()");
-   PyRun_SimpleString("from apitest import test as at");
-   PyRun_SimpleString("from cryptokitties import test as kt");
-//   PyRun_SimpleString("from evm import test as et");
-   PyRun_SimpleString("from currency import test as ct");
-   PyRun_SimpleString("from hello import test as ht");
-   PyRun_SimpleString("from backyard import test as bt");
-   PyRun_SimpleString("from rpctest import test as rt");
+   PyRun_SimpleString("from initeos import *");
+   PyRun_SimpleString("init()");
 
    if (true) {//(app().interactive_mode()) {
       ilog("start interactive python.");

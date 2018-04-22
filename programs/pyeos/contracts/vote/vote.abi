@@ -1,7 +1,30 @@
 {
-  "actions": [{
-      "action": "sayhello",
-      "type": "bytes"
+  "structs": [{
+      "name": "vote",
+      "base": "",
+      "fields": [
+        {"name":"sender", "type":"name"},
+        {"name":"who", "type":"name"},
+      ]
     }
-  ]
+  ],
+  "actions": [{
+      "name": "addproposal",
+      "type": "bytes",
+      "ricardian_contract": ""
+    },{
+      "name": "giveright",
+      "type": "bytes",
+      "ricardian_contract": ""
+    },{
+      "name": "delegate",
+      "type": "bytes",
+      "ricardian_contract": ""
+    },{
+      "name": "vote",
+      "type": "bytes",
+      "ricardian_contract": ""
+    }
+  ],
+  "ricardian_clauses": []
 }

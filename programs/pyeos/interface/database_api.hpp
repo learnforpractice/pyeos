@@ -568,6 +568,7 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
 //using apply_handler = std::function<void(database_api&)>;
 
 void get_code_( uint64_t account, string& code );
+bool is_account_( uint64_t account );
 
 int db_get_i64( int iterator, char* buffer, size_t buffer_size );
 int db_next_i64( int iterator, uint64_t& primary );

@@ -1,6 +1,7 @@
 # cython: c_string_type=bytes, c_string_encoding=utf8
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp cimport bool
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
@@ -13,6 +14,8 @@ cdef extern from "database_api.hpp" namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
     
     void get_code_( uint64_t account, string& code )
+    bool is_account_( uint64_t account )
+
     int db_get_i64( int iterator, char* buffer, size_t buffer_size )
     int db_next_i64( int iterator, uint64_t& primary )
     int db_previous_i64( int iterator, uint64_t& primary )
@@ -60,6 +63,10 @@ def get_code(uint64_t account):
     cdef string code
     get_code_( account, code )
     return code
+
+def is_account(uint64_t account):
+    return is_account_(account)
+
 
 cdef char buffer[1024*128]
 

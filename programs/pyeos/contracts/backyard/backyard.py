@@ -7,7 +7,6 @@ def sayHello():
 def deploy(mod_name, src_code):
     print('++++++++++++deploy:mod_name', mod_name)
     id = hash64(mod_name)
-    print(code, id)
     itr = db_find_i64(code, code, code, id)
     if itr < 0:
         db_store_i64(code, code, code, id, src_code)

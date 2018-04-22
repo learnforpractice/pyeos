@@ -72,7 +72,7 @@ Currently only test with Python 3.6 on macOS 10.12.6
 <a name="aboutcodestyle"></a>
 # About code style
 
-Bad code style will affect the cooperation between developers. So there must be some rule for developers to follow. Here is my recommendation: [google cpp guide](https://google.github.io/styleguide/cppguide.html) Who use eclipse as their IDE can use the following tool to format there cpp code.
+Bad code style will affect the cooperation between developers. So there must be some rule for developers to follow. Here is my recommendation: [google cpp guide](https://google.github.io/styleguide/cppguide.html) Who use eclipse as their IDE can use the following tool to format their cpp code.
 http://www.cppstyle.com/
 
 Also in order to compatible with eos source code, Change the tab width to 3 spaces.
@@ -80,7 +80,7 @@ Also in order to compatible with eos source code, Change the tab width to 3 spac
 <a name="runningpyeos"></a>
 # Running Pyeos
 
-After successful build of project,run the following commands to start Pyeos.
+After build project successfully,run the following commands to start Pyeos.
 
 ```
 cd ~/dev/eos/build/programs/

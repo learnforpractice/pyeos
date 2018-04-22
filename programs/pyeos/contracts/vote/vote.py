@@ -3,17 +3,18 @@
 import ustruct as struct
 from eoslib import *
 #from storage import *
-import storage
-print(storage.__path__)
-print(dir(storage))
+from backyard.storage import SDict, SList, register_pack_func, register_unpack_func
 
 code = N('vote')
 scope = code
 payer = code
 
-def require(condition, msg = ''):
-    print("++++++++++++++require:",condition)
-    eosio_assert(condition, msg)
+def require(cond, msg = ''):
+    if cond:
+        cond = 1
+    else:
+        cond = 0
+    eosio_assert(cond, msg)
 
 class Voter(object):
     def __init__(self):
@@ -22,8 +23,8 @@ class Voter(object):
         self.delegate = 0; # person delegated to
         self.vote = 0;   # index of the voted proposal
 
-    def pack(self):
-        return struct.pack('QBQB', self.weight, self.voted, self.delegate, self.vote)
+    def pack(v):
+        return struct.pack('QBQB', v.weight, v.voted, v.delegate, v.vote)
 
     def unpack(data):
         v = Voter()
@@ -44,9 +45,9 @@ class Proposal(object):
         self.name = _name;   # short name (up to 32 bytes)
         self.voteCount = _voteCount; # number of accumulated votes
 
-    def pack(self):
-        data = int.to_bytes(voteCount, 4, 'little')
-        return data + self.name
+    def pack(v):
+        data = int.to_bytes(v.voteCount, 4, 'little')
+        return data + v.name
 
     def unpack(data):
         v = Proposal()
@@ -61,12 +62,12 @@ class Proposal(object):
                 self.voteCount == other.voteCount
 
 class Ballot(object):
-    def __init__(self):
-        self.sender = current_sender()
+    def __init__(self, sender):
+        self.sender = sender
         
         self.chairperson = 0;
-        self.voters = SDict(table_id=1, value_type=Voter)
-        self.proposals = SList(table_id=2, value_type=Proposal)
+        self.voters = SDict(code, table_id=1, value_type=Voter)
+        self.proposals = SList(code, table_id=2, value_type=Proposal)
 
         #FIXME only need to set once
         chairperson = N('vote');
@@ -81,10 +82,14 @@ class Ballot(object):
     # Give `voter` the right to vote on this ballot.
     # May only be called by `chairperson`.
     def giveRightToVote(self, voter):
-        require_auth(N('vote'))
-        require(not voters[voter].voted,"The voter already voted.")
-        require(voters[voter].weight == 0)
-        voters[voter].weight = 1;
+        require_auth(self.sender)
+        if self.voters.find(voter):
+            return
+
+        v = Voter()
+        v.weight = 1
+        # save it by assign a new value
+        self.voters[voter] = v
 
         '''
         require(
@@ -101,10 +106,14 @@ class Ballot(object):
 
     # Delegate your vote to the voter `to`.
     def delegate(self, to):
-        require(to != sender, "Self-delegation is disallowed.");
+        #not a voter
+        if not self.voters.find(to):
+            return
+#        require(self.voters.find(to), n2s(to) + ' is not a voter')
+        require(to != self.sender, "Self-delegation is disallowed.")
         # assigns reference
-        voter = self.voters[sender]
-        require(not voter.voted, "You already voted.");
+        voter = self.voters[self.sender]
+        require(not voter.voted, "You already voted.")
 
         # Forward the delegation as long as
         # `to` also delegated.
@@ -114,10 +123,15 @@ class Ballot(object):
         # In this case, the delegation will not be executed,
         # but in other situations, such loops might
         # cause a contract to get "stuck" completely.
-        while self.voters[to].delegate != 0:
-            to = self.voters[to].delegate
+        while True:
+            v = self.voters.find(to)
+            if not v:
+                break
+            if v.delegate == 0:
+                break
+            to = v.delegate
             # We found a loop in the delegation, not allowed.
-            require(to != sender, "Found loop in delegation.")
+            require(to != self.sender, "Found loop in delegation.")
 
         # Since `sender` is a reference, this
         # modifies `voters[msg.sender].voted`
@@ -125,7 +139,7 @@ class Ballot(object):
         voter.delegate = to
 
         #-- save changed voter
-        self.voters[sender] = voter
+        self.voters[self.sender] = voter
         
         delegate_ = self.voters[to]
         if delegate_.voted:
@@ -139,7 +153,7 @@ class Ballot(object):
 
     #/ Give your vote (including votes delegated to you)
     #/ to proposal `proposals[proposal].name`.
-    def vote(proposal):
+    def vote(self, proposal):
         voter = self.voters[self.sender]
         require(not voter.voted, "Already voted.");
         voter.voted = True;
@@ -188,6 +202,11 @@ def deploy(mod_name, src_code):
         if itr >= 0:
             db_remove_i64(itr)
 
+def delegate(name=None):
+        msg = struct.pack('QQ', eosapi.N('vote'), eosapi.N(name))
+def vote(voter, proposal_index):
+        msg = struct.pack('QQ', eosapi.N(voter), proposal_index)
+
 def apply(name, action):
     if action == N('deploy'):
         require_auth(code)
@@ -195,25 +214,31 @@ def apply(name, action):
         length = int.from_bytes(msg[:1], 'little')
         mod_name = msg[1:1+length]
         src_code = msg[1+length:]
-        print('+++++++++++++++++src_code type:', src_code[0])
+        print('++++++++++++++++ +src_code type:', src_code[0])
         deploy(mod_name, src_code)
     elif action == N('addproposal'):
-        b = Ballot()
-        account = read_action()
-        b.addProposal(account)
+        msg = read_action()
+        assert len(msg) > 8
+        sender = int.from_bytes(msg[:8], 'little')
+        proposal = msg[8:].decode('utf8')
+        b = Ballot(sender)
+        b.addProposal(proposal)
     elif action == N('giveright'):
-        b = Ballot()
-        account = read_action()
-        account = N(account)
-        b.giveRightToVote(account)
+        msg = read_action()
+        sender = int.from_bytes(msg[:8], 'little')
+        who = int.from_bytes(msg[8:], 'little')
+        b = Ballot(sender)
+        b.giveRightToVote(who)
     elif action == N('delegate'):
-        b = Ballot()
-        account = read_action()
-        account = N(account)
-        b.delegate(account)
+        msg = read_action()
+        sender = int.from_bytes(msg[:8], 'little')
+        who = int.from_bytes(msg[8:], 'little')
+        b = Ballot(sender)
+        b.delegate(who)
     elif action == N('vote'):
-        b = Ballot()
-        account = read_action()
-        account = N(account)
-        b.vote(account)
+        msg = read_action()
+        sender = int.from_bytes(msg[:8], 'little')
+        proposal_index = int.from_bytes(msg[8:], 'little')
+        b = Ballot(sender)
+        b.vote(proposal_index)
 

@@ -82,7 +82,7 @@ void database_api::get_code(uint64_t account, string& code) {
    code = string(a.code.data(), a.code.size());
 }
 
-bool database_api::is_account( const account_name& account )const {
+bool database_api::is_account(const account_name& account)const {
    return nullptr != db.find<account_object,by_name>( account );
 }
 
@@ -264,6 +264,10 @@ int database_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 
 void get_code_( uint64_t account, string& code ) {
    database_api::get().get_code( account, code);
+}
+
+bool is_account_( uint64_t account ) {
+   return database_api::get().is_account( account );
 }
 
 int db_get_i64( int iterator, char* buffer, size_t buffer_size ) {

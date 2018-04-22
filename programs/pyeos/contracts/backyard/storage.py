@@ -1,12 +1,6 @@
 import ustruct as struct
 from eoslib import *
 
-code = None
-scope = None
-payer = None
-
-type_map = {int:0, str: 1, bytes: 2}
-
 def pack_int(value):
     return b'\x00' + int.to_bytes(value, 8, 'little')
 
@@ -25,23 +19,30 @@ def pack_bytes(value):
 def unpack_bytes(value):
     return value[1:]
 
-pack_funcs = {0:pack_int, 1:pack_str, 2: pack_bytes}
+pack_funcs = {int:pack_int, str:pack_str, bytes: pack_bytes}
 unpack_funcs = {0:unpack_int, 1:unpack_str, 2:unpack_bytes}
 
-def get_type_id(value):
-    return type_map[type(value)]
-
 def _pack(value):
-    type_id = get_type_id(value)
-    if type_id in pack_funcs:
-        return pack_funcs[type_id](value)
-    raise Exception('unknow type')
+    _type = type(value)
+    if _type in pack_funcs:
+        return pack_funcs[_type](value)
+    raise Exception('unsupported type')
 
 def _unpack(value):
     type_id = value[0]
     if type_id in unpack_funcs:
         return (type_id, unpack_funcs[type_id](value))
-    return (value[0], value[1:])
+    raise Exception('unsupported type')
+
+def register_pack_func(_type, func):
+    if _type in pack_funcs:
+        raise Exception('pack type already registed')
+    pack_funcs[_type] = func
+
+def register_unpack_func(type_id, func):
+    if type_id in pack_funcs:
+        raise Exception('unpack type already registed')
+    unpack_funcs[type_id] = func
 
 def _get_hash(key):
     if type(key) is int:
@@ -52,25 +53,23 @@ def _get_hash(key):
         return int.from_bytes(key, 'little')
     return hash64(key)
 
-def storage_find(table_id, id):
+def storage_find(code, table_id, id):
     itr = db_find_i64(code, code, table_id, id)
     if itr >= 0:
-        value = db_get_i64(itr)
-        return _unpack(value)
+        return db_get_i64(itr)
     return None
 
 def storage_get(itr):
-    value = db_get_i64(itr)
-    return _unpack(value)
+    return db_get_i64(itr)
 
-def storage_set(table_id, key, value):
+def storage_set(code, table_id, key, value):
     itr = db_find_i64(code, code, table_id, key)
     if itr >= 0:
         db_update_i64(itr, code, value)
     else:
-        db_store_i64(code, table_id, payer, key, value)
+        db_store_i64(code, table_id, code, key, value)
 
-def storage_remove(table_id, key):
+def storage_remove(code, table_id, key):
     itr = db_find_i64(code, code, table_id, key)
     if itr >= 0:
         db_remove_i64(itr)
@@ -82,7 +81,8 @@ class storage(object):
 class SList(storage):
     #FIXME
     table_counter = 0
-    def __init__(self,table_id = None, value_type = None):
+    def __init__(self, _code, table_id = None, value_type = None):
+        self.code = _code
         self._dict = {}
         if table_id:
             self.table_id = table_id
@@ -94,7 +94,7 @@ class SList(storage):
 
         self.list_size_id = hash64('list.size%d')
 
-        itr = db_find_i64(code, code, table_id, self.list_size_id)
+        itr = db_find_i64(self.code, self.code, table_id, self.list_size_id)
         if itr >= 0:
             self.list_size = db_get_i64(itr)
             self.list_size = int.from_bytes(self.list_size, 'little')
@@ -103,7 +103,7 @@ class SList(storage):
 
         self.value_type = value_type
         
-        itr = db_end_i64(code, scope, table_id)
+        itr = db_end_i64(self.code, self.code, table_id)
         if itr == -1: #no value in table
             return
 #        print('+++itr:', itr) # itr should be -2
@@ -150,7 +150,7 @@ class SList(storage):
 
     def unpack(self, data):
         if self.value_type:
-            return value_type.unpack(data)
+            return self.value_type.unpack(data)
         value_type = data[0]
         if value_type == 0: #int
             _value = int.from_bytes(data[1:], 'little')
@@ -180,24 +180,24 @@ class SList(storage):
 
     def update_size(self):
         _value = int.to_bytes(self.list_size, 4, 'little')
-        itr = db_find_i64(code, scope, self.table_id, self.list_size_id)
+        itr = db_find_i64(self.code, self.code, self.table_id, self.list_size_id)
         if itr < 0:
-            db_store_i64(scope, self.table_id, payer, self.list_size_id, _value)
+            db_store_i64(self.code, self.table_id, self.code, self.list_size_id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            db_update_i64(itr, self.code, _value)
 
     def setitem(self, index, val):
         id = index
         if self.value_type:
-            _value = val.pack()
+            _value = self.value_type.pack(val)
         else:
             _value = self.pack(val)
 
-        itr = db_find_i64(code, scope, self.table_id, id)
+        itr = db_find_i64(self.code, self.code, self.table_id, id)
         if itr < 0:
-            db_store_i64(scope, self.table_id, payer, id, _value)
+            db_store_i64(self.code, self.table_id, self.code, id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            db_update_i64(itr, self.code, _value)
 
     def __setitem__(self, index, val):
         if index < 0 or index >= self.list_size:
@@ -213,7 +213,7 @@ class SList(storage):
         if index in self._dict:
             return self._dict[index]
 
-        itr = db_find_i64(code, scope, self.table_id, index)
+        itr = db_find_i64(self.code, self.code, self.table_id, index)
         if itr >= 0:
             value = db_get_i64(itr)
             value = self.unpack(value)
@@ -258,7 +258,8 @@ class SList(storage):
 # key_type key_length value_type value_length key_data value_data
 class SDict(storage):
     table_counter = 0
-    def __init__(self, table_id = None, key_type = None, value_type = None):
+    def __init__(self, _code, table_id = None, key_type = None, value_type = None):
+        self.code = _code
         self._dict = {}
         if table_id:
             self.key_table_id = hash64('dict.key.%d'%(table_id,))
@@ -284,14 +285,15 @@ class SDict(storage):
             data = _pack(obj)
         return data
 
-    def unpack(self, type_id, data):
+    def unpack(self, data):
+        type_id = data[0]
         if type_id == 3:
             table_id = int.from_bytes(data, 'little')
             return SList(table_id=table_id)
         elif type_id == 4:
             table_id = int.from_bytes(data, 'little')
             return SDict(table_id=table_id)
-        return data
+        return _unpack(data)
 
     def get_hash(self, v):
         if isinstance(v, storage):
@@ -305,15 +307,17 @@ class SDict(storage):
         
         id = self.get_hash(key)
         
-        res = storage_find(self.key_table_id, key)
-        if not res:
+        key_value = storage_find(self.code, self.key_table_id, id)
+        if not key_value:
             raise KeyError
 
-        type_id, key = res
-        key = self.unpack(type_id, key)
+        key = self.unpack(key_value)
  
-        type_id, value = storage_find(self.key_table_id, key)
-        value = self.unpack(type_id, value)
+        value = storage_find(self.code, self.value_table_id, id)
+        if self.value_type:
+            value = self.value_type.unpack(value)
+        else:
+            value = self.unpack(value)
 
         self._dict[key] = value
         return value
@@ -324,15 +328,17 @@ class SDict(storage):
         
         id = self.get_hash(key)
         
-        res = storage_find(self.key_table_id, key)
-        if not res:
+        key_value = storage_find(self.code, self.key_table_id, id)
+        if not key_value:
             return False
 
-        type_id, key = res
-        key = self.unpack(type_id, key)
+        key = self.unpack(key_value)
  
-        type_id, value = storage_find(self.key_table_id, key)
-        value = self.unpack(type_id, value)
+        value = storage_find(self.code, self.value_table_id, id)
+        if self.value_type:
+            value = self.value_type.unpack(value)
+        else:
+            value = self.unpack(value)
 
         self._dict[key] = value
         return value
@@ -348,16 +354,17 @@ class SDict(storage):
         id = self.get_hash(key)
 
         raw_key = self.pack(key)
+
         if self.value_type:
-            raw_val = val.pack()
+            raw_val = self.value_type.pack(val)
         else:
             raw_val = self.pack(val)
 
-        storage_set(self.key_table_id, id, raw_key)
-        storage_set(self.value_table_id, id, raw_val)
+        storage_set(self.code, self.key_table_id, id, raw_key)
+        storage_set(self.code, self.value_table_id, id, raw_val)
 
     def __iter__(self):
-        self.idx = db_end_i64(code, scope, self.key_table_id)
+        self.idx = db_end_i64(self.code, self.code, self.key_table_id)
         return self
 
     def __next__(self):
@@ -395,16 +402,9 @@ class SDict(storage):
         raise Exception("repr is not supported in SDict")
 
 def apply(name, type):
-    global code
-    global scope
-    global payer
     code = current_receiver()
-#    print('++++current_receiver:', n2s(code))
-    scope = code
-    payer = code
-
     if type == N('slisttest'):
-        sl = SList(table_id=1)
+        sl = SList(code, table_id=1)
 #        print('+++++++++len(sl):', len(sl))
         for i in range(10): #len(sl)):
             sl[i]
@@ -412,8 +412,8 @@ def apply(name, type):
         sl.append(read_action())
 
     elif type == N('sdicttest'):
-        a = SDict(N('a'))
-        b = SDict(N('b'))
+        a = SDict(code, N('a'))
+        b = SDict(code, N('b'))
 #        for key in a:
 #            print('==========', key) #, a[key])
         a[100] = 'hello'
