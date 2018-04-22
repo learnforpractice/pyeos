@@ -55,15 +55,15 @@ def deploy_mpy():
     libs = ('asset.py', 'cache.py', 'storage.py', 'garden.py')
     code = eosapi.N('backyard')
     for file_name in libs:
+        print('deploy ', file_name)
         src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
+        file_name = file_name.replace('.py', '.mpy')
         src_id = eosapi.hash64(file_name, 0)
         itr = database_api.find_i64(code, code, code, src_id)
         if itr >= 0:
             old_src = database_api.get_i64(itr)
             if old_src[1:] == src_code:
                 continue
-
-        file_name = file_name.replace('.py', '.mpy')
         mod_name = file_name
         msg = int.to_bytes(len(mod_name), 1, 'little')
         msg += mod_name.encode('utf8')

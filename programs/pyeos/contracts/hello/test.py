@@ -1,4 +1,6 @@
+import os
 import time
+
 import wallet
 import eosapi
 import initeos

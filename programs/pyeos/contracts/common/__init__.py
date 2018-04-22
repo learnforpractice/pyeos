@@ -1,4 +1,5 @@
 import os
+import time
 import pickle
 
 import initeos
@@ -66,7 +67,11 @@ class Sync(object):
             self.src_dir = os.path.dirname(os.path.abspath(__file__))
 
     def need_update(self, src_dir, src_file, mpy=False):
-        id = eosapi.hash64(src_file)
+        if mpy:
+            id = eosapi.hash64(src_file.replace('.py', '.mpy'))
+        else:
+            id = eosapi.hash64(src_file)
+
         code = self.account
         itr = database_api.find_i64(code, code, code, id)
         if itr < 0:
@@ -137,7 +142,7 @@ class Sync(object):
 
     def deploy_mpy(self, file_name):
         _abs_file_path = os.path.join(self.src_dir, file_name)
-        if not self.need_update(self.src_dir, _abs_file_path, mpy=True):
+        if not self.need_update(self.src_dir, file_name, mpy=True):
             print('++++++++++:', file_name, "up to date")
             return
 
@@ -154,7 +159,6 @@ class Sync(object):
         assert r
 
         producer.produce_block()
-        self.save()
         time.sleep(0.2)
 
     def deploy_all_mpy(self):
