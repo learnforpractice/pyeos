@@ -1,7 +1,7 @@
-import database_api
+import eoslib
 n = eosapi.N('rpctest')
-itr = database_api.find_i64(n, n, n, eosapi.N('name'))
-ret = database_api.get_i64(itr)
+itr = eoslib.db_find_i64(n, n, n, eosapi.N('name'))
+ret = eoslib.db_get_i64(itr)
 print(ret)
 
 

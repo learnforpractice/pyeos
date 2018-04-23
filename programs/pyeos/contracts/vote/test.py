@@ -7,6 +7,8 @@ import initeos
 
 from common import init_, producer
 
+import vote
+
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 

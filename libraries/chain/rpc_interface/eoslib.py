@@ -1,4 +1,4 @@
-import database_api
+import eoslib
 
 client = None
 
@@ -43,7 +43,7 @@ def get_client():
     return client
 
 def get_code(account):
-    return database_api.get_code(account)
+    return eoslib.get_code(account)
 
 def read_action():
     return client.read_action()
@@ -58,26 +58,26 @@ def db_remove_i64(itr: int):
     client.db_remove_i64(itr) 
 
 def db_get_i64(itr: int):
-#    return database_api.get_i64(itr)
+#    return eoslib.db_get_i64(itr)
     return client.db_get_i64(itr)
 
 def db_next_i64(itr: int):
-#    return database_api.next_i64(itr)
+#    return eoslib.db_next_i64(itr)
     return client.db_next_i64(itr)
 
 def db_previous_i64(itr: int):
-#    return database_api.previous_i64(itr)
+#    return eoslib.db_previous_i64(itr)
     return client.db_previous_i64(itr)
 
 def db_find_i64(code: int, scope: int, table: int, id: int):
-#    return database_api.find_i64(code, scope, table, id)
+#    return eoslib.db_find_i64(code, scope, table, id)
     return client.db_find_i64(code, scope, table, id)
 
 def db_lowerbound_i64(code: int, scope: int, table: int, id: int):
-    return database_api.lowerbound_i64(code, scope, table, id)
+    return eoslib.db_lowerbound_i64(code, scope, table, id)
 
 def db_upperbound_i64(code: int, scope: int, table: int, id: int):
-    return database_api.upperbound_i64(code, scope, table, id)
+    return eoslib.db_upperbound_i64(code, scope, table, id)
 
 def db_end_i64(code: int, scope: int, table: int):
-    return database_api.end_i64(code, scope, table)
+    return eoslib.db_end_i64(code, scope, table)

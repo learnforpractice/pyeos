@@ -3,7 +3,7 @@ import time
 import wallet
 import eosapi
 import initeos
-import database_api
+import eoslib
 from common import init_, producer
 
 print('please make sure you are running the following command before test')
@@ -32,9 +32,9 @@ def deploy():
     for file_name in libs:
         src_code = open(os.path.join(src_dir, file_name), 'rb').read()
         src_id = eosapi.hash64(file_name, 0)
-        itr = database_api.find_i64(code, code, code, src_id)
+        itr = eoslib.db_find_i64(code, code, code, src_id)
         if itr >= 0:
-            old_src = database_api.get_i64(itr)
+            old_src = eoslib.db_get_i64(itr)
             if old_src[1:] == src_code:
                 continue
         mod_name = file_name
@@ -59,9 +59,9 @@ def deploy_mpy():
         src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
         file_name = file_name.replace('.py', '.mpy')
         src_id = eosapi.hash64(file_name, 0)
-        itr = database_api.find_i64(code, code, code, src_id)
+        itr = eoslib.db_find_i64(code, code, code, src_id)
         if itr >= 0:
-            old_src = database_api.get_i64(itr)
+            old_src = eoslib.db_get_i64(itr)
             if old_src[1:] == src_code:
                 continue
         mod_name = file_name

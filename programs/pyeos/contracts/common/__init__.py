@@ -4,7 +4,7 @@ import pickle
 
 import initeos
 import eosapi
-import database_api
+import eoslib
 
 producer = eosapi.Producer()
 CODE_TYPE_WAST = 0
@@ -73,11 +73,11 @@ class Sync(object):
             id = eosapi.hash64(src_file)
 
         code = self.account
-        itr = database_api.find_i64(code, code, code, id)
+        itr = eoslib.db_find_i64(code, code, code, id)
         if itr < 0:
             return True
 
-        old_src = database_api.get_i64(itr)
+        old_src = eoslib.db_get_i64(itr)
         _full_file_path = os.path.join(src_dir, src_file)
 
         if not mpy:

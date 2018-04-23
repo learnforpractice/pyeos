@@ -1,7 +1,7 @@
 import time
 import wallet
 import eosapi
-import database_api
+import eoslib
 import initeos
 
 from common import init_, producer
@@ -51,9 +51,9 @@ def test2(count):
     code = eosapi.N('greeter')
     id = eosapi.hash64('greeting', 0)
     greeting = 0
-    itr = database_api.find_i64(code, code, code, id)
+    itr = eoslib.db_find_i64(code, code, code, id)
     if itr >= 0:
-        greeting = database_api.get_i64(itr)
+        greeting = eoslib.db_get_i64(itr)
         print(greeting[1:])
 
 @init

@@ -565,52 +565,39 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
       uint64_t                            _cpu_usage;
 };
 
-//using apply_handler = std::function<void(database_api&)>;
+class softfloat_api {
+   public:
+      // TODO add traps on truncations for special cases (NaN or outside the range which rounds to an integer)
+//      using context_aware_api::context_aware_api;
+      // float binops
+      static bool is_nan( const float32_t f ) {
+         return ((f.v & 0x7FFFFFFF) > 0x7F800000);
+      }
+      static bool is_nan( const float64_t f ) {
+         return ((f.v & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000);
+      }
+      static bool is_nan( const float128_t& f ) {
+         const uint32_t* iptr = (const uint32_t*)&f;
+         return softfloat_isNaNF128M( iptr );
+      }
+      static float32_t to_softfloat32( float f ) {
+         return *reinterpret_cast<float32_t*>(&f);
+      }
+      static float64_t to_softfloat64( double d ) {
+         return *reinterpret_cast<float64_t*>(&d);
+      }
+      static float from_softfloat32( float32_t f ) {
+         return *reinterpret_cast<float*>(&f);
+      }
+      static double from_softfloat64( float64_t d ) {
+         return *reinterpret_cast<double*>(&d);
+      }
+      static constexpr uint32_t inv_float_eps = 0x4B000000;
+      static constexpr uint64_t inv_double_eps = 0x4330000000000000;
 
-void get_code_( uint64_t account, string& code );
-bool is_account_( uint64_t account );
-
-int db_get_i64( int iterator, char* buffer, size_t buffer_size );
-int db_next_i64( int iterator, uint64_t& primary );
-int db_previous_i64( int iterator, uint64_t& primary );
-int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
-
-
-#define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(IDX, TYPE)\
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary );\
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t primary );\
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary );\
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary );\
-      int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table );\
-      int db_##IDX##_next( int iterator, uint64_t& primary  );\
-      int db_##IDX##_previous( int iterator, uint64_t& primary );
-
-#define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP_DEF(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<const ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary );\
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t primary );\
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary );\
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary );\
-      int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table );\
-      int db_##IDX##_next( int iterator, uint64_t& primary  );\
-      int db_##IDX##_previous( int iterator, uint64_t& primary );
-
-#define DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(IDX, TYPE)\
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const char* secondary, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, char* secondary, size_t data_len, uint64_t primary ); \
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  char* secondary, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table,  char* secondary, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ); \
-      int db_##IDX##_next( int iterator, uint64_t* primary  ); \
-      int db_##IDX##_previous( int iterator, uint64_t* primary );
-
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(idx64,  uint64_t)
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(idx128, uint128_t)
-DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP_DEF(idx256, 2, uint128_t)
-DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
-
+      static bool sign_bit( float32_t f ) { return f.v >> 31; }
+      static bool sign_bit( float64_t f ) { return f.v >> 63; }
+};
 
 } } // namespace eosio::chain
 

@@ -48,9 +48,9 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx
 )
 
 add_custom_command(
@@ -90,6 +90,7 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/common.cpp
     interface/debug_.cpp
     interface/debug_.cpp
+    interface/eoslib_.cpp
     interface/database_api.cpp
     interface/wasm_.cpp
     interface/ipc_.cpp
@@ -97,7 +98,7 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     wrap/ipc.wrap.cpp 
     wrap/eosapi.wrap.cpp 
     wrap/database.wrap.cpp 
-    wrap/database_api.wrap.cpp 
+    wrap/eoslib.wrap.cpp 
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/debug.wrap.cpp)

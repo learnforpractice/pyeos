@@ -56,7 +56,7 @@ extern "C" {
    PyObject* PyInit_wallet();
    //extern "C" PyObject* PyInit_hello();
    PyObject* PyInit_database();
-   PyObject* PyInit_database_api();
+   PyObject* PyInit_eoslib();
    PyObject* PyInit_ipc();
    PyObject* PyInit_blockchain();
    PyObject* PyInit_util();
@@ -125,7 +125,7 @@ void init_console() {
    PyInit_eosapi();
 //   PyInit_eostypes();
    PyInit_database();
-   PyInit_database_api();
+   PyInit_eoslib();
    PyInit_ipc();
 //   PyInit_blockchain();
 //   PyInit_util();
@@ -134,7 +134,7 @@ void init_console() {
    PyRun_SimpleString("import ipc");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import database;");
-   PyRun_SimpleString("import database_api;");
+   PyRun_SimpleString("import eoslib;");
    //   PyRun_SimpleString("import util;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
