@@ -70,7 +70,7 @@ void apply_context::exec_one()
       const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
       privileged = a.privileged;
       auto native = mutable_controller.find_apply_handler(receiver, act.account, act.name);
-//      ilog("pushing blocks from fork ${n1} ${n2} ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
+//      ilog("exec_once receiver: ${n1} act.account: ${n2} act.name: ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
 
       if (native) {
          (*native)(*this);

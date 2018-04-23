@@ -67,7 +67,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
          return;
       }
    }
-   ilog("++++++++++update code");
+   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
    mp_obj_t obj = nullptr;
    if (code.data()[0] == 0) {//py
       obj = get_mpapi().micropy_load_from_py(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
@@ -96,6 +96,7 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       nlr_buf_t nlr;
 
       std::thread::id this_id = std::this_thread::get_id();
+
       auto _itr = module_cache.find(this_id);
       if (_itr == module_cache.end()) {
          module_cache[this_id] = std::map<uint64_t, py_module*>();
@@ -103,7 +104,7 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
 
       std::map<uint64_t, py_module*>& pymodules = module_cache[this_id];
 
-      auto itr = pymodules.find(c.act.account.value);
+      auto itr = pymodules.find(c.receiver);
       if (itr != pymodules.end()) {
          obj = itr->second->obj;
       } else {
