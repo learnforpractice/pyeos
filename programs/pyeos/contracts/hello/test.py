@@ -21,13 +21,13 @@ def test(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('hello','sayhello',name,{'hello':'active'},rawargs=True)
+        r = eosapi.push_message('hello', 'sayhello', name, {'hello':'active'}, rawargs=True)
         assert r
 
 @init
 def play():
     with producer:
-        r = eosapi.push_message('hello','play','',{'hello':'active'},rawargs=True)
+        r = eosapi.push_message('hello', 'play', '', {'hello':'active'}, rawargs=True)
         assert r
 
 @init
@@ -70,4 +70,19 @@ def deploy_mpy():
 
     producer.produce_block()
 
+def create():
+    with producer:
+        r = eosapi.push_message('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
+        assert r
+
+def issue():
+    with producer:
+        r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
+        assert r
+
+def transfer():
+    with producer:
+        msg = {"from":"eosio", "to":"hello", "quantity":"25.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
+        assert r
 

@@ -10,6 +10,7 @@ from hello import test as ht
 from backyard import test as bt
 from rpctest import test as rt
 from vote import test as vt
+from simpleauction import test as st
 
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'

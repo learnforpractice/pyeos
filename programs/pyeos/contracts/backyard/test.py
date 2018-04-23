@@ -23,10 +23,11 @@ def test(name=None):
         r = eosapi.push_message('backyard','sayhello',name,{'backyard':'active'},rawargs=True)
         assert r
 
+libs = ('asset.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')
+
 @init
 def deploy():
     src_dir = os.path.dirname(os.path.abspath(__file__))
-    libs = ('asset.py', 'cache.py', 'storage.py', 'garden.py')
 
     code = eosapi.N('backyard')
     for file_name in libs:
@@ -52,7 +53,6 @@ def deploy():
 @init
 def deploy_mpy():
     src_dir = os.path.dirname(os.path.abspath(__file__))
-    libs = ('asset.py', 'cache.py', 'storage.py', 'garden.py')
     code = eosapi.N('backyard')
     for file_name in libs:
         print('deploy ', file_name)
