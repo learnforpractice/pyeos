@@ -270,5 +270,3 @@ def apply(name, type):
         act = read_action()
         print(n2s(name), 'read_action return:', act)
 #        deffer_send()
-
-    

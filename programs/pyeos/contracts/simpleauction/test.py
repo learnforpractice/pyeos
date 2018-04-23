@@ -17,6 +17,15 @@ def init(func):
     return func_wrapper
 
 @init
+def start(beneficiary='hello', auctionEnd=10000):
+    with producer:
+        beneficiary = eosapi.N(beneficiary)
+        msg = int.to_bytes(beneficiary, 8, 'little')
+        msg += int.to_bytes(auctionEnd, 8, 'little')
+        r = eosapi.push_message('auction1','start', msg, {'auction1':'active'}, rawargs=True)
+        assert r
+
+@init
 def bid(price):
     with producer:
         sender = eosapi.N('hello')

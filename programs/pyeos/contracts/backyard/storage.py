@@ -26,12 +26,12 @@ def _pack(value):
     _type = type(value)
     if _type in pack_funcs:
         return pack_funcs[_type](value)
-    raise Exception('unsupported type')
+    raise Exception('unsupported type', _type, value)
 
 def _unpack(value):
     type_id = value[0]
     if type_id in unpack_funcs:
-        return (type_id, unpack_funcs[type_id](value))
+        return unpack_funcs[type_id](value)
     raise Exception('unsupported type')
 
 def register_pack_func(_type, func):
