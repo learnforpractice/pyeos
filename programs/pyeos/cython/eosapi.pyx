@@ -143,7 +143,9 @@ def now():
     return now2_()
 
 def produce_block():
-    return produce_block_()
+    ret = produce_block_()
+    time.sleep(0.5)
+    return ret
 
 def get_info():
     info = get_info_()
