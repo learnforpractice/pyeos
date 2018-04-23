@@ -48,8 +48,9 @@ def init():
         if not eosapi.get_account(account).permissions:
             r = eosapi.create_account('eosio', account, key1, key2)
             assert r
-        if not eosapi.get_code(account):
+            eosapi.produce_block()
+        if not eosapi.get_code(account)[0]:
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi,0)
-    eosapi.produce_block()
+            eosapi.produce_block()
