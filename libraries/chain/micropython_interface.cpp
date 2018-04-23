@@ -77,10 +77,15 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       FC_ASSERT(false, "unknown micropython code!");
    }
    if (obj != NULL) {
+      if (_itr != pymodules.end()) {
+         delete _itr->second;
+      }
       py_module* mod = new py_module();
       mod->obj = obj;
       mod->hash = fc::sha256::hash( code.data(), code.size() );
       pymodules[_account] = mod;
+   } else {
+      FC_ASSERT(false, "load micropython code failed!");
    }
 }
 
