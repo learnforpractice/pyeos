@@ -54,3 +54,24 @@ def test2(count):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
 
+@init
+def create():
+    with producer:
+        msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
+        r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
+        assert r
+
+@init
+def issue():
+    with producer:
+        r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"100.0000 EOS","memo":""},{'eosio':'active'})
+        assert r
+
+@init
+def transfer():
+    with producer:
+        msg = {"from":"eosio", "to":"auction1", "quantity":"1.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
+        assert r
+
+

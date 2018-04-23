@@ -222,9 +222,9 @@ def db_test_idx256():
     print('db_idx256_find_secondary', itr, primary)
 
 def inline_send():
-    account = code
+    account = N('hello')
     auth = struct.pack('QQ', account, N('active'))
-    send_inline(account, N('sayhello'), auth, b'hello,world')
+    send_inline(code, N('sayhello'), auth, b'hello,worldddddddd')
 
 '''
 struct mp_transaction {
@@ -261,15 +261,14 @@ def apply(name, type):
         db_test_i64()
 #        db_test_idx64()
 #        db_test_idx256()
-        '''
+#        deffer_send()
+    elif type == N('inlinesend'):
         print('inline_send begin')
         inline_send()
         print('inline_send return')
-        '''
-#        deffer_send()
     elif type == N('sayhello'):
         act = read_action()
-        print('read_action return:', act)
+        print(n2s(name), 'read_action return:', act)
 #        deffer_send()
 
     

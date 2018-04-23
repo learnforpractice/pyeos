@@ -20,3 +20,8 @@ def test():
         r = eosapi.push_message('apitest','dbtest','',{'apitest':'active'},rawargs=True)
         assert r
 
+@init
+def inline_send():
+    with producer:
+        r = eosapi.push_message('apitest', 'inlinesend', '', {'apitest':'active'}, rawargs=True)
+        assert r

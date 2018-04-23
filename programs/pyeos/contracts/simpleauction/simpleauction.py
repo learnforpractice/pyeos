@@ -123,8 +123,8 @@ contract SimpleAuction {
     }
 }
 '''
-
-import eoslib
+import ustruct as struct
+from eoslib import *
 from backyard.solidity import *
 from backyard.storage import SDict, SList
 '''
@@ -137,7 +137,7 @@ from backyard.storage import SDict, SList
     }
 '''
 
-code = eoslib.N('auction1')
+code = N('auction1')
 
 class SimpleAuction(object):
     # The following is a so-called natspec comment,
@@ -152,7 +152,7 @@ class SimpleAuction(object):
     # Parameters of the auction. Times are either
     # absolute unix timestamps (seconds since 1970-01-01)
     # or time periods in seconds.
-        _msg = eoslib.read_action()
+        _msg = read_action()
         require(len(_msg) == 16)
         self.msg = Msg()
         self.msg.sender = int.from_bytes(_msg[:8], 'little')
@@ -172,7 +172,7 @@ class SimpleAuction(object):
         self.ended = False
 
     def init(self):
-        _msg = eoslib.read_action()
+        _msg = read_action()
         require(len(_msg) == 16)
         _biddingTime = int.from_bytes(_msg[:8])
         _beneficiary = int.from_bytes(_msg[8:])
@@ -201,7 +201,7 @@ class SimpleAuction(object):
         # Revert the call if the bidding
         # period is over.
         require(
-            eoslib.now() <= self.auctionEnd,
+            now() <= self.auctionEnd,
             "Auction already ended."
         );
 
@@ -258,7 +258,7 @@ class SimpleAuction(object):
         # external contracts.
 
         # 1. Conditions
-        require(eoslib.now() >= self.auctionEnd, "Auction not yet ended.");
+        require(now() >= self.auctionEnd, "Auction not yet ended.");
         require(not self.ended, "auctionEnd has already been called.");
 
         # 2. Effects
@@ -269,11 +269,20 @@ class SimpleAuction(object):
         self.beneficiary.transfer(highestBid)
 
 def apply(name, type):
-    if type == eoslib.N('init'):
+    print("++++++hello,worlddddd ")
+    print(name, type, read_action())
+    if type == N('init'):
         auction = SimpleAuction()
         auction.init()
-    elif type == eoslib.N('bid'):
+    elif type == N('bid'):
         auction = SimpleAuction()
         auction.bid()
+    elif type == N('transfer'):
+        msg = read_action()
+        _from, to, amount = struct.unpack('QQQ', msg)
+        precision = msg[24]
+        symbol = msg[25:32]
+        memo = msg[32:]
+        print(_from, to, amount, precision, symbol, memo)
 
 
