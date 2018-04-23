@@ -6,6 +6,10 @@ from libcpp cimport bool
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
 
+cdef extern from "<stdlib.h>":
+    char * malloc(size_t size)
+    void free(char* ptr)
+
 cdef extern from "<fc/log/logger.hpp>":
     void ilog(char* log)
     void elog(char* log)
@@ -89,15 +93,19 @@ def eosio_assert(_cond, const char* str):
         cond = 0
     eosio_assert_(cond, str)
 
-cdef char buffer[1024*128]
 def db_get_i64( int iterator ):
-#    cdef char buffer[256]
-    cdef int size
-    size = db_get_i64_( iterator, buffer, sizeof(buffer) )
-    if size > sizeof(buffer):
-        size = sizeof(buffer)
-        elog("buffer not enough!")
-    return string(buffer,size)
+    cdef char* buffer
+    cdef size_t size
+    ret = None
+    size = db_get_i64_( iterator, <char*>0, 0 )
+    if size <= 0:
+        return None
+
+    buffer = <char*>malloc(size)
+    size = db_get_i64_( iterator, buffer, size )
+    ret = bytes(buffer[:size])
+    free(buffer)
+    return ret
 
 def db_next_i64( int iterator):
     cdef uint64_t primary
