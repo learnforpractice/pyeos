@@ -1,4 +1,5 @@
 //#include <libethereum/State.h>
+#include <libethcore/SealEngine.h>
 
 #include <libethereum/Transaction.h>
 #include <libethereum/Executive.h>
