@@ -8,11 +8,13 @@
 #include <Runtime/Runtime.h>
 #include "IR/Module.h"
 
-#include <libethcore/SealEngine.h>
+//#include <libethcore/SealEngine.h>
 
 using namespace std;
-using namespace dev::eth;
+
+namespace dev{ namespace eth {
 class SealEngineFace;
+}}
 
 namespace eosio {
 namespace chain {
