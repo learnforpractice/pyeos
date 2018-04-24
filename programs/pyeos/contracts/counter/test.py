@@ -8,10 +8,6 @@ from eosapi import N
 
 from common import init_, producer
 
-print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual-gen-block --debug -i')
-
-
 def init(func):
     def func_wrapper(*args):
         init_('counter', 'counter.py', 'counter.abi', __file__)

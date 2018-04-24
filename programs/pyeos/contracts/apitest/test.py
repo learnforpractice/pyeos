@@ -3,9 +3,6 @@ import wallet
 import eosapi
 import initeos
 
-print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual-gen-block --debug -i')
-
 from common import init_, producer
 
 def init(func):

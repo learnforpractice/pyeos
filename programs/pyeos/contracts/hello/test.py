@@ -7,9 +7,6 @@ import initeos
 
 from common import init_, producer
 
-print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual-gen-block --debug -i')
-
 def init(func):
     def func_wrapper(*args):
         init_('hello', 'hello.py', 'hello.abi', __file__)

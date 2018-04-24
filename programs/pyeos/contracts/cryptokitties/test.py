@@ -8,9 +8,6 @@ import pickle
 
 from common import init_, producer, Sync
 
-print('please make sure you are running the following command before test')
-print('./pyeos/pyeos --manual-gen-block --debug -i')
-
 def init(func):
     def func_wrapper(*args):
         init_('kitties', 'main.py', 'cryptokitties.abi', __file__, 2)
