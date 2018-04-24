@@ -130,4 +130,5 @@ int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, si
 
 void wast2wasm_( string& wast ,string& result);
 
+bool is_replay_();
 

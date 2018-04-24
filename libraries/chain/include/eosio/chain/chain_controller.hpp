@@ -317,6 +317,7 @@ namespace eosio { namespace chain {
          bool check_authorization( account_name account, permission_name permission,
                                 flat_set<public_key_type> provided_keys,
                                 bool allow_unused_signatures)const;
+         void replay();
 
       private:
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
@@ -356,9 +357,6 @@ namespace eosio { namespace chain {
 
          producer_schedule_type _calculate_producer_schedule()const;
          const shared_producer_schedule_type& _head_producer_schedule()const;
-
-
-         void replay();
 
          void _apply_block(const signed_block& next_block, uint32_t skip = skip_nothing);
          void __apply_block(const signed_block& next_block);

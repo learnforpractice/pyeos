@@ -131,6 +131,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
    if (options.at("replay-blockchain").as<bool>()) {
       ilog("Replay requested: wiping database");
+      _replay = true;
       fc::remove_all(app().data_dir() / default_shared_memory_dir);
    }
    if (options.at("resync-blockchain").as<bool>()) {
@@ -203,6 +204,9 @@ void chain_plugin::plugin_startup()
       my->chain_config->wasm_runtime = *my->wasm_runtime;
 
    my->chain.emplace(*my->chain_config);
+   // replay will call micropython and micropython relies on my->chain, but replay called in constructor of chain_controller,
+   //so remove replay from constructor and replay it here.
+   my->chain->replay();
 
    if(!my->readonly) {
       ilog("starting chain in read/write mode");

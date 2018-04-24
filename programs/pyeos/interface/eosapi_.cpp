@@ -946,6 +946,9 @@ void wast2wasm_( string& wast ,string& result) {
    }
 }
 
+bool is_replay_() {
+   return app().get_plugin<chain_plugin>().is_replay();
+}
 
 
 

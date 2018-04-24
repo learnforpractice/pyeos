@@ -87,8 +87,9 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
    _spinup_db();
    _spinup_fork_db();
 
-   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num())
-      replay();
+
+//   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num())
+//      replay();
 } /// chain_controller::chain_controller
 
 
@@ -1772,6 +1773,12 @@ void chain_controller::_initialize_chain(contracts::chain_initializer& starter)
 
 
 void chain_controller::replay() {
+   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num()) {
+
+   } else {
+      return;
+   }
+
    ilog("Replaying blockchain");
    auto start = fc::time_point::now();
 

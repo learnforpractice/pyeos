@@ -11,6 +11,7 @@ from backyard import test as bt
 from rpctest import test as rt
 from vote import test as vt
 from simpleauction import test as st
+from lab import test as lt
 
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
@@ -38,9 +39,9 @@ def init():
         if not priv_key in exist_priv_keys:
             wallet.import_key('mywallet', priv_key)
 
-    from backyard import test
-    test.deploy_mpy()
-    
+    if eosapi.is_replay():
+        return
+
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
     contracts_path = os.path.join(src_dir, '../../build', 'contracts') 
@@ -54,3 +55,6 @@ def init():
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi,0)
             eosapi.produce_block()
+
+    from backyard import test
+    test.deploy_mpy()
