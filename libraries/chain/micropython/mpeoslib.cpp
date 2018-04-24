@@ -45,7 +45,6 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-
 #include <dlfcn.h>
 
 using namespace eosio;
@@ -56,11 +55,13 @@ static struct eosapi s_eosapi;
 
 std::map<std::thread::id, struct mpapi*> api_map;
 
-#include <mutex>
-
 static std::mutex g_load_mutex;
-
 static int counter = 0;
+
+void print(const char * str, size_t len) {
+   dlog(str);
+}
+
 struct mpapi& get_mpapi() {
    std::lock_guard<std::mutex> guard(g_load_mutex);
 
@@ -96,7 +97,7 @@ struct mpapi& get_mpapi() {
 
    mp_obtain_mpapi(api);
    api_map[this_id] = api;
-
+   api->set_printer(print);
 //   api->execute_from_str("import sys;sys.path.append('../../programs/pyeos/contracts/libs')");
    return *api;
 }

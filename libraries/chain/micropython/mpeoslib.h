@@ -289,6 +289,8 @@ struct eosapi {
 
 
 
+typedef void (*fn_printer)(const char * str, size_t len);
+
 struct mpapi {
    mp_obj_t (*mp_obj_new_str)(const char* data, size_t len);
    mp_obj_t (*micropy_load_from_py)(const char *mod_name, const char *data, size_t len);
@@ -307,6 +309,7 @@ struct mpapi {
    mp_obj_t (*mp_compile)(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
    int (*compile_and_save_to_buffer)(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
    void (*set_debug_mode)(int mode);
+   void (*set_printer)(fn_printer _printer);
 
 };
 
