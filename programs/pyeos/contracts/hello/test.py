@@ -1,5 +1,6 @@
 import os
 import time
+import struct
 
 import wallet
 import eosapi
@@ -14,12 +15,11 @@ def init(func):
     return func_wrapper
 
 @init
-def test(name=None):
-    with producer:
-        if not name:
-            name = 'mike'
-        r = eosapi.push_message('hello', 'sayhello', name, {'hello':'active'}, rawargs=True)
-        assert r
+def test(name='mike'):
+    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'},rawargs=True)
+    assert r
+    print(r)
+    eosapi.produce_block()
 
 @init
 def play():

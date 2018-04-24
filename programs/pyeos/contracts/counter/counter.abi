@@ -1,7 +1,7 @@
 {
   "actions": [{
-      "name": "sayhello",
-      "type": "bytes"
+      "name": "count",
+      "type": "raw"
     }
   ]
 }

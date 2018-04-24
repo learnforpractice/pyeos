@@ -1,7 +1,10 @@
 {
   "actions": [{
       "name": "sayhello",
-      "type": "bytes"
+      "type": "raw"
+    },{
+      "name": "deploy",
+      "type": "raw"
     }
   ]
 }

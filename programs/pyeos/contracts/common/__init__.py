@@ -17,7 +17,7 @@ def init_(name, src, abi, curr_path, code_type=CODE_TYPE_MPY):
     if src.find('/') < 0:
         src = os.path.join(_src_dir, src)
 
-    if abi.find('/') < 0:
+    if abi and abi.find('/') < 0:
         abi = os.path.join(_src_dir, abi)
 
     if code_type == CODE_TYPE_MPY:
