@@ -5,8 +5,6 @@
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
 
-
-
 //#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/apply_context.hpp>
 #include <eosio/chain/chain_controller.hpp>
@@ -57,9 +55,17 @@ std::map<std::thread::id, struct mpapi*> api_map;
 
 static std::mutex g_load_mutex;
 static int counter = 0;
-
+static vector<char> print_buffer;
 void print(const char * str, size_t len) {
-   dlog(str);
+   for (int i=0;i<len;i++) {
+      if (str[i] == '\n') {
+         string s(print_buffer.data(), print_buffer.size());
+         print_buffer.clear();
+         dlog(s);
+         continue;
+      }
+      print_buffer.push_back(str[i]);
+   }
 }
 
 struct mpapi& get_mpapi() {
