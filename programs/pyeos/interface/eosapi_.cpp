@@ -530,13 +530,6 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
       //      ilog("Converting argument to binary...");
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
       auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-      eosio::chain_apis::read_only::abi_json_to_bin_params params;
-      if (!rawargs) {
-         params = {contract, action, fc::json::from_string(args)};
-      } else {
-         std::vector<char> v(args.begin(), args.end());
-         params = {contract, action, fc::variant(v)};
-      }
 
       vector<chain::permission_level> accountPermissions;
       for (auto it = permissions.begin(); it != permissions.end(); it++) {
@@ -558,8 +551,16 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
             fc::from_hex(_args, v.data(), v.size());
          actions.emplace_back(accountPermissions, contract, action, v);
       } else {
-         auto result = ro_api.abi_json_to_bin(params);
-         actions.emplace_back(accountPermissions, contract, action, result.binargs);
+         std::vector<char> v;
+         if (rawargs) {
+            v = std::vector<char>(args.begin(), args.end());
+         } else {
+            eosio::chain_apis::read_only::abi_json_to_bin_params params;
+            params = {contract, action, fc::json::from_string(args)};
+            auto result = ro_api.abi_json_to_bin(params);
+            v = result.binargs;
+         }
+         actions.emplace_back(accountPermissions, contract, action, v);
       }
 
       if (tx_force_unique) {
@@ -950,6 +951,17 @@ bool is_replay_() {
    return app().get_plugin<chain_plugin>().is_replay();
 }
 
+void pack_bytes_(string& in, string& out) {
+   string raw(in.c_str(),in.length());
+   std::vector<char> o = fc::raw::pack<string>(raw);
+   out = string(o.begin(), o.end());
+}
+
+void unpack_bytes_(string& in, string& out) {
+   string raw(in.c_str(),in.length());
+   std::vector<char> v(raw.begin(), raw.end());
+   out = fc::raw::unpack<string>(v);
+}
 
 
 #include <frameobject.h>

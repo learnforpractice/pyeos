@@ -1,6 +1,6 @@
 {
   "actions": [{
-      "action": "sayhello",
+      "name": "sayhello",
       "type": "bytes"
     }
   ]

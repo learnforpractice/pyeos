@@ -76,6 +76,10 @@ cdef extern from "eosapi_.hpp":
     void wast2wasm_( string& wast ,string& result)
     bool is_replay_();
 
+    void pack_bytes_(string& _in, string& out);
+    void unpack_bytes_(string& _in, string& out);
+
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -497,3 +501,14 @@ def wast2wasm( string& wast ):
 
 def is_replay():
     return is_replay_()
+
+def pack(string& _in):
+    cdef string out
+    pack_bytes_(_in, out)
+    return <bytes>out
+
+def unpack(string& _in):
+    cdef string out
+    unpack_bytes_(_in, out)
+    return <bytes>out
+

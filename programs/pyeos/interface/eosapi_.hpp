@@ -132,3 +132,5 @@ void wast2wasm_( string& wast ,string& result);
 
 bool is_replay_();
 
+void pack_bytes_(string& in, string& out);
+void unpack_bytes_(string& in, string& out);

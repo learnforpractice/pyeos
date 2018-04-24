@@ -1,6 +1,14 @@
 {
+  "structs": [{
+     "name": "message",
+     "base": "",
+     "fields": [
+        {"name":"msg", "type":"string"}
+     ]
+  }
+  ],
   "actions": [{
-      "action": "sayhello",
+      "name": "sayhello",
       "type": "bytes"
     }
   ]
