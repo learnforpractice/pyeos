@@ -567,36 +567,32 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
 
 class softfloat_api {
    public:
-      // TODO add traps on truncations for special cases (NaN or outside the range which rounds to an integer)
-//      using context_aware_api::context_aware_api;
-      // float binops
-      static bool is_nan( const float32_t f ) {
-         return ((f.v & 0x7FFFFFFF) > 0x7F800000);
-      }
-      static bool is_nan( const float64_t f ) {
-         return ((f.v & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000);
-      }
-      static bool is_nan( const float128_t& f ) {
-         const uint32_t* iptr = (const uint32_t*)&f;
-         return softfloat_isNaNF128M( iptr );
-      }
-      static float32_t to_softfloat32( float f ) {
-         return *reinterpret_cast<float32_t*>(&f);
-      }
-      static float64_t to_softfloat64( double d ) {
-         return *reinterpret_cast<float64_t*>(&d);
-      }
-      static float from_softfloat32( float32_t f ) {
-         return *reinterpret_cast<float*>(&f);
-      }
-      static double from_softfloat64( float64_t d ) {
-         return *reinterpret_cast<double*>(&d);
-      }
-      static constexpr uint32_t inv_float_eps = 0x4B000000;
-      static constexpr uint64_t inv_double_eps = 0x4330000000000000;
+   static bool is_nan( const float32_t f ) {
+      return ((f.v & 0x7FFFFFFF) > 0x7F800000);
+   }
+   static bool is_nan( const float64_t f ) {
+      return ((f.v & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000);
+   }
+   static bool is_nan( const float128_t& f ) {
+      return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
+   }
+   static float32_t to_softfloat32( float f ) {
+      return *reinterpret_cast<float32_t*>(&f);
+   }
+   static float64_t to_softfloat64( double d ) {
+      return *reinterpret_cast<float64_t*>(&d);
+   }
+   static float from_softfloat32( float32_t f ) {
+      return *reinterpret_cast<float*>(&f);
+   }
+   static double from_softfloat64( float64_t d ) {
+      return *reinterpret_cast<double*>(&d);
+   }
+   static constexpr uint32_t inv_float_eps = 0x4B000000;
+   static constexpr uint64_t inv_double_eps = 0x4330000000000000;
 
-      static bool sign_bit( float32_t f ) { return f.v >> 31; }
-      static bool sign_bit( float64_t f ) { return f.v >> 63; }
+   static bool sign_bit( float32_t f ) { return f.v >> 31; }
+   static bool sign_bit( float64_t f ) { return f.v >> 63; }
 };
 
 } } // namespace eosio::chain
