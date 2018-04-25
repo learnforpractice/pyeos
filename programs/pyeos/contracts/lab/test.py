@@ -9,13 +9,13 @@ src_path = os.path.dirname(os.path.abspath(__file__))
 cpp2wast.set_src_path(src_path)
 
 def init(func):
-    def func_wrapper(*args, **kw_args):
-        if 'wasm' in kw_args and kw_args['wasm']:
-            cpp2wast.build('lab.cpp')
+    def func_wrapper(wasm=True, *args, **kwargs):
+        if wasm:
+            cpp2wast.build('lab.cpp', force=True)
             init_('lab', 'lab.wast', 'lab.abi', __file__, 0)
         else:
             init_('lab', 'lab.py', 'lab.abi', __file__, 2)
-        return func(*args)
+        return func(*args, **kwargs)
     return func_wrapper
 
 _dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,7 @@ _dir = os.path.dirname(os.path.abspath(__file__))
 sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 
 @init
-def test(msg='hello,world', wasm=True):
+def test(msg='hello,world'):
     with producer:
         r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'}, rawargs=True)
         assert r

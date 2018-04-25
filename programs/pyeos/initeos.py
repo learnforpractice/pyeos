@@ -3,6 +3,9 @@ import sys
 import wallet
 import eosapi
 
+if not hasattr(sys, 'argv'):
+    sys.argv = ['']
+
 from apitest import test as at
 from cryptokitties import test as kt
 from currency import test as ct
