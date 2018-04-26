@@ -1,0 +1,22 @@
+clang = "${WASM_COMMAND}"
+clang = clang.replace('-c ${CMAKE_CURRENT_SOURCE_DIR}/dummy.cpp -o dummy.cpp.bc', '-c {target}.cpp -o {target}.cpp.bc')
+
+link = "${WASM_LLVM_LINK} -only-needed -o {target}.bc {target}.cpp.bc ${LIBRARIES}"
+link = link.replace(';', ' ')
+
+llc = "${WASM_LLC} -thread-model=single -asm-verbose=false -o {target}.s {target}.bc"
+s2wast = "${CMAKE_BINARY_DIR}/externals/binaryen/bin/eosio-s2wasm"
+abigen = "${CMAKE_BINARY_DIR}/programs/eosio-abigen/eosio-abigen \
+    -extra-arg=-c -extra-arg=--std=c++14 -extra-arg=--target=wasm32 \
+    -extra-arg=-nostdinc -extra-arg=-nostdinc++ -extra-arg=-DABIGEN \
+    -extra-arg=-I${Boost_INCLUDE_DIRS} \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/contracts/musl/upstream/include \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/externals/magic_get/include \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/contracts/libc++/include/libc++/upstream/include \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/contracts/libc++/musl/include/musl/upstream/include \
+    -extra-arg=-I${CMAKE_SOURCE_DIR}/contracts \
+    -extra-arg=-fparse-all-comments -destination-file={target}.abi -verbose=1 \
+    -context={src_dir} {target}.cpp"
+
+#    -extra-arg=-I${CMAKE_SOURCE_DIR}/include -extra-arg=-I$context_folder \

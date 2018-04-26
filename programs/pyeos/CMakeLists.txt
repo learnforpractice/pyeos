@@ -1,4 +1,5 @@
 add_subdirectory(contracts)
+add_subdirectory(tools)
 
 if( UNIX AND NOT APPLE )
   set(rt_library rt )

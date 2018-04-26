@@ -9,6 +9,7 @@ if not hasattr(sys, 'argv'):
 from apitest import test as at
 from cryptokitties import test as kt
 from currency import test as ct
+from counter import test as cot
 from hello import test as ht
 from backyard import test as bt
 from rpctest import test as rt

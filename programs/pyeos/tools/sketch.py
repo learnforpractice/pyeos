@@ -21,7 +21,8 @@ def init(func):
         if wasm:
             src_path = os.path.dirname(os.path.abspath(__file__))
             cpp2wast.set_src_path(src_path)
-            cpp2wast.build('{0}.cpp')
+            if not cpp2wast.build('{0}.cpp'):
+                raise Exception("building failed")
             init_('{0}', '{0}.wast', '{0}.abi', __file__, 0)
         else:
             init_('{0}', '{0}.py', '{0}.abi', __file__, 2)
