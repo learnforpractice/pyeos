@@ -1,5 +1,5 @@
 clang = "${WASM_COMMAND}"
-clang = clang.replace('-c ${CMAKE_CURRENT_SOURCE_DIR}/dummy.cpp -o dummy.cpp.bc', '-c {target}.cpp -o {target}.cpp.bc')
+clang = clang.replace('-c ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp -o dummy.cpp.bc', '-c {target}.cpp -o {target}.cpp.bc')
 
 link = "${WASM_LLVM_LINK} -only-needed -o {target}.bc {target}.cpp.bc ${LIBRARIES}"
 link = link.replace(';', ' ')
