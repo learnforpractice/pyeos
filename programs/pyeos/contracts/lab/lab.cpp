@@ -1,8 +1,9 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
 extern "C" {
-   void sayHello() {
+   void sayHello(uint64_t n) {
       prints("hello, crypto world\n");
+      printn(n);
    }
    void apply( uint64_t receiver, uint64_t code, uint64_t action ) {
       auto self = receiver;
@@ -18,7 +19,6 @@ extern "C" {
                 prints(msg);
             break;
          }
-         sayHello();
          eosio_exit(0);
       }
    }

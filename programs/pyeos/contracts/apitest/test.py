@@ -37,6 +37,24 @@ def call_wasm():
         r = eosapi.push_message('apitest', 'callwasm', '', {'apitest':'active'}, rawargs=True)
         assert r
 
+@init
+def test2(count):
+    contracts = []
+    functions = []
+    args = []
+    per = []
+    for i in range(count):
+        functions.append('callwasm')
+        arg = str(i)
+        args.append(arg)
+        contracts.append('apitest')
+        per.append({'apitest':'active'})
+    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    assert ret
+    cost = ret['cost_time']
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+    eosapi.produce_block()
+
 
 '''
 # Private key: 5KedEKNC14q9uj5uWyLBunKbenokXseQaXiE6k2AGZZhskBxdrV

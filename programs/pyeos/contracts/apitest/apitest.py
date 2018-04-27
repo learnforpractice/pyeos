@@ -273,9 +273,7 @@ def apply(name, type):
         print(n2s(name), 'read_action return:', act)
 #        deffer_send()
     elif type == N('callwasm'):
-        print('hello,world')
-        wasm_call(N('lab'), 'sayHello')
-    print('')
+        wasm_call(N('lab'), 'sayHello', N('hello'))
     
     
     

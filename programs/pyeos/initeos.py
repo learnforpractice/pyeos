@@ -50,11 +50,27 @@ def init():
 
     contracts_path = os.path.join(src_dir, '../../build', 'contracts') 
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
+        print('account', account)
         if not eosapi.get_account(account).permissions:
             r = eosapi.create_account('eosio', account, key1, key2)
             assert r
             eosapi.produce_block()
-        if not eosapi.get_code(account)[0]:
+
+        old_code = eosapi.get_code(account)[0]
+        need_update = not old_code
+        if False: #old_code:
+            print('+++++++++old_code[:4]', old_code[:4])
+            if old_code[:4] != b'\x00asm':
+                old_code = eosapi.wast2wasm(old_code)
+
+            wast = os.path.join(contracts_path, account, account+'.wast')
+            code = open(wast, 'rb').read()
+            code = eosapi.wast2wasm(code)
+
+            print(len(code), len(old_code), old_code[:20])
+            if code == old_code:
+                need_update = False
+        if need_update:
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi,0)

@@ -939,11 +939,12 @@ int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, si
    return get_mpapi().compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
 }
 
-void wast2wasm_( string& wast ,string& result) {
+void wast2wasm_(string& wast, string& result) {
    try {
       auto wasm = wast_to_wasm(wast);
       result = string((char *)wasm.data(), wasm.size());
    } catch (...) {
+      elog("wast_to_wasm failed");
    }
 }
 

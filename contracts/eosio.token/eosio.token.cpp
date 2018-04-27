@@ -64,7 +64,7 @@ void token::transfer( account_name from,
                       asset        quantity,
                       string       /*memo*/ )
 {
-    print( "transfer" );
+    prints( "transfer\n");
     require_auth( from );
     auto sym = quantity.symbol.name();
     stats statstable( _self, sym );

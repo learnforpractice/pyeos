@@ -38,10 +38,18 @@ def bid(price):
 
 @init
 def withdraw():
+    '''
     with producer:
         sender = eosapi.N('hello')
         msg = int.to_bytes(sender, 8, 'little')
         r = eosapi.push_message('auction1', 'withdraw', msg, {'auction1':'active', 'hello':'active'}, rawargs=True)
+        assert r
+    '''
+#multi_index.hpp 695: cannot modify objects in table of another contract
+    with producer:
+        msg = {"from":"auction1", "to":"hello", "quantity":"1.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('auction1', 'withdraw', msg, {'auction1':'active', 'hello':'active'})
+#        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
         assert r
 
 @init
@@ -81,8 +89,8 @@ def issue():
 @init
 def transfer():
     with producer:
-        msg = {"from":"test", "to":"auction1", "quantity":"1.0000 EOS", "memo":"m"}
-        r = eosapi.push_message('eosio.token', 'transfer', msg, {'test':'active'})
+        msg = {"from":"hello", "to":"auction1", "quantity":"100.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active'})
 #        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
         assert r
 

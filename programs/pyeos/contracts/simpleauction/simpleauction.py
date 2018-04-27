@@ -130,20 +130,55 @@ class SimpleAuction(object):
 
     # Withdraw a bid that was overbid.
     def withdraw(self, sender) -> bool:
+        '''
         if not self.pendingReturns.find(sender):
             return False
         amount = self.pendingReturns[sender]
-        if amount > 0:
-            # It is important to set this to zero because the recipient
-            # can call this function again as part of the receiving call
-            # before `send` returns.
-            self.pendingReturns[sender] = 0
-            #FIXME
-            if not sender.send(amount):
-                # No need to call throw here, just reset the amount owing
-                self.pendingReturns[sender] = amount
-                return False;
+        if amount < 0:
+            return False
+        # It is important to set this to zero because the recipient
+        # can call this function again as part of the receiving call
+        # before `send` returns.
+        self.pendingReturns[sender] = 0
+        '''
+        
+        auth = struct.pack('QQ', sender, N('active'))
+        t = transfer()
+        t._from = sender
+        t.to = sender
+#        t.amount = amount
+        t.amount = 100
+        t.precision = 4
+        t.symbol = 'EOS'
+        t.memo = 'hello,world'
+        data = t.pack()
+        print(data)
+        t.unpack(data)
+        t.p()
+
+        print('before require_auth')
+#        require_auth( sender )
+#        require_auth( code )
+        print('hello, world')
+#        send_inline( N('eosio.token'), N('transfer'), auth, data)
+        print('+++++++++++ call transfer.')
+        #multi_index.hpp 695: cannot modify objects in table of another contract
+        wasm_call(N('eosio.token'), 'apply', N('eosio.token'), N('eosio.token'), N('transfer'))
+
+        #send_inline is asynchronized, 
+        #it's imposible to check the result of send_inline
+        #if send_inline failed, 
+        #it will throw an exception,
+        #all the changes made in the transaction will be rewind
+        self.pendingReturns[sender] = amount
         return True
+
+        '''
+        if not sender.send(amount):
+            # No need to call throw here, just reset the amount owing
+            self.pendingReturns[sender] = amount
+            return False;
+        '''
 
     # End the auction and send the highest bid
     # to the beneficiary.
@@ -170,6 +205,7 @@ class SimpleAuction(object):
         self.AuctionEnded(self.highestBidder, self.highestBid)
 
         # 3. Interaction
+        #FIXME
         self.beneficiary.transfer(self.highestBid)
         self.save()
 
@@ -205,17 +241,38 @@ def apply(name, type):
     elif type == N('start'):
         auction = SimpleAuction()
         auction.start()
-    elif type == N('bid'):
+    elif type == N('withdraw'):
         _msg = read_action()
-        require(len(_msg) == 16)
-        sender = int.from_bytes(_msg[:8], 'little')
-        price = int.from_bytes(_msg[8:], 'little')
+#        require(len(_msg) == 8)
+        sender = int.from_bytes(_msg[8:16], 'little')
         auction = SimpleAuction()
-        auction.bid(sender, price)
-
+        auction.withdraw(sender)
     elif type == N('transfer'):
+        msg = read_action()
+        print('transfer', msg)
         t = transfer()
+        t.unpack(msg)
+        t.p()
         auction = SimpleAuction()
         auction.bid(t._from, t.amount)
 
+        auth = struct.pack('QQ', N('auction1'), N('active'))
+        t = transfer()
+        t._from = N('auction1')
+        t.to = N('hello')
+#        t.amount = amount
+        t.amount = 10000 # 1.0000 EOS
+        t.precision = 4
+        t.symbol = 'EOS'
+        t.memo = 'm'
+        data = t.pack()
+        print(data)
+        t.unpack(data)
+        t.p()
+        data = b"\x00\x00\x00aR\x97\x916\x00\x00\x00\x00\x00\x1a\xa3j\x10'\x00\x00\x00\x00\x00\x00\x04EOS\x00\x00\x00\x00\x01m"
+        print('data ?= t.pack()', data == t.pack())
+        data = t.pack()
+#        require_auth(N('auction1'))
+        require_auth(N('hello'))
+#        send_inline( N('eosio.token'), N('transfer'), auth, msg)
 
