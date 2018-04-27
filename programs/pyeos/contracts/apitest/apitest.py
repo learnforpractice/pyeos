@@ -223,8 +223,8 @@ def db_test_idx256():
 
 def inline_send():
     account = N('hello')
-    auth = struct.pack('QQ', account, N('active'))
-    send_inline(account, N('inlinesend'), auth, b'hello,worldddddddd')
+    auth = struct.pack('QQQQ', code, N('active'), account, N('active'))
+    send_inline(account, N('sayhello'), auth, b'hello,worldddddddd')
 
 '''
 struct mp_transaction {
@@ -272,4 +272,10 @@ def apply(name, type):
         act = read_action()
         print(n2s(name), 'read_action return:', act)
 #        deffer_send()
+    elif type == N('callwasm'):
+        print('hello,world')
+        wasm_call(N('lab'), 'sayHello')
     print('')
+    
+    
+    

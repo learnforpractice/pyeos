@@ -167,6 +167,7 @@ DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_DEF(idx256, 2, eosio::chain::uint128_t)
 //DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, float64_t)
 
 struct eosapi {
+   int (*wasm_call)(uint64_t _code, const char* _func, size_t _func_size, uint64_t* _args, size_t _args_size);
    uint64_t (*string_to_symbol)( uint8_t precision, const char* str );
    void (*eosio_delay)(int ms);
    uint32_t (*now)();

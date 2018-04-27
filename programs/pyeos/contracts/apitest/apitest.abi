@@ -11,6 +11,9 @@
     },{
       "name": "dbtest",
       "type": "raw"
+    },{
+      "name": "callwasm",
+      "type": "raw"
     }
   ]
 }

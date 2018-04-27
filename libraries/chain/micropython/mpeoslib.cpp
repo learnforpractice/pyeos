@@ -1163,12 +1163,36 @@ int split_path(const char* str_path, char *path1, size_t path1_size, char *path2
    return v.size();
 }
 
+int wasm_call_(uint64_t _code, const char* _func, size_t _func_size, uint64_t* _args, size_t _args_size) {
+   if (_func == NULL || _func_size <= 0) {
+      return 0;
+   }
+
+   string func(_func, _func_size);
+   vector<uint64_t> args;
+   if (_args == NULL || _args_size == 0) {
+      //
+   } else {
+      args = vector<uint64_t>(_args, _args + _args_size);
+   }
+
+   apply_context& ctx = apply_context::ctx();
+
+   const auto &a = ctx.mutable_controller.get_database().get<account_object, by_name>(name(_code));
+   auto& interface = ctx.mutable_controller.get_wasm_interface();
+   interface.call(a.code_version, a.code, func, args, ctx);
+
+   return 1;
+
+}
+
 void init_eosapi() {
    static bool _init = false;
    if (_init) {
       return;
    }
    _init = true;
+   s_eosapi.wasm_call = wasm_call_;
    s_eosapi.string_to_symbol = string_to_symbol;
    s_eosapi.eosio_delay = eosio_delay;
    s_eosapi.now = now;
@@ -1286,6 +1310,7 @@ void init_api() {
    init_eosapi();
    get_mpapi();
 }
+
 
 
 }

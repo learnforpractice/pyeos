@@ -16,13 +16,13 @@ def init(func):
 @init
 def test():
     with producer:
-        r = eosapi.push_message('apitest','dbtest','',{'apitest':'active', 'test2':'active'},rawargs=True)
+        r = eosapi.push_message('apitest','dbtest','',{'apitest':'active'},rawargs=True)
         assert r
 
 @init
 def inline_send():
     with producer:
-        r = eosapi.push_message('apitest', 'inlinesend', '', {'hello':'active'}, rawargs=True)
+        r = eosapi.push_message('apitest', 'inlinesend', '', {'hello':'active','apitest':'active'}, rawargs=True)
         assert r
 
 @init
@@ -30,6 +30,14 @@ def deffer_send():
     with producer:
         r = eosapi.push_message('apitest', 'deffersend', '', {'apitest':'active', 'hello':'active'}, rawargs=True)
         assert r
+
+@init
+def call_wasm():
+    with producer:
+        r = eosapi.push_message('apitest', 'callwasm', '', {'apitest':'active'}, rawargs=True)
+        assert r
+
+
 '''
 # Private key: 5KedEKNC14q9uj5uWyLBunKbenokXseQaXiE6k2AGZZhskBxdrV
 # Public key: EOS5vNnn5fym9FJbTMT8AvSTY13XQsoer2HDBup33uespnDhLPipG

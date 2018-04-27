@@ -194,14 +194,6 @@ int wasm_test_(string& code, string& func, vector<uint64_t>& args, uint64_t _acc
    return 1;
 }
 
-int wasm_call_(string& code, string& func, vector<uint64_t>& args) {
-   apply_context& ctx = apply_context::ctx();
-
-   auto code_id = fc::sha256::hash(code.c_str(), (uint32_t)code.length());
-   vm_wasm::get().get_module(code_id, code)->call(func, args, ctx);
-   return 1;
-}
-
 int wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result) {
 
 //   chain_controller& mutable_controller = appbase::app().get_plugin<chain_plugin>().chain();
