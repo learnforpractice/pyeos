@@ -4,18 +4,13 @@ import time
 import eosapi
 
 from common import smart_call, producer, Sync
-from tools import cpp2wast
-src_path = os.path.dirname(os.path.abspath(__file__))
-cpp2wast.set_src_path(src_path)
 
-def init(func):
+def init(func): 
     def func_wrapper(wasm=True, *args, **kwargs):
         if wasm:
-            cpp2wast.build('lab.cpp', force=True)
-            return smart_call('lab', 'lab.wast', 'lab.abi', 2, __file__, func, __name__, args)
+            return smart_call('lab', 'lab.wast', 'lab.abi', 0, __file__, func, __name__, args)
         else:
             return smart_call('lab', 'lab.py', 'lab.abi', 2, __file__, func, __name__, args)
-        return func(*args, **kwargs)
     return func_wrapper
 
 _dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +19,7 @@ sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 
 @init
 def test(msg='hello,world'):
+    print('hello, world')
     with producer:
         r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'}, rawargs=True)
         assert r

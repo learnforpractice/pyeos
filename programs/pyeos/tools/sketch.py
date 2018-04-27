@@ -11,7 +11,7 @@ import eosapi
 import initeos
 from tools import cpp2wast
 
-from common import init_, producer
+from common import smart_call, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
@@ -23,10 +23,9 @@ def init(func):
             cpp2wast.set_src_path(src_path)
             if not cpp2wast.build('{0}.cpp'):
                 raise Exception("building failed")
-            init_('{0}', '{0}.wast', '{0}.abi', __file__, 0)
+            return smart_call('{0}', '{0}.wast', '{0}.abi', 0, __file__, func, __name__, args)
         else:
-            init_('{0}', '{0}.py', '{0}.abi', __file__, 2)
-        return func(*args, **kw_args)
+            return smart_call('{0}', '{0}.py', '{0}.abi', 2, __file__, func, __name__, args)
     return func_wrapper
 
 @init

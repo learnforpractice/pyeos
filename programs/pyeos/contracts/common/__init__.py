@@ -8,22 +8,18 @@ import imp
 import initeos
 import eosapi
 import eoslib
+from tools import cpp2wast
 
 producer = eosapi.Producer()
 CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_MPY = 2
 
-def reload_module(func):
-    cache_file = os.path.join(os.path.dirname(__file__), '__pycache__', os.path.basename(__file__)[:-3]+'.cpython-36.pyc')
-    t1 = os.path.getmtime(__file__)
-    t2 = os.path.getmtime(cache_file)
-    if t1 > t2:
-        imp.reload(sys.modules[__name__])
-        return getattr(sys.modules[__name__], func.__name__)(*args)
-
 def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=None, args=None):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
+    if code_type == 0:
+        cpp2wast.set_src_path(_src_dir)
+        cpp2wast.build(src.replace('.wast', '.cpp'))
 
     if src.find('/') < 0:
         src = os.path.join(_src_dir, src)
@@ -70,6 +66,7 @@ def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=
     t1 = os.path.getmtime(full_src_path)
     t2 = os.path.getmtime(cache_file)
     if t1 > t2:
+        print('+++++=change detected, reload test', module_name)
         imp.reload(sys.modules[module_name])
         return getattr(sys.modules[module_name], func.__name__)(*args)
     return func(*args)
