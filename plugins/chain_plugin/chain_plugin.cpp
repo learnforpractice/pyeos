@@ -445,11 +445,7 @@ read_write::push_transaction_results read_write::push_transaction(const read_wri
    auto result = db.push_transaction(pretty_input, skip_flags);
 #warning TODO: get transaction results asynchronously
    fc::variant pretty_output;
-   try {
-      abi_serializer::to_variant(result, pretty_output, resolver);
-   } catch (...) {
-   		ilog("abi_serializer::to_variant failed!");
-   }
+   abi_serializer::to_variant(result, pretty_output, resolver);
    return read_write::push_transaction_results{ result.id, pretty_output };
 }
 
