@@ -3,7 +3,7 @@ import sys
 import time
 import eosapi
 
-from common import init_, producer, Sync
+from common import smart_call, producer, Sync
 from tools import cpp2wast
 src_path = os.path.dirname(os.path.abspath(__file__))
 cpp2wast.set_src_path(src_path)
@@ -12,9 +12,9 @@ def init(func):
     def func_wrapper(wasm=True, *args, **kwargs):
         if wasm:
             cpp2wast.build('lab.cpp', force=True)
-            init_('lab', 'lab.wast', 'lab.abi', __file__, 0)
+            return smart_call('lab', 'lab.wast', 'lab.abi', 2, __file__, func, __name__, args)
         else:
-            init_('lab', 'lab.py', 'lab.abi', __file__, 2)
+            return smart_call('lab', 'lab.py', 'lab.abi', 2, __file__, func, __name__, args)
         return func(*args, **kwargs)
     return func_wrapper
 

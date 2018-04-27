@@ -6,12 +6,11 @@ import eoslib
 
 from eosapi import N
 
-from common import init_, producer
+from common import smart_call, producer
 
 def init(func):
     def func_wrapper(*args):
-        init_('counter', 'counter.py', 'counter.abi', __file__)
-        return func(*args)
+        return smart_call('counter', 'counter.py', 'counter.abi', 2, __file__, func, __name__, args)
     return func_wrapper
 
 @init

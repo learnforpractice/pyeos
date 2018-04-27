@@ -4,15 +4,14 @@ import wallet
 import eosapi
 import initeos
 
-from common import init_, producer
+from common import smart_call, producer
 
 def init(func):
     def func_wrapper(*args, **kw_args):
         if 'wasm' in kw_args and kw_args['wasm']:
-            init_('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', __file__, 0)
+            return smart_call('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', 0, __file__, func, __name__, args)
         else:
-            init_('currency', 'currency.py', 'currency.abi', __file__, 2)
-        return func(*args)
+            return smart_call('currency', 'currency.py', 'currency.abi', 2, __file__, func, __name__, args)
     return func_wrapper
 
 @init
@@ -55,7 +54,7 @@ def test_transfer(wasm=False):
 @init
 def test(wasm=False):
     args = {"to":"currency","quantity":"1000.0000 CUR","memo":""}
-    r = eosapi.push_message('currency','issue',args,{'currency':'active'})
+    r = eosapi.push_message('eosio.token','issue',args,{'eosio.token':'active'})
     assert r
     eosapi.produce_block()
 

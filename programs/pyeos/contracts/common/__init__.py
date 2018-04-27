@@ -2,6 +2,9 @@ import os
 import time
 import pickle
 
+import os
+import sys
+import imp
 import initeos
 import eosapi
 import eoslib
@@ -11,8 +14,16 @@ CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_MPY = 2
 
-def init_(name, src, abi, curr_path, code_type=CODE_TYPE_MPY):
-    _src_dir = os.path.dirname(os.path.abspath(curr_path))
+def reload_module(func):
+    cache_file = os.path.join(os.path.dirname(__file__), '__pycache__', os.path.basename(__file__)[:-3]+'.cpython-36.pyc')
+    t1 = os.path.getmtime(__file__)
+    t2 = os.path.getmtime(cache_file)
+    if t1 > t2:
+        imp.reload(sys.modules[__name__])
+        return getattr(sys.modules[__name__], func.__name__)(*args)
+
+def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=None, args=None):
+    _src_dir = os.path.dirname(os.path.abspath(full_src_path))
 
     if src.find('/') < 0:
         src = os.path.join(_src_dir, src)
@@ -31,6 +42,7 @@ def init_(name, src, abi, curr_path, code_type=CODE_TYPE_MPY):
         assert r
 
     old_code = eosapi.get_code(name)
+    need_update = True
     if old_code:
         old_code = old_code[0]
         with open(src, 'rb') as f:
@@ -39,16 +51,28 @@ def init_(name, src, abi, curr_path, code_type=CODE_TYPE_MPY):
             code = eosapi.wast2wasm(code)
             old_code = eosapi.wast2wasm(old_code)
             if code == old_code:
-                return
+                need_update = False
         elif (code == old_code[1:] or code == old_code):
-            return
+            need_update = False
 
-    with producer:
-        if code_type == 0:
-            r = eosapi.set_contract(name, src, abi, 0)
-        else:
-            r = eosapi.set_contract(name, src, abi, 1)
-        assert r
+    if need_update:
+        with producer:
+            if code_type == 0:
+                r = eosapi.set_contract(name, src, abi, 0)
+            else:
+                r = eosapi.set_contract(name, src, abi, 1)
+            assert r
+
+    if not func:
+        return
+
+    cache_file = os.path.join(os.path.dirname(full_src_path), '__pycache__', os.path.basename(full_src_path)[:-3]+'.cpython-36.pyc')
+    t1 = os.path.getmtime(full_src_path)
+    t2 = os.path.getmtime(cache_file)
+    if t1 > t2:
+        imp.reload(sys.modules[module_name])
+        return getattr(sys.modules[module_name], func.__name__)(*args)
+    return func(*args)
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):

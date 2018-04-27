@@ -224,7 +224,7 @@ def db_test_idx256():
 def inline_send():
     account = N('hello')
     auth = struct.pack('QQ', account, N('active'))
-    send_inline(code, N('sayhello'), auth, b'hello,worldddddddd')
+    send_inline(account, N('inlinesend'), auth, b'hello,worldddddddd')
 
 '''
 struct mp_transaction {
@@ -252,7 +252,7 @@ def deffer_send():
     actions = [ [account, N('sayhello'), auth, b'hello,worldddddd   d'] ]
     ref_block = 0
     ref_block_prefix = 0
-    send_deferred(sender_id, payer, now()+15, 0, ref_block, ref_block_prefix, 100000, 100000, 2 , free_actions, actions);
+    send_deferred(sender_id, payer, now()+5, 0, ref_block, ref_block_prefix, 100000, 100000, 2 , free_actions, actions);
 
 def apply(name, type):
 #    eosio_delay(190)
@@ -262,6 +262,8 @@ def apply(name, type):
 #        db_test_idx64()
 #        db_test_idx256()
 #        deffer_send()
+    elif type == N('deffersend'):
+        deffer_send()
     elif type == N('inlinesend'):
         print('inline_send begin')
         inline_send()
@@ -270,3 +272,4 @@ def apply(name, type):
         act = read_action()
         print(n2s(name), 'read_action return:', act)
 #        deffer_send()
+    print('')

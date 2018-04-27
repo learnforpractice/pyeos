@@ -5,14 +5,13 @@ import wallet
 import eosapi
 import initeos
 
-from common import init_, producer
+from common import smart_call, producer
 
 import vote
 
 def init(func):
     def func_wrapper(*args):
-        init_('vote', 'vote.py', 'vote.abi', __file__)
-        return func(*args)
+        return smart_call('vote', 'vote.py', 'vote.abi', 2, __file__, func, __name__, args)
     return func_wrapper
 
 @init
