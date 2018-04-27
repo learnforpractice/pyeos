@@ -293,6 +293,8 @@ typedef void (*fn_printer)(const char * str, size_t len);
 
 struct mpapi {
    mp_obj_t (*mp_obj_new_str)(const char* data, size_t len);
+   mp_obj_t (*mp_obj_new_bytes)(const byte* data, size_t len);
+
    mp_obj_t (*micropy_load_from_py)(const char *mod_name, const char *data, size_t len);
    mp_obj_t (*micropy_load_from_mpy)(const char *mod_name, const char *data, size_t len);
    mp_obj_t (*micropy_call_0)(mp_obj_t module_obj, const char *func);

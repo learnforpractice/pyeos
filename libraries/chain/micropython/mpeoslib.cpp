@@ -132,7 +132,7 @@ mp_obj_t pack_(const char* str, int nsize) {
    string raw(str,nsize);
    std::vector<char> o = fc::raw::pack<string>(raw);
    string out = string(o.begin(), o.end());
-   return get_mpapi().mp_obj_new_str(out.c_str(), out.size());
+   return get_mpapi().mp_obj_new_bytes((const byte*)out.c_str(), out.size());
 }
 
 mp_obj_t unpack_(const char* str, int nsize) {
