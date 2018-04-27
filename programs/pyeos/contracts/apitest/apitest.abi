@@ -1,7 +1,16 @@
 {
   "actions": [{
       "name": "sayhello",
-      "type": "bytes"
+      "type": "raw"
+    },{
+      "name": "deffersend",
+      "type": "raw"
+    },{
+      "name": "inlinesend",
+      "type": "raw"
+    },{
+      "name": "dbtest",
+      "type": "raw"
     }
   ]
 }

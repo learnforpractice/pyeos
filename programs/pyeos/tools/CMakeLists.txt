@@ -21,7 +21,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/tools_config.py.in ${CMAKE_CURRENT_S
 
 add_custom_target( dummy2 ALL
   echo 'hello,world'
-  COMMENT "generating tools_config.py"
+  COMMENT "Generating tools_config.py"
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools_config.py
 )
 add_dependencies(dummy2 dummy)

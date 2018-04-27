@@ -153,7 +153,7 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
    return fc::variant(results.required_keys);
 }
 
-PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
+PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
    trx.set_reference_block(info.head_block_id);
@@ -168,7 +168,7 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extr
    trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
    trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
 
-   if (!skip_sign) {
+   if (sign) {
       sign_transaction(trx);
    }
 
@@ -202,16 +202,16 @@ PyObject* push_transaction(signed_transaction& trx, bool skip_sign, int32_t extr
    return py_new_none();
 }
 
-PyObject* push_actions(std::vector<chain::action>&& actions, bool skip_sign, packed_transaction::compression_type compression = packed_transaction::none ) {
+PyObject* push_actions(std::vector<chain::action>&& actions, bool sign, packed_transaction::compression_type compression = packed_transaction::none ) {
    signed_transaction trx;
    trx.actions = std::forward<decltype(actions)>(actions);
 
    wlog("++++++++++++++++++++++push_transaction");
-   return push_transaction(trx, skip_sign, 10000000, compression);
+   return push_transaction(trx, sign, 10000000, compression);
 }
 
-PyObject* send_actions(std::vector<chain::action>&& actions, bool skip_sign, packed_transaction::compression_type compression = packed_transaction::none) {
-   return push_actions(std::forward<decltype(actions)>(actions), skip_sign, compression);
+PyObject* send_actions(std::vector<chain::action>&& actions, bool sign, packed_transaction::compression_type compression = packed_transaction::none) {
+   return push_actions(std::forward<decltype(actions)>(actions), sign, compression);
 }
 
 PyObject* push_transaction2_(void* signed_trx, bool sign) {
@@ -298,7 +298,7 @@ PyObject* create_account_(string creator, string newaccount, string owner,
       actions.emplace_back( vector<chain::permission_level>{{creator,"active"}},
                                 contracts::newaccount{creator, newaccount, owner_auth, active_auth, recovery_auth});
 
-      return send_actions(std::move(actions), !sign);
+      return send_actions(std::move(actions), sign);
 
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
@@ -519,7 +519,7 @@ PyObject* transfer_(string& sender, string& recipient, int amount, string memo, 
       actions.emplace_back( generate_nonce() );
    }
 
-   return send_actions(std::move(actions), !sign);
+   return send_actions(std::move(actions), sign);
 
 }
 
@@ -567,7 +567,7 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
          actions.emplace_back( generate_nonce() );
       }
 
-      return send_actions(std::move(actions), !sign);
+      return send_actions(std::move(actions), sign);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -641,7 +641,7 @@ PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, v
       if (tx_force_unique) {
          actions.emplace_back( generate_nonce() );
       }
-      PyObject* ret = send_actions(std::move(actions), !sign);
+      PyObject* ret = send_actions(std::move(actions), sign);
       return ret;
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -703,7 +703,7 @@ PyObject* push_messages_ex_(string& contract, vector<string>& functions, vector<
       if (tx_force_unique) {
          actions.emplace_back( generate_nonce() );
       }
-      PyObject* ret = send_actions(std::move(actions), !sign);
+      PyObject* ret = send_actions(std::move(actions), sign);
       return ret;
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -753,7 +753,7 @@ PyObject* push_evm_message_(string& contract, string& args, map<string, string>&
          actions.emplace_back( generate_nonce() );
       }
 
-      return send_actions(std::move(actions), !sign);
+      return send_actions(std::move(actions), sign);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -833,7 +833,7 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
       }
 
       std::cout << localized("Publishing contract...") << std::endl;
-      return send_actions(std::move(actions), !sign, packed_transaction::zlib);
+      return send_actions(std::move(actions), sign, packed_transaction::zlib);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -863,7 +863,7 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
       actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
 
       std::cout << localized("Publishing contract...") << std::endl;
-      return send_actions(std::move(actions), !sign, packed_transaction::zlib);
+      return send_actions(std::move(actions), sign, packed_transaction::zlib);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
