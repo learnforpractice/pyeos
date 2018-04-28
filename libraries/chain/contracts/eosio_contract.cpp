@@ -119,8 +119,9 @@ void apply_eosio_setcode_py(apply_context& context) {
 
    auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
 
-   if (act.code.size() >5*1024) {
-      throw fc::exception(0, string("exception"), string("code size must <= 5KB"));
+   if (act.code.size() > 5*1024) {
+      elog("++++act.code.size() ${n}", ("n", act.code.size()));
+      throw fc::exception(0, string("exception"), string("code size must be <= 5KB"));
    }
 
    micropython_interface::get().on_setcode(act.account, act.code);

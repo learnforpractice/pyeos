@@ -91,7 +91,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       mod->hash = fc::sha256::hash( code.data(), code.size() );
       pymodules[_account] = mod;
    } else {
-      FC_ASSERT(false, "load micropython code failed!");
+      elog("load micropython code failed!");
    }
 }
 

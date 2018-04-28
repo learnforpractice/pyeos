@@ -187,7 +187,7 @@ void interactive_console() {
    PyRun_SimpleString("init()");
 
    if (true) {//(app().interactive_mode()) {
-      ilog("start interactive python.");
+      ilog("Starting interactive Python.");
 //      PyRun_SimpleString("eosapi.register_signal_handler()");
       PyRun_InteractiveLoop(stdin, "<stdin>");
       Py_Finalize();
