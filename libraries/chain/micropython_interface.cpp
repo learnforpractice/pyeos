@@ -49,12 +49,15 @@ micropython_interface& micropython_interface::get() {
 }
 
 void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
+   if (code.size() <= 0) {
+      throw;
+   }
+
    std::thread::id this_id = std::this_thread::get_id();
    auto itr = module_cache.find(this_id);
    if (itr == module_cache.end()) {
       module_cache[this_id] = std::map<uint64_t, py_module*>();
    }
-
    std::map<uint64_t, py_module*>& pymodules = module_cache[this_id];
 
 
@@ -67,7 +70,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
          return;
       }
    }
-   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
+//   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
    mp_obj_t obj = nullptr;
    if (code.data()[0] == 0) {//py
       obj = get_mpapi().micropy_load_from_py(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);

@@ -33,11 +33,11 @@ void sign_transaction(signed_transaction& trx) {
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
    eosio::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
    eosio::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
-
+#if 0
    for (auto& key : required_keys.required_keys) {
       wlog(string(key));
    }
-
+#endif
    trx = wm().sign_transaction(trx, required_keys.required_keys, chain_id_type{});
 }
 
