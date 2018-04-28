@@ -72,6 +72,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    }
 //   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
    mp_obj_t obj = nullptr;
+   get_mpapi().execution_start();
    if (code.data()[0] == 0) {//py
       obj = get_mpapi().micropy_load_from_py(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
    } else if (code.data()[0] == 1) {//mpy
@@ -79,6 +80,8 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    } else {
       FC_ASSERT(false, "unknown micropython code!");
    }
+   get_mpapi().execution_end();
+
    if (obj != NULL) {
       if (_itr != pymodules.end()) {
          delete _itr->second;
