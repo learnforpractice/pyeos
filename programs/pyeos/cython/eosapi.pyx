@@ -27,6 +27,16 @@ cdef extern from "<eosio/chain/wast_to_wasm.hpp>":
     ctypedef unsigned char uint8_t
     vector[uint8_t] wast_to_wasm( string& wast )
 
+cdef extern from "<eosio/chain/contracts/types.hpp>" namespace "eosio::chain::contracts":
+    cdef cppclass setcode:
+        uint64_t                     account;
+        unsigned char                            vmtype;
+        unsigned char                            vmversion;
+        vector[char]                            code;
+
+cdef extern from "<fc/io/raw.hpp>" namespace "fc::raw":
+    cdef vector[char] pack[T](T& code)
+
 cdef extern from "eosapi_.hpp":
     ctypedef int bool
 
@@ -71,6 +81,8 @@ cdef extern from "eosapi_.hpp":
 
     object push_messages_ex_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
 
+    object push_transactions_(vector[string]& contracts, vector[string]& functions, vector[string]& args, vector[map[string, string]]& permissions, bool sign, bool rawargs);
+
     int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
     void wast2wasm_( string& wast ,string& result)
@@ -79,6 +91,23 @@ cdef extern from "eosapi_.hpp":
     void pack_bytes_(string& _in, string& out);
     void unpack_bytes_(string& _in, string& out);
 
+    cdef cppclass permission_level:
+        permission_level()
+        uint64_t    actor;
+        uint64_t permission;
+
+    cdef cppclass action:
+        action()
+        uint64_t                    account;
+        uint64_t                    name;
+        vector[permission_level]    authorization;
+        vector[char]                data;
+
+    object push_transactions2_(vector[vector[action]]& actions, bool sign)
+    void memcpy(char* dst, char* src, size_t len)
+#    void fc_pack_setcode(setcode _setcode, vector<char>& out)
+
+    void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -476,6 +505,62 @@ def push_messages_ex(string& contract, vector[string]& functions, args, permissi
     return (ret)
 
 
+def push_transactions(vector[string]& contracts, vector[string]& functions, args, permissions,bool sign, bool rawargs):
+    cdef vector[map[string, string]] _permissions
+    cdef map[string, string] __permissions;
+    cdef vector[string] _args
+    
+    for per in permissions:#list
+        __permissions = map[string, string]()
+        for _key in per: #dict
+            value = per[_key]
+            __permissions[_key] = value
+        _permissions.push_back(__permissions)
+
+    for arg in args:
+        if isinstance(arg, dict):
+            arg = json.dumps(arg)
+        _args.push_back(arg)
+
+    ret = push_transactions_(contracts, functions, _args, _permissions,sign, rawargs)
+    return (ret)
+
+def push_transactions2(actions, bool sign):
+    cdef vector[vector[action]] vv
+    cdef vector[action] v
+    cdef action act
+    cdef permission_level per
+    cdef vector[permission_level] pers
+    '''
+    cdef cppclass permission_level:
+        uint64_t    actor;
+        uint64_t permission;
+
+    cdef cppclass action:
+        uint64_t                    account;
+        uint64_t                    name;
+        vector[permission_level]    authorization;
+        vector[char]                data;
+    '''
+    for aa in actions:
+        v = vector[action]()
+        for a in aa:
+            act = action()
+            act.account = a[0]
+            act.name = a[1]
+            pers = vector[permission_level]()
+            for auth in a[2]:
+                per = permission_level()
+                per.actor = auth[0]
+                per.permission = auth[1]
+                pers.push_back(per)
+            act.authorization = pers
+            act.data.resize(len(a[3]))
+            memcpy(act.data.data(), a[3], len(a[3]))
+            v.push_back(act)
+        vv.push_back(v)
+    return push_transactions2_(vv, sign)
+
 def mp_compile(py_file):
     cdef vector[char] buffer
     cdef int mpy_size
@@ -502,13 +587,19 @@ def wast2wasm( string& wast ):
 def is_replay():
     return is_replay_()
 
-def pack(string& _in):
+def pack_bytes(string& _in):
     cdef string out
     pack_bytes_(_in, out)
     return <bytes>out
 
-def unpack(string& _in):
+def unpack_bytes(string& _in):
     cdef string out
     unpack_bytes_(_in, out)
     return <bytes>out
+
+def pack_setabi(string& abiPath, uint64_t account):
+    cdef string out
+    fc_pack_setabi_(abiPath, account, out)
+    return <bytes>out
+
 

@@ -214,6 +214,136 @@ PyObject* send_actions(std::vector<chain::action>&& actions, bool sign, packed_t
    return push_actions(std::forward<decltype(actions)>(actions), sign, compression);
 }
 
+bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
+   auto info = get_info();
+   trx.expiration = info.head_block_time + tx_expiration;
+   trx.set_reference_block(info.head_block_id);
+
+   if (tx_force_unique) {
+      trx.context_free_actions.emplace_back( generate_nonce() );
+   }
+
+   auto required_keys = determine_required_keys(trx);
+   size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
+
+   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+   trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
+
+   if (sign) {
+      sign_transaction(trx);
+   }
+   return true;
+}
+
+PyObject* push_transactions_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
+      vector<map<string, string>>& permissions, bool sign, bool rawargs) {
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+
+   vector<vector<chain::permission_level>> accountPermissions;
+
+   for (int i=0;i<permissions.size();i++) {
+      auto& per = permissions[i];
+      vector<chain::permission_level> _v;
+      for (auto it = per.begin(); it != per.end(); it++) {
+         _v.push_back(chain::permission_level{name(it->first), name(it->second)});
+      }
+      accountPermissions.push_back(_v);
+   }
+
+   vector<chain::action> actions;
+
+   eosio::chain_apis::read_only::abi_json_to_bin_params params;
+   for (int i=0;i<functions.size();i++) {
+         string& action = functions[i];
+         string& arg = args[i];
+         if (!rawargs) {
+         params = {contracts[i], action, fc::json::from_string(arg)};
+      } else {
+         std::vector<char> v(arg.begin(), arg.end());
+         params = {contracts[i], action, fc::variant(v)};
+      }
+      auto result = ro_api.abi_json_to_bin(params);
+      actions.emplace_back(accountPermissions[i], contracts[i], action, result.binargs);
+   }
+
+   packed_transaction::compression_type compression = packed_transaction::none;
+   vector<signed_transaction* > trxs;
+
+   for (auto& action: actions) {
+      signed_transaction *trx = new signed_transaction();
+      trxs.push_back(trx);
+      trx->actions.push_back(action);
+      gen_transaction(*trx, sign, 10000000, compression);
+   }
+
+   uint64_t cost_time = get_microseconds();
+
+   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   for (auto& strx : trxs) {
+      chain_apis::read_write::push_transaction_results result;
+      bool success = false;
+      try {
+         auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
+         result = rw.push_transaction(params);
+         success = true;
+      } catch (fc::assert_exception& e) {
+         elog(e.to_detail_string());
+      } catch (fc::exception& e) {
+         elog(e.to_detail_string());
+      } catch (boost::exception& ex) {
+         elog(boost::diagnostic_information(ex));
+      }
+   }
+   cost_time = get_microseconds() - cost_time;
+
+   for (auto& st : trxs) {
+      free(st);
+   }
+
+   return py_new_uint64(cost_time);
+}
+
+
+PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign) {
+   packed_transaction::compression_type compression = packed_transaction::none;
+   vector<signed_transaction* > trxs;
+
+   for (auto& v: vv) {
+      signed_transaction *trx = new signed_transaction();
+      trxs.push_back(trx);
+      for(auto& action: v) {
+         trx->actions.push_back(action);
+      }
+      gen_transaction(*trx, sign, 10000000, compression);
+   }
+
+   uint64_t cost_time = get_microseconds();
+
+   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   for (auto& strx : trxs) {
+      chain_apis::read_write::push_transaction_results result;
+      bool success = false;
+      try {
+         auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
+         result = rw.push_transaction(params);
+         success = true;
+      } catch (fc::assert_exception& e) {
+         elog(e.to_detail_string());
+      } catch (fc::exception& e) {
+         elog(e.to_detail_string());
+      } catch (boost::exception& ex) {
+         elog(boost::diagnostic_information(ex));
+      }
+   }
+   cost_time = get_microseconds() - cost_time;
+
+   for (auto& st : trxs) {
+      free(st);
+   }
+
+   return py_new_uint64(cost_time);
+}
+
 PyObject* push_transaction2_(void* signed_trx, bool sign) {
 
    if (signed_trx == NULL) {
@@ -833,8 +963,12 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
       }
 
       std::cout << localized("Publishing contract...") << std::endl;
-      return send_actions(std::move(actions), sign, packed_transaction::zlib);
 
+      uint64_t cost_time = get_microseconds();
+      auto ret = send_actions(std::move(actions), sign, packed_transaction::zlib);
+      cost_time = get_microseconds() - cost_time;
+      wlog("cost time: ${n}", ("n", cost_time));
+      return ret;
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    } catch (boost::exception& ex) {
@@ -962,6 +1096,30 @@ void unpack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> v(raw.begin(), raw.end());
    out = fc::raw::unpack<string>(v);
+}
+
+void fc_pack_setcode_(chain::contracts::setcode _setcode, vector<char>& out) {
+   out = fc::raw::pack(_setcode);
+}
+
+#include <fc/io/raw.hpp>
+
+void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
+   contracts::setabi handler;
+   handler.account = account;
+   handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
+   auto _out = fc::raw::pack(handler);
+   out = string(_out.begin(), _out.end());
+}
+
+void fc_pack_uint64_(uint64_t n, string& out) {
+   vector<char> _out = fc::raw::pack(n);
+   out = string(_out.begin(), _out.end());
+}
+
+void fc_pack_uint8_(uint8_t n, string& out) {
+   vector<char> _out = fc::raw::pack(n);
+   out = string(_out.begin(), _out.end());
 }
 
 

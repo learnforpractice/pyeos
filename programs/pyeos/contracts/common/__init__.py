@@ -19,7 +19,9 @@ def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if code_type == 0:
         cpp2wast.set_src_path(_src_dir)
-        cpp2wast.build(src.replace('.wast', '.cpp'))
+        cpp_src_file = src.replace('.wast', '.cpp')
+        if not cpp2wast.build(cpp_src_file):
+            raise Exception("build {0} failed".format(cpp_src_file))
 
     if src.find('/') < 0:
         src = os.path.join(_src_dir, src)
@@ -66,7 +68,7 @@ def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=
     t1 = os.path.getmtime(full_src_path)
     t2 = os.path.getmtime(cache_file)
     if t1 > t2:
-        print('+++++=change detected, reload test', module_name)
+        print('+++++=change detected, reloading test', module_name)
         imp.reload(sys.modules[module_name])
         return getattr(sys.modules[module_name], func.__name__)(*args)
     return func(*args)

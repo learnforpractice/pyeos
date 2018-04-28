@@ -123,8 +123,15 @@ string convert_from_eth_address(string& eth_address);
 PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
       vector<map<string, string>>& permissions, bool sign, bool rawargs);
 
+PyObject* push_transactions_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
+      vector<map<string, string>>& permissions, bool sign, bool rawargs);
+
+PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign);
+
+
 PyObject* push_messages_ex_(string& contracts, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
                          bool sign, bool rawargs);
+
 
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
@@ -134,3 +141,5 @@ bool is_replay_();
 
 void pack_bytes_(string& in, string& out);
 void unpack_bytes_(string& in, string& out);
+
+void fc_pack_setabi_(string& abiPath, uint64_t account, string& out);

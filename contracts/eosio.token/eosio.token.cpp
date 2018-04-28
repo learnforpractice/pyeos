@@ -6,7 +6,9 @@
 #include <eosio.token/eosio.token.hpp>
 
 namespace eosio {
-
+void sayHello() {
+   prints("hello,world");
+}
 void token::create( account_name issuer,
                     asset        maximum_supply,
                     uint8_t      issuer_can_freeze,

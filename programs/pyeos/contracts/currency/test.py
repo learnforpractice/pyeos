@@ -143,9 +143,9 @@ def deploy_contract(currency, contract_type = 0):
             f.write(data)
         r = eosapi.set_contract(currency,'../../programs/pyeos/contracts/currency/currency.mpy','../../contracts/currency/currency.abi', 1)
     elif contract_type == 3:
-        wast = '../../build/contracts/currency/currency.wast'
+        wast = '../../build/contracts/eosio.token/eosio.token.wast'
         key_words = b"hello,world\\00"
-        wast = '../../build/contracts/currency/currency.wast'
+        wast = '../../build/contracts/eosio.token/eosio.token.wast'
         with open(wast, 'rb') as f:
             data = f.read()
             #data.find(key_words)
@@ -155,7 +155,7 @@ def deploy_contract(currency, contract_type = 0):
             data = data.replace(key_words, replace_str)
             with open('currency2.wast', 'wb') as f:
                 f.write(data)
-        r = eosapi.set_contract(currency, 'currency2.wast', '../../build/contracts/currency/currency.abi',0)
+        r = eosapi.set_contract(currency, 'currency2.wast', '../../build/contracts/eosio.token/eosio.token.abi',0)
     else:
         assert 0
 
@@ -188,7 +188,7 @@ def test3(count, d=0):
         per.append({currency:'active'})
         functions.append('issue')
         arg = str(i)
-        args.append({"to":currency,"quantity":"1000.0000 CUR","memo":""})
+        args.append({"to":currency,"quantity":"1000.0000 CUD","memo":""})
     ret = eosapi.push_messages(accounts, functions, args, per, True, rawargs=False)
 
     assert ret
@@ -197,3 +197,62 @@ def test3(count, d=0):
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
+
+def test4(count, d=0):
+    keys = list(wallet.list_keys().keys())
+    for i in range(0, count):
+        currency = 'curre'+n2s(i)
+#        currency = 'currency'
+
+        key1 = keys[i]
+        key2 = keys[10000+i]
+
+        if not eosapi.get_account(currency).permissions:
+            r = eosapi.create_account('eosio', currency, key1, key2)
+            assert r
+        deploy_contract(currency, d)
+
+    eosapi.produce_block()
+
+    time.sleep(0.5)
+
+    accounts = []
+    functions = []
+    args = []
+    per = []
+    
+    for i in range(0, count):
+        currency = 'curre'+n2s(i)
+        accounts.append(currency)
+        per.append({currency:'active'})
+        functions.append('create')
+        arg = str(i)
+        msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOK","can_freeze":0,"can_recall":0, "can_whitelist":0}
+        #{"to":currency,"quantity":"1000.0000 CUR","memo":""}
+        args.append(msg)
+    cost = eosapi.push_transactions(accounts, functions, args, per, True, rawargs=False)
+
+    eosapi.produce_block()
+
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init
+def create():
+    with producer:
+        msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
+        r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
+        assert r
+
+@init
+def issue():
+    with producer:
+        r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+        assert r
+
+@init
+def transfer():
+    with producer:
+        msg = {"from":"hello", "to":"auction1", "quantity":"100.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active'})
+#        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
+        assert r
