@@ -57,6 +57,9 @@ extern "C" {{
          switch( action ) {{
             case N(sayhello):
                   size_t size = action_data_size();
+                  if (size > 128) {{
+                      size = 128;
+                  }}
                   char msg[size+1];
                   msg[size] = '\\0';
                   read_action_data(msg, size);
