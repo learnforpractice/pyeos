@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 import sys
 from optparse import OptionParser
@@ -5,10 +6,13 @@ from optparse import OptionParser
 test_py = \
 '''import os
 import time
+import struct
 
 import wallet
 import eosapi
 import initeos
+
+from eosapi import N
 from tools import cpp2wast
 
 from common import smart_call, producer
