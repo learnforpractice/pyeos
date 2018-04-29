@@ -37,6 +37,8 @@ void chain_initializer::register_types(chain_controller& chain, chainbase::datab
    SET_APP_HANDLER( eosio, eosio, newaccount, eosio );
    SET_APP_HANDLER( eosio, eosio, setcode, eosio );
    SET_APP_HANDLER( eosio, eosio, setabi, eosio );
+   SET_APP_HANDLER( eosio, eosio, lockcode, eosio );
+   SET_APP_HANDLER( eosio, eosio, unlockcode, eosio );
    SET_APP_HANDLER( eosio, eosio, updateauth, eosio );
    SET_APP_HANDLER( eosio, eosio, deleteauth, eosio );
    SET_APP_HANDLER( eosio, eosio, linkauth, eosio );
@@ -64,6 +66,8 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
    // TODO add ricardian contracts
    eos_abi.actions.push_back( action_def{name("setcode"), "setcode",""} );
    eos_abi.actions.push_back( action_def{name("setabi"), "setabi",""} );
+   eos_abi.actions.push_back( action_def{name("lockcode"), "lockcode",""} );
+   eos_abi.actions.push_back( action_def{name("unlockcode"), "unlockcode",""} );
    eos_abi.actions.push_back( action_def{name("linkauth"), "linkauth",""} );
    eos_abi.actions.push_back( action_def{name("unlinkauth"), "unlinkauth",""} );
    eos_abi.actions.push_back( action_def{name("updateauth"), "updateauth",""} );
@@ -94,6 +98,19 @@ abi_def chain_initializer::eos_contract_abi(const abi_def& eosio_system_abi)
       "setabi", "", {
          {"account", "account_name"},
          {"abi", "abi_def"}
+      }
+   });
+
+   eos_abi.structs.emplace_back( struct_def {
+      "lockcode", "", {
+         {"account", "account_name"}
+      }
+   });
+
+   eos_abi.structs.emplace_back( struct_def {
+      "unlockcode", "", {
+         {"unlocker", "account_name"},
+         {"account", "account_name"}
       }
    });
 

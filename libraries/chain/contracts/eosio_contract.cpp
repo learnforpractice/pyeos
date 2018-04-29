@@ -121,7 +121,7 @@ void apply_eosio_setcode_py(apply_context& context) {
 
    if (act.code.size() > 5*1024) {
       elog("++++act.code.size() ${n}", ("n", act.code.size()));
-      throw fc::exception(0, string("exception"), string("code size must be <= 5KB"));
+      throw FC_EXCEPTION( fc::exception, "code size must be <= 5KB, actual code size is ${n}", ("n", act.code.size()));
    }
 
    micropython_interface::get().on_setcode(act.account, act.code);
@@ -244,6 +244,11 @@ void apply_eosio_setcode_rpc(apply_context& context) {
 
 void apply_eosio_setcode(apply_context& context) {
    auto  act = context.act.data_as<setcode>();
+   auto& db = context.mutable_db;
+   const auto& account = db.get<account_object,by_name>(act.account);
+   if (account.locked) {
+      throw FC_EXCEPTION( fc::exception, "code in ${n} has been locked on", ("n", act.account));
+   }
 
    if (act.vmtype == 1) {
       apply_eosio_setcode_py(context);
@@ -255,7 +260,6 @@ void apply_eosio_setcode(apply_context& context) {
       apply_eosio_setcode_rpc(context);
       return;
    }
-   auto& db = context.mutable_db;
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    context.require_authorization(act.account);
    context.require_write_lock( config::eosio_auth_scope );
@@ -267,7 +271,6 @@ void apply_eosio_setcode(apply_context& context) {
 
    wasm_interface::validate(act.code);
 
-   const auto& account = db.get<account_object,by_name>(act.account);
 
    int64_t code_size = (int64_t)act.code.size();
    int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
@@ -301,6 +304,7 @@ void apply_eosio_setabi(apply_context& context) {
    auto& db = context.mutable_db;
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    auto  act = context.act.data_as<setabi>();
+   const auto& account = db.get<account_object,by_name>(act.account);
 
    context.require_authorization(act.account);
 
@@ -313,7 +317,6 @@ void apply_eosio_setabi(apply_context& context) {
    abi_serializer(act.abi).validate();
    // todo: figure out abi serialization location
 
-   const auto& account = db.get<account_object,by_name>(act.account);
 
    int64_t old_size = (int64_t)account.abi.size();
    int64_t new_size = (int64_t)fc::raw::pack_size(act.abi);
@@ -329,6 +332,51 @@ void apply_eosio_setabi(apply_context& context) {
       );
    }
 }
+
+
+void apply_eosio_lockcode(apply_context& context) {
+   name _account_name;
+   datastream<const char*> ds( context.act.data.data(), context.act.data.size() );
+   fc::raw::unpack( ds, _account_name );
+   auto& db = context.mutable_db;
+   const auto& account = db.get<account_object,by_name>( _account_name );
+
+   if (account.locked) {
+      throw FC_EXCEPTION( fc::exception, "code in account ${n1} has already been locked on", ("n1", _account_name));
+   }
+
+   db.modify( account, [&]( auto& a ) {
+      a.locked = true;
+   });
+}
+
+void apply_eosio_unlockcode(apply_context& context) {
+   //account owner can not unlock the code, only a privileged account such as BP can
+   name _privileged_account;
+   name _unlockaccount;
+
+
+   datastream<const char*> ds( context.act.data.data(), context.act.data.size() );
+   fc::raw::unpack( ds, _privileged_account );
+   fc::raw::unpack( ds, _unlockaccount );
+
+   auto& db = context.mutable_db;
+   const auto& account = db.get<account_object,by_name>( _privileged_account );
+   if (!account.privileged) {
+      throw FC_EXCEPTION( fc::exception, "can not unlock ${n1} with nonprivileged account ${n2}", ("n1", _unlockaccount)("n2", _unlockaccount));
+   }
+
+   const auto& _account = db.get<account_object,by_name>( _unlockaccount );
+
+   if (!_account.locked) {
+      throw FC_EXCEPTION( fc::exception, "Code in account ${n1} has not been locked on", ("n1", _unlockaccount));
+   }
+
+   db.modify( _account, [&]( auto& a ) {
+      a.locked = false;
+   });
+}
+
 
 void apply_eosio_updateauth(apply_context& context) {
    context.require_write_lock( config::eosio_auth_scope );

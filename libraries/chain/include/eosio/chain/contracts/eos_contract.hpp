@@ -27,6 +27,9 @@ namespace eosio { namespace chain { namespace contracts {
    void apply_eosio_setcode(apply_context&);
    void apply_eosio_setabi(apply_context&);
 
+   void apply_eosio_lockcode(apply_context&);
+   void apply_eosio_unlockcode(apply_context&);
+
    void apply_eosio_onerror(apply_context&);
 
    void apply_eosio_canceldelay(apply_context&);
