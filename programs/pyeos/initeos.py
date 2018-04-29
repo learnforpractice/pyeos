@@ -48,7 +48,16 @@ def init():
 
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
-    contracts_path = os.path.join(src_dir, '../../build', 'contracts') 
+    '''
+    r = eosapi.push_message('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
+    r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
+    assert r
+    msg = {"from":"eosio", "to":"hello", "quantity":"25.0000 EOS", "memo":"m"}
+    r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
+    assert r
+    '''
+
+    contracts_path = os.path.join(src_dir, '../../build', 'contracts')
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         print('account', account)
         if not eosapi.get_account(account).permissions:
@@ -75,6 +84,14 @@ def init():
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi,0)
             eosapi.produce_block()
+
+            if account == 'eosio.bios':
+                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
+                r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
+                assert r
+                r = eosapi.push_message('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+                assert r
+                eosapi.produce_block()
 
     from backyard import test
     test.deploy_mpy()
