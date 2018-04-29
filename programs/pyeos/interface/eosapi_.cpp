@@ -308,34 +308,35 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign) {
    packed_transaction::compression_type compression = packed_transaction::none;
    vector<signed_transaction* > trxs;
 
-   for (auto& v: vv) {
-      signed_transaction *trx = new signed_transaction();
-      trxs.push_back(trx);
-      for(auto& action: v) {
-         trx->actions.push_back(action);
+   uint64_t cost_time = 0;
+
+   try {
+      for (auto& v: vv) {
+         signed_transaction *trx = new signed_transaction();
+         trxs.push_back(trx);
+         for(auto& action: v) {
+            trx->actions.push_back(action);
+         }
+         gen_transaction(*trx, sign, 10000000, compression);
       }
-      gen_transaction(*trx, sign, 10000000, compression);
-   }
+      cost_time = get_microseconds();
+      auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
 
-   uint64_t cost_time = get_microseconds();
-
-   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   for (auto& strx : trxs) {
-      chain_apis::read_write::push_transaction_results result;
-      bool success = false;
-      try {
+      for (auto& strx : trxs) {
+         chain_apis::read_write::push_transaction_results result;
          auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
          result = rw.push_transaction(params);
-         success = true;
-      } catch (fc::assert_exception& e) {
-         elog(e.to_detail_string());
-      } catch (fc::exception& e) {
-         elog(e.to_detail_string());
-      } catch (boost::exception& ex) {
-         elog(boost::diagnostic_information(ex));
       }
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
    }
+
    cost_time = get_microseconds() - cost_time;
+
 
    for (auto& st : trxs) {
       free(st);
