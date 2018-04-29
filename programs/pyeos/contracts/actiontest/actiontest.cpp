@@ -15,6 +15,9 @@ extern "C" {
 
       char buffer[128];
       size_t size = action_data_size();
+      if (size > sizeof(buffer)) {
+         size = sizeof(buffer);
+      }
       read_action_data(buffer, size);
 
       int itr = db_find_i64(code, code, code, id);
