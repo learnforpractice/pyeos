@@ -419,36 +419,46 @@ bool chain_controller::preprocess_transaction_async() {
       qin.pop();
       lk.unlock();
 
-      //edump((transaction_header(packed_trx.get_transaction())));
-      auto start = fc::time_point::now();
-      transaction_metadata   mtrx( item.packed_trx, get_chain_id(), head_block_time());
-      //idump((transaction_header(mtrx.trx())));
+      ilog("got one transaction!");
+      try {
+         //edump((transaction_header(packed_trx.get_transaction())));
+         auto start = fc::time_point::now();
+         transaction_metadata   mtrx( item.packed_trx, get_chain_id(), head_block_time());
+         //idump((transaction_header(mtrx.trx())));
 
-      const transaction& trx = mtrx.trx();
-      mtrx.delay =  fc::seconds(trx.delay_sec);
+         const transaction& trx = mtrx.trx();
+         mtrx.delay =  fc::seconds(trx.delay_sec);
 
-      validate_transaction_with_minimal_state( trx, mtrx.billable_packed_size );
-      validate_expiration_not_too_far(trx, head_block_time() + mtrx.delay);
-      validate_referenced_accounts(trx);
-      validate_uniqueness(trx);
-      if( should_check_authorization() ) {
-         auto enforced_delay = check_transaction_authorization(trx, item.packed_trx.signatures, mtrx.context_free_data);
-         auto max_delay = fc::seconds( get_global_properties().configuration.max_transaction_delay );
-         if ( max_delay < enforced_delay ) {
-            enforced_delay = max_delay;
+         validate_transaction_with_minimal_state( trx, mtrx.billable_packed_size );
+         validate_expiration_not_too_far(trx, head_block_time() + mtrx.delay);
+         validate_referenced_accounts(trx);
+         validate_uniqueness(trx);
+         if( should_check_authorization() ) {
+            auto enforced_delay = check_transaction_authorization(trx, item.packed_trx.signatures, mtrx.context_free_data);
+            auto max_delay = fc::seconds( get_global_properties().configuration.max_transaction_delay );
+            if ( max_delay < enforced_delay ) {
+               enforced_delay = max_delay;
+            }
+            if ( mtrx.delay < enforced_delay ) {
+               elog("authorization imposes a delay (${enforced_delay} sec) greater than the delay specified in transaction header (${specified_delay} sec)",
+               ("enforced_delay", enforced_delay.to_seconds())("specified_delay", mtrx.delay.to_seconds()) );
+               continue;
+            }
          }
-         if ( mtrx.delay < enforced_delay ) {
-            elog("authorization imposes a delay (${enforced_delay} sec) greater than the delay specified in transaction header (${specified_delay} sec)",
-            ("enforced_delay", enforced_delay.to_seconds())("specified_delay", mtrx.delay.to_seconds()) );
-            continue;
-         }
-      }
 
-      {
-         std::lock_guard<std::mutex> lk(mxout);
-         qout.push({item.skip_flag, std::move(item.packed_trx),std::move(mtrx)});
+         {
+            std::lock_guard<std::mutex> lk(mxout);
+            qout.push({item.skip_flag, std::move(item.packed_trx),std::move(mtrx)});
+         }
+         cnout.notify_all();
+
+      } catch (fc::assert_exception& e) {
+         elog(e.to_detail_string());
+      } catch (fc::exception& e) {
+         elog(e.to_detail_string());
+      } catch (boost::exception& ex) {
+         elog(boost::diagnostic_information(ex));
       }
-      cnout.notify_all();
    }
 
    return true;
@@ -462,25 +472,35 @@ bool chain_controller::process_transaction_async() {
       qout.pop();
       lk.unlock();
 
+      ilog("++++process_transaction_async");
       if( !_pending_block ) {
          _start_pending_block();
       }
 
       with_skip_flags(item.skip_flag, [&]() {
          _db.with_write_lock([&]() {
+            try {
 //            transaction_metadata   mtrx( packed_trx, get_chain_id(), head_block_time());
       //      auto setup_us = fc::time_point::now() - start;
-            transaction_trace result(item.mtrx.id);
-            if( item.mtrx.delay.count() == 0 ) {
-               result = _push_transaction( std::move(item.mtrx) );
-            } else {
-               result = wrap_transaction_processing( std::move(item.mtrx),
-                                                     [this](transaction_metadata& meta) { return delayed_transaction_processing(meta); } );
+               transaction_trace result(item.mtrx.id);
+               if( item.mtrx.delay.count() == 0 ) {
+                  result = _push_transaction( std::move(item.mtrx) );
+               } else {
+                  result = wrap_transaction_processing( std::move(item.mtrx),
+                                                        [this](transaction_metadata& meta) { return delayed_transaction_processing(meta); } );
+               }
+               // notify anyone listening to pending transactions
+               on_pending_transaction(_pending_transaction_metas.back(), item.packed_trx);
+               _pending_block->input_transactions.emplace_back(item.packed_trx);
+
+            } catch (fc::assert_exception& e) {
+               elog(e.to_detail_string());
+            } catch (fc::exception& e) {
+               elog(e.to_detail_string());
+            } catch (boost::exception& ex) {
+               elog(boost::diagnostic_information(ex));
             }
-            // notify anyone listening to pending transactions
-            on_pending_transaction(_pending_transaction_metas.back(), item.packed_trx);
-            _pending_block->input_transactions.emplace_back(item.packed_trx);
-      //      result._setup_profiling_us = setup_us;
+            //      result._setup_profiling_us = setup_us;
             return true;
          });
       });
