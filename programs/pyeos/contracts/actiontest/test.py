@@ -44,12 +44,12 @@ struct setcode {
    bytes                            code;
 '''
 
-TRX_COUNT = 100
+TRX_COUNT = 500
 
 @init_py
 def send_actions(sign=True):
     actions = []
-    for i in range(100):
+    for i in range(TRX_COUNT):
         act = [N('actiontest'), N('sayhello'), [[N('actiontest'), N('active')]], b'hello,world%d'%(i,)]
         actions.append([act])
     cost_time = eosapi.push_transactions2(actions, sign)
@@ -161,7 +161,7 @@ def call_mpy_without_setcode(sign=True):
 
 
 @init_wasm
-def call_wast_with_setcode(sign=True):
+def call_wasm_with_setcode(sign=True):
     _src_dir = os.path.dirname(__file__)
     actions = []
     for i in range(TRX_COUNT):
@@ -224,7 +224,7 @@ def test_all(sign=True):
     ret = call_mpy_without_setcode(sign)
     costs.append(ret)
 
-    ret = call_wast_with_setcode(sign)
+    ret = call_wasm_with_setcode(sign)
     costs.append(ret)
 
     ret = call_wasm_without_setcode(sign)
@@ -236,4 +236,5 @@ def test_all(sign=True):
 
 #2326.1223540358224  3804.017041996348  2808.0816590146446  3760.3880720490356  1641.8204505155315  3212.02582468763  
 
+#1535.2257549472652  4049.7306929089214  1812.9933608183128  3493.8403594462966  1713.772561815776  2887.7697176916326  
 
