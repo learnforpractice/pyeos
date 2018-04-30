@@ -85,7 +85,7 @@ def init():
             r = eosapi.set_contract(account, wast, abi,0)
             eosapi.produce_block()
 
-            if account == 'eosio.bios':
+            if account == 'eosio.token':
                 msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
                 r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
                 assert r
