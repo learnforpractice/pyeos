@@ -67,9 +67,9 @@ add_library( eosio_chain
 
              eoslib/eoslib_.wrap.cpp
              eoslib/eoslib_.cpp
-
+             transaction_metadata.cpp
              ${HEADERS}
-             transaction_metadata.cpp)
+             )
 
 set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
 
@@ -87,10 +87,14 @@ set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase Logging IR WAST WASM Runtime 
-        wasm asmjs passes cfg ast emscripten-optimizer support softfloat ${ETH_LIBRARY} python3 ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared 
+        binaryen softfloat ${ETH_LIBRARY} python3 ${OPENSSL_LIBRARIES})
 
-add_dependencies(eosio_chain micropython1)
+#micropython compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
+#but there are header files depend on micropython, 
+#and this header files are generated during the build of micropython, 
+#so let micropython built before eosio_chain
+add_dependencies(eosio_chain micropython)
 
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"

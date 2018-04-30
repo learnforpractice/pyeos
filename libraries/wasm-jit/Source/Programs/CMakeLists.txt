@@ -13,3 +13,14 @@ set_target_properties(Test PROPERTIES FOLDER Programs)
 add_executable(wavm wavm.cpp CLI.h)
 target_link_libraries(wavm Logging IR WAST WASM Runtime Emscripten)
 set_target_properties(wavm PROPERTIES FOLDER Programs)
+
+
+set(BUILD_STATIC_LIB OFF)
+
+IF(BUILD_STATIC_LIB)
+  ADD_LIBRARY(wavm-shared STATIC CLI.h)
+ELSE()
+  ADD_LIBRARY(wavm-shared SHARED CLI.h)
+ENDIF()
+
+TARGET_LINK_LIBRARIES(wavm-shared Logging IR WAST WASM Runtime)

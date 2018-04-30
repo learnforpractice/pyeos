@@ -23,7 +23,8 @@
 	branch = eosio
 [submodule "externals/binaryen"]
 	path = externals/binaryen
-	url = https://github.com/EOSIO/binaryen
+	url = https://github.com/learnforpractice/binaryen
+	branch = eosio
 [submodule "libraries/softfloat"]
 	path = libraries/softfloat
 	url = https://github.com/eosio/berkeley-softfloat-3
