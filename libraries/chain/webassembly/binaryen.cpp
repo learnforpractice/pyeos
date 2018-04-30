@@ -28,7 +28,7 @@ class binaryen_instantiated_module : public wasm_instantiated_module_interface {
          call("apply", args, context);
       }
 
-      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) {
+      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
          LiteralList args;
          for(auto& arg: _args) {
             args.push_back(Literal(uint64_t(arg)));

@@ -126,7 +126,7 @@ PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, v
 PyObject* push_transactions_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
       vector<map<string, string>>& permissions, bool sign, bool rawargs);
 
-PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign);
+PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async);
 
 
 PyObject* push_messages_ex_(string& contracts, vector<string>& functions, vector<string>& args, map<string, string>& permissions,

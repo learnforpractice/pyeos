@@ -103,7 +103,7 @@ cdef extern from "eosapi_.hpp":
         vector[permission_level]    authorization;
         vector[char]                data;
 
-    object push_transactions2_(vector[vector[action]]& actions, bool sign)
+    object push_transactions2_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async)
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
@@ -525,7 +525,7 @@ def push_transactions(vector[string]& contracts, vector[string]& functions, args
     ret = push_transactions_(contracts, functions, _args, _permissions,sign, rawargs)
     return (ret)
 
-def push_transactions2(actions, bool sign):
+def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
     cdef vector[vector[action]] vv
     cdef vector[action] v
     cdef action act
@@ -559,7 +559,7 @@ def push_transactions2(actions, bool sign):
             memcpy(act.data.data(), a[3], len(a[3]))
             v.push_back(act)
         vv.push_back(v)
-    return push_transactions2_(vv, sign)
+    return push_transactions2_(vv, sign, skip_flag, _async)
 
 def mp_compile(py_file):
     cdef vector[char] buffer

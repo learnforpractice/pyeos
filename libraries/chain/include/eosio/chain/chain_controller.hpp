@@ -91,6 +91,10 @@ namespace eosio { namespace chain {
 
          void push_block( const signed_block& b, uint32_t skip = skip_nothing );
          transaction_trace push_transaction( const packed_transaction& trx, uint32_t skip = skip_nothing );
+         bool push_transaction_async( const packed_transaction& trx, uint32_t skip = skip_nothing );
+         bool preprocess_transaction_async();
+         bool process_transaction_async();
+
          vector<transaction_trace> push_deferred_transactions( bool flush = false, uint32_t skip = skip_nothing );
 
          uint128_t transaction_id_to_sender_id( const transaction_id_type& tid )const;

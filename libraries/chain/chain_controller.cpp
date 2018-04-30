@@ -41,12 +41,38 @@
 #include <functional>
 #include <chrono>
 
+#include <thread>
+#include <iostream>
+#include <queue>
+
 #include <appbase/application.hpp>
 
-extern void timeit_start();
-extern double timeit_end();
-
 namespace eosio { namespace chain {
+
+
+
+static std::mutex mxin;
+static std::mutex mxout;
+
+static std::condition_variable cnin;
+static std::condition_variable cnout;
+
+static bool finished = false;
+
+struct qin_item {
+   uint32_t skip_flag;
+   packed_transaction packed_trx;
+};
+
+struct qout_item {
+   uint32_t skip_flag;
+   packed_transaction packed_trx;
+   transaction_metadata mtrx;
+};
+
+static std::queue<qin_item> qin;
+static std::queue<qout_item> qout;
+
 
 bool chain_controller::is_start_of_round( block_num_type block_num )const  {
   return 0 == (block_num % blocks_per_round());
@@ -87,6 +113,12 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
    _spinup_db();
    _spinup_fork_db();
 
+   std::thread *c1 = new std::thread(&chain_controller::preprocess_transaction_async, this);
+   std::thread *c2 = new std::thread(&chain_controller::preprocess_transaction_async, this);
+   std::thread *c3 = new std::thread(&chain_controller::preprocess_transaction_async, this);
+   std::thread *c4 = new std::thread(&chain_controller::preprocess_transaction_async, this);
+
+   std::thread *cc1 = new std::thread(&chain_controller::process_transaction_async, this);
 
 //   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num())
 //      replay();
@@ -368,6 +400,96 @@ transaction_trace chain_controller::_push_transaction( transaction_metadata&& da
  //  wdump((transaction_header(data.trx())));
    return wrap_transaction_processing( move(data), process_apply_transaction );
 } FC_CAPTURE_AND_RETHROW( ) }
+
+
+bool chain_controller::push_transaction_async( const packed_transaction& trx, uint32_t skip ) {
+   {
+      std::lock_guard<std::mutex> lk(mxin);
+      qin.push({skip, std::move(trx)});
+   }
+   cnin.notify_all();
+   return true;
+}
+
+bool chain_controller::preprocess_transaction_async() {
+   while (true) {
+      std::unique_lock<std::mutex> lk(mxin);
+      cnin.wait(lk, []{ return finished || !qin.empty(); });
+      qin_item item = std::move(qin.front());
+      qin.pop();
+      lk.unlock();
+
+      //edump((transaction_header(packed_trx.get_transaction())));
+      auto start = fc::time_point::now();
+      transaction_metadata   mtrx( item.packed_trx, get_chain_id(), head_block_time());
+      //idump((transaction_header(mtrx.trx())));
+
+      const transaction& trx = mtrx.trx();
+      mtrx.delay =  fc::seconds(trx.delay_sec);
+
+      validate_transaction_with_minimal_state( trx, mtrx.billable_packed_size );
+      validate_expiration_not_too_far(trx, head_block_time() + mtrx.delay);
+      validate_referenced_accounts(trx);
+      validate_uniqueness(trx);
+      if( should_check_authorization() ) {
+         auto enforced_delay = check_transaction_authorization(trx, item.packed_trx.signatures, mtrx.context_free_data);
+         auto max_delay = fc::seconds( get_global_properties().configuration.max_transaction_delay );
+         if ( max_delay < enforced_delay ) {
+            enforced_delay = max_delay;
+         }
+         if ( mtrx.delay < enforced_delay ) {
+            elog("authorization imposes a delay (${enforced_delay} sec) greater than the delay specified in transaction header (${specified_delay} sec)",
+            ("enforced_delay", enforced_delay.to_seconds())("specified_delay", mtrx.delay.to_seconds()) );
+            continue;
+         }
+      }
+
+      {
+         std::lock_guard<std::mutex> lk(mxout);
+         qout.push({item.skip_flag, std::move(item.packed_trx),std::move(mtrx)});
+      }
+      cnout.notify_all();
+   }
+
+   return true;
+}
+
+bool chain_controller::process_transaction_async() {
+   while (!finished) {
+      std::unique_lock<std::mutex> lk(mxout);
+      cnout.wait(lk, []{ return finished || !qout.empty(); });
+      qout_item item = std::move(qout.front());
+      qout.pop();
+      lk.unlock();
+
+      if( !_pending_block ) {
+         _start_pending_block();
+      }
+
+      with_skip_flags(item.skip_flag, [&]() {
+         _db.with_write_lock([&]() {
+//            transaction_metadata   mtrx( packed_trx, get_chain_id(), head_block_time());
+      //      auto setup_us = fc::time_point::now() - start;
+            transaction_trace result(item.mtrx.id);
+            if( item.mtrx.delay.count() == 0 ) {
+               result = _push_transaction( std::move(item.mtrx) );
+            } else {
+               result = wrap_transaction_processing( std::move(item.mtrx),
+                                                     [this](transaction_metadata& meta) { return delayed_transaction_processing(meta); } );
+            }
+            // notify anyone listening to pending transactions
+            on_pending_transaction(_pending_transaction_metas.back(), item.packed_trx);
+            _pending_block->input_transactions.emplace_back(item.packed_trx);
+      //      result._setup_profiling_us = setup_us;
+            return true;
+         });
+      });
+   }
+
+   return true;
+
+}
+
 
 uint128_t chain_controller::transaction_id_to_sender_id( const transaction_id_type& tid )const {
    fc::uint128_t _id(tid._hash[3], tid._hash[2]);

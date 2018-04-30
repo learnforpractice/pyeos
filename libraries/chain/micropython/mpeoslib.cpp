@@ -54,7 +54,6 @@ static struct eosapi s_eosapi;
 std::map<std::thread::id, struct mpapi*> api_map;
 
 static std::mutex g_load_mutex;
-static int counter = 0;
 static vector<char> print_buffer;
 void print(const char * str, size_t len) {
    for (int i=0;i<len;i++) {
@@ -69,6 +68,8 @@ void print(const char * str, size_t len) {
 }
 
 struct mpapi& get_mpapi() {
+   static int counter = 0;
+
    std::lock_guard<std::mutex> guard(g_load_mutex);
 
    std::thread::id this_id = std::this_thread::get_id();
@@ -81,9 +82,9 @@ struct mpapi& get_mpapi() {
    counter += 1;
 
 #ifdef __APPLE__
-   sprintf(buffer, "../libraries/micropython/libmicropython%d.dylib", counter);
+   sprintf(buffer, "../libraries/micropython/libmicropython-%d.dylib", counter);
 #else
-   sprintf(buffer, "../libraries/micropython/libmicropython%d.so", counter);
+   sprintf(buffer, "../libraries/micropython/libmicropython-%d.so", counter);
 #endif
 
    void *handle = dlopen(buffer, RTLD_LAZY | RTLD_LOCAL);

@@ -153,7 +153,7 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
    return fc::variant(results.required_keys);
 }
 
-PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
+PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none, bool async=false) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
    trx.set_reference_block(info.head_block_id);
@@ -176,13 +176,17 @@ PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcp
    chain_apis::read_write::push_transaction_results result;
 
    bool success = false;
-   uint64_t cost_time;
+   uint64_t cost_time = 0;
    try {
-      auto params = fc::variant(packed_transaction(trx, compression)).get_object();
-      cost_time = get_microseconds();
-      result = rw.push_transaction(params);
-      cost_time = get_microseconds() - cost_time;
-      success = true;
+      if (async) {
+         app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(trx, compression), skip_nothing);
+      } else {
+         auto params = fc::variant(packed_transaction(trx, compression)).get_object();
+         cost_time = get_microseconds();
+         result = rw.push_transaction(params);
+         cost_time = get_microseconds() - cost_time;
+         success = true;
+      }
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {
@@ -304,7 +308,7 @@ PyObject* push_transactions_(vector<string>& contracts, vector<string>& function
 }
 
 
-PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign) {
+PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async) {
    packed_transaction::compression_type compression = packed_transaction::none;
    vector<signed_transaction* > trxs;
 
@@ -323,9 +327,13 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign) {
       auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
 
       for (auto& strx : trxs) {
-         chain_apis::read_write::push_transaction_results result;
-         auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
-         result = rw.push_transaction(params);
+         if (async) {
+            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(*strx, compression), skip_flag);
+         } else {
+            chain_apis::read_write::push_transaction_results result;
+            auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
+            result = rw.push_transaction(params);
+         }
       }
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
