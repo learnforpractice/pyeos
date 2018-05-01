@@ -60,19 +60,22 @@ static std::condition_variable cnout;
 static bool finished = false;
 
 struct qin_item {
+   int sequence;
    uint32_t skip_flag;
    packed_transaction packed_trx;
 };
 
 struct qout_item {
+   int sequence;
    uint32_t skip_flag;
    packed_transaction packed_trx;
    transaction_metadata mtrx;
 };
 
 static std::queue<qin_item> qin;
-static std::queue<qout_item> qout;
+static std::vector<qout_item> qout;
 
+static std::map<int, int> bad_sequence;
 
 bool chain_controller::is_start_of_round( block_num_type block_num )const  {
   return 0 == (block_num % blocks_per_round());
@@ -113,12 +116,14 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
    _spinup_db();
    _spinup_fork_db();
 
+   std::thread *cc1 = new std::thread(&chain_controller::process_transaction_async, this);
+
    std::thread *c1 = new std::thread(&chain_controller::preprocess_transaction_async, this);
    std::thread *c2 = new std::thread(&chain_controller::preprocess_transaction_async, this);
    std::thread *c3 = new std::thread(&chain_controller::preprocess_transaction_async, this);
    std::thread *c4 = new std::thread(&chain_controller::preprocess_transaction_async, this);
 
-   std::thread *cc1 = new std::thread(&chain_controller::process_transaction_async, this);
+   std::thread *c5 = new std::thread(&chain_controller::organize_transaction_async, this);
 
 //   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num())
 //      replay();
@@ -403,9 +408,11 @@ transaction_trace chain_controller::_push_transaction( transaction_metadata&& da
 
 
 bool chain_controller::push_transaction_async( const packed_transaction& trx, uint32_t skip ) {
+   static int sequence = 0;
    {
       std::lock_guard<std::mutex> lk(mxin);
-      qin.push({skip, std::move(trx)});
+      sequence += 1;
+      qin.push({sequence, skip, std::move(trx)});
    }
    cnin.notify_all();
    return true;
@@ -420,10 +427,10 @@ bool chain_controller::preprocess_transaction_async() {
       lk.unlock();
 
       ilog("got one transaction!");
+      transaction_metadata   mtrx(item.packed_trx, get_chain_id(), head_block_time());
       try {
          //edump((transaction_header(packed_trx.get_transaction())));
          auto start = fc::time_point::now();
-         transaction_metadata   mtrx( item.packed_trx, get_chain_id(), head_block_time());
          //idump((transaction_header(mtrx.trx())));
 
          const transaction& trx = mtrx.trx();
@@ -448,10 +455,17 @@ bool chain_controller::preprocess_transaction_async() {
 
          {
             std::lock_guard<std::mutex> lk(mxout);
-            qout.push({item.skip_flag, std::move(item.packed_trx),std::move(mtrx)});
+            int index = 0;
+            for (auto& _item: qout) {
+               if (_item.sequence < item.sequence) {
+                  break;
+               }
+               index += 1;
+            }
+            qout.insert(qout.begin()+index, {item.sequence, item.skip_flag, std::move(item.packed_trx),std::move(mtrx)});
          }
          cnout.notify_all();
-
+         continue;
       } catch (fc::assert_exception& e) {
          elog(e.to_detail_string());
       } catch (fc::exception& e) {
@@ -459,17 +473,46 @@ bool chain_controller::preprocess_transaction_async() {
       } catch (boost::exception& ex) {
          elog(boost::diagnostic_information(ex));
       }
+      //exception occured
+      {
+         std::lock_guard<std::mutex> lk(mxout);
+         bad_sequence[item.sequence] = item.sequence;
+      }
+      cnout.notify_all();
    }
 
    return true;
 }
 
+static int out_sequence = 0;
+
 bool chain_controller::process_transaction_async() {
    while (!finished) {
       std::unique_lock<std::mutex> lk(mxout);
-      cnout.wait(lk, []{ return finished || !qout.empty(); });
-      qout_item item = std::move(qout.front());
-      qout.pop();
+      cnout.wait(lk, []{
+            if (finished) {
+               return true;
+            }
+            if (bad_sequence.find(out_sequence + 1) != bad_sequence.end()) {
+               return true;
+            }
+            if (!qout.empty()) {
+               if (qout.back().sequence == out_sequence + 1) {
+                  return true;
+               }
+            }
+            return false;
+      });
+
+      out_sequence += 1;
+      auto iter = bad_sequence.find(out_sequence);
+      if (iter != bad_sequence.end()) {
+         bad_sequence.erase(iter);
+         continue;
+      }
+
+      qout_item item = std::move(qout.back());
+      qout.pop_back();
       lk.unlock();
 
       ilog("++++process_transaction_async");
@@ -510,6 +553,29 @@ bool chain_controller::process_transaction_async() {
 
 }
 
+bool chain_controller::organize_transaction_async() {
+   while (true) {
+      {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(2));
+         std::lock_guard<std::mutex> lk(mxout);
+         bool found = false;
+         if (bad_sequence.find(out_sequence+1) != bad_sequence.end()) {
+            found = true;
+         }
+         if (!found) {
+            if (!qout.empty() && qout.back().sequence == out_sequence + 1) {
+               found = true;
+            }
+         }
+         if (!found){
+            continue;
+         }
+      }
+      cnout.notify_all();
+   }
+
+   return true;
+}
 
 uint128_t chain_controller::transaction_id_to_sender_id( const transaction_id_type& tid )const {
    fc::uint128_t _id(tid._hash[3], tid._hash[2]);
