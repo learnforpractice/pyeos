@@ -1,15 +1,17 @@
+import os
 import time
+import struct
+
 import wallet
 import eosapi
 import eoslib
 import initeos
 
-from common import init_, producer
+from common import smart_call, producer
 
 def init(func):
     def func_wrapper(*args):
-        init_('greeter', 'greeter.py', 'greeter.abi', __file__)
-        return func(*args)
+        return smart_call('greeter', 'greeter.py', 'greeter.abi', 2, __file__, func, __name__, args)
     return func_wrapper
 
 @init
@@ -25,10 +27,7 @@ def test(name=None):
         assert r
 
 @init
-def test2(count):
-    import time
-    import json
-
+def test2(count=100):
     contracts = []
     functions = []
     args = []
@@ -52,24 +51,5 @@ def test2(count):
     if itr >= 0:
         greeting = eoslib.db_get_i64(itr)
         print(greeting[1:])
-
-@init
-def deploy_mpy():
-    src_dir = os.path.dirname(os.path.abspath(__file__))
-    file_name = 'greeter.py'
-    
-    src_code = eosapi.mp_compile(os.path.join(src_dir, file_name))
-    file_name = file_name.replace('.py', '.mpy')
-    mod_name = file_name
-    msg = int.to_bytes(len(mod_name), 1, 'little')
-    msg += mod_name.encode('utf8')
-    msg += int.to_bytes(1, 1, 'little') # compiled code
-    msg += src_code
-
-    print('++++++++++++++++deply:', file_name)
-    r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
-    assert r
-
-    producer.produce_block()
 
 

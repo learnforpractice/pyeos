@@ -1,7 +1,10 @@
 {
   "actions": [{
-      "name": "sayhello",
-      "type": "bytes"
+      "name": "setgreeting",
+      "type": "raw"
+    },{
+      "name": "greeting",
+      "type": "raw"
     }
   ]
 }
