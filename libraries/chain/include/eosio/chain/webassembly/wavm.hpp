@@ -18,7 +18,7 @@ class wavm_runtime : public eosio::chain::wasm_runtime_interface {
    public:
       wavm_runtime();
       ~wavm_runtime();
-      std::unique_ptr<wasm_instantiated_module_interface> instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) override;
+      std::shared_ptr<wasm_instantiated_module_interface> instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) override;
 
       struct runtime_guard {
          runtime_guard();

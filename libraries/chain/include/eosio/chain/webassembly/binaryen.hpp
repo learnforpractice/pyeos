@@ -141,7 +141,7 @@ struct interpreter_interface : ModuleInstance::ExternalInterface {
 class binaryen_runtime : public eosio::chain::wasm_runtime_interface {
    public:
       binaryen_runtime();
-      std::unique_ptr<wasm_instantiated_module_interface> instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) override;
+      std::shared_ptr<wasm_instantiated_module_interface> instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) override;
 
    private:
       linear_memory_type                  _memory __attribute__ ((aligned (4096)));

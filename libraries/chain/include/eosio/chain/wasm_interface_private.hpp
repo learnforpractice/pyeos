@@ -19,6 +19,12 @@ using namespace Runtime;
 
 namespace eosio { namespace chain {
 
+   struct account_module {
+      digest_type digest;
+      std::shared_ptr<wasm_instantiated_module_interface> module_interface;
+   };
+
+
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
          if(vm == wasm_interface::vm_type::wavm)
@@ -47,7 +53,7 @@ namespace eosio { namespace chain {
          return mem_image;
       }
 
-      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module(const digest_type& code_id, const shared_vector<char>& code) {
+      std::shared_ptr<wasm_instantiated_module_interface>& get_instantiated_module(const account_name& account, const digest_type& code_id, const shared_vector<char>& code) {
          auto it = instantiation_cache.find(code_id);
          if(it == instantiation_cache.end()) {
             IR::Module module;
@@ -70,12 +76,35 @@ namespace eosio { namespace chain {
             }
 
             it = instantiation_cache.emplace(code_id, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
+
+            auto it_account_module = account_module_map.find(account);
+            digest_type old_digest;
+            bool found = false;
+            if (it_account_module != account_module_map.end()) {
+               if (code_id != it_account_module->second.digest) {
+                  old_digest = it_account_module->second.digest;
+                  found = true;
+               }
+            }
+
+            account_module_map[account] = {code_id, it->second};
+
+            if (found) {
+               auto _it = instantiation_cache.find(old_digest);
+               if (_it != instantiation_cache.end()) {
+                  //no account reference to this instantiated module anymore, release it
+                  if (_it->second.use_count() == 1) {
+                     instantiation_cache.erase(_it);
+                  }
+               }
+            }
          }
          return it->second;
       }
 
       std::unique_ptr<wasm_runtime_interface> runtime_interface;
-      map<digest_type, std::unique_ptr<wasm_instantiated_module_interface>> instantiation_cache;
+      map<account_name, account_module> account_module_map;
+      map<digest_type, std::shared_ptr<wasm_instantiated_module_interface>> instantiation_cache;
    };
 
 #define _REGISTER_INTRINSIC_EXPLICIT(CLS, MOD, METHOD, WASM_SIG, NAME, SIG)\

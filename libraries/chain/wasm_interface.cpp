@@ -51,11 +51,11 @@ namespace eosio { namespace chain {
    }
 
    void wasm_interface::apply( const digest_type& code_id, const shared_vector<char>& code, apply_context& context ) {
-      my->get_instantiated_module(code_id, code)->apply(context);
+      my->get_instantiated_module(context.act.account, code_id, code)->apply(context);
    }
 
    void wasm_interface::call( const digest_type& code_id, const shared_vector<char>& code, string& func, vector<uint64_t>& args, apply_context& context ) {
-      my->get_instantiated_module(code_id, code)->call(func, args, context);
+      my->get_instantiated_module(context.act.account, code_id, code)->call(func, args, context);
    }
 
    wasm_instantiated_module_interface::~wasm_instantiated_module_interface() {}
