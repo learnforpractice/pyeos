@@ -76,29 +76,32 @@ namespace eosio { namespace chain {
             }
 
             it = instantiation_cache.emplace(code_id, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
+         }
 
-            auto it_account_module = account_module_map.find(account);
-            digest_type old_digest;
-            bool found = false;
-            if (it_account_module != account_module_map.end()) {
-               if (code_id != it_account_module->second.digest) {
-                  old_digest = it_account_module->second.digest;
-                  found = true;
-               }
+         auto it_account_module = account_module_map.find(account);
+         digest_type old_digest;
+         bool oldcode_replaced = false;
+         if (it_account_module != account_module_map.end()) {
+            if (code_id != it_account_module->second.digest) {
+               old_digest = it_account_module->second.digest;
+               account_module_map[account] = {code_id, it->second};
+               oldcode_replaced = true;
             }
-
+         } else {
             account_module_map[account] = {code_id, it->second};
+         }
 
-            if (found) {
-               auto _it = instantiation_cache.find(old_digest);
-               if (_it != instantiation_cache.end()) {
-                  //no account reference to this instantiated module anymore, release it
-                  if (_it->second.use_count() == 1) {
-                     instantiation_cache.erase(_it);
-                  }
+         //check code reference
+         if (oldcode_replaced) {
+            auto _it = instantiation_cache.find(old_digest);
+            if (_it != instantiation_cache.end()) {
+               //no account reference to this instantiated module anymore, release it
+               if (_it->second.use_count() == 1) {
+                  instantiation_cache.erase(_it);
                }
             }
          }
+
          return it->second;
       }
 
