@@ -76,7 +76,7 @@ public:
       return mem_image;
    }
 
-   std::unique_ptr<wasm_instantiated_module_interface>& get_module(const digest_type& code_id, const string& code, wasm_interface::vm_type type = wasm_interface::vm_type::binaryen, bool cache=true ) {
+   std::shared_ptr<wasm_instantiated_module_interface>& get_module(const digest_type& code_id, const string& code, wasm_interface::vm_type type = wasm_interface::vm_type::binaryen, bool cache=true ) {
       auto it = instantiation_cache.find(code_id);
       if(!cache || it == instantiation_cache.end() ) {
          IR::Module module;
@@ -109,7 +109,7 @@ public:
    std::unique_ptr<webassembly::wavm::wavm_runtime> runtime_wavm;
    std::unique_ptr<wasm_runtime_interface> runtime_binaryen;
 
-   map<digest_type, std::unique_ptr<wasm_instantiated_module_interface>> instantiation_cache;
+   map<digest_type, std::shared_ptr<wasm_instantiated_module_interface>> instantiation_cache;
 };
 
 int wasm_test___(string& code, string& func, string& contract, string& action, string& args, map<string, string>& permissions, bool sign, bool rawargs) {
