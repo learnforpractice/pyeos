@@ -8,8 +8,8 @@ import initeos
 from common import smart_call, producer
 
 def init(func):
-    def func_wrapper(*args):
-        return smart_call('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kw_args):
+        return smart_call('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__, func, __name__, args, kw_args)
     return func_wrapper
 
 @init

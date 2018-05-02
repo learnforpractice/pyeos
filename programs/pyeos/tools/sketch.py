@@ -97,23 +97,31 @@ class Sketch(object):
 
     def build_source(self):
         if self.project_type == 'py':
-            with open(os.path.join(self.project_dir, self.account+'.py'), 'w') as f:
+            src_file = os.path.join(self.project_dir, self.account+'.py')
+            print('Creating source file  \t:', src_file)
+            with open(src_file, 'w') as f:
                 f.write(py_src.format(self.account))
         elif self.project_type == 'cpp':
-            with open(os.path.join(self.project_dir, self.account+'.cpp'), 'w') as f:
+            src_file = os.path.join(self.project_dir, self.account+'.cpp')
+            print('Creating source file  \t:', src_file)
+            with open(src_file, 'w') as f:
                 f.write(cpp_src.format(self.account))
         else:
             raise Exception('language not supported: '+self.project_type)
 
     def build_abi(self):
-        with open(os.path.join(self.project_dir, self.account+'.abi'), 'w') as f:
+        src_file = os.path.join(self.project_dir, self.account+'.abi')
+        print('Creating abi file \t:', src_file)
+        with open(src_file, 'w') as f:
             f.write(abi_src)
 
     def build_test(self):
         wasm = False
         if self.project_type == 'cpp':
             wasm = True
-        with open(os.path.join(self.project_dir, 'test.py'), 'w') as f:
+        src_file = os.path.join(self.project_dir, 'test.py')
+        print('Creating test file \t:', src_file)
+        with open(src_file, 'w') as f:
             f.write(test_py.format(self.account, wasm))
 
     def mkdir(self, _path):
@@ -122,6 +130,7 @@ class Sketch(object):
         for _cur_dir in _path.split(os.sep):
             __path = os.path.join(__path, _cur_dir)
             if not os.path.exists(__path):
+                print('Creating directory \t:', __path)
                 os.mkdir(__path)
   
 if __name__ == '__main__':

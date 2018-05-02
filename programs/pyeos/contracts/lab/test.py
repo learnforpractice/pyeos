@@ -8,9 +8,9 @@ from common import smart_call, producer, Sync
 def init(func): 
     def func_wrapper(wasm=True, *args, **kwargs):
         if wasm:
-            return smart_call('lab', 'lab.wast', 'lab.abi', 0, __file__, func, __name__, args)
+            return smart_call('lab', 'lab.wast', 'lab.abi', 0, __file__, func, __name__, args, kwargs)
         else:
-            return smart_call('lab', 'lab.py', 'lab.abi', 2, __file__, func, __name__, args)
+            return smart_call('lab', 'lab.py', 'lab.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 _dir = os.path.dirname(os.path.abspath(__file__))

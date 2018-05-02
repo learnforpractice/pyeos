@@ -20,9 +20,9 @@ def init(func):
             cpp2wast.set_src_path(src_path)
             if not cpp2wast.build('lockunlock.cpp'):
                 raise Exception("building failed")
-            return smart_call('lockunlock', 'lockunlock.wast', 'lockunlock.abi', 0, __file__, func, __name__, args)
+            return smart_call('lockunlock', 'lockunlock.wast', 'lockunlock.abi', 0, __file__, func, __name__, args, kw_args)
         else:
-            return smart_call('lockunlock', 'lockunlock.py', 'lockunlock.abi', 2, __file__, func, __name__, args)
+            return smart_call('lockunlock', 'lockunlock.py', 'lockunlock.abi', 2, __file__, func, __name__, args, kw_args)
     return func_wrapper
 
 @init

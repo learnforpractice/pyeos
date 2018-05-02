@@ -10,18 +10,18 @@ from eosapi import N
 from common import smart_call, producer
 
 def init_wasm(func):
-    def func_wrapper(*args, **kw_args):
-        return smart_call('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 def init_py(func):
-    def func_wrapper(*args, **kw_args):
-        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 1, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 1, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 def init_mpy(func):
-    def func_wrapper(*args, **kw_args):
-        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 '''
@@ -88,12 +88,12 @@ def call_py_with_setcode(sign=True):
         actions.append([act, setabi_action])
 
     cost_time = eosapi.push_transactions2(actions, sign)
-    print(1.0/(cost_time/1e6/TRX_COUNT))
+    print(1e6/(cost_time/TRX_COUNT))
     start = time.time()
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
 
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    return 1e6/(cost_time/TRX_COUNT)
 
 @init_py
 def call_py_without_setcode(sign=True):
@@ -104,13 +104,13 @@ def call_py_without_setcode(sign=True):
         actions.append([act])
 
     cost_time = eosapi.push_transactions2(actions, sign)
-    print(1.0/(cost_time/1e6/TRX_COUNT))
+    print(1e6/(cost_time/TRX_COUNT))
 
     start = time.time()
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
 
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    return 1e6/(cost_time/TRX_COUNT)
 
 @init_mpy
 def call_mpy_with_setcode(sign=True):
@@ -139,8 +139,8 @@ def call_mpy_with_setcode(sign=True):
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
 
-    print(1.0/(cost_time/1e6/TRX_COUNT))
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    print(1e6/(cost_time/TRX_COUNT))
+    return 1e6/(cost_time/TRX_COUNT)
 
 @init_mpy
 def call_mpy_without_setcode(sign=True):
@@ -156,8 +156,8 @@ def call_mpy_without_setcode(sign=True):
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
 
-    print(1.0/(cost_time/1e6/TRX_COUNT))
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    print(1e6/(cost_time/TRX_COUNT))
+    return 1e6/(cost_time/TRX_COUNT)
 
 
 @init_wasm
@@ -184,13 +184,12 @@ def call_wasm_with_setcode(sign=True):
         actions.append([act, setabi_action])
 
     cost_time = eosapi.push_transactions2(actions, sign)
-
     start = time.time()
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
-    print(1.0/(cost_time/1e6/TRX_COUNT))
+    print(1e6/(cost_time/TRX_COUNT))
 
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    return 1e6/(cost_time/TRX_COUNT)
 
 @init_wasm
 def call_wasm_without_setcode(sign=True):
@@ -206,8 +205,8 @@ def call_wasm_without_setcode(sign=True):
     eosapi.produce_block()
     print('produce_block: ', time.time()-start)
 
-    print(1.0/(cost_time/1e6/TRX_COUNT))
-    return 1.0/(cost_time/1e6/TRX_COUNT)
+    print(1e6/(cost_time/TRX_COUNT))
+    return 1e6/(cost_time/TRX_COUNT)
 
 
 def test_all(sign=True):
@@ -230,11 +229,6 @@ def test_all(sign=True):
     ret = call_wasm_without_setcode(sign)
     costs.append(ret)
 
-    for cost in costs:
-        print(cost, ' ', end='')
-    print('')
+    print(costs)
 
 #2326.1223540358224  3804.017041996348  2808.0816590146446  3760.3880720490356  1641.8204505155315  3212.02582468763  
-
-#1535.2257549472652  4049.7306929089214  1812.9933608183128  3493.8403594462966  1713.772561815776  2887.7697176916326  
-

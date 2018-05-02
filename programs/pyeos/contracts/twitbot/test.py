@@ -21,13 +21,22 @@ def init(func):
             cpp2wast.set_src_path(src_path)
             if not cpp2wast.build('twitbot.cpp'):
                 raise Exception("building failed")
-            return smart_call('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__, func, __name__, args)
+            return smart_call('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__, func, __name__, args, kw_args)
         else:
-            return smart_call('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__, func, __name__, args)
+            return smart_call('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__, func, __name__, args, kw_args)
     return func_wrapper
 
 @init
 def test(msg='hello,world', wasm=True):
+    '''
     with producer:
         r = eosapi.push_message('twitbot', 'sayhello', msg, {'twitbot':'active'}, rawargs=True)
         assert r
+    '''
+
+    with producer:
+        msg = {"from":"hello", "to":"twitbot", "quantity":"1.0000 EOS", "memo":"m"}
+        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active'})
+
+
+

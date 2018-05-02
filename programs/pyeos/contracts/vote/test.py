@@ -10,8 +10,8 @@ from common import smart_call, producer
 import vote
 
 def init(func):
-    def func_wrapper(*args):
-        return smart_call('vote', 'vote.py', 'vote.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('vote', 'vote.py', 'vote.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 @init

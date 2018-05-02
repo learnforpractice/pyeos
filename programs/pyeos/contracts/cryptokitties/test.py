@@ -9,8 +9,8 @@ import pickle
 from common import smart_call, producer, Sync
 
 def init(func):
-    def func_wrapper(*args):
-        return smart_call('kitties', 'main.py', 'cryptokitties.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('kitties', 'main.py', 'cryptokitties.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 _dir = os.path.dirname(os.path.abspath(__file__))

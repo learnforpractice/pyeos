@@ -9,8 +9,8 @@ import initeos
 from common import smart_call, producer
 
 def init(func):
-    def func_wrapper(*args):
-        return smart_call('hello', 'hello.py', 'hello.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('hello', 'hello.py', 'hello.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 @init
@@ -65,20 +65,3 @@ def deploy_mpy():
     assert r
 
     producer.produce_block()
-
-def create():
-    with producer:
-        r = eosapi.push_message('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
-        assert r
-
-def issue():
-    with producer:
-        r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
-        assert r
-
-def transfer():
-    with producer:
-        msg = {"from":"eosio", "to":"hello", "quantity":"25.0000 EOS", "memo":"m"}
-        r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
-        assert r
-

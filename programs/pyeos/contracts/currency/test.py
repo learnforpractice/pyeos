@@ -7,11 +7,11 @@ import initeos
 from common import smart_call, producer
 
 def init(func):
-    def func_wrapper(*args, **kw_args):
-        if 'wasm' in kw_args and kw_args['wasm']:
+    def func_wrapper(*args, **kwargs):
+        if 'wasm' in kwargs and kwargs['wasm']:
             return smart_call('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', 0, __file__, func, __name__, args)
         else:
-            return smart_call('currency', 'currency.py', 'currency.abi', 2, __file__, func, __name__, args)
+            return smart_call('currency', 'currency.py', 'currency.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 @init

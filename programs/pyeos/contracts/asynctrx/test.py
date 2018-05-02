@@ -12,15 +12,15 @@ from tools import cpp2wast
 from common import smart_call, producer
 
 def init(func):
-    def func_wrapper(wasm=False, *args, **kw_args):
+    def func_wrapper(wasm=False, *args, **kwargs):
         if wasm:
             src_path = os.path.dirname(os.path.abspath(__file__))
             cpp2wast.set_src_path(src_path)
             if not cpp2wast.build('async.cpp'):
                 raise Exception("building failed")
-            return smart_call('async', 'sync.wast', 'sync.abi', 0, __file__, func, __name__, args)
+            return smart_call('async', 'sync.wast', 'sync.abi', 0, __file__, func, __name__, args, kwargs)
         else:
-            return smart_call('async', 'sync.py', 'async.abi', 2, __file__, func, __name__, args)
+            return smart_call('async', 'sync.py', 'async.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 @init
@@ -42,6 +42,7 @@ TRX_COUNT = 100
 def test_async(sign=True):
     _src_dir = os.path.dirname(__file__)
     actions = []
+    eosapi.produce_block()
     for i in range(TRX_COUNT):
         code = struct.pack('QBB', N('async'), 1, 0)
         with open(os.path.join(_src_dir, 'async.py'), 'rb') as f:
@@ -66,5 +67,6 @@ def test_sync(sign=True):
         actions.append([setcode_action, setabi_action, callcode_action])
     cost_time = eosapi.push_transactions2(actions, sign, 0, False)
     print(1.0/(cost_time/1e6/TRX_COUNT))
+    eosapi.produce_block()
 
 

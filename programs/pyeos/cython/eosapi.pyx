@@ -140,15 +140,11 @@ class JsonStruct(object):
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
 
-cdef uint64_t toname(name):
-    if isinstance(name, int):
-        return name
-    if isinstance(name, str):
-        name = bytes(name, 'utf8')
-    return string_to_uint64_(name)
-
-def s2n(name):
-    return toname(name)
+def s2n(string& name):
+    ret = string_to_uint64_(name)
+    if ret == 0:
+        raise Exception('bad name {0}'.format(name))
+    return ret
 
 def n2s(n):
     return uint64_to_string_(n)

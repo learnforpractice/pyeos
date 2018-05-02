@@ -9,8 +9,8 @@ import initeos
 from common import smart_call, producer
 
 def init(func):
-    def func_wrapper(*args):
-        return smart_call('apitest', 'apitest.py', 'apitest.abi', 2, __file__, func, __name__, args)
+    def func_wrapper(*args, **kwargs):
+        return smart_call('apitest', 'apitest.py', 'apitest.abi', 2, __file__, func, __name__, args, kwargs)
     return func_wrapper
 
 @init

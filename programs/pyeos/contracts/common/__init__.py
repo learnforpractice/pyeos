@@ -15,7 +15,7 @@ CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_MPY = 2
 
-def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=None, args=None):
+def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=None, args=[], kwargs={}):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if code_type == 0:
         cpp2wast.set_src_path(_src_dir)
@@ -71,7 +71,7 @@ def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=
         print('+++++=change detected, reloading test', module_name)
         imp.reload(sys.modules[module_name])
         return getattr(sys.modules[module_name], func.__name__)(*args)
-    return func(*args)
+    return func(*args, **kwargs)
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):
