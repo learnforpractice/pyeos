@@ -1203,6 +1203,87 @@ int main( int argc, char** argv ) {
       */
    });
 
+
+   auto setCodeSubcommand = setSubcommand->add_subcommand("code", localized("Create or update the contract on an account"));
+   setCodeSubcommand->add_option("account", account, localized("The account to publish a contract for"))
+                     ->required();
+   setCodeSubcommand->add_option("wast-file", wastPath, localized("The file containing the contract WAST or WASM relative to contract-dir"));
+
+   add_standard_transaction_options(setCodeSubcommand, "account@active");
+   setCodeSubcommand->set_callback([&] {
+      std::string wast;
+      fc::path cpath(contractPath);
+
+      if( cpath.filename().generic_string() == "." ) cpath = cpath.parent_path();
+
+      if( wastPath.empty() )
+      {
+         wastPath = (cpath / (cpath.filename().generic_string()+".wasm")).generic_string();
+         if (!fc::exists(wastPath))
+            wastPath = (cpath / (cpath.filename().generic_string()+".wast")).generic_string();
+      }
+
+
+      std::cout << localized(("Reading WAST/WASM from " + wastPath + "...").c_str()) << std::endl;
+      fc::read_file_contents(wastPath, wast);
+      FC_ASSERT( !wast.empty(), "no wast file found ${f}", ("f", wastPath) );
+      vector<uint8_t> wasm;
+      const string binary_wasm_header("\x00\x61\x73\x6d", 4);
+      if(wast.compare(0, 4, binary_wasm_header) == 0) {
+         std::cout << localized("Using already assembled WASM...") << std::endl;
+         wasm = vector<uint8_t>(wast.begin(), wast.end());
+      }
+      else {
+         std::cout << localized("Assembling WASM...") << std::endl;
+         wasm = wast_to_wasm(wast);
+      }
+
+      std::vector<chain::action> actions;
+      actions.emplace_back( create_setcode(account, bytes(wasm.begin(), wasm.end()) ) );
+
+      std::cout << localized("Updating contract code ...") << std::endl;
+      send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      /*
+      auto result = push_actions(std::move(actions), 10000, packed_transaction::zlib);
+
+      if( tx_dont_broadcast ) {
+         std::cout << fc::json::to_pretty_string(result) << "\n";
+      }
+      */
+   });
+
+
+
+
+   auto setAbiSubcommand = setSubcommand->add_subcommand("abi", localized("Create or update the contract on an account"));
+   setAbiSubcommand->add_option("account", account, localized("The account to publish a contract for"))
+                     ->required();
+   setAbiSubcommand->add_option("abi-file,-a,--abi", abiPath, localized("The ABI for the contract relative to contract-dir"));
+//                                ->check(CLI::ExistingFile);
+
+
+   add_standard_transaction_options(setAbiSubcommand, "account@active");
+   setAbiSubcommand->set_callback([&] {
+
+      FC_ASSERT( fc::exists( abiPath ), "no abi file found ${f}", ("f", abiPath)  );
+
+      std::vector<chain::action> actions;
+
+      try {
+         actions.emplace_back( create_setabi(account, fc::json::from_file(abiPath).as<contracts::abi_def>()) );
+      } EOS_RETHROW_EXCEPTIONS(abi_type_exception,  "Fail to parse ABI JSON")
+
+      std::cout << localized("Updating contract abi...") << std::endl;
+      send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      /*
+      auto result = push_actions(std::move(actions), 10000, packed_transaction::zlib);
+
+      if( tx_dont_broadcast ) {
+         std::cout << fc::json::to_pretty_string(result) << "\n";
+      }
+      */
+   });
+
    // set account
    auto setAccount = setSubcommand->add_subcommand("account", localized("set or update blockchain account state"))->require_subcommand();
 
