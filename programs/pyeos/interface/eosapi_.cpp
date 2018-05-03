@@ -210,7 +210,7 @@ PyObject* push_actions(std::vector<chain::action>&& actions, bool sign, packed_t
    signed_transaction trx;
    trx.actions = std::forward<decltype(actions)>(actions);
 
-   wlog("++++++++++++++++++++++push_transaction");
+//   wlog("++++++++++++++++++++++push_transaction");
    return push_transaction(trx, sign, 10000000, compression);
 }
 
@@ -331,8 +331,10 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
             app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(std::move(*strx), compression), skip_flag);
          } else {
             chain_apis::read_write::push_transaction_results result;
-            auto params = fc::variant(packed_transaction(std::move(*strx), compression)).get_object();
-            result = rw.push_transaction(params);
+//            auto params = fc::variant(packed_transaction(std::move(*strx), compression)).get_object();
+//            result = rw.push_transaction(params);
+            auto ptrx = packed_transaction(std::move(*strx), compression);
+            app().get_plugin<chain_plugin>().chain().push_transaction(ptrx, skip_flag);
          }
       }
    } catch (fc::assert_exception& e) {
@@ -664,7 +666,7 @@ PyObject* transfer_(string& sender, string& recipient, int amount, string memo, 
 
 PyObject* push_message_(string& contract, string& action, string& args, map<string, string>& permissions,
                         bool sign, bool rawargs) {
-   wlog("+++++++++++++++++push_message:${n}", ("n", contract));
+//   wlog("+++++++++++++++++push_message:${n}", ("n", contract));
    try {
       //      ilog("Converting argument to binary...");
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();

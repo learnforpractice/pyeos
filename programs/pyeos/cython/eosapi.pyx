@@ -510,7 +510,7 @@ def push_transactions(vector[string]& contracts, vector[string]& functions, args
         _args.push_back(arg)
 
     ret = push_transactions_(contracts, functions, _args, _permissions,sign, rawargs)
-    return (ret)
+    return ret
 
 def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
     cdef vector[vector[action]] vv
