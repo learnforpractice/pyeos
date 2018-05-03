@@ -269,24 +269,15 @@ def transfer(sender, recipient, int amount, memo, sign=True):
         return JsonStruct(result)
     return None
 
-def push_message(contract, action, args, permissions: Dict, sign=True, rawargs=False):
-    cdef string contract_
-    cdef string action_
-    cdef string args_
+def push_message(string& contract, string& action, args, permissions: Dict, sign=True, rawargs=False):
     cdef map[string, string] permissions_;
     cdef int sign_
     cdef int rawargs_
-    contract_ = tobytes(contract)
-    action_ = tobytes(action)
     if not rawargs:
-        if not isinstance(args, str):
-            args = json.dumps(args)
-    args_ = tobytes(args)
-    
+        args = json.dumps(args)
+
     for per in permissions:
         key = permissions[per]
-        per = tobytes(per)
-        key = tobytes(key)
         permissions_[per] = key
 
     if sign:
@@ -298,7 +289,7 @@ def push_message(contract, action, args, permissions: Dict, sign=True, rawargs=F
     else:
         rawargs_ = 0
 #    print(contract_,action_,args_,scopes_,permissions_,sign_)
-    result = push_message_(contract_, action_, args_, permissions_, sign_, rawargs_)
+    result = push_message_(contract, action, args, permissions_, sign_, rawargs_)
     if result:
         return JsonStruct(result)
     return None
@@ -339,7 +330,7 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     return None
 
 
-def set_contract(string& account, wast_file, abi_file, vmtype=1, sign=True):
+def set_contract(string& account, string& wast_file, string& abi_file, vmtype=1, sign=True):
     if not os.path.exists(wast_file):
         return False
     if sign:
@@ -551,6 +542,7 @@ def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
                 per.permission = auth[1]
                 pers.push_back(per)
             act.authorization = pers
+            act.data.resize(0)
             act.data.resize(len(a[3]))
             memcpy(act.data.data(), a[3], len(a[3]))
             v.push_back(act)

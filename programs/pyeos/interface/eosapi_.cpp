@@ -319,7 +319,7 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
          signed_transaction *trx = new signed_transaction();
          trxs.push_back(trx);
          for(auto& action: v) {
-            trx->actions.push_back(action);
+            trx->actions.push_back(std::move(action));
          }
          gen_transaction(*trx, sign, 10000000, compression);
       }
@@ -328,10 +328,10 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
 
       for (auto& strx : trxs) {
          if (async) {
-            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(*strx, compression), skip_flag);
+            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(std::move(*strx), compression), skip_flag);
          } else {
             chain_apis::read_write::push_transaction_results result;
-            auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
+            auto params = fc::variant(packed_transaction(std::move(*strx), compression)).get_object();
             result = rw.push_transaction(params);
          }
       }
@@ -347,7 +347,7 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
 
 
    for (auto& st : trxs) {
-      free(st);
+      delete st;
    }
 
    return py_new_uint64(cost_time);
@@ -668,7 +668,6 @@ PyObject* push_message_(string& contract, string& action, string& args, map<stri
    try {
       //      ilog("Converting argument to binary...");
       auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
 
       vector<chain::permission_level> accountPermissions;
       for (auto it = permissions.begin(); it != permissions.end(); it++) {

@@ -95,6 +95,7 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     interface/database_api.cpp
     interface/wasm_.cpp
     interface/ipc_.cpp
+    interface/httpc.cpp
 #    interface/codelimit.c 
     wrap/ipc.wrap.cpp 
     wrap/eosapi.wrap.cpp 
