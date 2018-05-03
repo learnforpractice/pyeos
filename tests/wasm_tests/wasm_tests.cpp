@@ -29,6 +29,9 @@
 #include <array>
 #include <utility>
 
+#include <eosio/chain/wasm_interface_private.hpp>
+
+
 #ifdef NON_VALIDATING_TEST
 #define TESTER tester
 #else
@@ -1540,5 +1543,80 @@ BOOST_FIXTURE_TEST_CASE(weighted_net_usage_tests, tester ) try {
    BOOST_REQUIRE_EQUAL(false, check(128));
 
 } FC_LOG_AND_RETHROW()
+
+#if 1
+template <typename T> using shared_alloc  = bip::allocator<T,bip::managed_mapped_file::segment_manager>;
+template <typename K, typename V, typename P = std::pair<K,V>, typename Cmp = std::less<K> >
+                      using shared_map    = boost::container::flat_map<K, V, Cmp, shared_alloc<P> >;
+
+using dataset_t     = shared_map<shared_string, shared_vector<char> >;
+
+
+BOOST_FIXTURE_TEST_CASE(instantiation_cache_mem_leak, tester ) try {
+
+   bip::managed_mapped_file seg(bip::open_or_create,"./test.db", 1024*1024);
+
+   auto& db = *seg.find_or_construct<dataset_t>
+       ("DATA")
+       (
+        std::less<shared_string>(),
+        dataset_t::allocator_type(seg.get_segment_manager())
+       );
+
+    auto alloc = db.get_allocator().get_segment_manager();
+
+   int count = 0;
+
+   std::string wast_code = R"=====(
+(module
+(import "env" "require_auth" (func $require_auth (param i64)))
+(import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+   (table 0 anyfunc)
+   (memory $0 1)
+   (export "apply" (func $apply))
+   (func $i64_trunc_u_f64 (param $0 f64) (result i64) (i64.trunc_u/f64 (get_local $0)))
+   (func $test (param $0 i64))
+   (func $apply (param $0 i64)(param $1 i64)(param $2 i64)
+   )=====";
+
+   std::string code = wast_code;
+   code += "(call $test (call $i64_trunc_u_f64 (f64.const 1)))\n";
+   code += "))";
+
+   wasm_interface_impl wasm_imp(wasm_interface::vm_type::binaryen);
+
+   auto wasm = ::eosio::chain::wast_to_wasm(code);
+
+   auto wasm_code = shared_vector<char>(alloc);
+   wasm_code.resize(wasm.size());
+   memcpy(wasm_code.data(), wasm.data(), wasm.size());
+
+   auto code_id = fc::sha256::hash( wasm_code.data(), (uint32_t)wasm_code.size() );
+
+   wasm_imp.get_instantiated_module(N(test1), code_id, wasm_code);
+   BOOST_REQUIRE_EQUAL(1, wasm_imp.instantiation_cache.size());
+
+   wasm_imp.get_instantiated_module(N(test2), code_id, wasm_code);
+   BOOST_REQUIRE_EQUAL(1, wasm_imp.instantiation_cache.size());
+
+   code = wast_code;
+   code += "(call $test (call $i64_trunc_u_f64 (f64.const 1)))\n";
+   code += "(call $test (call $i64_trunc_u_f64 (f64.const 1)))\n";
+   code += "))";
+   wasm = ::eosio::chain::wast_to_wasm(code);
+
+   wasm_code = shared_vector<char>(alloc);
+   wasm_code.resize(wasm.size());
+   memcpy(wasm_code.data(), wasm.data(), wasm.size());
+
+   code_id = fc::sha256::hash( wasm_code.data(), (uint32_t)wasm_code.size() );
+   wasm_imp.get_instantiated_module(N(test1), code_id, wasm_code);
+   BOOST_REQUIRE_EQUAL(2, wasm_imp.instantiation_cache.size());
+
+   wasm_imp.get_instantiated_module(N(test2), code_id, wasm_code);
+   BOOST_REQUIRE_EQUAL(1, wasm_imp.instantiation_cache.size());
+
+} FC_LOG_AND_RETHROW()
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
