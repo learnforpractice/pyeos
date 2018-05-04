@@ -48,10 +48,27 @@ micropython_interface& micropython_interface::get() {
    return *python;
 }
 
+const char * init_mp = "" \
+"libs = ('asset.py', 'token.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')\n" \
+"for lib in libs:\n" \
+"    __import__('backyard.'+lib[:-3])\n"
+;
+
+void init() {
+   if (get_mpapi().init) {
+      return;
+   }
+   wlog("initialize common library.");
+   get_mpapi().execute_from_str(init_mp);
+   get_mpapi().init = 1;
+}
+
 void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    if (code.size() <= 0) {
-      throw;
+      return;
    }
+
+   init();
 
    std::thread::id this_id = std::this_thread::get_id();
    auto itr = module_cache.find(this_id);
@@ -102,6 +119,9 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
 }
 
 void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
+   init();
+   get_mpapi().execution_start();
+
    try {
       current_apply_context = &c;
       mp_obj_t obj = nullptr;
@@ -120,8 +140,6 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       if (itr != pymodules.end()) {
          obj = itr->second->obj;
       } else {
-         get_mpapi().execution_start();
-
          if (code.data()[0] == 0) {//py
             obj = get_mpapi().micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
          } else if (code.data()[0] == 1) {//mpy
@@ -130,12 +148,6 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
             FC_ASSERT(false, "unknown micropython code!");
          }
 
-         uint64_t execution_time = get_mpapi().get_execution_time();
-         if (execution_time > 1000) {
-            elog("+++++++load module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
-         }
-         get_mpapi().execution_end();
-
          if (obj != NULL) {
             py_module* mod = new py_module();
             mod->obj = obj;
@@ -143,17 +155,20 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
             pymodules[c.act.account.value] = mod;
          }
       }
+      mp_obj_t ret = 0;
       if (obj) {
-         get_mpapi().execution_start();
-         mp_obj_t ret = get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
-         uint64_t execution_time = get_mpapi().get_execution_time();
-         if (execution_time > 1000) {
-            elog("+++++++execute code in ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
-         }
-         get_mpapi().execution_end();
-         FC_ASSERT(ret != 0, "code execution with exception!");
+         ret = get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
       }
-   }FC_CAPTURE_AND_RETHROW()
+      uint64_t execution_time = get_mpapi().get_execution_time();
+      if (execution_time > 1000) {
+         elog("+++++++load module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
+      }
+      get_mpapi().execution_end();
+      FC_ASSERT(ret != 0, "code execution with exception!");
+   } catch(...) {
+      get_mpapi().execution_end();
+   }
+
 }
 
 }

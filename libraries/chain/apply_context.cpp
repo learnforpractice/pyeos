@@ -86,11 +86,8 @@ void apply_context::exec_one()
             } else if (a.vm_type == 1) {
                auto &py = micropython_interface::get();
                try {
-                  get_mpapi().execution_start();
                   py.apply(*this, a.code);
-                  get_mpapi().execution_end();
                } catch (...) {
-                  get_mpapi().execution_end();
                   throw;
                }
             } else if (a.vm_type == 2) {

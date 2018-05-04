@@ -95,3 +95,5 @@ def init():
 
     from backyard import test
     test.deploy_mpy()
+    #load common libraries
+#    test.load_all()

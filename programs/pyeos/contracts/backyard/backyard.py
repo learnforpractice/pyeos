@@ -30,6 +30,9 @@ def apply(name, action):
 #        print('+++++++++++++++++src_code type:', src_code[0])
 #        print(src_code)
         deploy(mod_name, src_code)
+    elif action == N('load'):
+        mod_name = read_action().decode('utf8')
+        __import__('backyard.'+mod_name)
     elif action == N('sayhello'):
         import garden
         garden.play()

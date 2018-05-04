@@ -67,12 +67,6 @@ void print(const char * str, size_t len) {
    }
 }
 
-const char * init_mp = "" \
-"libs = ('asset.py', 'token.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')\n" \
-"for lib in libs:\n" \
-"    __import__('backyard.'+lib[:-3])\n"
-;
-
 struct mpapi& get_mpapi() {
    static int counter = 0;
 
@@ -111,7 +105,7 @@ struct mpapi& get_mpapi() {
    mp_obtain_mpapi(api);
    api_map[this_id] = api;
    api->set_printer(print);
-   api->execute_from_str(init_mp);
+   api->init = 0;
    return *api;
 }
 
