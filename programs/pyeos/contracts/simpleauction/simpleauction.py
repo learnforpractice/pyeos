@@ -160,10 +160,10 @@ class SimpleAuction(object):
 #        require_auth( sender )
 #        require_auth( code )
         print('hello, world')
-#        send_inline( N('eosio.token'), N('transfer'), auth, data)
+        send_inline( N('eosio.token'), N('transfer'), auth, data)
         print('+++++++++++ call transfer.')
         #multi_index.hpp 695: cannot modify objects in table of another contract
-        wasm_call(N('eosio.token'), 'apply', N('eosio.token'), N('eosio.token'), N('transfer'))
+#        wasm_call(N('eosio.token'), 'apply', N('eosio.token'), N('eosio.token'), N('transfer'))
 
         #send_inline is asynchronized, 
         #it's imposible to check the result of send_inline

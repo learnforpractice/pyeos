@@ -72,5 +72,9 @@ def deploy_mpy():
 
     producer.produce_block()
 
+@init
+def load_all():
+    for lib in libs:
+        r = eosapi.push_message('backyard','load', lib[:-3] ,{'backyard':'active'})
 
 

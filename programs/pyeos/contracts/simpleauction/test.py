@@ -48,7 +48,7 @@ def withdraw():
 #multi_index.hpp 695: cannot modify objects in table of another contract
     with producer:
         msg = {"from":"auction1", "to":"hello", "quantity":"1.0000 EOS", "memo":"m"}
-        r = eosapi.push_message('auction1', 'withdraw', msg, {'auction1':'active', 'hello':'active'})
+        r = eosapi.push_message('auction1', 'withdraw', msg, {'auction1':'active'})
 #        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
         assert r
 
