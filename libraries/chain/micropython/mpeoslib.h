@@ -305,6 +305,8 @@ struct mpapi {
    //defined in vm.c
    void (*execution_start)();
    void (*execution_end)();
+   void (*set_max_execution_time)(int time);
+   uint64_t (*get_execution_time)();
 
    //main_eos.c
    int (*main_micropython)(int argc, char **argv);

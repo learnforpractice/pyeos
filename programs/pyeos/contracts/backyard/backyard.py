@@ -13,6 +13,12 @@ def deploy(mod_name, src_code):
     else:
         db_update_i64(itr, code, src_code)
 
+    mod_name = mod_name.decode('utf8')
+    if mod_name.endswith('.mpy'):
+        __import__('backyard.'+mod_name[:-4])
+    elif mod_name.endswith('.py'):
+        __import__('backyard.'+mod_name[:-3])
+
 def apply(name, action):
     print(n2s(name), n2s(action))
     if action == N('deploy'):
@@ -27,7 +33,7 @@ def apply(name, action):
     elif action == N('sayhello'):
         import garden
         garden.play()
-        
+
 
 
 

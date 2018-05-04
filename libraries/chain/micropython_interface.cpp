@@ -80,6 +80,12 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    } else {
       FC_ASSERT(false, "unknown micropython code!");
    }
+
+   uint64_t execution_time = get_mpapi().get_execution_time();
+   if (execution_time > 1000) {
+      elog("+++++++load module ${n1}, cost: ${n2}", ("n1", name(_account).to_string())("n2", execution_time));
+   }
+
    get_mpapi().execution_end();
 
    if (obj != NULL) {
@@ -114,6 +120,8 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       if (itr != pymodules.end()) {
          obj = itr->second->obj;
       } else {
+         get_mpapi().execution_start();
+
          if (code.data()[0] == 0) {//py
             obj = get_mpapi().micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
          } else if (code.data()[0] == 1) {//mpy
@@ -121,6 +129,13 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
          } else {
             FC_ASSERT(false, "unknown micropython code!");
          }
+
+         uint64_t execution_time = get_mpapi().get_execution_time();
+         if (execution_time > 1000) {
+            elog("+++++++load module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
+         }
+         get_mpapi().execution_end();
+
          if (obj != NULL) {
             py_module* mod = new py_module();
             mod->obj = obj;
@@ -129,7 +144,14 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
          }
       }
       if (obj) {
+         get_mpapi().execution_start();
          get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
+         uint64_t execution_time = get_mpapi().get_execution_time();
+         if (execution_time > 1000) {
+            elog("+++++++execute code in ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
+         }
+         get_mpapi().execution_end();
+
       }
    }FC_CAPTURE_AND_RETHROW()
 }
