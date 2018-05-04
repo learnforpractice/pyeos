@@ -167,6 +167,7 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       FC_ASSERT(ret != 0, "code execution with exception!");
    } catch(...) {
       get_mpapi().execution_end();
+      throw;
    }
 
 }
