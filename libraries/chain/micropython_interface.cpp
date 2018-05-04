@@ -97,7 +97,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       mod->hash = fc::sha256::hash( code.data(), code.size() );
       pymodules[_account] = mod;
    } else {
-      elog("load micropython code failed!");
+      FC_ASSERT(false, "load micropython code failed!");
    }
 }
 
@@ -145,13 +145,13 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       }
       if (obj) {
          get_mpapi().execution_start();
-         get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
+         mp_obj_t ret = get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
          uint64_t execution_time = get_mpapi().get_execution_time();
          if (execution_time > 1000) {
             elog("+++++++execute code in ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
          }
          get_mpapi().execution_end();
-
+         FC_ASSERT(ret != 0, "code execution with exception!");
       }
    }FC_CAPTURE_AND_RETHROW()
 }
