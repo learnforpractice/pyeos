@@ -256,23 +256,4 @@ def apply(name, type):
         auction = SimpleAuction()
         auction.bid(t._from, t.amount)
 
-        auth = struct.pack('QQ', N('auction1'), N('active'))
-        t = transfer()
-        t._from = N('auction1')
-        t.to = N('hello')
-#        t.amount = amount
-        t.amount = 10000 # 1.0000 EOS
-        t.precision = 4
-        t.symbol = 'EOS'
-        t.memo = 'm'
-        data = t.pack()
-        print(data)
-        t.unpack(data)
-        t.p()
-        data = b"\x00\x00\x00aR\x97\x916\x00\x00\x00\x00\x00\x1a\xa3j\x10'\x00\x00\x00\x00\x00\x00\x04EOS\x00\x00\x00\x00\x01m"
-        print('data ?= t.pack()', data == t.pack())
-        data = t.pack()
-#        require_auth(N('auction1'))
-        require_auth(N('hello'))
-#        send_inline( N('eosio.token'), N('transfer'), auth, msg)
 

@@ -19,11 +19,11 @@ def test(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('greeter', 'setgreeting', name, {'greeter':'active'}, rawargs=True)
+        r = eosapi.push_message('greeter', 'setgreeting', name, {'greeter':'active'})
         assert r
 
     with producer:
-        r = eosapi.push_message('greeter', 'greeting', '' , {'greeter':'active'}, rawargs=True)
+        r = eosapi.push_message('greeter', 'greeting', '' , {'greeter':'active'})
         assert r
 
 @init
@@ -38,7 +38,7 @@ def test2(count=100):
         args.append(arg)
         contracts.append('greeter')
         per.append({'greeter':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))

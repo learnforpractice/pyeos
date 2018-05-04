@@ -118,7 +118,7 @@ def test2(count, wasm=False):
         contracts.append(b'currency')
         per.append({b'currency':b'active'})
 
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=False)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     eosapi.produce_block()
     
@@ -189,7 +189,7 @@ def test3(count, d=0):
         functions.append('issue')
         arg = str(i)
         args.append({"to":currency,"quantity":"1000.0000 CUD","memo":""})
-    ret = eosapi.push_messages(accounts, functions, args, per, True, rawargs=False)
+    ret = eosapi.push_messages(accounts, functions, args, per, True)
 
     assert ret
     eosapi.produce_block()
@@ -230,7 +230,7 @@ def test4(count, d=0):
         msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOK","can_freeze":0,"can_recall":0, "can_whitelist":0}
         #{"to":currency,"quantity":"1000.0000 CUR","memo":""}
         args.append(msg)
-    cost = eosapi.push_transactions(accounts, functions, args, per, True, rawargs=False)
+    cost = eosapi.push_transactions(accounts, functions, args, per, True)
 
     eosapi.produce_block()
 

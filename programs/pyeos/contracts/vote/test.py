@@ -30,7 +30,7 @@ def addProposal(name=None):
         sender = eosapi.N('hello')
         msg = int.to_bytes(sender, 8, 'little')
         msg += 'mike'.encode('utf8')
-        r = eosapi.push_message('vote', 'addproposal', msg, {'vote':'active'}, rawargs=True)
+        r = eosapi.push_message('vote', 'addproposal', msg, {'vote':'active'})
         assert r
 
 @init
@@ -39,7 +39,7 @@ def giveRightToVote(name=None):
         if not name:
             name = 'mike'
         msg = struct.pack('QQ', eosapi.N('vote'), eosapi.N('hello'))
-        r = eosapi.push_message('vote', 'giveright', msg, {'vote':'active'}, rawargs=True)
+        r = eosapi.push_message('vote', 'giveright', msg, {'vote':'active'})
         assert r
 
 @init
@@ -48,13 +48,13 @@ def delegate(name=None):
         if not name:
             name = 'hello'
         msg = struct.pack('QQ', eosapi.N('vote'), eosapi.N(name))
-        r = eosapi.push_message('vote', 'delegate', msg, {'vote':'active'}, rawargs=True)
+        r = eosapi.push_message('vote', 'delegate', msg, {'vote':'active'})
         assert r
 @init
 def vote(voter, proposal_index):
     with producer:
         msg = struct.pack('QQ', eosapi.N(voter), proposal_index)
-        r = eosapi.push_message('vote', 'vote', msg, {'vote':'active'}, rawargs=True)
+        r = eosapi.push_message('vote', 'vote', msg, {'vote':'active'})
         assert r
 
 @init
@@ -72,7 +72,7 @@ def test2(count):
         args.append(arg)
         contracts.append('vote')
         per.append({'vote':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))

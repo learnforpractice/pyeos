@@ -46,7 +46,7 @@ def test(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('kitties','sayhello',name,{'kitties':'active'},rawargs=True)
+        r = eosapi.push_message('kitties','sayhello',name,{'kitties':'active'})
         assert r
 
 @init
@@ -64,7 +64,7 @@ def test2(count):
         contracts.append('kitties')
         per.append({'kitties':'active'})
 
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     eosapi.produce_block()

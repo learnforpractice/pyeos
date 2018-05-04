@@ -30,9 +30,11 @@ def init(func):
 def test(msg='hello,world', wasm=True):
     '''
     with producer:
-        r = eosapi.push_message('twitbot', 'sayhello', msg, {'twitbot':'active'}, rawargs=True)
+        r = eosapi.push_message('twitbot', 'sayhello', msg, {'twitbot':'active'})
         assert r
     '''
+    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
+    r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
 
     with producer:
         msg = {"from":"hello", "to":"twitbot", "quantity":"1.0000 EOS", "memo":"m"}

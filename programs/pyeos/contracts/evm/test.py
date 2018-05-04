@@ -45,7 +45,7 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
         print('----request_func', method, params)
         if method == 'eth_sendTransaction':
             if 'to' in params[0]:
-                r = eosapi.push_evm_message(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True,rawargs=True)
+                r = eosapi.push_evm_message(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True)
             else:
                 r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:
@@ -82,7 +82,7 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
         print('++++make_request:', method, params)
         if method == 'eth_sendTransaction':
             if 'to' in params[0]:
-                r = eosapi.push_message(params[0]['to'], '', args, {params[0]['from']:'active'}, True,rawargs=True)
+                r = eosapi.push_message(params[0]['to'], '', args, {params[0]['from']:'active'}, True)
             else:
                 r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:

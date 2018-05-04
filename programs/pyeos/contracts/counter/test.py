@@ -26,7 +26,7 @@ def test(name=None):
     print('counter begin: ', counter_begin)
 
     with producer:
-        r = eosapi.push_message('counter', 'count', '', {'counter':'active'}, rawargs=True)
+        r = eosapi.push_message('counter', 'count', '', {'counter':'active'})
         assert r
 
 
@@ -67,7 +67,7 @@ def test2(count):
         args.append(arg)
         contracts.append('counter')
         per.append({'counter':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))

@@ -21,7 +21,7 @@ sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 def test(msg='hello,world'):
     print('hello, world')
     with producer:
-        r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'}, rawargs=True)
+        r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'})
         assert r
 
 @init
@@ -47,7 +47,7 @@ def test2(count):
         contracts.append('lab')
         per.append({'lab':'active'})
 
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     eosapi.produce_block()

@@ -16,7 +16,7 @@ def test(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_message('backyard','sayhello',name,{'backyard':'active'},rawargs=True)
+        r = eosapi.push_message('backyard','sayhello',name,{'backyard':'active'})
         assert r
 
 libs = ('asset.py', 'token.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')
@@ -41,7 +41,7 @@ def deploy():
         msg += src_code
     
         print('++++++++++++++++deply:', file_name)
-        r = eosapi.push_message('backyard','deploy',msg,{'backyard':'active'},rawargs=True)
+        r = eosapi.push_message('backyard','deploy',msg,{'backyard':'active'})
         assert r
 
     producer.produce_block()
@@ -67,7 +67,7 @@ def deploy_mpy():
         msg += src_code
     
         print('++++++++++++++++deply:', file_name)
-        r = eosapi.push_message('backyard','deploy',msg,{'backyard':'active'},rawargs=True)
+        r = eosapi.push_message('backyard','deploy',msg,{'backyard':'active'})
         assert r
 
     producer.produce_block()

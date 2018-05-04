@@ -132,7 +132,7 @@ class Sync(object):
         msg += src_code
         with producer:
             print('++++++++++++++++deply:', mod_name)
-            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
             assert r
 
     def deploy_depend_libs(self, _libs_dir, depend_libs):
@@ -148,7 +148,7 @@ class Sync(object):
             msg += src_code.encode('utf8')
 
             print('++++++++++++++++deply:', file_name)
-            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
             assert r
         producer.produce_block()
 
@@ -178,7 +178,7 @@ class Sync(object):
         msg += src_code
 
         print('++++++++++++++++deply:', file_name)
-        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
         assert r
 
         producer.produce_block()

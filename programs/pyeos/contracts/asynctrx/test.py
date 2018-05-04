@@ -26,7 +26,7 @@ def init(func):
 @init
 def test(msg='hello,world', wasm=False):
     with producer:
-        r = eosapi.push_message('async', 'sayhello', msg, {'async':'active'}, rawargs=True)
+        r = eosapi.push_message('async', 'sayhello', msg, {'async':'active'})
         assert r
 
 

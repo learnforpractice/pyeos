@@ -48,10 +48,10 @@ def setcode(sign=True):
 
 def lock(msg='hello,world', wasm=False):
     with producer:
-        r = eosapi.push_message('eosio', 'lockcode', {'account':'lockunlock'}, {'lockunlock':'active'}, rawargs=False)
+        r = eosapi.push_message('eosio', 'lockcode', {'account':'lockunlock'}, {'lockunlock':'active'})
         assert r
 
 def unlock(msg='hello,world', wasm=False):
     with producer:
-        r = eosapi.push_message('eosio', 'unlockcode', {'unlocker':'eosio', 'account':'lockunlock'}, {'eosio':'active'}, rawargs=False)
+        r = eosapi.push_message('eosio', 'unlockcode', {'unlocker':'eosio', 'account':'lockunlock'}, {'eosio':'active'})
         assert r

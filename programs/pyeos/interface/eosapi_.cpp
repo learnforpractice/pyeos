@@ -1099,6 +1099,7 @@ bool is_replay_() {
 void pack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> o = fc::raw::pack<string>(raw);
+   fc::raw::pack<std::vector<char>>(o);
    out = string(o.begin(), o.end());
 }
 

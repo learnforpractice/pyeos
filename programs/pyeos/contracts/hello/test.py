@@ -15,7 +15,7 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'},rawargs=True)
+    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'})
     assert r
     print(r)
     eosapi.produce_block()
@@ -23,7 +23,7 @@ def test(name='mike'):
 @init
 def play():
     with producer:
-        r = eosapi.push_message('hello', 'play', '', {'hello':'active'}, rawargs=True)
+        r = eosapi.push_message('hello', 'play', '', {'hello':'active'})
         assert r
 
 @init
@@ -41,7 +41,7 @@ def test2(count):
         args.append(arg)
         contracts.append('hello')
         per.append({'hello':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True, rawargs=True)
+    ret = eosapi.push_messages(contracts, functions, args, per, True)
     assert ret
     cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
@@ -61,7 +61,7 @@ def deploy_mpy():
     msg += src_code
 
     print('++++++++++++++++deply:', file_name)
-    r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'},rawargs=True)
+    r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
     assert r
 
     producer.produce_block()

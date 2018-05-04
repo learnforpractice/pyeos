@@ -269,12 +269,27 @@ def transfer(sender, recipient, int amount, memo, sign=True):
         return JsonStruct(result)
     return None
 
-def push_message(string& contract, string& action, args, permissions: Dict, sign=True, rawargs=False):
+def push_message(string& contract, string& action, args, permissions: Dict, sign=True):
+    '''Publishing message to blockchain
+
+    Args:
+        account (str)      : account name
+        action (str)       : action name
+        args (dict|bytes)  : action paramater, can be a dict or raw bytes
+        abi_file (str)   : abi file path
+        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
+        sign    (bool)    : True to sign transaction
+
+    Returns:
+        JsonStruct|None: 
+    '''
+
     cdef map[string, string] permissions_;
     cdef int sign_
-    cdef int rawargs_
-    if not rawargs:
+    cdef int rawargs_ = 1
+    if isinstance(args, dict):
         args = json.dumps(args)
+        rawargs_ = 0
 
     for per in permissions:
         key = permissions[per]
@@ -284,10 +299,7 @@ def push_message(string& contract, string& action, args, permissions: Dict, sign
         sign_ = 1
     else:
         sign_ = 0
-    if rawargs:
-        rawargs_ = 1
-    else:
-        rawargs_ = 0
+
 #    print(contract_,action_,args_,scopes_,permissions_,sign_)
     result = push_message_(contract, action, args, permissions_, sign_, rawargs_)
     if result:
@@ -330,15 +342,28 @@ def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=Fa
     return None
 
 
-def set_contract(string& account, string& wast_file, string& abi_file, vmtype=1, sign=True):
-    if not os.path.exists(wast_file):
+def set_contract(string& account, string& src_file, string& abi_file, vmtype=1, sign=True):
+    '''Set code and abi for the account
+
+    Args:
+        account (str)    : account name
+        src_file (str)   : source file path
+        abi_file (str)   : abi file path
+        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
+        sign    (bool)    : True to sign transaction
+
+    Returns:
+        JsonStruct|None: 
+    '''
+
+    if not os.path.exists(src_file):
         return False
     if sign:
         sign = 1
     else:
         sign = 0
 
-    result = set_contract_(account, wast_file, abi_file, vmtype, sign)
+    result = set_contract_(account, src_file, abi_file, vmtype, sign)
     
     if result:
         return JsonStruct(result)
@@ -513,6 +538,27 @@ def push_transactions(vector[string]& contracts, vector[string]& functions, args
     return ret
 
 def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
+    '''Send transactions
+
+    Args:
+        actions (list): two dimension action list, structured in [[action1,action2, ...],[action1,action2,...]]
+            each action represented in [account, name, [[actor1, permission1],[actor2, permission2]], data],
+            according to C++ structure defined in transaction.hpp
+           struct action {
+              account_name               account;
+              action_name                name;
+              vector<permission_level>   authorization;
+              bytes                      data;
+            }
+        sign (bool)     : whether to sign the transaction 
+        skip_flag (int) : skip flag, default to 0,
+            all flags are defined in enum validation_steps in eosio/chain/chain_controller.hpp
+        _async          : default to False, True to send in asynchronized mode, 
+            False to send in synchronized mode
+    Returns:
+        int: Sending transactions total cost time 
+    '''
+
     cdef vector[vector[action]] vv
     cdef vector[action] v
     cdef action act
@@ -550,6 +596,14 @@ def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
     return push_transactions2_(vv, sign, skip_flag, _async)
 
 def mp_compile(py_file):
+    '''Compile Micropython source to binary code.
+
+    Args:
+        py_file (str): Python source file path.
+
+    Returns:
+        bytes: Compiled code.
+    '''
     cdef vector[char] buffer
     cdef int mpy_size
     cdef string s
@@ -563,29 +617,85 @@ def mp_compile(py_file):
     mpy_size = compile_and_save_to_buffer_(file_name, src_data, len(src_data), buffer.data(), buffer.size())
     s = string(buffer.data(), mpy_size)
     return <bytes>s
-
+    
 def hash64(data, uint64_t seed = 0):
-   return XXH64(data, len(data), seed)
+    '''64 bit hash using xxhash
+
+    Args:
+        data (str|bytes): data to be hashed
+        seed (int): hash seed
+
+    Returns:
+        int: hash code in uint64_t
+    '''
+
+    return XXH64(data, len(data), seed)
 
 def wast2wasm( string& wast ):
+    '''Convert wast file to binary code
+
+    Args:
+        wast (bytes): wasm code in wast format
+
+    Returns:
+        bytes: binary wasm code.
+    '''
+
     cdef string wasm
     wast2wasm_(wast, wasm)
     return <bytes>wasm
 
 def is_replay():
+    ''' check if Eos is started with --replay
+
+    Args: 
+
+    Returns:
+        bool: 
+    '''
+
     return is_replay_()
 
 def pack_bytes(string& _in):
+    '''Pack bytes, equivalent to fc::raw::pack<string>(const fc::string& v) or
+       fc::raw::pack<std::vector<char>>(const std::vector<char> v) in C++
+
+    Args:
+        _in (str|bytes): data to be packed, if str object is provided, 
+            it will convert to bytes automatically with ascii encoding.
+
+    Returns:
+        bytes: Packed data.
+    '''
     cdef string out
     pack_bytes_(_in, out)
     return <bytes>out
 
 def unpack_bytes(string& _in):
+    '''unpack bytes, equivalent to fc::raw::unpack<string>( const std::vector<char>& s )
+
+    Args:
+        _in (bytes): data to be unpacked,  
+
+    Returns:
+        bytes: Unpacked data.
+    '''
+
     cdef string out
     unpack_bytes_(_in, out)
     return <bytes>out
 
 def pack_setabi(string& abiPath, uint64_t account):
+    '''pack setabi struct
+
+    Args:
+        abiPath (str|bytes): abi file path
+        account (int): account name encode in uint64_t
+
+    Returns:
+        bytes: packed set abi struct.
+    '''
+
     cdef string out
     fc_pack_setabi_(abiPath, account, out)
     return <bytes>out

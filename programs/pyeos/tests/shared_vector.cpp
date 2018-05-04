@@ -47,7 +47,7 @@ static mutex_type mutex(bip::open_or_create,"ABCD");
 static dataset_t& shared_instance()
 {
     bip::scoped_lock<mutex_type> lock(mutex);
-    static bip::managed_mapped_file seg(bip::open_or_create,"./demo.db", 50ul<<30); // "50Gb ought to be enough for anyone"
+    static bip::managed_mapped_file seg(bip::open_or_create,"./demo.db", 1024*1024*10); // "50Gb ought to be enough for anyone"
 
     static dataset_t* _instance = seg.find_or_construct<dataset_t>
         ("DATA")
@@ -57,7 +57,7 @@ static dataset_t& shared_instance()
         );
 
     static auto capacity = seg.get_free_memory();
-    std::cerr << "Free space: " << (capacity>>30) << "g\n";
+    std::cerr << "Free space: " << capacity << "g\n";
 
     return *_instance;
 }
@@ -65,21 +65,25 @@ static dataset_t& shared_instance()
 int main()
 {
     auto& db = shared_instance();
-
-    bip::scoped_lock<mutex_type> lock(mutex);
-    auto alloc = db.get_allocator().get_segment_manager();
-
-    std::cout << db.size() << '\n';
-
-    for (int i = 0; i < 1000; ++i)
     {
-        std::string key_ = "item" + std::to_string(i);
-        shared_string key(alloc);
-        key.assign(key_.begin(), key_.end());
-        auto value = shared_vector<X>(alloc);
-        value.resize(size_t(rand()%(1ul<<9)));
-        auto entry = std::make_pair(key, value);
+       bip::scoped_lock<mutex_type> lock(mutex);
+       auto alloc = db.get_allocator().get_segment_manager();
 
-        db.insert(std::make_pair(key, value));
+       std::cout << db.size() << '\n';
+
+       for (int i = 0; i < 10; ++i)
+       {
+           std::string key_ = "item" + std::to_string(i);
+           shared_string key(alloc);
+           key.assign(key_.begin(), key_.end());
+           auto value = shared_vector<X>(alloc);
+           value.resize(1);
+           auto entry = std::make_pair(key, value);
+
+           db.insert(std::make_pair(key, value));
+       }
     }
+
+    shared_instance();
+
 }
