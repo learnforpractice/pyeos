@@ -1,105 +1,131 @@
-Hack on Eos. Have fun!
+An Experimental Project for Writing Smart Contract in Python, Base on The Development of EOSIO 
 # Table of contents
-1. [What does this project for?](#projectfor)
-2. [What Pyeos can do?](#whatpyeoscando)
-3. [Building Pyeos](#buildingpyeos)
-4. [Running Pyeos](#runningpyeos)
-5. [Pyeos api overview](#pyeosapioverview)
-6. [Playing with DEX](#playwithdex)
-7. [Sending messages with smart contracts](#sendingmsginline)
-8. [Sending transactions with smart contracts](#sendingtsinline)
-9. [About memory and CPU used by smart contracts](#memoryandcpu)
-10.[Q&A](#questionandanswer)
-
-
-<a name="projectfor"></a>
-# What does this project for?
-
-Eos has the potential of be a revolutionary technology. I'm curious about the tech behind Eos. So I think I need to do something as early as possible.
-Python is one of the most powerfull language on the earth. It's easy to use and easy to understand,also it's easy to interface with other program language such as c++,c etc. You can do a lot of things with Python without paying too much time and too much energy. But for the reason of performance, Eos is writing in C++. So I think maybe I can rewrite Eos in Python? At least I can improve the usability of Eos with Python. So here comes Pyeos.
-
-<a name="whatpyeoscando"></a>
-# What Pyeos can do?
-
-1. Calling Eos api with Python
-2. Writing contracts in Python. You can find some demos in directory [contracts](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts). Anyone who want faster code can also code it in Python first and then porting it to C++.
+1. [Building Pyeos](#buildingpyeos)
+2. [Creating Your First Python Smart Contract](#creatsmartcontract)
+3. [Pyeos api overview](#pyeosapioverview)
 
 <a name="buildingpyeos"></a>
+
 # Building Pyeos
 
-You have to export two environment before building pyeos, one telling the compiler where to find the Python header file, the other telling the linker where to find the Python library.
+## Downloading Source Code
 
 ```bash
-export PYTHON_INC_DIR="~/anaconda/include/python3.6m"
-export PYTHON_LIB="~/anaconda/lib/libpython3.6m.dylib"
-
+git clone https://www.github.com/learnforpractice/pyeos
+cd pyeos
+git submodule update --init --recursive
 ```
 
-and in order to fix "fatal error: 'libintl.h' file not found", do the following command,change the gettext version as you want.
+## Installing dependencies (Ubuntu)
+
+```
+sudo apt-get install libleveldb-dev
+sudo apt-get install libreadline-dev
+```
+
+## Installing dependencies (macOS)
+
+```
+brew install leveldb
+brew install readline
+```
+
+## Building
 
 ```bash
-ln -s /usr/local/Cellar/gettext/0.19.8.1/include/libintl.h /usr/local/include/.
-ln -s /usr/local/Cellar/gettext/0.19.8.1/lib/libintl.* /usr/local/lib/
+./eosio_build.sh
 ```
 
-Also you shall have cython installed. If you don't,install it by the following command:
+<a name="creatsmartcontract"></a>
+
+# Creating Your First Python Smart Contract
+
+### Generating source code with sketch.py
+
+Open a terminal, cd to the source directory, run the following command to create you first project.
 
 ```
-python -m pip install cython
+export PYEOS=$(pwd)
+cd $PYEOS/programs/pyeos/contracts
+python ../tools/sketch.py --account=hello --dir=helloworld
 ```
 
-or
+That will create a helloworld directory in programs/pyeos/contracts, with three files in the directory.
 
 ```
-pip install cython
+hello.py
+hello.abi
+test.py
 ```
 
-Pyeos depend on a custom build of cpython, run the following commands to build it
+Which hello.py is the Python smart contract source code, hello.abi is the ABI(Application Binary Interface) file for smart contract, test.py is for testing the smart contract, let's talk about it in detail later.
+
+sketch.py can also create a cpp project for you, just run the following command
 
 ```
-git submodule add -b v3.6.3-for-pyeos https://github.com/learnforpractice/cpython libraries/python
-cd libraries/python
-./configure --prefix=$(pwd)/dist
-./make -j4
-make install
+python ../tools/sketch.py --account=hello --dir=helloworld --lang=cpp
 ```
 
+### Testing
 
-Now follow the instruction on [Building EOS and running a node](https://github.com/learnforpractice/pyeos#runanode)
-
-Currently only test with Python 3.6 on macOS 10.12.6
-
-<a name="aboutcodestyle"></a>
-# About code style
-
-Bad code style will affect the cooperation between developers. So there must be some rule for developers to follow. Here is my recommendation: [google cpp guide](https://google.github.io/styleguide/cppguide.html) Who use eclipse as their IDE can use the following tool to format their cpp code.
-http://www.cppstyle.com/
-
-Also in order to compatible with eos source code, Change the tab width to 3 spaces.
-
-<a name="runningpyeos"></a>
-# Running Pyeos
-
-After build project successfully,run the following commands to start Pyeos.
+Now, it's time to start Pyeos. Just run the following commands.
 
 ```
-cd ~/dev/eos/build/programs/
-export PYTHONHOME=../../libraries/python
-export PYTHONPATH=../../libraries/python/Lib
-./pyeos/pyeos -i
+cd $PYEOS/build/programs
+./pyeos/pyeos --manual-gen-block --debug -i
 ```
-The first three commands only need to run once. If everything is fine, a Python interactive console shall appeal. That's it. Next, let us see what Pyeos can do. For a better debug, replace 
+
+If it's the first time you start Pyeos, Pyeos will create a test wallet for you, which placed in data-dir/mywallet.wallet, and the console will print the wallet password as below:
 
 ```
-./pyeos/pyeos -i
+wallet password: PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ
 ```
-with
+
+Replace the password in programs/pyeos/initeos.py as shown below.
+
 ```
-./pyeos/pyeos --debug -i
+def init():
+    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
 ```
+
+So the next time you start Pyeos, wallet will be opened for you, and Pyeos is ready to run the test for you.
+
+Beside that, Pyeos will create four important accounts for you:
+
+```
+eosio.bios, eosio.msig, eosio.system, eosio.token
+```
+
+and publish their smart contract on the testing blockchain. Although this can never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
+
+Now it's time to run your helloworld smart contract program. Type or copy the following command to the python console,
+
+```python
+from helloworld import test
+test.test()
+```
+
+You will see the following output in console in green words:
+
+```
+3289633ms thread-1   mpeoslib.cpp:63               print                ] hello,world
+```
+
+Congratulations, you are successfully running your first smart contract.
+
+Now you can open hello.py for coding. Once it's done, just run test.test() again, 
+their is no need to run other command to publish your testing smart contract.
+You can also edit the testing code in test.py to test your smart contract. Once it's done, 
+just run test.test() again, there is no need to run reload(test), Pyeos has do the magic for you.
+
+There are a lot of examples in programs/pyeos/contracts, Some of them are still in development.
+pick up an example you interest in and play with it as you want. 
+
+
 
 
 <a name="pyeosapioverview"></a>
+
 # Pyeos api overview
 
 #### eosapi.get_info
@@ -455,180 +481,3 @@ eosapi.get_table('inita','currency','account')
     "more": false
 }
 ```
-
-<a name="playwithdex"></a>
-# Playing with DEX
-
-Before we can play with decentralized exchange, a few work need to be done. Open test.py in [program/pyeos/contracts/exchange](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange), edit wallet password and keys in test.init as show below. We have created them in the [first part](https://github.com/learnforpractice/pyeos/blob/master/pyeos.md#walletcreate):
-
-```python
-def init():
-    import time
-    psw = 'PW5KTHfg4QA7wD1dZjbkpA97hEktDtQaip6hNNswWkmYo5pDK3CL1'
-    wallet.open('mywallet')
-    wallet.unlock('mywallet',psw)
-    
-    key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-    key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
-```
-
-Now run the following commands to play with dex:
-
-```python
-from contracts.exchange import test
-test.init();
-test.test_deposit()
-test.test_withdraw()
-test.test_bs()
-```
-
-You can always check the result with the following command
-
-```
-eosapi.get_table('exchange','exchange','account')
-```
-
-for more information on what test does, read code in [test.py](https://github.com/learnforpractice/pyeos/tree/master/programs/pyeos/contracts/exchange/test.py)
-
-<a name="sendingmsginline"></a>
-# Sending messages with smart contracts
-
-You can find the demo in [contracts/test](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/contracts/test)
-
-Here is how to play with it.
-
-First, create account test
-
-```python
-key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
-r = eosapi.create_account('inita', 'test', key1, key2)
-```
-
-Then send some currency to test, because in the demo test will send 50 currency to inita
-```python
-r = eosapi.push_message('currency','transfer','{"from":"currency","to":"test","amount":1000}',['currency','test'],{'currency':'active'})
-```
-
-Now It's time to publish contract code to account test. Pay attention, the contract code is in code.py, not test.py.
-
-```python
-r = eosapi.set_contract('test','../../programs/pyeos/contracts/test/code.py','../../programs/pyeos/contracts/test/test.abi',1)
-```
-
-The last step, call function test_message in the contract
-
-```
-r = eosapi.push_message('test','testmsg','',['test','inita'],{'test':'active'},rawargs=True)
-```
-
-To see what happened, run the following commands:
-
-```python
-r = eosapi.get_table('test','currency','account')
-print(r)
-r = eosapi.get_table('inita','currency','account')
-print(r)
-```
-
-Now let's go to the detail
-
-in [code.py](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/contracts/test/code.py):
-
-```python
-def test_message():
-# '{"from":"currency","to":"test","amount":50}'
-    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
-    msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
-    eoslib.messageRequirePermission(msghandle, b'test', b'active')
-    eoslib.messageSend(msghandle)
-```
-
-```python
-def apply(code, action):
-    if code == test:
-        eoslib.requireAuth(test)
-        if action == N(b'transfer'):
-        ...
-        elif action == N(b'testmsg'):
-            test_message()
-```
-
-in [test.abi](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/contracts/test/test.abi):
-
-```javascript
-  "actions": [
-  ...
-    ,{
-      "action": "testmsg",
-      "type": "Bytes"
-    }
-...
-    ],
-```
-
-Ok, that's all, pretty easy, right?
-
-
-<a name="sendingtsinline"></a>
-# Sending transactions with smart contracts
-
-Sending transactions are much the same as sending messages. Here is the code copy from code.py. Transactions will be included in the next generated block.
-
-```python
-def test_transaction():
-    print("------------------test_transaction---------------")
-    #transaction will apply in the next block
-    tshandle = eoslib.transactionCreate()
-    eoslib.transactionRequireScope(tshandle, b'test', 0)
-    eoslib.transactionRequireScope(tshandle, b'inita', 0)
-
-# '{"from":"test","to":"inita","amount":50}'
-    data = struct.pack("QQQ", N(b'test'), N(b'inita'), 50)
-    msghandle = eoslib.messageCreate(b'currency', b'transfer', data)
-    eoslib.messageRequirePermission(msghandle, b'test', b'active')
-
-    eoslib.transactionAddMessage(tshandle, msghandle)
-    eoslib.transactionSend(tshandle)
-```
-
-and the call abi is as following in test.abi :
-
-```javascript
-  "actions": [
-  ...
-  ,{
-      "action": "testts",
-      "type": "Bytes"
-    }
-  ]
-```
-
-To test the code, run the following code:
-
-```
-r = eosapi.push_message('test','testts','',['test',],{'test':'active'},rawargs=True)
-```
-
-Also you can run the following command to see the results, just as what you did in the Sending messages section.
-
-```python
-r = eosapi.get_table('test','currency','account')
-print(r)
-r = eosapi.get_table('inita','currency','account')
-print(r)
-```
-
-
-
-
-<a name="memoryandcpu"></a>
-# About memory and CPU used by smart contracts
-
-Now memory and CPU are limited in python smart contracts, the maximum memory used by single smart contract is limited to 1MB and maximum execution time is limited to 100ms. Please be aware of these when you write a smart contracts in python.
-
-<a name="questionandanswer"></a>
-# Q&A
-
-
-to be continued...

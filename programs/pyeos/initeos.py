@@ -26,7 +26,7 @@ def init():
     
     if not os.path.exists('data-dir/mywallet.wallet'):
         psw = wallet.create('mywallet')
-        print(psw)
+        print('wallet password:', psw)
     
     wallet.open('mywallet')
     wallet.unlock('mywallet',psw)

@@ -17,7 +17,6 @@ def init(func):
 def test(name='mike'):
     r = eosapi.push_message('hello','sayhello', name, {'hello':'active'})
     assert r
-    print(r)
     eosapi.produce_block()
 
 @init
@@ -28,9 +27,6 @@ def play():
 
 @init
 def test2(count):
-    import time
-    import json
-    
     contracts = []
     functions = []
     args = []
