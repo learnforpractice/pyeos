@@ -480,10 +480,11 @@ def on_python_exit():
 atexit.register(on_python_exit)
 
 
-def push_messages(vector[string]& contracts, vector[string]& functions, args, permissions,bool sign, bool rawargs):
+def push_messages(vector[string]& contracts, vector[string]& functions, args, permissions, bool sign):
     cdef vector[map[string, string]] _permissions
     cdef map[string, string] __permissions;
     cdef vector[string] _args
+    cdef int rawargs = 1
     
     for per in permissions:#list
         __permissions = map[string, string]()
@@ -495,6 +496,7 @@ def push_messages(vector[string]& contracts, vector[string]& functions, args, pe
     for arg in args:
         if isinstance(arg, dict):
             arg = json.dumps(arg)
+            rawargs = 0
         _args.push_back(arg)
 
     ret = push_messages_(contracts, functions, _args, _permissions,sign, rawargs)
@@ -537,7 +539,7 @@ def push_transactions(vector[string]& contracts, vector[string]& functions, args
     ret = push_transactions_(contracts, functions, _args, _permissions,sign, rawargs)
     return ret
 
-def push_transactions2(actions, bool sign, uint64_t skip_flag=0, _async=False):
+def push_transactions2(actions, sign = True, uint64_t skip_flag=0, _async=False):
     '''Send transactions
 
     Args:
@@ -608,7 +610,7 @@ def mp_compile(py_file):
     cdef int mpy_size
     cdef string s
     buffer.resize(0)
-    buffer.resize(1024*64)
+    buffer.resize(1024*1024)
     src_data = None
     with open(py_file, 'r') as f:
         src_data = f.read()
