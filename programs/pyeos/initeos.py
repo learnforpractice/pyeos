@@ -1,7 +1,44 @@
 import os
+import re
 import sys
+import imp
+import traceback
+
 import wallet
 import eosapi
+from code import InteractiveConsole
+from tools import sketch
+from imp import reload
+
+class PyEosConsole(InteractiveConsole):
+    def __init__(self, locals):
+        super(PyEosConsole, self).__init__(locals=locals, filename="<console>")
+
+    def runcode(self, code):
+        exc_type = None
+        exc_value = None
+        exc_traceback = None
+        try:
+            exec(code, self.locals)
+        except SystemExit:
+            raise
+        except AttributeError as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                          limit=10, file=sys.stdout)
+        if exc_value:
+            result = re.search("'(.*?)' has no attribute '(.*?)'", str(exc_value))
+            if result:
+                package, attr = result.groups()
+                mod = imp.reload(sys.modules[package])
+                try:
+                    exec(code, self.locals)
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                                  limit=10, file=sys.stdout)
 
 if not hasattr(sys, 'argv'):
     sys.argv = ['']
@@ -58,6 +95,7 @@ def init():
     '''
 
     contracts_path = os.path.join(src_dir, '../../build', 'contracts')
+    sys.path.append(os.getcwd())
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         print('account', account)
         if not eosapi.get_account(account).permissions:
@@ -82,7 +120,7 @@ def init():
         if need_update:
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
-            r = eosapi.set_contract(account, wast, abi,0)
+            r = eosapi.set_contract(account, wast, abi, 0)
             eosapi.produce_block()
 
             if False: #account == 'eosio.token':
@@ -97,3 +135,5 @@ def init():
     test.deploy_mpy()
     #load common libraries
 #    test.load_all()
+    console = PyEosConsole(locals = globals())
+    console.interact(banner='Welcome to pyeos')

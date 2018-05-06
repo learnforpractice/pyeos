@@ -85,9 +85,12 @@ abi_src = \
 class Sketch(object):
     def __init__(self, _account, _project_dir = '.', _project_type='py'):
         self.account = _account
-        self.project_dir = _project_dir
-        self.project_type = _project_type
+        if _project_dir[0] == '/':
+            self.project_dir = _project_dir
+        else:
+            self.project_dir = os.path.join(os.getcwd(), _project_dir)
 
+        self.project_type = _project_type
         self.mkdir(_project_dir)
 
     def build(self):
@@ -132,7 +135,11 @@ class Sketch(object):
             if not os.path.exists(__path):
                 print('Creating directory \t:', __path)
                 os.mkdir(__path)
-  
+
+def build(account = 'hello', dir = 'helloworld', lang='py'):
+    s = Sketch(account, dir, lang)
+    s.build()
+
 if __name__ == '__main__':
     usage = "usage: python sketch.py [options]"
     parser = OptionParser(usage=usage)
