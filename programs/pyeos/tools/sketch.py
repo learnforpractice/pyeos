@@ -21,15 +21,12 @@ print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init(func):
-    def func_wrapper(wasm={1}, *args, **kw_args):
+    def func_wrapper(wasm={1}, *args, **kwargs):
         if wasm:
-            src_path = os.path.dirname(os.path.abspath(__file__))
-            cpp2wast.set_src_path(src_path)
-            if not cpp2wast.build('{0}.cpp'):
-                raise Exception("building failed")
-            return prepare('{0}', '{0}.wast', '{0}.abi', 0, __file__, func, __name__, args)
+            prepare('{0}', '{0}.wast', '{0}.abi', 0, __file__)
         else:
-            return prepare('{0}', '{0}.py', '{0}.abi', 2, __file__, func, __name__, args)
+            prepare('{0}', '{0}.py', '{0}.abi', 2, __file__)
+        return func(*args, **kwargs)
     return func_wrapper
 
 @init
