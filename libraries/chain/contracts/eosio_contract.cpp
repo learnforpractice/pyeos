@@ -36,6 +36,13 @@ void validate_authority_precondition( const apply_context& context, const author
    }
 }
 
+void check_account_lock_status( const apply_context& context, account_name& account ) {
+   const auto& _account = context.mutable_db.get<account_object,by_name>( account );
+   if (_account.locked) {
+      throw FC_EXCEPTION( fc::exception, "${n1} has been locked on", ("n1", account));
+   }
+}
+
 /**
  *  This method is called assuming precondition_system_newaccount succeeds a
  */
@@ -250,6 +257,8 @@ void apply_eosio_setcode(apply_context& context) {
       throw FC_EXCEPTION( fc::exception, "code in ${n} has been locked on", ("n", act.account));
    }
 
+   check_account_lock_status( context, act.account );
+
    if (act.vmtype == 1) {
       apply_eosio_setcode_py(context);
       return;
@@ -306,6 +315,8 @@ void apply_eosio_setabi(apply_context& context) {
    auto  act = context.act.data_as<setabi>();
    const auto& account = db.get<account_object,by_name>(act.account);
 
+   check_account_lock_status( context, act.account );
+
    context.require_authorization(act.account);
 
    // if system account append native abi
@@ -341,9 +352,9 @@ void apply_eosio_lockcode(apply_context& context) {
    auto& db = context.mutable_db;
    const auto& account = db.get<account_object,by_name>( _account_name );
 
-   if (account.locked) {
-      throw FC_EXCEPTION( fc::exception, "code in account ${n1} has already been locked on", ("n1", _account_name));
-   }
+   check_account_lock_status( context, _account_name );
+
+   context.require_authorization( _account_name );
 
    db.modify( account, [&]( auto& a ) {
       a.locked = true;
@@ -355,7 +366,6 @@ void apply_eosio_unlockcode(apply_context& context) {
    name _privileged_account;
    name _unlockaccount;
 
-
    datastream<const char*> ds( context.act.data.data(), context.act.data.size() );
    fc::raw::unpack( ds, _privileged_account );
    fc::raw::unpack( ds, _unlockaccount );
@@ -365,6 +375,7 @@ void apply_eosio_unlockcode(apply_context& context) {
    if (!account.privileged) {
       throw FC_EXCEPTION( fc::exception, "can not unlock ${n1} with nonprivileged account ${n2}", ("n1", _unlockaccount)("n2", _unlockaccount));
    }
+   context.require_authorization(_privileged_account); // only here to mark the single authority on this action as used
 
    const auto& _account = db.get<account_object,by_name>( _unlockaccount );
 
@@ -386,6 +397,8 @@ void apply_eosio_updateauth(apply_context& context) {
 
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    auto& db = context.mutable_db;
+
+   check_account_lock_status( context, update.account );
 
    EOS_ASSERT(!update.permission.empty(), action_validate_exception, "Cannot create authority with empty name");
    EOS_ASSERT( update.permission.to_string().find( "eosio." ) != 0, action_validate_exception,
@@ -470,6 +483,8 @@ void apply_eosio_deleteauth(apply_context& context) {
    auto& resources = context.mutable_controller.get_mutable_resource_limits_manager();
    auto& db = context.mutable_db;
 
+   check_account_lock_status( context, remove.account );
+
    const auto& permission = db.get<permission_object, by_owner>(boost::make_tuple(remove.account, remove.permission));
 
    { // Check for children
@@ -504,6 +519,9 @@ void apply_eosio_linkauth(apply_context& context) {
       context.require_authorization(requirement.account); // only here to mark the single authority on this action as used
 
       auto& db = context.mutable_db;
+
+      check_account_lock_status( context, requirement.account );
+
       const auto *account = db.find<account_object, by_name>(requirement.account);
       EOS_ASSERT(account != nullptr, account_query_exception,
                  "Failed to retrieve account: ${account}", ("account", requirement.account)); // Redundant?
@@ -549,6 +567,8 @@ void apply_eosio_unlinkauth(apply_context& context) {
    auto unlink = context.act.data_as<unlinkauth>();
 
    context.require_authorization(unlink.account); // only here to mark the single authority on this action as used
+
+   check_account_lock_status( context, unlink.account );
 
    auto link_key = boost::make_tuple(unlink.account, unlink.code, unlink.type);
    auto link = db.find<permission_link_object, by_action_name>(link_key);
@@ -704,6 +724,8 @@ void apply_eosio_passrecovery(apply_context& context) {
    // ensure this is only processed if it is a deferred transaction from the system account
    FC_ASSERT(context.trx_meta.sender && *context.trx_meta.sender == config::system_account_name);
    context.require_authorization(account);
+
+   check_account_lock_status( context, account );
 
    auto maybe_recovery = get_pending_recovery(context, account);
    FC_ASSERT(maybe_recovery, "No pending recovery found for account ${account}", ("account", account));
