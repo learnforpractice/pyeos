@@ -7,11 +7,12 @@ import eosapi
 import eoslib
 import initeos
 
-from common import smart_call, producer
+from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('greeter', 'greeter.py', 'greeter.abi', 2, __file__, func, __name__, args, kwargs)
+        prepare('greeter', 'greeter.py', 'greeter.abi', 2, __file__)
+        return func(*args, **kwargs)
     return func_wrapper
 
 @init

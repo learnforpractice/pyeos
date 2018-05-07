@@ -5,11 +5,12 @@ import wallet
 import eosapi
 import initeos
 
-from common import smart_call, producer
+from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kw_args):
-        return smart_call('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__, func, __name__, args, kw_args)
+        prepare('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__, func, __name__, args, kw_args)
+        return func(*args, **kwargs)
     return func_wrapper
 
 @init

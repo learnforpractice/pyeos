@@ -3,11 +3,12 @@ import wallet
 import eosapi
 import initeos
 
-from common import smart_call, producer
+from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kw_args):
-        return smart_call('rpctest', 'rpctest.py', 'rpctest.abi', 2, __file__, func, __name__, args, kw_args)
+        prepare('rpctest', 'rpctest.py', 'rpctest.abi', 2, __file__)
+        return func(*args, **kwargs)
     return func_wrapper
 
 @init

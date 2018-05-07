@@ -7,21 +7,24 @@ import eosapi
 import initeos
 from eosapi import N
 
-from common import smart_call, producer
+from common import prepare, producer
 
 def init_wasm(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__, func, __name__, args, kwargs)
+        prepare('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__)
+        func(*args, **kwargs)
     return func_wrapper
 
 def init_py(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 1, __file__, func, __name__, args, kwargs)
+        prepare('actiontest', 'actiontest.py', 'actiontest.abi', 1, __file__)
+        func(*args, **kwargs)
     return func_wrapper
 
 def init_mpy(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('actiontest', 'actiontest.py', 'actiontest.abi', 2, __file__, func, __name__, args, kwargs)
+        prepare('actiontest', 'actiontest.py', 'actiontest.abi', 2, __file__)
+        func(*args, **kwargs)
     return func_wrapper
 
 '''

@@ -4,14 +4,16 @@ import wallet
 import eosapi
 import initeos
 
-from common import smart_call, producer
+from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
         if 'wasm' in kwargs and kwargs['wasm']:
-            return smart_call('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', 0, __file__, func, __name__, args)
+            prepare('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', 0, __file__)
+            return func(*args, **kwargs)
         else:
-            return smart_call('currency', 'currency.py', 'currency.abi', 2, __file__, func, __name__, args, kwargs)
+            prepare('currency', 'currency.py', 'currency.abi', 2, __file__)
+            return func(*args, **kwargs)
     return func_wrapper
 
 @init

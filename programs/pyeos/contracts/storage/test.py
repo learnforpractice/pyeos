@@ -9,7 +9,7 @@ import initeos
 from eosapi import N
 from tools import cpp2wast
 
-from common import smart_call, producer
+from common import prepare, producer
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
@@ -17,13 +17,11 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 def init(func):
     def func_wrapper(wasm=False, *args, **kw_args):
         if wasm:
-            src_path = os.path.dirname(os.path.abspath(__file__))
-            cpp2wast.set_src_path(src_path)
-            if not cpp2wast.build('storagetest.cpp'):
-                raise Exception("building failed")
-            return smart_call('storagetest', 'storagetest.wast', 'storagetest.abi', 0, __file__, func, __name__, args)
+            prepare('storagetest', 'storagetest.wast', 'storagetest.abi', 0, __file__)
+            return func(*args, **kwargs)
         else:
-            return smart_call('storagetest', 'storagetest.py', 'storagetest.abi', 2, __file__, func, __name__, args)
+            prepare('storagetest', 'storagetest.py', 'storagetest.abi', 2, __file__)
+            return func(*args, **kwargs)
     return func_wrapper
 
 @init

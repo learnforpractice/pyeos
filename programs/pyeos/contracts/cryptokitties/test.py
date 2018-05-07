@@ -6,11 +6,12 @@ import initeos
 import subprocess
 import pickle
 
-from common import smart_call, producer, Sync
+from common import prepare, producer, Sync
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('kitties', 'main.py', 'cryptokitties.abi', 2, __file__, func, __name__, args, kwargs)
+        prepare('kitties', 'main.py', 'cryptokitties.abi', 2, __file__)
+        return func(*args, **kwargs)
     return func_wrapper
 
 _dir = os.path.dirname(os.path.abspath(__file__))

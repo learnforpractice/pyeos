@@ -15,7 +15,7 @@ CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_MPY = 2
 
-def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=None, args=[], kwargs={}):
+def prepare(name, src, abi, code_type, full_src_path):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if code_type == 0:
         cpp2wast.set_src_path(_src_dir)
@@ -60,18 +60,6 @@ def smart_call(name, src, abi, code_type, full_src_path, func=None, module_name=
             else:
                 r = eosapi.set_contract(name, src, abi, 1)
             assert r
-
-    if not func:
-        return
-
-    cache_file = os.path.join(os.path.dirname(full_src_path), '__pycache__', os.path.basename(full_src_path)[:-3]+'.cpython-36.pyc')
-    t1 = os.path.getmtime(full_src_path)
-    t2 = os.path.getmtime(cache_file)
-    if t1 > t2:
-        print('+++++=change detected, reloading test', module_name)
-        imp.reload(sys.modules[module_name])
-        return getattr(sys.modules[module_name], func.__name__)(*args)
-    return func(*args, **kwargs)
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):

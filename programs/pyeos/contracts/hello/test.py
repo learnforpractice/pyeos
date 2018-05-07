@@ -9,11 +9,12 @@ import wallet
 import eosapi
 import initeos
 import traceback
-from common import smart_call, producer
+from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        return smart_call('hello', 'hello.py', 'hello.abi', 2, __file__, func, __name__, args, kwargs)
+        prepare('hello', 'hello.py', 'hello.abi', 2, __file__)
+        func(*args, **kwargs)
     return func_wrapper
 
 @init
