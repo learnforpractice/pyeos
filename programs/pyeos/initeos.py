@@ -148,16 +148,16 @@ def preinit():
         with open(genesis_file, 'w') as f:
             f.write(genesis)
 
-from apitest import test as at
-from cryptokitties import test as kt
-from currency import test as ct
-from counter import test as cot
-from hello import test as ht
-from backyard import test as bt
-from rpctest import test as rt
-from vote import test as vt
-from simpleauction import test as st
-from lab import test as lt
+from apitest import t as at
+from cryptokitties import t as kt
+from currency import t as ct
+from counter import t as cot
+from hello import t as ht
+from backyard import t as bt
+from rpctest import t as rt
+from vote import t as vt
+from simpleauction import t as st
+from lab import t as lt
     
 def init():
 
@@ -233,10 +233,10 @@ def init():
                 assert r
                 eosapi.produce_block()
 
-    from backyard import test
-    test.deploy_mpy()
+    from backyard import t
+    t.deploy_mpy()
     #load common libraries
-#    test.load_all()
+#    t.load_all()
 
     console = PyEosConsole(locals = globals())
-    console.interact(banner='Welcome to pyeos')
+    console.interact(banner='Welcome to PyEos')
