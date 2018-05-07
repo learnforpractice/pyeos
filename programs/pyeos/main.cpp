@@ -141,6 +141,7 @@ void init_console() {
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("eosapi.register_signal_handler()");
+   PyRun_SimpleString("import initeos;initeos.preinit()");
 
 }
 
