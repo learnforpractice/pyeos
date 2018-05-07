@@ -79,7 +79,9 @@ Beside that, PyEos will create four important accounts for you:
 eosio.bios, eosio.msig, eosio.system, eosio.token
 ```
 
-and publish their smart contract on the testing blockchain. Although this will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
+and publish their smart contract on the testing blockchain. 
+
+Although the above steps will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
 
 ### Generating source code with sketch
 
@@ -99,7 +101,7 @@ test.py
 
 Which hello.py is the Python smart contract source code, hello.abi is the ABI(Application Binary Interface) file for smart contract, test.py contains code for testing the smart contract, let's talk about it later in detail.
 
-sketch.py can also create a wasm project for you, just type the following code in PyEos console
+In addition, sketch can also create a wasm smart contract project for you, just type the following code in PyEos console, and the testing process has no difference with Python smart contract.
 
 ```
 sketch.build('hello', 'helloworld', 'cpp')
@@ -115,21 +117,19 @@ from helloworld import test
 test.test()
 ```
 
-You will see the following output in console in green words:
+You will see the following output on console in green words:
 
 ```
 3289633ms thread-1   mpeoslib.cpp:63               print                ] hello,world
 ```
 
-Congratulations, you have successfully run your first smart contract.
+Congratulations, you have successfully run your first Python smart contract.
 
 Now you can open hello.py for coding. Once it's done, just run test.test() again, 
 there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
-republish to the testnet if it's been changed. You can also edit the testing code in test.py to test your smart contract. Once it's done, 
-just run test.test() again, there is no need to run reload(test), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
+republish to the testnet if it's been changed. You can also edit the testing code in test.py to test your smart contract. Once it's done, just run test.test() again, there is no need to run reload(test), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
 
-There are a lot of examples in programs/pyeos/contracts, Some of them are still in development.
-Pick up an example you interest in and play with it as you want. 
+There are a lot of examples in programs/pyeos/contracts. Some of them are still in development, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
 
 
 <a name="pyeosapioverview"></a>
