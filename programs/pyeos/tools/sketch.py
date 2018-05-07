@@ -80,7 +80,7 @@ abi_src = \
 '''
 
 class Sketch(object):
-    def __init__(self, _account, _project_dir = '.', _project_type='py'):
+    def __init__(self, _account, _project_dir = '.', _project_type='py', _force=False):
         self.account = _account
         if _project_dir[0] == '/':
             self.project_dir = _project_dir
@@ -88,6 +88,7 @@ class Sketch(object):
             self.project_dir = os.path.join(os.getcwd(), _project_dir)
 
         self.project_type = _project_type
+        self.force = _force
         self.mkdir(_project_dir)
 
     def build(self):
@@ -98,6 +99,9 @@ class Sketch(object):
     def build_source(self):
         if self.project_type == 'py':
             src_file = os.path.join(self.project_dir, self.account+'.py')
+            if os.path.exists(src_file) and not self.force:
+                print(f'{self.project_dir} already exists')
+                raise Exception(f'{src_file} already exists')
             print('Creating source file  \t:', src_file)
             with open(src_file, 'w') as f:
                 f.write(py_src.format(self.account))
@@ -119,7 +123,7 @@ class Sketch(object):
         wasm = False
         if self.project_type == 'cpp':
             wasm = True
-        src_file = os.path.join(self.project_dir, 'test.py')
+        src_file = os.path.join(self.project_dir, 't.py')
         print('Creating test file \t:', src_file)
         with open(src_file, 'w') as f:
             f.write(test_py.format(self.account, wasm))
@@ -133,8 +137,8 @@ class Sketch(object):
                 print('Creating directory \t:', __path)
                 os.mkdir(__path)
 
-def build(account = 'hello', dir = 'helloworld', lang='py'):
-    s = Sketch(account, dir, lang)
+def build(account = 'hello', dir = 'helloworld', lang='py', force=False):
+    s = Sketch(account, dir, lang, force)
     s.build()
 
 if __name__ == '__main__':

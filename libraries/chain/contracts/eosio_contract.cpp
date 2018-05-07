@@ -36,7 +36,7 @@ void validate_authority_precondition( const apply_context& context, const author
    }
 }
 
-void check_account_lock_status( const apply_context& context, account_name& account ) {
+void check_account_lock_status( const apply_context& context, const account_name& account ) {
    const auto& _account = context.mutable_db.get<account_object,by_name>( account );
    if (_account.locked) {
       throw FC_EXCEPTION( fc::exception, "${n1} has been locked on", ("n1", account));
