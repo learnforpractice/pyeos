@@ -8,8 +8,8 @@ import initeos
 from common import prepare, producer
 
 def init(func):
-    def func_wrapper(*args, **kw_args):
-        prepare('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__, func, __name__, args, kw_args)
+    def func_wrapper(*args, **kwargs):
+        prepare('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

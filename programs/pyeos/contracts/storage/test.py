@@ -15,7 +15,7 @@ print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init(func):
-    def func_wrapper(wasm=False, *args, **kw_args):
+    def func_wrapper(wasm=False, *args, **kwargs):
         if wasm:
             prepare('storagetest', 'storagetest.wast', 'storagetest.abi', 0, __file__)
             return func(*args, **kwargs)

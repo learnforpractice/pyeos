@@ -161,7 +161,7 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       }
       uint64_t execution_time = get_mpapi().get_execution_time();
       if (execution_time > 1000) {
-         elog("+++++++load module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
+         elog("+++++++call module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
       }
       get_mpapi().execution_end();
       FC_ASSERT(ret != 0, "code execution with exception!");

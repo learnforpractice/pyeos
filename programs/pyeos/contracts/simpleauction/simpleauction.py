@@ -144,7 +144,7 @@ class SimpleAuction(object):
         
         auth = struct.pack('QQ', sender, N('active'))
         t = transfer()
-        t._from = sender
+        t._from = code
         t.to = sender
 #        t.amount = amount
         t.amount = 100
@@ -156,12 +156,9 @@ class SimpleAuction(object):
         t.unpack(data)
         t.p()
 
-        print('before require_auth')
-#        require_auth( sender )
-#        require_auth( code )
-        print('hello, world')
+        require_auth(sender)
+        require_auth(code)
         send_inline( N('eosio.token'), N('transfer'), auth, data)
-        print('+++++++++++ call transfer.')
         #multi_index.hpp 695: cannot modify objects in table of another contract
 #        wasm_call(N('eosio.token'), 'apply', N('eosio.token'), N('eosio.token'), N('transfer'))
 
