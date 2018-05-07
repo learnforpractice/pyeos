@@ -1,5 +1,6 @@
-from eoslib import *
 import ustruct as struct
+from eoslib import *
+from backyard.solidity import payable
 
 class T(object):
     def __init__(self):
@@ -21,6 +22,14 @@ class List(list):
     def __new__(cls, value):
         return  super(List, cls).__new__(cls, value)
 
+@payable
+def p1():
+    pass
+
+@payable
+def p2():
+    p1()
+
 def apply(name, type):
     if type == N('t1'):
         try:
@@ -29,3 +38,6 @@ def apply(name, type):
             print('+++++++++++++RuntimeError')
         test_recursive_gen()
         l = List([1,3,3])
+    elif type == N('t2'):
+        p2()
+        

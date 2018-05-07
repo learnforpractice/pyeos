@@ -1,7 +1,13 @@
 {
   "actions": [{
       "name": "sayhello",
-      "type": "bytes"
+      "type": "raw"
+    },{
+      "name": "t1",
+      "type": "raw"
+    },{
+      "name": "t2",
+      "type": "raw"
     }
   ]
 }

@@ -44,6 +44,13 @@ def test_module_memory_leak(sign=True):
             eosapi.produce_block()
 
 @init
+def test_reentrant(sign=True):
+    with producer:
+        r = eosapi.push_message('bugs','t2','',{'bugs':'active'})
+        assert not r
+    eosapi.produce_block()
+
+@init
 def t3(count=100, sign=True):
 #    tracemalloc.start()
 #    snapshot1 = tracemalloc.take_snapshot()
