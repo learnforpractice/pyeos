@@ -14,18 +14,20 @@ from common import prepare, producer
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init(func):
-    def func_wrapper(wasm=True, *args, **kwargs):
-        if wasm:
-            prepare('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__)
-            return func(*args, **kwargs)
-        else:
-            prepare('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__)
-            return func(*args, **kwargs)
-    return func_wrapper
+def init(wasm=True):
+    def init_decorator(func):
+        def func_wrapper(wasm=True, *args, **kwargs):
+            if wasm:
+                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__)
+                return func(*args, **kwargs)
+            else:
+                prepare('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__)
+                return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
 
-@init
-def test(msg='hello,world', wasm=True):
+@init()
+def test(msg='hello,world'):
     '''
     with producer:
         r = eosapi.push_message('twitbot', 'sayhello', msg, {'twitbot':'active'})

@@ -6,6 +6,9 @@ code = N('storagetest')
 def apply(name, type):
     if type == N('sayhello'):
         a = SDict(code, N('a'))
+        msg = read_action()
+        a[msg] = msg
+        return
         a1 = a[100]
         a2 = a[101]
         a3 = a[102]

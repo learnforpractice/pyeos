@@ -20,16 +20,18 @@ from common import prepare, producer
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
-def init(func):
-    def func_wrapper(wasm={1}, *args, **kwargs):
-        if wasm:
-            prepare('{0}', '{0}.wast', '{0}.abi', 0, __file__)
-        else:
-            prepare('{0}', '{0}.py', '{0}.abi', 2, __file__)
-        return func(*args, **kwargs)
-    return func_wrapper
+def init(wasm={1}):
+    def init_decorator(func):
+        def func_wrapper(*args, **kwargs):
+            if wasm:
+                prepare('{0}', '{0}.wast', '{0}.abi', 0, __file__)
+            else:
+                prepare('{0}', '{0}.py', '{0}.abi', 2, __file__)
+            return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
 
-@init
+@init()
 def test(msg='hello,world', wasm={1}):
     with producer:
         r = eosapi.push_message('{0}', 'sayhello', msg, {{'{0}':'active'}})

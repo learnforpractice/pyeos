@@ -5,36 +5,38 @@ import eosapi
 
 from common import prepare, producer, Sync
 
-def init(func): 
-    def func_wrapper(wasm=True, *args, **kwargs):
-        if wasm:
-            prepare('lab', 'lab.wast', 'lab.abi', 0, __file__)
-            return func(*args, **kwargs)
-        else:
-            prepare('lab', 'lab.py', 'lab.abi', 2, __file__)
-            return func(*args, **kwargs)
-    return func_wrapper
+def init(wasm=True):
+    def init_decorator(func):
+        def func_wrapper(*args, **kwargs):
+            if wasm:
+                prepare('lab', 'lab.wast', 'lab.abi', 0, __file__)
+                return func(*args, **kwargs)
+            else:
+                prepare('lab', 'lab.py', 'lab.abi', 2, __file__)
+                return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
 
 _dir = os.path.dirname(os.path.abspath(__file__))
 
 sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 
-@init
+@init(True)
 def test(msg='hello,world'):
     print('hello, world')
     with producer:
         r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'})
         assert r
 
-@init
+@init()
 def deploy():
     sync.deploy_all()
 
-@init
+@init()
 def deploy_mpy():
     sync.deploy_all_mpy()
 
-@init
+@init()
 def test2(count):
     import time
     import json
