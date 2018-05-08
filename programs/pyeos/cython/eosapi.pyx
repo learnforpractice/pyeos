@@ -110,6 +110,9 @@ cdef extern from "eosapi_.hpp":
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
 
+    object gen_transaction_(vector[action]& v)
+    object sign_transaction_(string& trx_json_to_sign, string& str_private_key);
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -135,9 +138,11 @@ class JsonStruct(object):
                 self.__dict__[key] = value
             else:
                 self.__dict__[key] = value
+
     def __str__(self):
-        return str(self.__dict__)
-#        return json.dumps(self, default=lambda x: x.__dict__,sort_keys=False,indent=4, separators=(',', ': '))
+#        return str(self.__dict__)
+        return json.dumps(self, default=lambda x: x.__dict__)
+
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
 
@@ -708,5 +713,37 @@ def pack_updateauth(string& _account, string& _permission, string& _parent, stri
     fc_pack_updateauth(_account, _permission, _parent, _auth, _delay, result)
     return <bytes>result
 
+
+
+def gen_transaction(actions):
+    cdef vector[action] v
+    cdef action act
+    cdef permission_level per
+    cdef vector[permission_level] pers
+
+    v = vector[action]()
+    for a in actions:
+        act = action()
+        act.account = a[0]
+        act.name = a[1]
+        pers = vector[permission_level]()
+        for auth in a[2]:
+            per = permission_level()
+            per.actor = auth[0]
+            per.permission = auth[1]
+            pers.push_back(per)
+        act.authorization = pers
+        act.data.resize(0)
+        act.data.resize(len(a[3]))
+        memcpy(act.data.data(), a[3], len(a[3]))
+        v.push_back(act)
+
+    return gen_transaction_( v)
+
+def sign_transaction(trx, string& str_private_key):
+    if isinstance(trx, dict):
+        trx = json.dumps(trx)
+
+    return sign_transaction_(trx, str_private_key)
 
 

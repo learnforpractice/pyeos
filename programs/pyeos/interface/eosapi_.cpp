@@ -14,6 +14,7 @@
 #include "wallet_.h"
 
 #include "localize.hpp"
+#include <regex>
 
 using namespace eosio::client::localize;
 using namespace eosio::chain;
@@ -78,6 +79,28 @@ inline std::vector<name> sort_names(std::vector<name>&& names) {
    names.erase(itr, names.end());
    return names;
 }
+
+fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
+{
+   return fc::json::from_string(file_or_str, ptype);
+}
+
+authority parse_json_authority(const std::string& authorityJsonOrFile) {
+   try {
+      return json_from_file_or_string(authorityJsonOrFile).as<authority>();
+   } EOS_RETHROW_EXCEPTIONS(authority_type_exception, "Fail to parse Authority JSON '${data}'", ("data",authorityJsonOrFile))
+}
+
+authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
+   if (boost::istarts_with(authorityJsonOrFile, "EOS")) {
+      try {
+         return authority(public_key_type(authorityJsonOrFile));
+      } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
+   } else {
+      return parse_json_authority(authorityJsonOrFile);
+   }
+}
+
 
 vector<uint8_t> assemble_wast(const std::string& wast) {
    IR::Module module;
@@ -355,6 +378,49 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
    }
 
    return py_new_uint64(cost_time);
+}
+
+
+PyObject* gen_transaction_(vector<chain::action>& v) {
+   packed_transaction::compression_type compression = packed_transaction::none;
+   vector<signed_transaction* > trxs;
+
+   uint64_t cost_time = 0;
+
+   try {
+      signed_transaction trx;
+      for(auto& action: v) {
+         trx.actions.push_back(std::move(action));
+      }
+      gen_transaction(trx, false, 10000000, compression);
+      return python::json::to_string(fc::variant(trx));
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
+}
+
+PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key) {
+   try {
+      signed_transaction trx = python::json::from_string(trx_json_to_sign).as<signed_transaction>();
+
+      auto priv_key = fc::crypto::private_key::regenerate(*utilities::wif_to_key(str_private_key));
+      trx.sign(priv_key, chain_id_type{});
+      return python::json::to_string(fc::variant(trx));
+
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
+
 }
 
 PyObject* push_transaction2_(void* signed_trx, bool sign) {
@@ -1133,29 +1199,6 @@ void fc_pack_uint64_(uint64_t n, string& out) {
 void fc_pack_uint8_(uint8_t n, string& out) {
    vector<char> _out = fc::raw::pack(n);
    out = string(_out.begin(), _out.end());
-}
-
-#include <regex>
-
-fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
-{
-   return fc::json::from_string(file_or_str, ptype);
-}
-
-authority parse_json_authority(const std::string& authorityJsonOrFile) {
-   try {
-      return json_from_file_or_string(authorityJsonOrFile).as<authority>();
-   } EOS_RETHROW_EXCEPTIONS(authority_type_exception, "Fail to parse Authority JSON '${data}'", ("data",authorityJsonOrFile))
-}
-
-authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
-   if (boost::istarts_with(authorityJsonOrFile, "EOS")) {
-      try {
-         return authority(public_key_type(authorityJsonOrFile));
-      } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
-   } else {
-      return parse_json_authority(authorityJsonOrFile);
-   }
 }
 
 void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result) {

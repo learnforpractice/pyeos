@@ -672,7 +672,7 @@ PyObject* to_stream(const variant& v, json::output_formatting format) {
       }
       case variant::uint64_type: {
          uint64_t i = v.as_uint64();
-         return py_new_int64(i);
+         return py_new_uint64(i);
       }
       case variant::double_type:
          return py_new_float(v.as_double());

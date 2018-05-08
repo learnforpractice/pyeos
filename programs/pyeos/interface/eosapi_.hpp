@@ -144,3 +144,5 @@ void unpack_bytes_(string& in, string& out);
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out);
 void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
+PyObject* gen_transaction_(vector<chain::action>& v);
+PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key);

@@ -128,6 +128,25 @@ def create_multisig_account():
     print(r)
     eosapi.produce_block()
 
+def gen_trx():
+    key = 'EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd'
+    auth = eosapi.pack_updateauth('test', 'active', 'owner', key, 0)
+    act = [N('eosio'), N('updateauth'), [[N('test'), N('active')]], auth]
+    r = eosapi.gen_transaction([act])
+    print(r)
+
+def sign_trx():
+    key = 'EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd'
+    auth = eosapi.pack_updateauth('test', 'active', 'owner', key, 0)
+    act = [N('eosio'), N('updateauth'), [[N('test'), N('active')]], auth]
+    r = eosapi.gen_transaction([act])
+    print(r)
+    print()
+    r = eosapi.sign_transaction(r, '5KM6MvhsNRUtafGCghEYWXYXqWidaGTKqfsida6h5mNg5ouQUTv')
+    r = eosapi.sign_transaction(r, '5JiwrohmpRR3PjUcf6NpSLBE2QdAUTJZf1tAHYvK7iAUTWnaGgZ')
+    r = eosapi.JsonStruct(r)
+    print(r)
+
 '''
 # Private key: 5KedEKNC14q9uj5uWyLBunKbenokXseQaXiE6k2AGZZhskBxdrV
 # Public key: EOS5vNnn5fym9FJbTMT8AvSTY13XQsoer2HDBup33uespnDhLPipG
