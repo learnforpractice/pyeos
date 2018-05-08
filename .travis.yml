@@ -1,0 +1,33 @@
+language: cpp
+branches:
+    only:
+        - master
+env:
+    global:
+]        - TRAVIS_BUILD_TYPE=Release
+        - TRAVIS_TESTS=On
+        - secure: "Nm9HEvhW8wtbF9v44g2Vo2CfX8cFlw3UWutHMmVl5nrcri34BVPXulsPF3CrIdoGgdBQvGxzNmbmAgi0KokaWhLZ2WvuDUXRAU8wuU3SB/AV7hNIGFZDqgk1LBBzwaFngqDCqqIQ29v2Z59s3y8qakmPQbR8eNJ1YAc2F9O8iVI="
+matrix:
+    include:
+        - os: linux
+          dist: trusty
+          sudo: required
+          node_js:
+              - "8"
+          env:
+              - ZIP_SUFFIX=ubuntu-trusty
+
+git:
+    depth: 2
+cache:
+    ccache: true
+    directories:
+        - ~/.ethash
+        - ~/.local
+        - ~/Library/Caches/Homebrew
+        # Cache whole deps dir hoping you will not need to download and
+        # build external dependencies next build.
+        - $TRAVIS_BUILD_DIR/build/deps
+
+script:
+    - ./eosio_build.sh
