@@ -9,6 +9,7 @@ import eosapi
 from code import InteractiveConsole
 from tools import sketch
 from imp import reload
+
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.
 # filter_on_accounts = 
@@ -119,7 +120,8 @@ class PyEosConsole(InteractiveConsole):
                     self.write("\n")
                     break
                 else:
-                    self.check_module()
+                    if line.strip():
+                        self.check_module()
                     more = self.push(line)
             except KeyboardInterrupt:
                 self.write("\nKeyboardInterrupt\n")

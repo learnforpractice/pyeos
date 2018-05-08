@@ -110,8 +110,9 @@ cdef extern from "eosapi_.hpp":
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
 
-    object gen_transaction_(vector[action]& v)
-    object sign_transaction_(string& trx_json_to_sign, string& str_private_key);
+    object gen_transaction_(vector[action]& v, int expiration)
+    object sign_transaction_(string& trx_json_to_sign, string& str_private_key)
+    object push_raw_transaction_(string& signed_trx)
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -715,7 +716,7 @@ def pack_updateauth(string& _account, string& _permission, string& _parent, stri
 
 
 
-def gen_transaction(actions):
+def gen_transaction(actions, int expiration=100):
     cdef vector[action] v
     cdef action act
     cdef permission_level per
@@ -738,12 +739,17 @@ def gen_transaction(actions):
         memcpy(act.data.data(), a[3], len(a[3]))
         v.push_back(act)
 
-    return gen_transaction_( v)
+    return gen_transaction_(v, expiration)
 
 def sign_transaction(trx, string& str_private_key):
     if isinstance(trx, dict):
         trx = json.dumps(trx)
 
     return sign_transaction_(trx, str_private_key)
+
+def push_raw_transaction(signed_trx):
+    if isinstance(signed_trx, dict):
+        signed_trx = json.dumps(signed_trx)
+    return push_raw_transaction_(signed_trx)
 
 

@@ -381,7 +381,7 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
 }
 
 
-PyObject* gen_transaction_(vector<chain::action>& v) {
+PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
    packed_transaction::compression_type compression = packed_transaction::none;
    vector<signed_transaction* > trxs;
 
@@ -392,8 +392,15 @@ PyObject* gen_transaction_(vector<chain::action>& v) {
       for(auto& action: v) {
          trx.actions.push_back(std::move(action));
       }
-      gen_transaction(trx, false, 10000000, compression);
+
+      auto info = get_info();
+      trx.expiration = info.head_block_time + fc::seconds(expiration);
+      trx.set_reference_block(info.head_block_id);
+
+      trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+      trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       return python::json::to_string(fc::variant(trx));
+
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {
@@ -422,6 +429,34 @@ PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key) {
    return py_new_none();
 
 }
+
+PyObject* push_raw_transaction_(string& signed_trx) {
+   bool success = false;
+
+   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
+   chain_apis::read_write::push_transaction_results result;
+
+   try {
+      signed_transaction trx = python::json::from_string(signed_trx).as<signed_transaction>();
+      packed_transaction::compression_type compression = packed_transaction::none;
+
+      auto params = fc::variant(packed_transaction(trx, compression)).get_object();
+      result = rw.push_transaction(params);
+      success = true;
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+
+   if (success) {
+      return python::json::to_string(result);
+   }
+   return py_new_none();
+}
+
 
 PyObject* push_transaction2_(void* signed_trx, bool sign) {
 

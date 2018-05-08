@@ -1,6 +1,7 @@
 import os
 import sys
 import imp
+import json
 import time
 import wallet
 import eosapi
@@ -129,23 +130,27 @@ def create_multisig_account():
     eosapi.produce_block()
 
 def gen_trx():
-    key = 'EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd'
-    auth = eosapi.pack_updateauth('test', 'active', 'owner', key, 0)
-    act = [N('eosio'), N('updateauth'), [[N('test'), N('active')]], auth]
+    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
     r = eosapi.gen_transaction([act])
     print(r)
 
 def sign_trx():
-    key = 'EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd'
-    auth = eosapi.pack_updateauth('test', 'active', 'owner', key, 0)
-    act = [N('eosio'), N('updateauth'), [[N('test'), N('active')]], auth]
+    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
     r = eosapi.gen_transaction([act])
     print(r)
-    print()
-    r = eosapi.sign_transaction(r, '5KM6MvhsNRUtafGCghEYWXYXqWidaGTKqfsida6h5mNg5ouQUTv')
-    r = eosapi.sign_transaction(r, '5JiwrohmpRR3PjUcf6NpSLBE2QdAUTJZf1tAHYvK7iAUTWnaGgZ')
+    r = eosapi.sign_transaction(r, '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
     r = eosapi.JsonStruct(r)
     print(r)
+
+def push_sign_trx():
+    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
+    r = eosapi.gen_transaction([act])
+
+    print(json.dumps(r, sort_keys=False, indent=4, separators=(',', ': ')))
+
+    r = eosapi.sign_transaction(r, '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
+    eosapi.push_raw_transaction(r)
+    eosapi.produce_block()
 
 '''
 # Private key: 5KedEKNC14q9uj5uWyLBunKbenokXseQaXiE6k2AGZZhskBxdrV
