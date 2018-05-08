@@ -108,6 +108,7 @@ cdef extern from "eosapi_.hpp":
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
+    void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -701,5 +702,11 @@ def pack_setabi(string& abiPath, uint64_t account):
     cdef string out
     fc_pack_setabi_(abiPath, account, out)
     return <bytes>out
+
+def pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay):
+    cdef string result
+    fc_pack_updateauth(_account, _permission, _parent, _auth, _delay, result)
+    return <bytes>result
+
 
 

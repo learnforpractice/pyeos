@@ -9,6 +9,18 @@ from eosapi import N
 
 from common import prepare, producer
 
+def init(wasm=True):
+    def init_decorator(func):
+        def func_wrapper(wasm=True, *args, **kwargs):
+            if wasm:
+                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__)
+                return func(*args, **kwargs)
+            else:
+                prepare('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__)
+                return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
+
 def init_wasm(func):
     def func_wrapper(*args, **kwargs):
         prepare('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__)

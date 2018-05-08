@@ -143,3 +143,4 @@ void pack_bytes_(string& in, string& out);
 void unpack_bytes_(string& in, string& out);
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out);
+void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);

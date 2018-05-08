@@ -19,7 +19,7 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'})
+    r = eosapi.push_message('hello','sayhello', name, {'eosio':'active'})
     assert r
     eosapi.produce_block()
 
@@ -30,7 +30,7 @@ def play():
         assert r
 
 @init
-def test2(count):
+def test2(count=100):
     contracts = []
     functions = []
     args = []

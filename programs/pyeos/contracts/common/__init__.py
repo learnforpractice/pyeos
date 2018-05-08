@@ -59,7 +59,7 @@ def prepare(name, src, abi, code_type, full_src_path):
                 r = eosapi.set_contract(name, src, abi, 0)
             else:
                 r = eosapi.set_contract(name, src, abi, 1)
-            assert r
+            assert r, 'set_contract failed'
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):

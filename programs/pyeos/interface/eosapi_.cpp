@@ -4,6 +4,8 @@
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
+#include <eosio/chain/contracts/types.hpp>
+
 #include "micropython/mpeoslib.h"
 
 #include "fc/bitutil.hpp"
@@ -1132,6 +1134,44 @@ void fc_pack_uint8_(uint8_t n, string& out) {
    vector<char> _out = fc::raw::pack(n);
    out = string(_out.begin(), _out.end());
 }
+
+#include <regex>
+
+fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
+{
+   return fc::json::from_string(file_or_str, ptype);
+}
+
+authority parse_json_authority(const std::string& authorityJsonOrFile) {
+   try {
+      return json_from_file_or_string(authorityJsonOrFile).as<authority>();
+   } EOS_RETHROW_EXCEPTIONS(authority_type_exception, "Fail to parse Authority JSON '${data}'", ("data",authorityJsonOrFile))
+}
+
+authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
+   if (boost::istarts_with(authorityJsonOrFile, "EOS")) {
+      try {
+         return authority(public_key_type(authorityJsonOrFile));
+      } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
+   } else {
+      return parse_json_authority(authorityJsonOrFile);
+   }
+}
+
+void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result) {
+   authority auth = parse_json_authority_or_key(_auth);
+   eosio::chain::contracts::updateauth _updateauth = {_account, _permission, _parent, auth, _delay};
+   vector<char> v = fc::raw::pack(_updateauth);
+   result = string(v.data(), v.size());
+}
+
+/*
+account_name                      account;
+permission_name                   permission;
+permission_name                   parent;
+authority                         data;
+uint32_t                          delay;
+*/
 
 
 #include <frameobject.h>
