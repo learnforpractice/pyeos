@@ -115,7 +115,7 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
 
    _spinup_db();
    _spinup_fork_db();
-#if 0
+
    std::thread *cc1 = new std::thread(&chain_controller::process_transaction_async, this);
 
    std::thread *c1 = new std::thread(&chain_controller::preprocess_transaction_async, this);
@@ -124,7 +124,7 @@ chain_controller::chain_controller( const chain_controller::controller_config& c
    std::thread *c4 = new std::thread(&chain_controller::preprocess_transaction_async, this);
 
    std::thread *c5 = new std::thread(&chain_controller::organize_transaction_async, this);
-#endif
+
 //   if (_block_log.read_head() && head_block_num() < _block_log.read_head()->block_num())
 //      replay();
 } /// chain_controller::chain_controller
