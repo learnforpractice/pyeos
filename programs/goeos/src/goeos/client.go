@@ -1,13 +1,20 @@
 package main
 
 import (
-	"context"
-	"crypto/tls"
 	"fmt"
 	"time"
 	"rpc"
-	"thrift"
+	"context"
+	"crypto/tls"
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
+
+type RpcInterfaceImp struct {
+}
+
+func (p *RpcInterfaceImp) Apply(ctx context.Context, account int64, action int64) (r int32, err error) {
+    return 0, nil
+}
 
 var defaultCtx = context.Background()
 
@@ -55,5 +62,6 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 
 	iprot := protocolFactory.GetProtocol(transport)
 	oprot := protocolFactory.GetProtocol(transport)
-	return handleClient(rpc.NewRpcServiceClient(thrift.NewTStandardClient(iprot, oprot)))
+	client := rpc.NewRpcServiceClient(thrift.NewTStandardClient(iprot, oprot))
+	return handleClient(client)
 }

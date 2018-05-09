@@ -1,13 +1,13 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
-	"thrift"
 	"rpc"
-	"context"
 	"unsafe"
+	"context"
+	"crypto/tls"
 	"encoding/binary"
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
 // #cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include

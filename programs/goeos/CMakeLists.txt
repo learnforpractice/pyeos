@@ -133,9 +133,9 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 set(GOSRC src/goeos/main.go
-src/goeos/server.go 
-src/goeos/client.go 
-src/bridge/bridge.go.in
+    src/goeos/server.go 
+    src/goeos/client.go 
+    src/bridge/bridge.go.in
 )
 
 add_custom_target( goinstall ALL

@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"context"
 	"fmt"
-	"thrift"
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -3913,33 +3913,33 @@ func (p *RpcServiceDbEndI64Result) String() string {
 }
 
 
-type RPCInterface interface {
+type RpcInterface interface {
   // Parameters:
   //  - Account
   //  - Action
   Apply(ctx context.Context, account int64, action int64) (r int32, err error)
 }
 
-type RPCInterfaceClient struct {
+type RpcInterfaceClient struct {
   c thrift.TClient
 }
 
-// Deprecated: Use NewRPCInterface instead
-func NewRPCInterfaceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *RPCInterfaceClient {
-  return &RPCInterfaceClient{
+// Deprecated: Use NewRpcInterface instead
+func NewRpcInterfaceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *RpcInterfaceClient {
+  return &RpcInterfaceClient{
     c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
   }
 }
 
-// Deprecated: Use NewRPCInterface instead
-func NewRPCInterfaceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *RPCInterfaceClient {
-  return &RPCInterfaceClient{
+// Deprecated: Use NewRpcInterface instead
+func NewRpcInterfaceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *RpcInterfaceClient {
+  return &RpcInterfaceClient{
     c: thrift.NewTStandardClient(iprot, oprot),
   }
 }
 
-func NewRPCInterfaceClient(c thrift.TClient) *RPCInterfaceClient {
-  return &RPCInterfaceClient{
+func NewRpcInterfaceClient(c thrift.TClient) *RpcInterfaceClient {
+  return &RpcInterfaceClient{
     c: c,
   }
 }
@@ -3947,43 +3947,43 @@ func NewRPCInterfaceClient(c thrift.TClient) *RPCInterfaceClient {
 // Parameters:
 //  - Account
 //  - Action
-func (p *RPCInterfaceClient) Apply(ctx context.Context, account int64, action int64) (r int32, err error) {
-  var _args64 RPCInterfaceApplyArgs
+func (p *RpcInterfaceClient) Apply(ctx context.Context, account int64, action int64) (r int32, err error) {
+  var _args64 RpcInterfaceApplyArgs
   _args64.Account = account
   _args64.Action = action
-  var _result65 RPCInterfaceApplyResult
+  var _result65 RpcInterfaceApplyResult
   if err = p.c.Call(ctx, "apply", &_args64, &_result65); err != nil {
     return
   }
   return _result65.GetSuccess(), nil
 }
 
-type RPCInterfaceProcessor struct {
+type RpcInterfaceProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
-  handler RPCInterface
+  handler RpcInterface
 }
 
-func (p *RPCInterfaceProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
+func (p *RpcInterfaceProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
   p.processorMap[key] = processor
 }
 
-func (p *RPCInterfaceProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
+func (p *RpcInterfaceProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
   processor, ok = p.processorMap[key]
   return processor, ok
 }
 
-func (p *RPCInterfaceProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
+func (p *RpcInterfaceProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
   return p.processorMap
 }
 
-func NewRPCInterfaceProcessor(handler RPCInterface) *RPCInterfaceProcessor {
+func NewRpcInterfaceProcessor(handler RpcInterface) *RpcInterfaceProcessor {
 
-  self66 := &RPCInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self66.processorMap["apply"] = &RPCInterfaceProcessorApply{handler:handler}
+  self66 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self66.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
 return self66
 }
 
-func (p *RPCInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   name, _, seqId, err := iprot.ReadMessageBegin()
   if err != nil { return false, err }
   if processor, ok := p.GetProcessorFunction(name); ok {
@@ -4000,12 +4000,12 @@ func (p *RPCInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift
 
 }
 
-type RPCInterfaceProcessorApply struct {
-  handler RPCInterface
+type rpcInterfaceProcessorApply struct {
+  handler RpcInterface
 }
 
-func (p *RPCInterfaceProcessorApply) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  args := RPCInterfaceApplyArgs{}
+func (p *rpcInterfaceProcessorApply) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := RpcInterfaceApplyArgs{}
   if err = args.Read(iprot); err != nil {
     iprot.ReadMessageEnd()
     x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
@@ -4017,7 +4017,7 @@ func (p *RPCInterfaceProcessorApply) Process(ctx context.Context, seqId int32, i
   }
 
   iprot.ReadMessageEnd()
-  result := RPCInterfaceApplyResult{}
+  result := RpcInterfaceApplyResult{}
 var retval int32
   var err2 error
   if retval, err2 = p.handler.Apply(ctx, args.Account, args.Action); err2 != nil {
@@ -4054,24 +4054,24 @@ var retval int32
 // Attributes:
 //  - Account
 //  - Action
-type RPCInterfaceApplyArgs struct {
+type RpcInterfaceApplyArgs struct {
   Account int64 `thrift:"account,1" db:"account" json:"account"`
   Action int64 `thrift:"action,2" db:"action" json:"action"`
 }
 
-func NewRPCInterfaceApplyArgs() *RPCInterfaceApplyArgs {
-  return &RPCInterfaceApplyArgs{}
+func NewRpcInterfaceApplyArgs() *RpcInterfaceApplyArgs {
+  return &RpcInterfaceApplyArgs{}
 }
 
 
-func (p *RPCInterfaceApplyArgs) GetAccount() int64 {
+func (p *RpcInterfaceApplyArgs) GetAccount() int64 {
   return p.Account
 }
 
-func (p *RPCInterfaceApplyArgs) GetAction() int64 {
+func (p *RpcInterfaceApplyArgs) GetAction() int64 {
   return p.Action
 }
-func (p *RPCInterfaceApplyArgs) Read(iprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyArgs) Read(iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
@@ -4119,7 +4119,7 @@ func (p *RPCInterfaceApplyArgs) Read(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyArgs)  ReadField1(iprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyArgs)  ReadField1(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI64(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
@@ -4128,7 +4128,7 @@ func (p *RPCInterfaceApplyArgs)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyArgs)  ReadField2(iprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyArgs)  ReadField2(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI64(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
@@ -4137,7 +4137,7 @@ func (p *RPCInterfaceApplyArgs)  ReadField2(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyArgs) Write(oprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyArgs) Write(oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin("apply_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
@@ -4151,7 +4151,7 @@ func (p *RPCInterfaceApplyArgs) Write(oprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *RpcInterfaceApplyArgs) writeField1(oprot thrift.TProtocol) (err error) {
   if err := oprot.WriteFieldBegin("account", thrift.I64, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:account: ", p), err) }
   if err := oprot.WriteI64(int64(p.Account)); err != nil {
@@ -4161,7 +4161,7 @@ func (p *RPCInterfaceApplyArgs) writeField1(oprot thrift.TProtocol) (err error) 
   return err
 }
 
-func (p *RPCInterfaceApplyArgs) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *RpcInterfaceApplyArgs) writeField2(oprot thrift.TProtocol) (err error) {
   if err := oprot.WriteFieldBegin("action", thrift.I64, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:action: ", p), err) }
   if err := oprot.WriteI64(int64(p.Action)); err != nil {
@@ -4171,35 +4171,35 @@ func (p *RPCInterfaceApplyArgs) writeField2(oprot thrift.TProtocol) (err error) 
   return err
 }
 
-func (p *RPCInterfaceApplyArgs) String() string {
+func (p *RpcInterfaceApplyArgs) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("RPCInterfaceApplyArgs(%+v)", *p)
+  return fmt.Sprintf("RpcInterfaceApplyArgs(%+v)", *p)
 }
 
 // Attributes:
 //  - Success
-type RPCInterfaceApplyResult struct {
+type RpcInterfaceApplyResult struct {
   Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
-func NewRPCInterfaceApplyResult() *RPCInterfaceApplyResult {
-  return &RPCInterfaceApplyResult{}
+func NewRpcInterfaceApplyResult() *RpcInterfaceApplyResult {
+  return &RpcInterfaceApplyResult{}
 }
 
-var RPCInterfaceApplyResult_Success_DEFAULT int32
-func (p *RPCInterfaceApplyResult) GetSuccess() int32 {
+var RpcInterfaceApplyResult_Success_DEFAULT int32
+func (p *RpcInterfaceApplyResult) GetSuccess() int32 {
   if !p.IsSetSuccess() {
-    return RPCInterfaceApplyResult_Success_DEFAULT
+    return RpcInterfaceApplyResult_Success_DEFAULT
   }
 return *p.Success
 }
-func (p *RPCInterfaceApplyResult) IsSetSuccess() bool {
+func (p *RpcInterfaceApplyResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *RPCInterfaceApplyResult) Read(iprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyResult) Read(iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
@@ -4237,7 +4237,7 @@ func (p *RPCInterfaceApplyResult) Read(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyResult)  ReadField0(iprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyResult)  ReadField0(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
@@ -4246,7 +4246,7 @@ func (p *RPCInterfaceApplyResult)  ReadField0(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyResult) Write(oprot thrift.TProtocol) error {
+func (p *RpcInterfaceApplyResult) Write(oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin("apply_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
@@ -4259,7 +4259,7 @@ func (p *RPCInterfaceApplyResult) Write(oprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *RPCInterfaceApplyResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *RpcInterfaceApplyResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
     if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
@@ -4271,11 +4271,11 @@ func (p *RPCInterfaceApplyResult) writeField0(oprot thrift.TProtocol) (err error
   return err
 }
 
-func (p *RPCInterfaceApplyResult) String() string {
+func (p *RpcInterfaceApplyResult) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("RPCInterfaceApplyResult(%+v)", *p)
+  return fmt.Sprintf("RpcInterfaceApplyResult(%+v)", *p)
 }
 
 

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"time"
-	"thrift"
 	"os"
+	"fmt"
+	"flag"
+	"time"
     "bridge"
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
 func Usage() {
@@ -18,7 +18,7 @@ func Usage() {
 
 func main() {
 	flag.Usage = Usage
-	server := flag.Bool("server", true, "Run server")
+	server := flag.Bool("server", false, "Run server")
 	rpc_server := flag.Bool("rpc-server", false, "Run rpc server")
 
 	client := flag.Bool("client", false, "Run client")
@@ -66,7 +66,7 @@ func main() {
 		transportFactory = thrift.NewTFramedTransportFactory(transportFactory)
 	}
 
-	if *server {
+	if *server || (!*client && !*server) {
 	    go func() {
     		if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
     			fmt.Println("error running server:", err)
