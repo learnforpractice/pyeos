@@ -19,7 +19,7 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_message('hello','sayhello', name, {'eosio':'active'})
+    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'})
     assert r
     eosapi.produce_block()
 

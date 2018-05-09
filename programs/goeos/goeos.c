@@ -5,7 +5,7 @@
 static char** argv;
 static int argc = 0;
 
-extern int goeos_main_(int argc, char** argv);
+extern int eos_main(int argc, char** argv);
 
 void arg_size(int n) {
    argv = (char**)malloc(sizeof(char**)*n);
@@ -26,6 +26,7 @@ void arg_show() {
 }
 
 int goeos_main() {
-   return goeos_main_(argc, argv);
+   printf("++++++++++++++hello,world\n");
+   return eos_main(argc, argv);
 }
 

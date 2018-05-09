@@ -13,13 +13,6 @@ if( GPERFTOOLS_FOUND )
 endif()
 
 
-if( APPLE )
-
-else( APPLE )
-
-endif( APPLE )
-
-
 #set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
 
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
@@ -86,7 +79,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/debug.pyx
 )
 
-add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
+add_library(pyeos-shared eos_main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
     interface/math_.cpp  
     interface/common.cpp
@@ -106,31 +99,22 @@ add_executable(pyeos main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_
     wrap/pyobject.wrap.cpp
     wrap/debug.wrap.cpp)
 
-#    util/db_handling.cpp
-#    wrap/util.wrap.cpp
-#    interface/util_.cpp
-#   interface/blockchain_.cpp
-#    wrap/eostypes.wrap.cpp
-#    wrap/blockchain.wrap.cpp
-
 
 if( APPLE )
-target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+target_link_libraries( pyeos-shared appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
     python3 eosio_chain intl )
 else( APPLE )
-target_link_libraries( pyeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+target_link_libraries( pyeos-shared appbase account_history_api_plugin account_history_plugin chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
     python3 eosio_chain util -Xlinker -export-dynamic)
-
 endif( APPLE )
 
-
-target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
+target_include_directories( pyeos-shared PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
@@ -141,6 +125,11 @@ target_include_directories( pyeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/util"
                                   PRIVATE "${CPP_ETHEREUM_DIR}"
                                   )
+
+
+add_executable(pyeos main.cpp)
+
+target_link_libraries( pyeos pyeos-shared )
 
 
 install( TARGETS

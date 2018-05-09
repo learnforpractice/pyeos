@@ -18,7 +18,7 @@ func Usage() {
 
 func main() {
 	flag.Usage = Usage
-	server := flag.Bool("server", false, "Run server")
+	server := flag.Bool("server", true, "Run server")
 	rpc_server := flag.Bool("rpc-server", false, "Run rpc server")
 
 	client := flag.Bool("client", false, "Run client")

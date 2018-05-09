@@ -8,6 +8,12 @@
     },{
       "name": "t2",
       "type": "raw"
+    },{
+      "name": "t3",
+      "type": "raw"
+    },{
+      "name": "t4",
+      "type": "raw"
     }
   ]
 }

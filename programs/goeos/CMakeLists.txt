@@ -1,5 +1,3 @@
-add_subdirectory(contracts)
-
 if( UNIX AND NOT APPLE )
   set(rt_library rt )
 endif()
@@ -10,101 +8,15 @@ if( GPERFTOOLS_FOUND )
     list( APPEND PLATFORM_SPECIFIC_LIBS tcmalloc )
 endif()
 
-set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
-    COMMAND echo ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eosapi.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/wallet.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/wallet.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/wallet.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/wallet.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/pyobject.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/pyobject.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/pyobject.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/pyobject.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_object.pxd
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database_api.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_api.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
-)
 
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/util.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/util.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/util.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/util.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/debug.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/debug.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/debug.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/debug.pyx
-)
-
-add_library(goeos SHARED goeos.c main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
-    interface/wallet_.cpp interface/pyobject.cpp 
-    interface/database_.cpp
-    interface/database_api.cpp
-    interface/math_.cpp  
-    interface/common.cpp
-    interface/debug_.cpp
-    interface/ipc_.cpp
-#    interface/codelimit.c 
-    wrap/eosapi.wrap.cpp 
-    wrap/database.wrap.cpp
-    wrap/ipc.wrap.cpp
-    wrap/database_api.wrap.cpp
-    wrap/wallet.wrap.cpp
-    wrap/pyobject.wrap.cpp
-    wrap/debug.wrap.cpp)
+add_library(goeos SHARED goeos.c)
 
 if( APPLE )
-target_link_libraries( goeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
-    producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
-    wallet_plugin wallet_api_plugin
-    chainbase eos_utilities fc
-    python3 eosio_chain intl)
+target_link_libraries( goeos pyeos-shared intl )
 else( APPLE )
-target_link_libraries( goeos appbase account_history_api_plugin account_history_plugin chain_api_plugin 
-    producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
-    wallet_plugin wallet_api_plugin
-    chainbase eos_utilities fc
-    python3 eosio_chain util)
+target_link_libraries( goeos pyeos-shared util -Xlinker -export-dynamic)
 endif( APPLE )
-
 
 target_include_directories( goeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -117,9 +29,6 @@ target_include_directories( goeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/util"
                                   PRIVATE "${CPP_ETHEREUM_DIR}"
                                   )
-
-
-
 
 
 
@@ -160,6 +69,7 @@ message(STATUS "Output file CFLAGS : ${CFLAGS}")
 message(STATUS "Output file LDFLAGS: ${LDFLAGS}")
 
 configure_file( ${INFILE} ${OUTFILE} )
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go.in ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go )
 
 
 # Call 'go build' to generate executable file
@@ -231,13 +141,6 @@ src/bridge/bridge.go.in
 add_custom_target( goinstall ALL
   ${GOFULLCMD}
   COMMENT "Running ${GOCMDPP}"
-  DEPENDS goeos ${OUTFILE} ${GOSRC}
+  DEPENDS goeos ${OUTFILE} ${GOSRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go
 )
 
-install( TARGETS
-   goeos
-
-   RUNTIME DESTINATION bin
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-)

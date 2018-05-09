@@ -4,7 +4,7 @@ import "os"
 import "unsafe"
 
 // #cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include
-// #cgo LDFLAGS: -L/Users/newworld/dev/pyeos/build/programs/goeos /Users/newworld/dev/pyeos/build/programs/goeos/libgoeos.dylib
+// #cgo LDFLAGS: -L/Users/newworld/dev/pyeos/build_debug/programs/goeos /Users/newworld/dev/pyeos/build_debug/programs/goeos/libgoeos.dylib
 // #include <goeos.h>
 // #include <stdlib.h>
 import "C"

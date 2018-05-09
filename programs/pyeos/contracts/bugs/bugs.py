@@ -16,10 +16,11 @@ def test_recursive_gen():
         #should not cause segment fault
         list(gen())
     except RuntimeError:
-        print('+++++++++++++RuntimeError')
+        print('+++++++++++ ++ RuntimeError')
 
 class List(list):
     def __new__(cls, value):
+        print('call new')
         return  super(List, cls).__new__(cls, value)
 
 @payable
@@ -37,7 +38,11 @@ def apply(name, type):
         except RuntimeError:
             print('+++++++++++++RuntimeError')
         test_recursive_gen()
-        l = List([1,3,3])
     elif type == N('t2'):
         p2()
-        
+    elif type == N('t4'):
+        try:
+            l = List([1,3,3])
+        except AttributeError as e:
+            print(e) 
+

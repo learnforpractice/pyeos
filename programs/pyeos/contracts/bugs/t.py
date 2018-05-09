@@ -107,3 +107,12 @@ def t3(count=100, sign=True):
         if i % 50 == 0:
             cost_time = eosapi.produce_block()
     eosapi.produce_block()
+
+
+#test __new__
+@init
+def t4():
+    with producer:
+        r = eosapi.push_message('bugs','t4','',{'bugs':'active'})
+        assert r
+#    eosapi.produce_block()

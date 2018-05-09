@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"context"
 	"fmt"
-	"git.apache.org/thrift.git/lib/go/thrift"
+	"thrift"
 )
 
 // (needed to ensure safety because of naive import list construction.)
