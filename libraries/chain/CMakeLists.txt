@@ -30,7 +30,9 @@ add_library( eosio_chain
 
              evm_interface.cpp
              micropython_interface.cpp
-             
+             micropython/mpeoslib.cpp
+             micropython/database_api.cpp
+
              rpc_interface/rpc_interface.cpp
              rpc_interface/rpc_interface_.wrap.cpp
 
@@ -54,8 +56,6 @@ add_library( eosio_chain
              contracts/chain_initializer.cpp
              contracts/genesis_state.cpp
              contracts/abi_serializer.cpp
-
-             micropython/mpeoslib.cpp
 
              evm/EosState.cpp
              evm/EosExecutive.cpp

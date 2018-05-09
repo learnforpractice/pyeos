@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"rpc"
-	"unsafe"
-	"context"
-	"crypto/tls"
-	"encoding/binary"
-	"git.apache.org/thrift.git/lib/go/thrift"
+    "fmt"
+    "rpc"
+    "time"
+    "unsafe"
+    "context"
+    "crypto/tls"
+    "encoding/binary"
+    "git.apache.org/thrift.git/lib/go/thrift"
 )
 
 // #cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include
@@ -20,11 +21,11 @@ type RpcServiceImpl struct {
 }
 
 func (this *RpcServiceImpl) FunCall(ctx context.Context, callTime int64, funCode string, paramMap map[string]string) (r []string, err error) {
-//	fmt.Println("-->FunCall:", callTime, funCode, paramMap)
-	for k, v := range paramMap {
-		r = append(r, k+v)
-	}
-	return
+//  fmt.Println("-->FunCall:", callTime, funCode, paramMap)
+    for k, v := range paramMap {
+        r = append(r, k+v)
+    }
+    return
 }
 
 func (p *RpcServiceImpl) ReadAction(ctx context.Context) (r []byte, err error) {
@@ -144,32 +145,82 @@ func (p *RpcServiceImpl) DbEndI64(ctx context.Context, code int64, scope int64, 
 
 
 func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
-	var transport thrift.TServerTransport
-	var err error
-	if secure {
-		cfg := new(tls.Config)
-		if cert, err := tls.LoadX509KeyPair("server.crt", "server.key"); err == nil {
-			cfg.Certificates = append(cfg.Certificates, cert)
-		} else {
-			return err
-		}
-		transport, err = thrift.NewTSSLServerSocket(addr, cfg)
-	} else {
-		transport, err = thrift.NewTServerSocket(addr)
-	}
-	
-	if err != nil {
-		return err
-	}
-	fmt.Printf("%T\n", transport)
+    var transport thrift.TServerTransport
+    var err error
+    if secure {
+        cfg := new(tls.Config)
+        if cert, err := tls.LoadX509KeyPair("server.crt", "server.key"); err == nil {
+            cfg.Certificates = append(cfg.Certificates, cert)
+        } else {
+            return err
+        }
+        transport, err = thrift.NewTSSLServerSocket(addr, cfg)
+    } else {
+        transport, err = thrift.NewTServerSocket(addr)
+    }
+    
+    if err != nil {
+        return err
+    }
+    fmt.Printf("%T\n", transport)
 
-	handler := &RpcServiceImpl{}
-	processor := rpc.NewRpcServiceProcessor(handler)
+    handler := &RpcServiceImpl{}
+    processor := rpc.NewRpcServiceProcessor(handler)
 
-//	handler := NewEoslibServiceHandler()
-//	processor := idl.EoslibServiceProcessor(handler)
-	server := thrift.NewTSimpleServer4(processor, transport, transportFactory, protocolFactory)
+//  handler := NewEoslibServiceHandler()
+//  processor := idl.EoslibServiceProcessor(handler)
+    server := thrift.NewTSimpleServer4(processor, transport, transportFactory, protocolFactory)
 
-	fmt.Println("Starting the simple server... on ", addr)
-	return server.Serve()
+    fmt.Println("Starting the simple server... on ", addr)
+    return server.Serve()
 }
+
+var client *rpc.RpcInterfaceClient
+
+func handleApplyClient() (err error) {
+
+    start := time.Now().UnixNano()
+    count := 20000
+
+    for i:=0;i<count;i++ {
+        client.Apply(defaultCtx, 1, 1)
+    }
+
+    duration := time.Now().UnixNano() - start
+    fmt.Println("transactions per second", int64(count)*1e9/duration);
+
+    return nil
+}
+
+func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
+
+    var transport thrift.TTransport
+    var err error
+    addr = "localhost:9192"
+    if secure {
+        cfg := new(tls.Config)
+        cfg.InsecureSkipVerify = true
+        transport, err = thrift.NewTSSLSocket(addr, cfg)
+    } else {
+        transport, err = thrift.NewTSocket(addr)
+    }
+    if err != nil {
+        fmt.Println("Error opening socket:", err)
+        return err
+    }
+    transport, err = transportFactory.GetTransport(transport)
+    if err != nil {
+        return err
+    }
+    defer transport.Close()
+    if err := transport.Open(); err != nil {
+        return err
+    }
+
+    iprot := protocolFactory.GetProtocol(transport)
+    oprot := protocolFactory.GetProtocol(transport)
+
+    client = rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
+    return handleApplyClient()
+}
+

@@ -86,7 +86,6 @@ add_library(pyeos-shared eos_main.cpp py_plugin.cpp interface/json.cpp interface
     interface/debug_.cpp
     interface/debug_.cpp
     interface/eoslib_.cpp
-    interface/database_api.cpp
     interface/wasm_.cpp
     interface/ipc_.cpp
     interface/httpc.cpp

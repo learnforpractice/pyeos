@@ -26,7 +26,6 @@ void arg_show() {
 }
 
 int goeos_main() {
-   printf("++++++++++++++hello,world\n");
    return eos_main(argc, argv);
 }
 
