@@ -14,8 +14,10 @@
 #include <eosio/chain/account_object.hpp>
 #include <chrono>
 #include <appbase/application.hpp>
+#include <fc/crypto/xxhash.h>
 
 #include "micropython/mpeoslib.h"
+#include "micropython/database_api.hpp"
 
 struct mpapi& get_mpapi();
 
@@ -59,6 +61,13 @@ void init() {
       return;
    }
    wlog("initialize common library.");
+
+   uint64_t hash = XXH64("asset.mpy", strlen("asset.mpy"), 0);
+
+   int itr = database_api::get().db_find_i64(N(backyard), N(backyard), N(backyard), hash);
+   if (itr < 0) {
+      return;
+   }
    get_mpapi().execute_from_str(init_mp);
    get_mpapi().init = 1;
 }
