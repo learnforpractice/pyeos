@@ -60,6 +60,39 @@ apply_context& apply_context::ctx() {
    return *current_context;
 }
 
+void apply_context::schedule() {
+   const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
+   privileged = a.privileged;
+
+   if (a.code.size() > 0) {
+      if (a.vm_type == 0) {
+         try {
+            mutable_controller.get_wasm_interface().apply(a.code_version, a.code, *this);
+         } catch ( const wasm_exit& ){}
+      } else if (a.vm_type == 1) {
+         auto &py = micropython_interface::get();
+         try {
+            py.apply(*this, a.code);
+         } catch (...) {
+            throw;
+         }
+      } else if (a.vm_type == 2) {
+         bytes code(a.code.begin(), a.code.end());
+         bytes args(act.data.begin(), act.data.end());
+         bytes output;
+         evm_interface::get().run_code(*this, code, args, output);
+         ilog("${n}",("n", output.size()));
+      } else if (a.vm_type == 3) {
+         auto &rpc = rpc_interface::get();
+         try {
+            rpc.apply(*this);
+         } catch (...) {
+            throw;
+         }
+      }
+   }
+}
+
 void apply_context::exec_one()
 {
    current_context = this;
@@ -75,36 +108,7 @@ void apply_context::exec_one()
       if (native) {
          (*native)(*this);
       } else {
-         const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
-         privileged = a.privileged;
-
-         if (a.code.size() > 0) {
-            if (a.vm_type == 0) {
-               try {
-                  mutable_controller.get_wasm_interface().apply(a.code_version, a.code, *this);
-               } catch ( const wasm_exit& ){}
-            } else if (a.vm_type == 1) {
-               auto &py = micropython_interface::get();
-               try {
-                  py.apply(*this, a.code);
-               } catch (...) {
-                  throw;
-               }
-            } else if (a.vm_type == 2) {
-               bytes code(a.code.begin(), a.code.end());
-               bytes args(act.data.begin(), act.data.end());
-               bytes output;
-               evm_interface::get().run_code(*this, code, args, output);
-               ilog("${n}",("n", output.size()));
-            } else if (a.vm_type == 3) {
-               auto &rpc = rpc_interface::get();
-               try {
-                  rpc.apply(*this);
-               } catch (...) {
-                  throw;
-               }
-            }
-         }
+         schedule();
       }
 
    } FC_CAPTURE_AND_RETHROW((_pending_console_output.str()));

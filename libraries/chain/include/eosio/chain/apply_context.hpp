@@ -611,6 +611,7 @@ class apply_context {
       void reset_console();
 
       void exec_one();
+      void schedule();
 
       name get_receiver();
       using table_id_object = contracts::table_id_object;

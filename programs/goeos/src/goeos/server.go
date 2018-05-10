@@ -24,7 +24,10 @@ import "C"
 //export onApply
 func onApply(account uint64, act uint64) int {
     fmt.Println("+++++++onApply", account, act)
-    return 1;
+    err := HandleApplyClient()
+    if err == nil:
+        return 1;
+    return 0;
 }
 
 type RpcServiceImpl struct {
