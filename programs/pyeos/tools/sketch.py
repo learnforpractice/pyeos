@@ -24,9 +24,9 @@ def init(wasm={1}):
     def init_decorator(func):
         def func_wrapper(*args, **kwargs):
             if wasm:
-                prepare('{0}', '{0}.wast', '{0}.abi', 0, __file__)
+                prepare('{0}', '{0}.wast', '{0}.abi', __file__)
             else:
-                prepare('{0}', '{0}.py', '{0}.abi', 2, __file__)
+                prepare('{0}', '{0}.py', '{0}.abi', __file__)
             return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
