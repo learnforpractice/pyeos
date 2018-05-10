@@ -15,7 +15,7 @@ def count():
         counter = int.to_bytes(1, 4, 'little')
         db_store_i64(code, code, code, counter_id, counter)
 
-def apply(name, type):
-    if type == N('count'):
+def apply(receiver, code, action):
+    if action == N('count'):
         count()
 

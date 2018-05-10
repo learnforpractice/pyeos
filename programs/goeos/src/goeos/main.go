@@ -15,14 +15,14 @@ import (
 #include <stdio.h>
 #include <stdint.h>
 
-typedef int (*fn_rpc_apply)(uint64_t account, uint64_t act);
+typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act);
 void rpc_register_apply_call(fn_rpc_apply fn);
 
 // The gateway function
-int call_onApply(uint64_t account, uint64_t act)
+int call_onApply(uint64_t receiver, uint64_t code, uint64_t act)
 {
-	int onApply(uint64_t, uint64_t);
-	return onApply(account, act);
+	int onApply(uint64_t, uint64_t, uint64_t);
+	return onApply(receiver, code, act);
 }
 */
 import "C"

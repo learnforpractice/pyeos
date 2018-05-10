@@ -615,7 +615,7 @@ def init():
     ask = Ask.front_by_price()
     print(ask)
 
-def apply(code,action):
+def apply(receiver, code, action):
     if code == exchange:
         if action == N(b'buy'):
             apply_exchange_buy();

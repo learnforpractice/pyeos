@@ -19,9 +19,9 @@ def play():
     from backyard import garden
     garden.play()
 
-def apply(name, type):
-    if type == N('sayhello'):
+def apply(receiver, code, action):
+    if action == N('sayhello'):
         sayHello()
-    elif type == N('play'):
+    elif action == N('play'):
         play()
 

@@ -401,7 +401,7 @@ class SDict(storage):
         return '%s(%s)' % (type(self).__name__, str(self.table_id))
         raise Exception("repr is not supported in SDict")
 
-def apply(name, type):
+def apply(receiver, name, type):
     code = current_receiver()
     if type == N('slisttest'):
         sl = SList(code, table_id=1)

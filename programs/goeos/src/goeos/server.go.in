@@ -22,11 +22,12 @@ import (
 import "C"
 
 //export onApply
-func onApply(account uint64, act uint64) int {
-    fmt.Println("+++++++onApply", account, act)
+func onApply(receiver uint64, code uint64, act uint64) int {
+    fmt.Println("+++++++onApply", receiver, code, act)
     err := HandleApplyClient()
-    if err == nil:
+    if err == nil {
         return 1;
+    }
     return 0;
 }
 

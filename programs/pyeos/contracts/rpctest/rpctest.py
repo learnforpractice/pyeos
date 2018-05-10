@@ -29,8 +29,8 @@ def test():
     else:
         print('not found!')
 
-def apply(name, type):
+def apply(receiver, code, action):
     print('apply:', name, type)
-    if type == N('sayhello'):
+    if action == N('sayhello'):
 #        print('read_action:', read_action())
         sayHello()

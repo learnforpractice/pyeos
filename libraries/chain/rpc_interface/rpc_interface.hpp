@@ -50,5 +50,5 @@ private:
 void init_eos();
 void install_ctrl_c_handler();
 
-typedef int (*fn_rpc_apply)(uint64_t account, uint64_t act);
+typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act);
 void rpc_register_apply_call(fn_rpc_apply fn);

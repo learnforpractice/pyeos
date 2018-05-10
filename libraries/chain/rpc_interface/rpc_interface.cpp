@@ -95,7 +95,7 @@ void rpc_interface::apply(apply_context& c) {
 
    try {
       assert(rpc_apply != nullptr);
-      rpc_apply(c.act.account.value, c.act.name.value);
+      rpc_apply(c.receiver.value, c.act.account.value, c.act.name.value);
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    } catch (boost::exception& ex) {

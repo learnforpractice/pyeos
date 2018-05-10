@@ -254,25 +254,25 @@ def deffer_send():
     ref_block_prefix = 0
     send_deferred(sender_id, payer, now()+5, 0, ref_block, ref_block_prefix, 100000, 100000, 2 , free_actions, actions);
 
-def apply(name, type):
+def apply(receiver, code, action):
 #    eosio_delay(190)
-    if type == N('dbtest'):
+    if action == N('dbtest'):
 #        db_test()
         db_test_i64()
 #        db_test_idx64()
 #        db_test_idx256()
 #        deffer_send()
-    elif type == N('deffersend'):
+    elif action == N('deffersend'):
         deffer_send()
-    elif type == N('inlinesend'):
+    elif action == N('inlinesend'):
         print('inline_send begin')
         inline_send()
         print('inline_send return')
-    elif type == N('sayhello'):
+    elif action == N('sayhello'):
         act = read_action()
         print(n2s(name), 'read_action return:', act)
 #        deffer_send()
-    elif type == N('callwasm'):
+    elif action == N('callwasm'):
         wasm_call(N('lab'), 'sayHello', N('hello'))
     
     

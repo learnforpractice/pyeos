@@ -207,7 +207,7 @@ def delegate(name=None):
 def vote(voter, proposal_index):
         msg = struct.pack('QQ', eosapi.N(voter), proposal_index)
 
-def apply(name, action):
+def apply(receiver, code, action):
     if action == N('deploy'):
         require_auth(code)
         msg = read_action()

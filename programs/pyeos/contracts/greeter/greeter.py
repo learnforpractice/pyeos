@@ -70,7 +70,7 @@ class Greeter:
 #        if msg.sender == self.creator:
 #            suicide(creator)
 
-def apply(account, action):
+def apply(receiver, code, action):
     if action == N('setgreeting'):
         greeter = Greeter()
 #        print('original greeting:',greeter.greeting)

@@ -301,6 +301,8 @@ struct mpapi {
    mp_obj_t (*micropy_load_from_mpy)(const char *mod_name, const char *data, size_t len);
    mp_obj_t (*micropy_call_0)(mp_obj_t module_obj, const char *func);
    mp_obj_t (*micropy_call_2)(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
+   mp_obj_t (*micropy_call_3)(mp_obj_t module_obj, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
+
    void* (*execute_from_str)(const char *str);
 
    //defined in vm.c

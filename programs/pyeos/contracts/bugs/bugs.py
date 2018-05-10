@@ -31,16 +31,16 @@ def p1():
 def p2():
     p1()
 
-def apply(name, type):
-    if type == N('t1'):
+def apply(receiver, code, action):
+    if action == N('t1'):
         try:
             t = T()
         except RuntimeError:
             print('+++++++++++++RuntimeError')
         test_recursive_gen()
-    elif type == N('t2'):
+    elif action == N('t2'):
         p2()
-    elif type == N('t4'):
+    elif action == N('t4'):
         try:
             l = List([1,3,3])
         except AttributeError as e:

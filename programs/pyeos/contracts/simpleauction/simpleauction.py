@@ -225,8 +225,8 @@ class SimpleAuction(object):
             value = _pack(value)
             storage_set(code, self._table_id, id, value)
 
-def apply(name, type):
-    if type == N('init'):
+def apply(receiver, code, action):
+    if action == N('init'):
         _msg = read_action()
         require(len(_msg) == 16)
         msg = Msg()
@@ -235,16 +235,16 @@ def apply(name, type):
 
         auction = SimpleAuction()
         auction.init()
-    elif type == N('start'):
+    elif action == N('start'):
         auction = SimpleAuction()
         auction.start()
-    elif type == N('withdraw'):
+    elif action == N('withdraw'):
         _msg = read_action()
 #        require(len(_msg) == 8)
         sender = int.from_bytes(_msg[8:16], 'little')
         auction = SimpleAuction()
         auction.withdraw(sender)
-    elif type == N('transfer'):
+    elif action == N('transfer'):
         msg = read_action()
         print('transfer', msg)
         t = transfer()

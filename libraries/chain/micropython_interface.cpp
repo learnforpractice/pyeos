@@ -166,7 +166,7 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
       }
       mp_obj_t ret = 0;
       if (obj) {
-         ret = get_mpapi().micropy_call_2(obj, "apply", c.act.account.value, c.act.name.value);
+         ret = get_mpapi().micropy_call_3(obj, "apply", c.receiver.value, c.act.account.value, c.act.name.value);
       }
       uint64_t execution_time = get_mpapi().get_execution_time();
       if (execution_time > 1000) {

@@ -19,8 +19,8 @@ def deploy(mod_name, src_code):
     elif mod_name.endswith('.py'):
         __import__('backyard.'+mod_name[:-3])
 
-def apply(name, action):
-    print(n2s(name), n2s(action))
+def apply(receiver, code, action):
+    print(n2s(code), n2s(action))
     if action == N('deploy'):
         require_auth(code)
         msg = read_action()

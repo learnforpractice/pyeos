@@ -39,8 +39,8 @@ def test(msg='hello,world', wasm={1}):
 '''
 py_src = \
 '''from eoslib import *
-def apply(name, type):
-    if type == N('sayhello'):
+def apply(receiver, code, action):
+    if action == N('sayhello'):
         require_auth(N('{0}'))
         msg = read_action()
         print(msg.decode('utf8'))

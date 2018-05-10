@@ -24,8 +24,8 @@ def sayHello():
         pass
         db_store_i64(code, code, code, id, name)
 
-def apply(name, type):
-    if type == N('sayhello'):
+def apply(receiver, code, action):
+    if action == N('sayhello'):
         sayHello()
 
 

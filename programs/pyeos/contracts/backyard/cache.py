@@ -245,7 +245,7 @@ class cache_dict(object):
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, str(self._dict))
 
-def apply(name, type):
+def apply(receiver, name, type):
     require_auth(g_code)
     a = cache(123)
     a.load()

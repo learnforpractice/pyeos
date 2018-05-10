@@ -3,8 +3,8 @@ from eoslib import *
 
 code = N('storagetest')
 
-def apply(name, type):
-    if type == N('sayhello'):
+def apply(receiver, code, action):
+    if action == N('sayhello'):
         a = SDict(code, N('a'))
         msg = read_action()
         a[msg] = msg

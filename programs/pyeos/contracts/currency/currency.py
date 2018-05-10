@@ -23,13 +23,12 @@ def create_():
     c = create()
 #    c.p()
 
-def apply(name, type):
-    return
+def apply(receiver, code, action):
 #    print('++++++apply:', n2s(name))
-    if type == N('transfer'):
+    if action == N('transfer'):
         transfer_()
-    elif type == N('issue'):
+    elif action == N('issue'):
         issue_()
-    elif type == N('create'):
+    elif action == N('create'):
         create_()
 

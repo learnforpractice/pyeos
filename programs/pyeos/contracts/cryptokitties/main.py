@@ -19,7 +19,7 @@ def deploy(mod_name, src_code):
         if itr >= 0:
             db_remove_i64(itr)
 
-def apply(name, action):
+def apply(receiver, code, action):
     if action == N('deploy'):
         require_auth(code)
         msg = read_action()
