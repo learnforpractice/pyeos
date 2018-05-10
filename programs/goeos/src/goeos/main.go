@@ -5,9 +5,27 @@ import (
 	"fmt"
 	"flag"
 	"time"
+	"unsafe"
     "bridge"
 	"git.apache.org/thrift.git/lib/go/thrift"
 )
+
+/*
+
+#include <stdio.h>
+#include <stdint.h>
+
+typedef int (*fn_rpc_apply)(uint64_t account, uint64_t act);
+void rpc_register_apply_call(fn_rpc_apply fn);
+
+// The gateway function
+int call_onApply(uint64_t account, uint64_t act)
+{
+	int onApply(uint64_t, uint64_t);
+	return onApply(account, act);
+}
+*/
+import "C"
 
 func Usage() {
 	fmt.Fprint(os.Stderr, "Usage of ", os.Args[0], ":\n")
@@ -17,12 +35,16 @@ func Usage() {
 
 
 func main() {
+    
+    C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
+    
 	flag.Usage = Usage
 	server := flag.Bool("server", false, "Run server")
 	rpc_server := flag.Bool("rpc-server", false, "Run rpc server")
 
 	client := flag.Bool("client", false, "Run client")
 	rpc_client := flag.Bool("rpc-client", false, "Run rpc client")
+	replay := flag.Bool("replay", false, "Rebuild database")
 
 	protocol := flag.String("P", "binary", "Specify the protocol (binary, compact, json, simplejson)")
 	framed := flag.Bool("framed", false, "Use framed transport")
@@ -35,7 +57,7 @@ func main() {
 
 	data_dir := flag.String("data-dir", "data-dir", "data directory")
 
-    _, _, _ , _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client
+    _, _, _ , _, _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client, replay
 
 	flag.Parse()
 

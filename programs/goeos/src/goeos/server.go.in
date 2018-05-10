@@ -11,11 +11,21 @@ import (
     "git.apache.org/thrift.git/lib/go/thrift"
 )
 
-// #cgo CFLAGS: ${CFLAGS}
-// #cgo LDFLAGS: ${LDFLAGS}
-// #include <goeos.h>
-// #include <stdlib.h>
+/*
+#cgo CFLAGS: ${CFLAGS}
+#cgo LDFLAGS: ${LDFLAGS}
+
+#include <goeos.h>
+#include <stdlib.h>
+#include <stdio.h>
+*/
 import "C"
+
+//export onApply
+func onApply(account uint64, act uint64) int {
+    fmt.Println("+++++++onApply", account, act)
+    return 1;
+}
 
 type RpcServiceImpl struct {
 }
@@ -175,8 +185,9 @@ func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift
     return server.Serve()
 }
 
+var client *rpc.RpcInterfaceClient
 
-func handleApplyClient(client *rpc.RpcInterfaceClient) (err error) {
+func HandleApplyClient() (err error) {
 
     start := time.Now().UnixNano()
     count := 20000
@@ -190,8 +201,6 @@ func handleApplyClient(client *rpc.RpcInterfaceClient) (err error) {
 
     return nil
 }
-
-var client = nil
 
 func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
 
@@ -222,6 +231,8 @@ func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory t
     oprot := protocolFactory.GetProtocol(transport)
 
     client = rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
-    return handleApplyClient(client)
+    return HandleApplyClient()
 }
+
+
 

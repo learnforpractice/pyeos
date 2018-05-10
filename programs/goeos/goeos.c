@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "goeos.h"
+
 static char** argv;
 static int argc = 0;
 
@@ -25,7 +27,16 @@ void arg_show() {
    }
 }
 
+//int call_onApply(int in);
+
+
+
 int goeos_main() {
+//   call_onApply(123);
    return eos_main(argc, argv);
 }
+
+
+
+
 

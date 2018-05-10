@@ -65,7 +65,7 @@ extern "C" int init_rpcserver(fn_init _init) {
    return 0;
 }
 
-int rpc_interface_apply(unsigned long long account, unsigned long long action);
+//int rpc_interface_apply(unsigned long long account, unsigned long long action);
 
 namespace eosio {
 namespace chain {
@@ -85,13 +85,17 @@ rpc_interface& rpc_interface::get() {
 void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
 }
 
-
+static fn_rpc_apply rpc_apply = nullptr;
+extern "C" void rpc_register_apply_call(fn_rpc_apply fn) {
+   rpc_apply = fn;
+}
 
 void rpc_interface::apply(apply_context& c) {
 //   string _code = string(code.data(), code.size());
 
    try {
-      rpc_interface_apply(c.act.account.value, c.act.name.value);
+      assert(rpc_apply != nullptr);
+      rpc_apply(c.act.account.value, c.act.name.value);
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    } catch (boost::exception& ex) {

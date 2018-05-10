@@ -18,7 +18,7 @@ else( APPLE )
 target_link_libraries( goeos pyeos-shared util -Xlinker -export-dynamic)
 endif( APPLE )
 
-target_include_directories( goeos PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
+target_include_directories( goeos PUBLIC ${CMAKE_SOURCE_DIR}/include 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python

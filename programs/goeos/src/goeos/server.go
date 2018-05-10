@@ -11,11 +11,23 @@ import (
     "git.apache.org/thrift.git/lib/go/thrift"
 )
 
-// #cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include
-// #cgo LDFLAGS: -L/Users/newworld/dev/pyeos/build_debug/programs/goeos /Users/newworld/dev/pyeos/build_debug/programs/goeos/libgoeos.dylib
-// #include <goeos.h>
-// #include <stdlib.h>
+/*
+#cgo CFLAGS: -I/Users/newworld/dev/pyeos/programs/goeos/include
+#cgo LDFLAGS: -L/Users/newworld/dev/pyeos/build_debug/programs/goeos /Users/newworld/dev/pyeos/build_debug/programs/goeos/libgoeos.dylib
+
+#include <goeos.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+
+*/
 import "C"
+
+//export onApply
+func onApply(account uint64, act uint64) int {
+    fmt.Println("+++++++onApply", account, act)
+    return 1;
+}
 
 type RpcServiceImpl struct {
 }
@@ -177,7 +189,7 @@ func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift
 
 var client *rpc.RpcInterfaceClient
 
-func handleApplyClient() (err error) {
+func HandleApplyClient() (err error) {
 
     start := time.Now().UnixNano()
     count := 20000
@@ -221,6 +233,8 @@ func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory t
     oprot := protocolFactory.GetProtocol(transport)
 
     client = rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
-    return handleApplyClient()
+    return HandleApplyClient()
 }
+
+
 

@@ -132,6 +132,12 @@ void init_console() {
 //   PyInit_blockchain();
 //   PyInit_util();
    PyInit_debug();
+
+   PyRun_SimpleString(
+       "import sys;"
+        "sys.path.append('../../programs/pyeos');"
+        "sys.path.append('../../programs/pyeos/contracts');"
+   );
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import ipc");
    PyRun_SimpleString("import eosapi;");
@@ -177,12 +183,6 @@ void interactive_console() {
    if (shutdown_finished) {
       return;
    }
-
-   PyRun_SimpleString(
-       "import sys;"
-        "sys.path.append('../../programs/pyeos');"
-        "sys.path.append('../../programs/pyeos/contracts');"
-   );
 
    PyRun_SimpleString("from initeos import *");
    PyRun_SimpleString("init()");
