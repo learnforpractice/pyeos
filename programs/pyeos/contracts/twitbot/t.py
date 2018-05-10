@@ -18,10 +18,10 @@ def init(wasm=True):
     def init_decorator(func):
         def func_wrapper(wasm=True, *args, **kwargs):
             if wasm:
-                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__)
+                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__)
+                prepare('twitbot', 'twitbot.py', 'twitbot.abi', __file__)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator

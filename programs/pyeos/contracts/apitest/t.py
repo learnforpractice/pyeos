@@ -12,7 +12,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('apitest', 'apitest.py', 'apitest.abi', 2, __file__)
+        prepare('apitest', 'apitest.py', 'apitest.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

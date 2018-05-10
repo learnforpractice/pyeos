@@ -18,8 +18,6 @@ import (
 #include <goeos.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-
 */
 import "C"
 

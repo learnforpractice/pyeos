@@ -13,7 +13,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('hello', 'hello.py', 'hello.abi', 2, __file__)
+        prepare('hello', 'hello.py', 'hello.abi', __file__)
         func(*args, **kwargs)
     return func_wrapper
 

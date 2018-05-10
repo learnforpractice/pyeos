@@ -16,10 +16,10 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 def init(func):
     def func_wrapper(wasm=False, *args, **kwargs):
         if wasm:
-            prepare('lockunlock', 'lockunlock.wast', 'lockunlock.abi', 0, __file__)
+            prepare('lockunlock', 'lockunlock.wast', 'lockunlock.abi', __file__)
             return func(*args, **kwargs)
         else:
-            prepare('lockunlock', 'lockunlock.py', 'lockunlock.abi', 2, __file__)
+            prepare('lockunlock', 'lockunlock.py', 'lockunlock.abi', __file__)
             return func(*args, **kwargs)
     return func_wrapper
 

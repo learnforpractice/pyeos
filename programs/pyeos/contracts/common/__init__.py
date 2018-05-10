@@ -13,10 +13,17 @@ from tools import cpp2wast
 producer = eosapi.Producer()
 CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
-CODE_TYPE_MPY = 2
+CODE_TYPE_EVM = 2
 
-def prepare(name, src, abi, code_type, full_src_path):
+def prepare(name, src, abi, full_src_path):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
+    if src.endswith('.wast'):
+        code_type = CODE_TYPE_WAST
+    elif src.endswith('.py'):
+        code_type = CODE_TYPE_PY
+    else:
+        raise Exception('unknown code type')
+
     if code_type == 0:
         cpp2wast.set_src_path(_src_dir)
         cpp_src_file = src.replace('.wast', '.cpp')
@@ -29,7 +36,7 @@ def prepare(name, src, abi, code_type, full_src_path):
     if abi and abi.find('/') < 0:
         abi = os.path.join(_src_dir, abi)
 
-    if code_type == CODE_TYPE_MPY:
+    if code_type == CODE_TYPE_PY:
         mpy_file = src[:-3] + '.mpy'
         with open(mpy_file, 'wb') as f:
             f.write(eosapi.mp_compile(src))
@@ -55,10 +62,7 @@ def prepare(name, src, abi, code_type, full_src_path):
 
     if need_update:
         with producer:
-            if code_type == 0:
-                r = eosapi.set_contract(name, src, abi, 0)
-            else:
-                r = eosapi.set_contract(name, src, abi, 1)
+            r = eosapi.set_contract(name, src, abi, code_type)
             assert r, 'set_contract failed'
 
 class Sync(object):

@@ -8,7 +8,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('backyard', 'backyard.py', 'backyard.abi', 2, __file__)
+        prepare('backyard', 'backyard.py', 'backyard.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

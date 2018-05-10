@@ -10,7 +10,7 @@ from common import prepare, producer, Sync
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('kitties', 'main.py', 'cryptokitties.abi', 2, __file__)
+        prepare('kitties', 'main.py', 'cryptokitties.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

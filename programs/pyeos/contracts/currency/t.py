@@ -12,7 +12,7 @@ def init(func):
             prepare('currency', '../../build/contracts/currency/currency.wast', '../../build/contracts/currency/currency.abi', 0, __file__)
             return func(*args, **kwargs)
         else:
-            prepare('currency', 'currency.py', 'currency.abi', 2, __file__)
+            prepare('currency', 'currency.py', 'currency.abi', __file__)
             return func(*args, **kwargs)
     return func_wrapper
 

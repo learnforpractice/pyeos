@@ -11,7 +11,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('bugs', 'bugs.py', 'bugs.abi', 2, __file__)
+        prepare('bugs', 'bugs.py', 'bugs.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

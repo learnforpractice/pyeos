@@ -21,7 +21,7 @@ def init(wasm=False):
                 prepare('storagetest', 'storagetest.wast', 'storagetest.abi', 0, __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('storagetest', 'storagetest.py', 'storagetest.abi', 2, __file__)
+                prepare('storagetest', 'storagetest.py', 'storagetest.abi', __file__)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator

@@ -9,7 +9,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('auction1', 'simpleauction.py', 'simpleauction.abi', 2, __file__)
+        prepare('auction1', 'simpleauction.py', 'simpleauction.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

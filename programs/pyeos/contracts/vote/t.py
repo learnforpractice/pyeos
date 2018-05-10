@@ -11,7 +11,7 @@ import vote
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('vote', 'vote.py', 'vote.abi', 2, __file__)
+        prepare('vote', 'vote.py', 'vote.abi', __file__)
         return func(*args, **kwargs)
     return func_wrapper
 

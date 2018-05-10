@@ -13,29 +13,29 @@ def init(wasm=True):
     def init_decorator(func):
         def func_wrapper(wasm=True, *args, **kwargs):
             if wasm:
-                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', 0, __file__)
+                prepare('twitbot', 'twitbot.wast', 'twitbot.abi', __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('twitbot', 'twitbot.py', 'twitbot.abi', 2, __file__)
+                prepare('twitbot', 'twitbot.py', 'twitbot.abi', __file__)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
 
 def init_wasm(func):
     def func_wrapper(*args, **kwargs):
-        prepare('actiontest', 'actiontest.wast', 'actiontest.abi', 0, __file__)
+        prepare('actiontest', 'actiontest.wast', 'actiontest.abi', __file__)
         func(*args, **kwargs)
     return func_wrapper
 
 def init_py(func):
     def func_wrapper(*args, **kwargs):
-        prepare('actiontest', 'actiontest.py', 'actiontest.abi', 1, __file__)
+        prepare('actiontest', 'actiontest.py', 'actiontest.abi', __file__)
         func(*args, **kwargs)
     return func_wrapper
 
 def init_mpy(func):
     def func_wrapper(*args, **kwargs):
-        prepare('actiontest', 'actiontest.py', 'actiontest.abi', 2, __file__)
+        prepare('actiontest', 'actiontest.py', 'actiontest.abi', __file__)
         func(*args, **kwargs)
     return func_wrapper
 

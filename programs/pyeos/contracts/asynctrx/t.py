@@ -14,10 +14,10 @@ from common import prepare, producer
 def init(func):
     def func_wrapper(wasm=False, *args, **kwargs):
         if wasm:
-            prepare('async', 'sync.wast', 'sync.abi', 0, __file__)
+            prepare('async', 'sync.wast', 'sync.abi', __file__)
             return func(*args, **kwargs)
         else:
-            prepare('async', 'sync.py', 'async.abi', 2, __file__)
+            prepare('async', 'sync.py', 'async.abi', __file__)
             return func(*args, **kwargs)
     return func_wrapper
 

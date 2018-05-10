@@ -9,10 +9,10 @@ def init(wasm=True):
     def init_decorator(func):
         def func_wrapper(*args, **kwargs):
             if wasm:
-                prepare('lab', 'lab.wast', 'lab.abi', 0, __file__)
+                prepare('lab', 'lab.wast', 'lab.abi', __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('lab', 'lab.py', 'lab.abi', 2, __file__)
+                prepare('lab', 'lab.py', 'lab.abi', __file__)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
