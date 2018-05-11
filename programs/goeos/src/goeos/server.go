@@ -12,9 +12,6 @@ import (
 )
 
 /*
-#cgo CFLAGS: ${CFLAGS}
-#cgo LDFLAGS: ${LDFLAGS}
-
 #include <goeos.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,9 +21,12 @@ import "C"
 //export onApply
 func onApply(receiver uint64, code uint64, act uint64) int {
     fmt.Println("+++++++onApply", receiver, code, act)
-    err := HandleApplyClient()
-    if err == nil {
-        return 1;
+    client := runApplyClient()
+    if client != nil {
+        err := HandleApplyClient(client)
+        if err == nil {
+            return 1;
+        }
     }
     return 0;
 }
@@ -157,10 +157,17 @@ func (p *RpcServiceImpl) DbEndI64(ctx context.Context, code int64, scope int64, 
     return int32(ret), nil
 }
 
+var client *rpc.RpcInterfaceClient
+var __transportFactory thrift.TTransportFactory
+var __protocolFactory thrift.TProtocolFactory
 
 func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
     var transport thrift.TServerTransport
     var err error
+
+    __transportFactory = transportFactory
+    __protocolFactory = protocolFactory
+
     if secure {
         cfg := new(tls.Config)
         if cert, err := tls.LoadX509KeyPair("server.crt", "server.key"); err == nil {
@@ -189,15 +196,13 @@ func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift
     return server.Serve()
 }
 
-var client *rpc.RpcInterfaceClient
-
-func HandleApplyClient() (err error) {
+func HandleApplyClient(client *rpc.RpcInterfaceClient) (err error) {
 
     start := time.Now().UnixNano()
     count := 20000
 
     for i:=0;i<count;i++ {
-        client.Apply(defaultCtx, 1, 1)
+        client.Apply(ctx, 1, 1)
     }
 
     duration := time.Now().UnixNano() - start
@@ -206,11 +211,13 @@ func HandleApplyClient() (err error) {
     return nil
 }
 
-func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
-
+func runApplyClient() *rpc.RpcInterfaceClient {
     var transport thrift.TTransport
     var err error
-    addr = "localhost:9192"
+
+    addr := "localhost:9192"
+    secure := false
+
     if secure {
         cfg := new(tls.Config)
         cfg.InsecureSkipVerify = true
@@ -220,23 +227,24 @@ func runApplyClient(transportFactory thrift.TTransportFactory, protocolFactory t
     }
     if err != nil {
         fmt.Println("Error opening socket:", err)
-        return err
+        return nil
     }
-    transport, err = transportFactory.GetTransport(transport)
+    transport, err = __transportFactory.GetTransport(transport)
     if err != nil {
-        return err
+        return nil
     }
-    defer transport.Close()
+//    defer transport.Close()
     if err := transport.Open(); err != nil {
-        return err
+        return nil
     }
 
-    iprot := protocolFactory.GetProtocol(transport)
-    oprot := protocolFactory.GetProtocol(transport)
+    iprot := __protocolFactory.GetProtocol(transport)
+    oprot := __protocolFactory.GetProtocol(transport)
 
-    client = rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
-    return HandleApplyClient()
+    return rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
 }
+
+
 
 
 

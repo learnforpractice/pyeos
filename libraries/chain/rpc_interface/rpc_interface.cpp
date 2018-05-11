@@ -91,8 +91,6 @@ extern "C" void rpc_register_apply_call(fn_rpc_apply fn) {
 }
 
 void rpc_interface::apply(apply_context& c) {
-//   string _code = string(code.data(), code.size());
-
    try {
       assert(rpc_apply != nullptr);
       rpc_apply(c.receiver.value, c.act.account.value, c.act.name.value);

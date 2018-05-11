@@ -51,7 +51,12 @@ set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(INFILE ${CMAKE_CURRENT_SOURCE_DIR}/src/bridge/bridge.go.in)
 set(OUTFILE ${CMAKE_CURRENT_SOURCE_DIR}/src/bridge/bridge.go)
 
-set(CFLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(CFLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/include"
+           "-I${CMAKE_SOURCE_DIR}/libraries/micropython"
+           "-I${CMAKE_SOURCE_DIR}/libraries/chain/micropython"
+           "-I${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix"
+           "-I${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build"
+)
 
 if (APPLE)
     set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeos.dylib")
@@ -59,6 +64,7 @@ else (APPLE)
     set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeos.so")
 endif(APPLE)
 
+string(REPLACE ";" " " CFLAGS "${CFLAGS}")
 string(REPLACE ";" " " LDFLAGS "${LDFLAGS}")
 
 
@@ -69,7 +75,7 @@ message(STATUS "Output file CFLAGS : ${CFLAGS}")
 message(STATUS "Output file LDFLAGS: ${LDFLAGS}")
 
 configure_file( ${INFILE} ${OUTFILE} )
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go.in ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go )
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/cflags.go.in ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/cflags.go )
 
 
 # Call 'go build' to generate executable file
@@ -134,6 +140,7 @@ add_custom_command(
 )
 set(GOSRC src/goeos/main.go
     ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/cflags.go 
     src/goeos/client.go 
     src/bridge/bridge.go.in
 )

@@ -1,4 +1,6 @@
-server.go
+bridge.go
+_obj
+cflags.go
 dummy.cpp
 helloworld
 tools_config.py

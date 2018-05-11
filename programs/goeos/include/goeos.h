@@ -27,9 +27,6 @@ int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t i
 int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 
-typedef int (*callback_fcn)(int);
-void some_c_func(callback_fcn);
-
 #ifdef __cplusplus
 }
 #endif
