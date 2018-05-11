@@ -27,10 +27,23 @@ void get_code_( uint64_t account, string& code ) {
    database_api::get().get_code( account, code);
 }
 
+int read_action_( char* buffer, size_t size ) {
+   const auto& act_obj = database_api::get().get_action_object();
+   if (buffer == NULL || size <= 0) {
+      return act_obj.data.size();
+   }
+
+   if (size > act_obj.data.size()) {
+      size = act_obj.data.size();
+   }
+
+   memcpy(buffer, act_obj.data.data(), size);
+   return size;
+}
+
 bool is_account_( uint64_t account ) {
    return database_api::get().is_account( account );
 }
-
 
 int db_get_i64_( int iterator, char* buffer, size_t buffer_size ) {
    return database_api::get().db_get_i64( iterator, buffer, buffer_size );

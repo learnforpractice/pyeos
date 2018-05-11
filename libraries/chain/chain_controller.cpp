@@ -1966,6 +1966,7 @@ void chain_controller::_initialize_indexes() {
    _db.add_index<generated_transaction_multi_index>();
    _db.add_index<producer_multi_index>();
    _db.add_index<scope_sequence_multi_index>();
+   _db.add_index<action_object_index>();
 }
 
 void chain_controller::_initialize_chain(contracts::chain_initializer& starter)
@@ -2044,6 +2045,26 @@ void chain_controller::replay() {
         ("n", head_block_num())("t",double((end-start).count())/1000000.0));
 
    _db.set_revision(head_block_num());
+}
+
+const action_object& chain_controller::get_action_object() const{
+   return _db.get<action_object>();
+}
+
+void chain_controller::set_action_object(const action& act) {
+   const action_object& _act_obj = get_action_object();
+   _db.modify(_act_obj, [&](action_object& act_obj) {
+      act_obj.account = act.account;
+      act_obj.name = act.name;
+
+      act_obj.authorization.resize(0);
+      act_obj.authorization.resize(act.authorization.size());
+      memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
+
+      act_obj.data.resize(0);
+      act_obj.data.resize(act.data.size());
+      memcpy(act_obj.data.data(), act.data.data(), act.data.size());
+   });
 }
 
 void chain_controller::_spinup_db() {

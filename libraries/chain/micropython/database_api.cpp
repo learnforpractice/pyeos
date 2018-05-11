@@ -76,6 +76,28 @@ database_api::database_api(const action& a)
    db.add_index<generated_transaction_multi_index>();
    db.add_index<producer_multi_index>();
    db.add_index<scope_sequence_multi_index>();
+   db.add_index<action_object_index>();
+}
+
+bool database_api::get_action(action& act) {
+   const auto &a = db.get<action_object>();
+
+   act.account = a.account;
+   act.name = a.name;
+
+   act.authorization.resize(0);
+   act.authorization.resize(a.authorization.size());
+   memcpy(act.authorization.data(), a.authorization.data(), a.authorization.size());
+
+   act.data.resize(0);
+   act.data.resize(a.data.size());
+   memcpy(act.data.data(), a.data.data(), a.data.size());
+
+   return true;
+}
+
+const action_object& database_api::get_action_object() const {
+   return db.get<action_object>();
 }
 
 void database_api::get_code(uint64_t account, string& code) {
@@ -354,3 +376,5 @@ DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(idx256, 2, uint128_t)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, uint64_t)
 
 } } /// eosio::chain
+
+

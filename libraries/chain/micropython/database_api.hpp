@@ -3,6 +3,29 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
+#include <algorithm>
+#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/micropython_interface.hpp>
+
+#include <eosio/chain/generated_transaction_object.hpp>
+#include <eosio/chain/scope_sequence_object.hpp>
+#include <boost/container/flat_set.hpp>
+
+
+#include <eosio/chain/account_object.hpp>
+#include <eosio/chain/permission_object.hpp>
+#include <eosio/chain/action_objects.hpp>
+#include <eosio/chain/block_summary_object.hpp>
+#include <eosio/chain/generated_transaction_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/permission_link_object.hpp>
+#include <eosio/chain/producer_object.hpp>
+#include <eosio/chain/transaction_object.hpp>
+#include <eosio/chain/scope_sequence_object.hpp>
+#include <eosio/chain/permission_object.hpp>
+
+
 #include <eosio/chain/block_trace.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/transaction_metadata.hpp>
@@ -400,6 +423,8 @@ class database_api {
          return *_instance;
       }
 
+      bool get_action(action& act);
+      const action_object& get_action_object() const;
       void get_code(uint64_t account, string& code);
 
       /**

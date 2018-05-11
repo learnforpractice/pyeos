@@ -15,6 +15,7 @@
 #include "multi_index_includes.hpp"
 
 namespace eosio { namespace chain {
+   struct permission_level;
 
    struct blocknum_producer_schedule {
       blocknum_producer_schedule( allocator<char> a )
@@ -103,6 +104,16 @@ namespace eosio { namespace chain {
         shared_incremental_merkle  block_merkle_root;
    };
 
+   class action_object : public chainbase::object<action_object_type, action_object>
+   {
+         OBJECT_CTOR(action_object, (authorization)(data))
+         id_type              id;
+         account_name               account;
+         action_name                name;
+         shared_vector<permission_level>   authorization;
+         shared_vector< char > data;
+   };
+
    using global_property_multi_index = chainbase::shared_multi_index_container<
       global_property_object,
       indexed_by<
@@ -121,11 +132,22 @@ namespace eosio { namespace chain {
       >
    >;
 
+   using action_object_index = chainbase::shared_multi_index_container<
+         action_object,
+      indexed_by<
+         ordered_unique<tag<by_id>,
+            BOOST_MULTI_INDEX_MEMBER(action_object, action_object::id_type, id)
+         >
+      >
+   >;
 }}
 
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::global_property_object, eosio::chain::global_property_multi_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::dynamic_global_property_object,
                          eosio::chain::dynamic_global_property_multi_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::action_object,
+                       eosio::chain::action_object_index)
+
 
 FC_REFLECT(eosio::chain::dynamic_global_property_object,
            (head_block_number)
@@ -141,3 +163,11 @@ FC_REFLECT(eosio::chain::global_property_object,
            (configuration)
            (active_producers)
           )
+
+
+FC_REFLECT(eosio::chain::action_object,
+          (account)
+          (name)
+          (authorization)
+          (data)
+)

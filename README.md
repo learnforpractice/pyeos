@@ -129,7 +129,7 @@ Now you can open hello.py for coding. Once it's done, just run t.test() again,
 there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
 republish to the testnet if it's been changed. You can also edit the testing code in t.py to test your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
 
-There are a lot of examples in programs/pyeos/contracts. Some of them are still in development, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
+There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
 
 
 <a name="pyeosapioverview"></a>
