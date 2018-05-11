@@ -142,7 +142,7 @@ set(GOSRC src/goeos/main.go
     ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/server.go 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/goeos/cflags.go 
     src/goeos/client.go 
-    src/bridge/bridge.go.in
+    src/bridge/bridge.go
 )
 
 add_custom_target( goinstall ALL

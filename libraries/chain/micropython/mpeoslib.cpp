@@ -67,7 +67,7 @@ void print(const char * str, size_t len) {
    }
 }
 
-struct mpapi& get_mpapi() {
+extern "C" struct mpapi* get_mpapi_() {
    static int counter = 0;
 
    std::lock_guard<std::mutex> guard(g_load_mutex);
@@ -75,7 +75,7 @@ struct mpapi& get_mpapi() {
    std::thread::id this_id = std::this_thread::get_id();
    auto itr = api_map.find(this_id);
    if ( itr != api_map.end()) {
-      return *itr->second;
+      return itr->second;
    }
 
    char buffer[128];
@@ -93,19 +93,36 @@ struct mpapi& get_mpapi() {
 
    assert(handle != NULL);
 
-   fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(handle, "mp_register_eosapi");
    fn_mp_obtain_mpapi mp_obtain_mpapi = (fn_mp_obtain_mpapi)dlsym(handle, "mp_obtain_mpapi");
 
    fn_main_micropython main_micropython = (fn_main_micropython)dlsym(handle, "main_micropython");
 
    struct mpapi* api = new mpapi();
-   mp_register_eosapi(&s_eosapi);
+   api->handle = handle;
+
    main_micropython(0, NULL);
 
    mp_obtain_mpapi(api);
    api_map[this_id] = api;
    api->set_printer(print);
    api->init = 0;
+   return api;
+}
+
+extern "C" int register_eosapi(struct eosapi* eosapi) {
+   struct mpapi* api = get_mpapi_();
+   api->_eosapi = eosapi;
+   fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(api->handle, "mp_register_eosapi");
+   mp_register_eosapi(eosapi);
+   return 1;
+}
+
+struct mpapi& get_mpapi() {
+   mpapi *api = get_mpapi_();
+   if (!api->_eosapi) {
+      register_eosapi(&s_eosapi);
+      api->_eosapi = &s_eosapi;
+   }
    return *api;
 }
 

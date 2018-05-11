@@ -7,7 +7,7 @@
 #include "micropython/database_api.hpp"
 
 
-namespace eosio { namespace chain {
+using namespace eosio::chain;
 
 typedef __uint128_t uint128_t_;
 
@@ -58,9 +58,6 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(idx64,  uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(idx128, uint128_t_)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP_DEF(idx256, 2, uint128_t_)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
-
-
-}}
 
 
 //FC_REFLECT(eosio::chain::database_api::apply_results, (applied_actions)(deferred_transaction_requests)(deferred_transactions_count))

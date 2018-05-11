@@ -83,46 +83,9 @@ int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 
 static struct eosapi s_eosapi;
 
-#if 0
-struct mpapi* mp_get_mpapi() {
-   static int counter = 0;
-
-   auto itr = api_map.find(this_id);
-   if ( itr != api_map.end()) {
-      return *itr->second;
-   }
-
-   char buffer[128];
-   counter += 1;
-
-#ifdef __APPLE__
-   sprintf(buffer, "../libraries/micropython/libmicropython-%d.dylib", counter);
-#else
-   sprintf(buffer, "../libraries/micropython/libmicropython-%d.so", counter);
-#endif
-
-   void *handle = dlopen(buffer, RTLD_LAZY | RTLD_LOCAL);
-
-   wlog("${n1}, ${n2}", ("n1", buffer)("n2", (uint64_t)handle));
-
-   assert(handle != NULL);
-
-   fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(handle, "mp_register_eosapi");
-   fn_mp_obtain_mpapi mp_obtain_mpapi = (fn_mp_obtain_mpapi)dlsym(handle, "mp_obtain_mpapi");
-
-   fn_main_micropython main_micropython = (fn_main_micropython)dlsym(handle, "main_micropython");
-
-   struct mpapi* api = new mpapi();
-   mp_register_eosapi(&s_eosapi);
-   main_micropython(0, NULL);
-
-   mp_obtain_mpapi(api);
-   api_map[this_id] = api;
-   api->set_printer(print);
-   api->init = 0;
-   return api;
-}
-#endif
+//mpeoslib.cpp
+int register_eosapi(struct eosapi* eosapi);
+struct mpapi* get_mpapi_();
 
 void mp_init_eosapi() {
    static bool _init = false;
@@ -142,6 +105,7 @@ void mp_init_eosapi() {
    s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
    s_eosapi.db_upperbound_i64 = db_upperbound_i64;
    s_eosapi.db_end_i64 = db_end_i64;
+   register_eosapi(&s_eosapi);
 }
 
 

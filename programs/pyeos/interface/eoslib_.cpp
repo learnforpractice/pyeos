@@ -2,9 +2,6 @@
 #include <eosio/chain/exceptions.hpp>
 
 
-namespace eosio { namespace chain {
-
-
 uint64_t s2n_(const char* str) {
    try {
       return name(str).value;
@@ -152,7 +149,3 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64,  uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx128, uint128_t_)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t_)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_WRAP(idx_double, uint64_t)
-
-
-
-}}

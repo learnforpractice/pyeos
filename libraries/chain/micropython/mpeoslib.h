@@ -294,6 +294,8 @@ typedef void (*fn_printer)(const char * str, size_t len);
 
 struct mpapi {
    int init;
+   void *handle;
+   struct eosapi *_eosapi;
    mp_obj_t (*mp_obj_new_str)(const char* data, size_t len);
    mp_obj_t (*mp_obj_new_bytes)(const byte* data, size_t len);
 

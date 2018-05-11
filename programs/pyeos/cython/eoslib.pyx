@@ -14,7 +14,7 @@ cdef extern from "<fc/log/logger.hpp>":
     void ilog(char* log)
     void elog(char* log)
 
-cdef extern from "eoslib_.hpp" namespace "eosio::chain":
+cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
 
     void get_code_( uint64_t account, string& code )
@@ -108,12 +108,12 @@ def db_get_i64( int iterator ):
     return ret
 
 def db_next_i64( int iterator):
-    cdef uint64_t primary
+    cdef uint64_t primary = 0
     itr = db_next_i64_( iterator, primary )
     return (itr, primary)
 
 def db_previous_i64( int iterator ):
-    cdef uint64_t primary
+    cdef uint64_t primary = 0
     itr = db_previous_i64_( iterator, primary )
     return (itr, primary)
 
