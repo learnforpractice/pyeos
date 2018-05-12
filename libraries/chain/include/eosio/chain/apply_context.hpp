@@ -630,6 +630,7 @@ class apply_context {
       vector<scope_name>                  _write_scopes;
       bytes                               _cached_trx;
       uint64_t                            _cpu_usage;
+      static map<account_name, account_name> _whitelist;
 };
 
 using apply_handler = std::function<void(apply_context&)>;

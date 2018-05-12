@@ -56,6 +56,8 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
 }
 
 apply_context* apply_context::current_context = 0;
+map<account_name, account_name> apply_context::_whitelist = map<account_name, account_name>();
+
 apply_context& apply_context::ctx() {
    return *current_context;
 }
@@ -72,7 +74,7 @@ void apply_context::schedule() {
             mutable_controller.get_wasm_interface().apply(a.code_version, a.code, *this);
          } catch ( const wasm_exit& ){}
       } else if (a.vm_type == 1) {
-         if (false) {
+         if (apply_context::_whitelist.find(act.account) != apply_context::_whitelist.end()) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);
