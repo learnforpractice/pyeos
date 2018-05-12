@@ -116,12 +116,15 @@ mpapi& get_mpapi() {
    api->set_printer(print);
    api->init = 0;
 
+   struct eosapi* _api;
    if (get_eosapi) {
-      struct eosapi* _api = get_eosapi();
-      api->_eosapi = _api;
-      fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(handle, "mp_register_eosapi");
-      mp_register_eosapi(_api);
+      _api = get_eosapi();
+   } else {
+      _api = &s_eosapi;
    }
+   api->_eosapi = _api;
+   fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(handle, "mp_register_eosapi");
+   mp_register_eosapi(_api);
 
    return *api;
 }
