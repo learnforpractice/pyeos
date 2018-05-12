@@ -2051,9 +2051,10 @@ const action_object& chain_controller::get_action_object() const{
    return _db.get<action_object>();
 }
 
-void chain_controller::set_action_object(const action& act) {
+void chain_controller::set_action_object(const account_name& receiver, const action& act) {
    const action_object& _act_obj = get_action_object();
    _db.modify(_act_obj, [&](action_object& act_obj) {
+      act_obj.receiver = receiver;
       act_obj.account = act.account;
       act_obj.name = act.name;
 

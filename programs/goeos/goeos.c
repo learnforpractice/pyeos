@@ -29,10 +29,9 @@ void arg_show() {
 
 //int call_onApply(int in);
 
-
+//mpeoslib.c
 
 int goeos_main() {
-//   call_onApply(123);
    return eos_main(argc, argv);
 }
 

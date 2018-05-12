@@ -328,12 +328,15 @@ typedef void (*fn_mp_register_eosapi)(struct eosapi * _api);
 typedef void (*fn_mp_obtain_mpapi)(struct mpapi * _api);
 typedef int (*fn_main_micropython)(int argc, char **argv);
 
+int wasm_call_(uint64_t _code, const char* _func, size_t _func_size, uint64_t* _args, size_t _args_size);
+void eosio_delay(int ms);
+
 #ifdef __cplusplus
    }
 #endif
 
 #ifdef __cplusplus
-   struct mpapi& get_mpapi();
+   mpapi& get_mpapi();
 #endif
 
 

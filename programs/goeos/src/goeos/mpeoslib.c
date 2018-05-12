@@ -7,10 +7,15 @@
 #include "_cgo_export.h"
 #include "mpeoslib.h"
 
+//mpeoslib.cpp
+mp_obj_t uint64_to_string_(uint64_t n);
+struct mpapi* c_get_mpapi();
+
+int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act);
+
 int call_onApply(uint64_t receiver, uint64_t code, uint64_t act)
 {
-// int onApply(uint64_t, uint64_t, uint64_t);
-   return onApply(receiver, code, act);
+   return micropython_on_apply(receiver, code, act);
 }
 
 int read_action(char* buf, size_t size) {
@@ -84,8 +89,12 @@ int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 static struct eosapi s_eosapi;
 
 //mpeoslib.cpp
-int register_eosapi(struct eosapi* eosapi);
-struct mpapi* get_mpapi_();
+typedef struct eosapi* (*fn_get_eosapi)();
+void set_get_eosapi_func(fn_get_eosapi fn);
+
+struct eosapi* get_eosapi() {
+   return &s_eosapi;
+}
 
 void mp_init_eosapi() {
    static bool _init = false;
@@ -93,6 +102,31 @@ void mp_init_eosapi() {
       return;
    }
    _init = true;
+
+   s_eosapi.wasm_call = wasm_call_;
+//   s_eosapi.string_to_symbol = string_to_symbol;
+   s_eosapi.eosio_delay = eosio_delay;
+   s_eosapi.now = now;
+   s_eosapi.abort_ = abort;
+   s_eosapi.eosio_assert = eosio_assert;
+   s_eosapi.assert_recover_key = assert_recover_key;
+
+   s_eosapi.recover_key = recover_key;
+   s_eosapi.assert_sha256 = assert_sha256;
+   s_eosapi.assert_sha1 = assert_sha1;
+   s_eosapi.assert_sha512 = assert_sha512;
+   s_eosapi.assert_ripemd160 = assert_ripemd160;
+   s_eosapi.sha1 = sha1;
+   s_eosapi.sha256 = sha256;
+   s_eosapi.sha512 = sha512;
+   s_eosapi.ripemd160 = ripemd160;
+
+   s_eosapi.string_to_uint64_ = string_to_uint64_;
+   s_eosapi.uint64_to_string_ = uint64_to_string_;
+
+   s_eosapi.pack_ = pack_;
+   s_eosapi.unpack_ = unpack_;
+
 
    s_eosapi.db_store_i64 = db_store_i64;
    s_eosapi.db_update_i64 = db_update_i64;
@@ -105,7 +139,6 @@ void mp_init_eosapi() {
    s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
    s_eosapi.db_upperbound_i64 = db_upperbound_i64;
    s_eosapi.db_end_i64 = db_end_i64;
-   register_eosapi(&s_eosapi);
+   set_get_eosapi_func(get_eosapi);
 }
-
 

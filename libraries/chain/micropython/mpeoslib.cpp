@@ -67,7 +67,16 @@ void print(const char * str, size_t len) {
    }
 }
 
-extern "C" struct mpapi* get_mpapi_() {
+//mpeoslib.c
+
+typedef struct eosapi* (*fn_get_eosapi)();
+static fn_get_eosapi get_eosapi = 0;
+
+extern "C" void set_get_eosapi_func(fn_get_eosapi fn) {
+   get_eosapi = fn;
+}
+
+mpapi& get_mpapi() {
    static int counter = 0;
 
    std::lock_guard<std::mutex> guard(g_load_mutex);
@@ -75,7 +84,7 @@ extern "C" struct mpapi* get_mpapi_() {
    std::thread::id this_id = std::this_thread::get_id();
    auto itr = api_map.find(this_id);
    if ( itr != api_map.end()) {
-      return itr->second;
+      return *itr->second;
    }
 
    char buffer[128];
@@ -106,29 +115,24 @@ extern "C" struct mpapi* get_mpapi_() {
    api_map[this_id] = api;
    api->set_printer(print);
    api->init = 0;
-   return api;
-}
 
-extern "C" int register_eosapi(struct eosapi* eosapi) {
-   struct mpapi* api = get_mpapi_();
-   api->_eosapi = eosapi;
-   fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(api->handle, "mp_register_eosapi");
-   mp_register_eosapi(eosapi);
-   return 1;
-}
-
-struct mpapi& get_mpapi() {
-   mpapi *api = get_mpapi_();
-   if (!api->_eosapi) {
-      register_eosapi(&s_eosapi);
-      api->_eosapi = &s_eosapi;
+   if (get_eosapi) {
+      struct eosapi* _api = get_eosapi();
+      api->_eosapi = _api;
+      fn_mp_register_eosapi mp_register_eosapi = (fn_mp_register_eosapi)dlsym(handle, "mp_register_eosapi");
+      mp_register_eosapi(_api);
    }
+
    return *api;
 }
 
 extern "C" {
 //typedef long long int64_t;
 //typedef unsigned long long uint64_t;
+
+struct mpapi* c_get_mpapi() {
+   return &get_mpapi();
+}
 
 typedef uint64_t TableName;
 

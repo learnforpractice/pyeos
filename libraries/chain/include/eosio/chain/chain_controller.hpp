@@ -323,7 +323,7 @@ namespace eosio { namespace chain {
                                 flat_set<public_key_type> provided_keys,
                                 bool allow_unused_signatures)const;
          void replay();
-         void set_action_object(const action& act);
+         void set_action_object(const account_name& receiver, const action& act);
          const action_object& get_action_object() const;
       private:
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;

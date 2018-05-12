@@ -64,7 +64,7 @@ void apply_context::schedule() {
    const auto &a = mutable_controller.get_database().get<account_object, by_name>(receiver);
    privileged = a.privileged;
 
-   mutable_controller.set_action_object(act);
+   mutable_controller.set_action_object(get_receiver(), act);
 
    if (a.code.size() > 0) {
       if (a.vm_type == 0) {
@@ -75,7 +75,7 @@ void apply_context::schedule() {
          if (false) {
             auto &py = micropython_interface::get();
             try {
-               py.apply(*this, a.code);
+               py.apply(receiver.value, act.account.value, act.name.value, a.code);
             } catch (...) {
                throw;
             }

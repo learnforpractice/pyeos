@@ -1,28 +1,4 @@
-#include <algorithm>
-#include <eosio/chain/chain_controller.hpp>
-#include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/micropython_interface.hpp>
-
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/scope_sequence_object.hpp>
-#include <boost/container/flat_set.hpp>
-
-
-#include <eosio/chain/account_object.hpp>
-#include <eosio/chain/permission_object.hpp>
-#include <eosio/chain/action_objects.hpp>
-#include <eosio/chain/block_summary_object.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/permission_link_object.hpp>
-#include <eosio/chain/producer_object.hpp>
-#include <eosio/chain/transaction_object.hpp>
-#include <eosio/chain/scope_sequence_object.hpp>
-#include <eosio/chain/permission_object.hpp>
-
 #include "database_api.hpp"
-
-
 
 extern "C" {
 #include <stdio.h>
@@ -96,6 +72,11 @@ bool database_api::get_action(action& act) {
    return true;
 }
 
+const name& database_api::get_receiver() {
+   const auto &a = db.get<action_object>();
+   return a.receiver;
+}
+
 const action_object& database_api::get_action_object() const {
    return db.get<action_object>();
 }
@@ -103,6 +84,11 @@ const action_object& database_api::get_action_object() const {
 void database_api::get_code(uint64_t account, string& code) {
    const auto &a = db.get<account_object, by_name>(account);
    code = string(a.code.data(), a.code.size());
+}
+
+const shared_vector<char>& database_api::get_code(uint64_t account) {
+   const auto &a = db.get<account_object, by_name>(account);
+   return a.code;
 }
 
 bool database_api::is_account(const account_name& account)const {
@@ -169,6 +155,125 @@ void database_api::require_read_lock(const account_name& account, const scope_na
       _read_locks.emplace_back(shard_lock{account, scope});
    }
    */
+}
+
+const contracts::table_id_object& database_api::find_or_create_table( name code, name scope, name table, const account_name &payer ) {
+   require_read_lock(code, scope);
+   const auto* existing_tid =  db.find<contracts::table_id_object, contracts::by_code_scope_table>(boost::make_tuple(code, scope, table));
+   if (existing_tid != nullptr) {
+      return *existing_tid;
+   }
+
+//   require_write_lock(scope);
+
+   update_db_usage(payer, config::billable_size_v<contracts::table_id_object>);
+
+   return db.create<contracts::table_id_object>([&](contracts::table_id_object &t_id){
+      t_id.code = code;
+      t_id.scope = scope;
+      t_id.table = table;
+      t_id.payer = payer;
+   });
+}
+
+int database_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
+//   require_write_lock( scope );
+   const auto& tab = find_or_create_table( get_receiver(), scope, table, payer );
+   auto tableid = tab.id;
+
+   FC_ASSERT( payer != account_name(), "must specify a valid account to pay for new record" );
+
+   const auto& obj = db.create<key_value_object>( [&]( auto& o ) {
+      o.t_id        = tableid;
+      o.primary_key = id;
+      o.value.resize( buffer_size );
+      o.payer       = payer;
+      memcpy( o.value.data(), buffer, buffer_size );
+   });
+
+   db.modify( tab, [&]( auto& t ) {
+     ++t.count;
+   });
+
+   int64_t billable_size = (int64_t)(buffer_size + config::billable_size_v<key_value_object>);
+   update_db_usage( payer, billable_size);
+
+   keyval_cache.cache_table( tab );
+   return keyval_cache.add( obj );
+}
+
+void database_api::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size ) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+
+   const auto& table_obj = keyval_cache.get_table( obj.t_id );
+   FC_ASSERT( table_obj.code == receiver, "db access violation" );
+
+//   require_write_lock( table_obj.scope );
+
+   const int64_t overhead = config::billable_size_v<key_value_object>;
+   int64_t old_size = (int64_t)(obj.value.size() + overhead);
+   int64_t new_size = (int64_t)(buffer_size + overhead);
+
+   if( payer == account_name() ) payer = obj.payer;
+
+   if( account_name(obj.payer) != payer ) {
+      // refund the existing payer
+      update_db_usage( obj.payer,  -(old_size) );
+      // charge the new payer
+
+      update_db_usage( payer,  (new_size));
+   } else if(old_size != new_size) {
+      // charge/refund the existing payer the difference
+      update_db_usage( obj.payer, new_size - old_size);
+   }
+
+   db.modify( obj, [&]( auto& o ) {
+     o.value.resize( buffer_size );
+     memcpy( o.value.data(), buffer, buffer_size );
+     o.payer = payer;
+   });
+}
+
+void database_api::remove_table( const contracts::table_id_object& tid ) {
+   update_db_usage(tid.payer, - config::billable_size_v<contracts::table_id_object>);
+   db.remove(tid);
+}
+
+void database_api::update_db_usage( const account_name& payer, int64_t delta ) {
+#if 0
+   require_write_lock( payer );
+   if( (delta > 0) ) {
+      if (!(privileged || payer == account_name(receiver))) {
+         require_authorization( payer );
+      }
+
+      mutable_controller.get_mutable_resource_limits_manager().add_pending_account_ram_usage(payer, delta);
+   }
+#endif
+}
+
+void database_api::db_remove_i64( int iterator ) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+
+   update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key_value_object>) );
+
+   const auto& table_obj = keyval_cache.get_table( obj.t_id );
+   FC_ASSERT( table_obj.code == receiver, "db access violation" );
+
+//   require_write_lock( table_obj.scope );
+
+   update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key_value_object>) );
+
+   db.modify( table_obj, [&]( auto& t ) {
+      --t.count;
+   });
+   db.remove( obj );
+
+   if (table_obj.count == 0) {
+      remove_table(table_obj);
+   }
+
+   keyval_cache.remove( iterator );
 }
 
 const contracts::table_id_object* database_api::find_table( name code, name scope, name table ) {

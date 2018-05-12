@@ -426,6 +426,7 @@ class database_api {
       bool get_action(action& act);
       const action_object& get_action_object() const;
       void get_code(uint64_t account, string& code);
+      const shared_vector<char>& get_code(uint64_t account);
 
       /**
        * @brief Require @ref account to have approved of this message
@@ -564,6 +565,7 @@ API_METHOD_WRAPPERS_FLOAT_SECONDARY_DEF(idx_double, uint64_t)
 
    private:
       iterator_cache<key_value_object> keyval_cache;
+      iterator_cache<key_value_object> keyval_cache_removed;
 
       void append_results(apply_results &&other) {
          fc::move_append(results.applied_actions, std::move(other.applied_actions));

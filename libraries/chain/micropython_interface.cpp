@@ -127,12 +127,11 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    }
 }
 
-void micropython_interface::apply(apply_context& c, const shared_vector<char>& code) {
+void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_vector<char>& code) {
    init();
    get_mpapi().execution_start();
 
    try {
-      current_apply_context = &c;
       mp_obj_t obj = nullptr;
       nlr_buf_t nlr;
 
@@ -145,14 +144,14 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
 
       std::map<uint64_t, py_module*>& pymodules = module_cache[this_id];
 
-      auto itr = pymodules.find(c.receiver);
+      auto itr = pymodules.find(receiver);
       if (itr != pymodules.end()) {
          obj = itr->second->obj;
       } else {
          if (code.data()[0] == 0) {//py
-            obj = get_mpapi().micropy_load_from_py(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+            obj = get_mpapi().micropy_load_from_py(account_name(account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
          } else if (code.data()[0] == 1) {//mpy
-            obj = get_mpapi().micropy_load_from_mpy(c.act.account.to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+            obj = get_mpapi().micropy_load_from_mpy(account_name(account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
          } else {
             FC_ASSERT(false, "unknown micropython code!");
          }
@@ -161,16 +160,16 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
             py_module* mod = new py_module();
             mod->obj = obj;
             mod->hash = fc::sha256::hash( code.data(), code.size() );
-            pymodules[c.act.account.value] = mod;
+            pymodules[account] = mod;
          }
       }
       mp_obj_t ret = 0;
       if (obj) {
-         ret = get_mpapi().micropy_call_3(obj, "apply", c.receiver.value, c.act.account.value, c.act.name.value);
+         ret = get_mpapi().micropy_call_3(obj, "apply", receiver, account, act);
       }
       uint64_t execution_time = get_mpapi().get_execution_time();
       if (execution_time > 1000) {
-         elog("+++++++call module ${n1}, cost: ${n2}", ("n1", c.act.account.to_string())("n2", execution_time));
+         elog("+++++++call module ${n1}, cost: ${n2}", ("n1", name(account).to_string())("n2", execution_time));
       }
       get_mpapi().execution_end();
       FC_ASSERT(ret != 0, "code execution with exception!");
@@ -181,6 +180,17 @@ void micropython_interface::apply(apply_context& c, const shared_vector<char>& c
 
 }
 
+void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   const shared_vector<char>& src = database_api::get().get_code(receiver);
+   apply(receiver, account, act, src);
+}
+
 }
 }
+
+extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   eosio::chain::micropython_interface::get().apply(receiver, account, act);
+   return 1;
+}
+
 

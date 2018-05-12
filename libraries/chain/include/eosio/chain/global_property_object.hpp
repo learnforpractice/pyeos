@@ -108,6 +108,7 @@ namespace eosio { namespace chain {
    {
          OBJECT_CTOR(action_object, (authorization)(data))
          id_type              id;
+         account_name               receiver;
          account_name               account;
          action_name                name;
          shared_vector<permission_level>   authorization;

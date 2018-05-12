@@ -19,6 +19,9 @@ import (
 typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act);
 void rpc_register_apply_call(fn_rpc_apply fn);
 int call_onApply(uint64_t receiver, uint64_t code, uint64_t act);
+
+void mp_init_eosapi();
+
 */
 import "C"
 
@@ -34,6 +37,7 @@ func HelloFromGo() {
 }
 
 func main() {
+    C.mp_init_eosapi();
     C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
     
 	flag.Usage = Usage

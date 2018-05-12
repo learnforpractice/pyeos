@@ -43,10 +43,8 @@ public:
    static micropython_interface& get();
 
    void on_setcode(uint64_t _account, bytes& code);
-   void apply(apply_context& c, const shared_vector<char>&  code);
-
-   apply_context* current_apply_context = nullptr;
-
+   void apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_vector<char>& code);
+   void apply(uint64_t receiver, uint64_t account, uint64_t act);
 private:
    struct py_module {
       void* obj;
