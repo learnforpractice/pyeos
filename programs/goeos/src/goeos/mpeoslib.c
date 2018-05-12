@@ -28,19 +28,11 @@ void mp_require_auth(uint64_t account) {
 }
 
 int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   GoSlice buf;
-   buf.data = (void*)buffer;
-   buf.len = buffer_size;
-   buf.cap = buffer_size;
-   return DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, buf);
+   return DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
 }
 
 void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
-   GoSlice buf;
-   buf.data = (void*)buffer;
-   buf.len = buffer_size;
-   buf.cap = buffer_size;
-   return DbUpdateI64(itr, payer, buf);
+   return DbUpdateI64(itr, payer, (void *)buffer, (GoInt)buffer_size);
 }
 
 void mp_db_remove_i64( int itr ) {
@@ -48,30 +40,35 @@ void mp_db_remove_i64( int itr ) {
 }
 
 int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
-   GoSlice ret = DbGetI64(itr);
-   if (buffer_size > ret.len) {
-      buffer_size = ret.len;
+   struct DbGetI64_return ret = DbGetI64(itr);
+   if (buffer_size <= 0) {
+      return ret.r0;
    }
-   memcpy(buffer, ret.data, buffer_size);
+   if (buffer_size > ret.r0) {
+      buffer_size = ret.r0;
+   }
+   memcpy(buffer, ret.r1, buffer_size);
+   free(ret.r1);
    return buffer_size;
 }
 
 int mp_db_next_i64( int itr, uint64_t* primary ) {
    struct DbNextI64_return ret = DbNextI64(itr);
-   assert(ret.r1.len == sizeof(uint64_t));
-   memcpy(primary, ret.r1.data, sizeof(*primary));
+   assert(ret.r1 == sizeof(uint64_t));
+   memcpy(primary, ret.r2, sizeof(*primary));
+   free(ret.r2);
    return ret.r0;
 }
 
 int mp_db_previous_i64( int itr, uint64_t* primary ) {
    struct DbPreviousI64_return ret = DbPreviousI64(itr);
-   assert(ret.r1.len == sizeof(uint64_t));
-   memcpy(primary, ret.r1.data, sizeof(*primary));
+   assert(ret.r1 == sizeof(uint64_t));
+   memcpy(primary, ret.r2, sizeof(*primary));
+   free(ret.r2);
    return ret.r0;
 }
 
 int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   printf("+++++++++++mp_db_find_i64\n");
    return DbFindI64((GoInt64)code, (GoInt64)scope, (GoInt64)table, (GoInt64)id);
 }
 

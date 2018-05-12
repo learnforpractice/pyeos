@@ -22,7 +22,7 @@ var applyClient *rpc.RpcInterfaceClient;
 //export onApply
 func onApply(receiver uint64, account uint64, act uint64) int {
     initApplyClient()
-    fmt.Println("+++++++onApply", receiver, account, act, applyClient)
+//    fmt.Println("+++++++onApply", receiver, account, act, applyClient)
     if applyClient != nil {
         r, _ := applyClient.Apply(ctx, int64(receiver), int64(account), int64(act))
         return int(r)
@@ -54,7 +54,6 @@ func (p *RpcServiceImpl) ReadAction(ctx context.Context) (r []byte, err error) {
 //  - ID
 //  - Buffer
 func (p *RpcServiceImpl) DbStoreI64(ctx context.Context, scope int64, table int64, payer int64, id int64, buffer []byte) (r int32, err error) {
-    fmt.Println("++++++++++++++++DbStoreI64")
     ret := C.db_store_i64(C.uint64_t(scope), C.uint64_t(table), C.uint64_t(payer), C.uint64_t(id), (*C.char)(unsafe.Pointer(&buffer[0])), C.size_t(len(buffer)))
     return int32(ret), nil
 }
@@ -77,10 +76,18 @@ func (p *RpcServiceImpl) DbRemoveI64(ctx context.Context, itr int32) (err error)
 
 // Parameters:
 //  - Itr
-func (p *RpcServiceImpl) DbGetI64(ctx context.Context, itr int32) (r []byte, err error) {
-    var buffer [256]byte
-    ret := C.db_get_i64(C.int(itr), (*C.char)(unsafe.Pointer(&buffer[0])), C.size_t(len(buffer)))
-    return buffer[:ret], nil
+func (p *RpcServiceImpl) DbGetI64(ctx context.Context, itr int32) ([]byte, error) {
+    size := C.db_get_i64(C.int(itr), nil, C.size_t(0));
+    if size <= 0 {
+        return nil, nil
+    }
+
+    buffer := C.malloc(C.size_t(size))
+
+    ret := C.db_get_i64(C.int(itr), (*C.char)(buffer), C.size_t(size))
+    defer C.free(buffer)
+    r := C.GoBytes(buffer,ret)
+    return r, nil
 }
 
 func Int64ToBytes(i uint64) []byte {
@@ -122,7 +129,6 @@ func (p *RpcServiceImpl) DbPreviousI64(ctx context.Context, itr int32) (r *rpc.R
 //  - Table
 //  - ID
 func (p *RpcServiceImpl) DbFindI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
-    fmt.Println("++++++++++++server DbFindI64")
     ret := C.db_find_i64(C.uint64_t(code), C.uint64_t(scope), C.uint64_t(table), C.uint64_t(id))
     return int32(ret), nil
 }
@@ -153,7 +159,7 @@ func (p *RpcServiceImpl) DbUpperboundI64(ctx context.Context, code int64, scope 
 //  - Code
 //  - Scope
 //  - Table
-func (p *RpcServiceImpl) DbEndI64(ctx context.Context, code int64, scope int64, table int64) (r int32, err error) {
+func (p *RpcServiceImpl) DbEndI64(ctx context.Context, code int64, scope int64, table int64) (int32, error) {
     ret := C.db_end_i64(C.uint64_t(code), C.uint64_t(scope), C.uint64_t(table))
     return int32(ret), nil
 }

@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo CFLAGS: ${CFLAGS}
+#cgo CFLAGS: -g ${CFLAGS}
 #cgo LDFLAGS: ${LDFLAGS}
 */
 import "C"

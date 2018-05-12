@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+	"unsafe"
 	"rpc"
 	"context"
 	"crypto/tls"
@@ -118,20 +119,22 @@ func runApplyServer(transportFactory thrift.TTransportFactory, protocolFactory t
 }
 
 //export ReadAction
-func ReadAction() (r []byte) {
-    r, _ = rpcClient.ReadAction(ctx)
-    return r
+func ReadAction() (int, unsafe.Pointer) {
+    r, _ := rpcClient.ReadAction(ctx)
+    return len(r), C.CBytes(r)
 }
 
 //export DbStoreI64
-func DbStoreI64(scope int64, table int64, payer int64, id int64, buffer []byte) (r int32) {
-    r, _ = rpcClient.DbStoreI64(ctx, scope, table, payer, id, buffer)
+func DbStoreI64(scope int64, table int64, payer int64, id int64, buffer unsafe.Pointer, size C.int) (r int32) {
+    _buffer := C.GoBytes(buffer, size)
+    r, _ = rpcClient.DbStoreI64(ctx, scope, table, payer, id, _buffer)
     return r
 }
 
 //export DbUpdateI64
-func DbUpdateI64(itr int32, payer int64, buffer []byte) () {
-    rpcClient.DbUpdateI64(ctx, itr, payer, buffer)
+func DbUpdateI64(itr int32, payer int64, buffer unsafe.Pointer, size C.int) () {
+    _buffer := C.GoBytes(buffer, size)
+    rpcClient.DbUpdateI64(ctx, itr, payer, _buffer)
     return
 }
 
@@ -142,28 +145,27 @@ func DbRemoveI64(itr int32) () {
 }
 
 //export DbGetI64
-func DbGetI64(itr int32) (r []byte) {
-    r, _ = rpcClient.DbGetI64(ctx, itr)
-    return r
+func DbGetI64(itr int32) (int, unsafe.Pointer) {
+    r, _ := rpcClient.DbGetI64(ctx, itr)
+    return len(r), C.CBytes(r)
 }
 
 //export DbNextI64
-func DbNextI64(itr int32) (itrRet int32, value []byte) {
+func DbNextI64(itr int32) (itrRet int32, l int, v unsafe.Pointer) {
     res, _ := rpcClient.DbNextI64(ctx, itr)
-    return res.Status, res.Value
+    return res.Status, len(res.Value), C.CBytes(res.Value)
 }
 
 //export DbPreviousI64
-func DbPreviousI64(itr int32) (itrRet int32, value []byte) {
+func DbPreviousI64(itr int32) (itrRet int32, l int, v unsafe.Pointer) {
     res, _ := rpcClient.DbPreviousI64(ctx, itr)
-    return res.Status, res.Value
+    return res.Status, len(res.Value), C.CBytes(res.Value)
 }
 
 //export DbFindI64
 func DbFindI64(code int64, scope int64, table int64, id int64) (it int32) {
-    itr, err := rpcClient.DbFindI64(ctx, code, scope, table, id)
-    fmt.Println("+++++++++++++++++++client DbFindI64", rpcClient, itr, err)
-    return itr
+    it, _ = rpcClient.DbFindI64(ctx, code, scope, table, id)
+    return
 }
 
 //export DbLowerboundI64
