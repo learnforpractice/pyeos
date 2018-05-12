@@ -1990,6 +1990,9 @@ void chain_controller::_initialize_chain(contracts::chain_initializer& starter)
             //p.recent_slots_filled = uint64_t(-1);
          });
 
+         _db.create<action_object>([&](action_object& p) {
+         });
+
          _resource_limits.initialize_chain();
 
          // Initialize block summary index
