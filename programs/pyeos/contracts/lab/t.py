@@ -23,7 +23,6 @@ sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 
 @init(True)
 def test(msg='hello,world'):
-    print('hello, world')
     with producer:
         r = eosapi.push_message('lab', 'sayhello', msg, {'lab':'active'})
         assert r

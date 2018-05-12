@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
     "rpc"
-    "time"
+    _"time"
     "unsafe"
     "context"
     "crypto/tls"
@@ -18,15 +18,14 @@ import (
 */
 import "C"
 
+var applyClient *rpc.RpcInterfaceClient;
 //export onApply
-func onApply(receiver uint64, code uint64, act uint64) int {
-    fmt.Println("+++++++onApply", receiver, code, act)
-    client := runApplyClient()
-    if client != nil {
-        err := HandleApplyClient(client)
-        if err == nil {
-            return 1;
-        }
+func onApply(receiver uint64, account uint64, act uint64) int {
+    initApplyClient()
+    fmt.Println("+++++++onApply", receiver, account, act, applyClient)
+    if applyClient != nil {
+        r, _ := applyClient.Apply(ctx, int64(receiver), int64(account), int64(act))
+        return int(r)
     }
     return 0;
 }
@@ -55,6 +54,7 @@ func (p *RpcServiceImpl) ReadAction(ctx context.Context) (r []byte, err error) {
 //  - ID
 //  - Buffer
 func (p *RpcServiceImpl) DbStoreI64(ctx context.Context, scope int64, table int64, payer int64, id int64, buffer []byte) (r int32, err error) {
+    fmt.Println("++++++++++++++++DbStoreI64")
     ret := C.db_store_i64(C.uint64_t(scope), C.uint64_t(table), C.uint64_t(payer), C.uint64_t(id), (*C.char)(unsafe.Pointer(&buffer[0])), C.size_t(len(buffer)))
     return int32(ret), nil
 }
@@ -122,6 +122,7 @@ func (p *RpcServiceImpl) DbPreviousI64(ctx context.Context, itr int32) (r *rpc.R
 //  - Table
 //  - ID
 func (p *RpcServiceImpl) DbFindI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
+    fmt.Println("++++++++++++server DbFindI64")
     ret := C.db_find_i64(C.uint64_t(code), C.uint64_t(scope), C.uint64_t(table), C.uint64_t(id))
     return int32(ret), nil
 }
@@ -196,28 +197,16 @@ func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift
     return server.Serve()
 }
 
-func HandleApplyClient(client *rpc.RpcInterfaceClient) (err error) {
-
-    start := time.Now().UnixNano()
-    count := 20000
-
-    for i:=0;i<count;i++ {
-        client.Apply(ctx, 1, 1)
-    }
-
-    duration := time.Now().UnixNano() - start
-    fmt.Println("transactions per second", int64(count)*1e9/duration);
-
-    return nil
-}
-
-func runApplyClient() *rpc.RpcInterfaceClient {
+func initApplyClient() error {
     var transport thrift.TTransport
     var err error
 
     addr := "localhost:9192"
     secure := false
-
+    if applyClient != nil {
+        return nil
+    }
+    
     if secure {
         cfg := new(tls.Config)
         cfg.InsecureSkipVerify = true
@@ -241,7 +230,8 @@ func runApplyClient() *rpc.RpcInterfaceClient {
     iprot := __protocolFactory.GetProtocol(transport)
     oprot := __protocolFactory.GetProtocol(transport)
 
-    return rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
+    applyClient = rpc.NewRpcInterfaceClient(thrift.NewTStandardClient(iprot, oprot))
+    return nil
 }
 
 

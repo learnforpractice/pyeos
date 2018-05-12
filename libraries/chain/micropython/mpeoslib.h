@@ -331,6 +331,10 @@ typedef int (*fn_main_micropython)(int argc, char **argv);
 int wasm_call_(uint64_t _code, const char* _func, size_t _func_size, uint64_t* _args, size_t _args_size);
 void eosio_delay(int ms);
 
+int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act);
+
+int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
+
 #ifdef __cplusplus
    }
 #endif

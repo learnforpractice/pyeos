@@ -26,5 +26,5 @@ service RpcService {
 }
 
 service RpcInterface {
-    i32 apply( 1:i64 account, 2:i64 action);
+    i32 apply(1:i64 receiver, 2:i64 account, 3:i64 action);
 }

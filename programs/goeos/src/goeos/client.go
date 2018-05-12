@@ -1,7 +1,6 @@
 package main
 
 import (
-    "C"
 	"fmt"
 	"time"
 	"rpc"
@@ -10,12 +9,19 @@ import (
 	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
+/*
+#include <stdint.h>
+int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act);
+*/
+import "C"
+
 type RpcInterfaceImp struct {
 }
 
-func (p *RpcInterfaceImp) Apply(ctx context.Context, account int64, action int64) (r int32, err error) {
-    handleApply()
-    return 0, nil
+func (p *RpcInterfaceImp) Apply(ctx context.Context, receiver int64, account int64, act int64) (r int32, err error) {
+    initRpcService()
+    rr := C.micropython_on_apply(C.uint64_t(receiver), C.uint64_t(account), C.uint64_t(act));
+    return int32(rr), nil
 }
 
 var ctx = context.Background()
@@ -27,33 +33,24 @@ func currentTimeMillis() int64 {
 var _transportFactory thrift.TTransportFactory
 var _protocolFactory thrift.TProtocolFactory
 var rpcClient *rpc.RpcServiceClient
-func handleClient(client *rpc.RpcServiceClient) (err error) {
 
-    start := time.Now().UnixNano()
-    count := 20000
-
-    for i:=0;i<count;i++ {
-        client.ReadAction(ctx)
-    }
-
-    duration := time.Now().UnixNano() - start
-    fmt.Println("transactions per second", int64(count)*1e9/duration);
-
-	return nil
-}
 
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
     runApplyServer(transportFactory, protocolFactory, addr, secure) 
     return nil
 }
 
-func handleApply() error {
+func initRpcService() error {
 	var transport thrift.TTransport
 	var err error
 
     var transportFactory = _transportFactory
     var protocolFactory = _protocolFactory
-    addr := "localhost:9192"
+    if rpcClient != nil {
+        return nil
+    }
+    
+    addr := "localhost:9191"
     secure := false
 
 	if secure {
@@ -71,7 +68,7 @@ func handleApply() error {
 	if err != nil {
 		return err
 	}
-	defer transport.Close()
+//	defer transport.Close()
 	if err := transport.Open(); err != nil {
 		return err
 	}
@@ -80,7 +77,8 @@ func handleApply() error {
 	oprot := protocolFactory.GetProtocol(transport)
 	client := rpc.NewRpcServiceClient(thrift.NewTStandardClient(iprot, oprot))
     rpcClient = client
-	return handleClient(client)
+    fmt.Println("++++++++++++++++initRpcService:", rpcClient)
+    return nil
 }
 
 func runApplyServer(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
@@ -162,9 +160,10 @@ func DbPreviousI64(itr int32) (itrRet int32, value []byte) {
 }
 
 //export DbFindI64
-func DbFindI64(code int64, scope int64, table int64, id int64) (itr int32) {
-    itr, _ = rpcClient.DbFindI64(ctx, code, scope, table, id)
-    return
+func DbFindI64(code int64, scope int64, table int64, id int64) (it int32) {
+    itr, err := rpcClient.DbFindI64(ctx, code, scope, table, id)
+    fmt.Println("+++++++++++++++++++client DbFindI64", rpcClient, itr, err)
+    return itr
 }
 
 //export DbLowerboundI64

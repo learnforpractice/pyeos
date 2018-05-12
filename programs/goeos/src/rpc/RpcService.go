@@ -3915,9 +3915,10 @@ func (p *RpcServiceDbEndI64Result) String() string {
 
 type RpcInterface interface {
   // Parameters:
+  //  - Receiver
   //  - Account
   //  - Action
-  Apply(ctx context.Context, account int64, action int64) (r int32, err error)
+  Apply(ctx context.Context, receiver int64, account int64, action int64) (r int32, err error)
 }
 
 type RpcInterfaceClient struct {
@@ -3945,10 +3946,12 @@ func NewRpcInterfaceClient(c thrift.TClient) *RpcInterfaceClient {
 }
 
 // Parameters:
+//  - Receiver
 //  - Account
 //  - Action
-func (p *RpcInterfaceClient) Apply(ctx context.Context, account int64, action int64) (r int32, err error) {
+func (p *RpcInterfaceClient) Apply(ctx context.Context, receiver int64, account int64, action int64) (r int32, err error) {
   var _args64 RpcInterfaceApplyArgs
+  _args64.Receiver = receiver
   _args64.Account = account
   _args64.Action = action
   var _result65 RpcInterfaceApplyResult
@@ -4020,7 +4023,7 @@ func (p *rpcInterfaceProcessorApply) Process(ctx context.Context, seqId int32, i
   result := RpcInterfaceApplyResult{}
 var retval int32
   var err2 error
-  if retval, err2 = p.handler.Apply(ctx, args.Account, args.Action); err2 != nil {
+  if retval, err2 = p.handler.Apply(ctx, args.Receiver, args.Account, args.Action); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing apply: " + err2.Error())
     oprot.WriteMessageBegin("apply", thrift.EXCEPTION, seqId)
     x.Write(oprot)
@@ -4052,17 +4055,23 @@ var retval int32
 // HELPER FUNCTIONS AND STRUCTURES
 
 // Attributes:
+//  - Receiver
 //  - Account
 //  - Action
 type RpcInterfaceApplyArgs struct {
-  Account int64 `thrift:"account,1" db:"account" json:"account"`
-  Action int64 `thrift:"action,2" db:"action" json:"action"`
+  Receiver int64 `thrift:"receiver,1" db:"receiver" json:"receiver"`
+  Account int64 `thrift:"account,2" db:"account" json:"account"`
+  Action int64 `thrift:"action,3" db:"action" json:"action"`
 }
 
 func NewRpcInterfaceApplyArgs() *RpcInterfaceApplyArgs {
   return &RpcInterfaceApplyArgs{}
 }
 
+
+func (p *RpcInterfaceApplyArgs) GetReceiver() int64 {
+  return p.Receiver
+}
 
 func (p *RpcInterfaceApplyArgs) GetAccount() int64 {
   return p.Account
@@ -4104,6 +4113,16 @@ func (p *RpcInterfaceApplyArgs) Read(iprot thrift.TProtocol) error {
           return err
         }
       }
+    case 3:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField3(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
     default:
       if err := iprot.Skip(fieldTypeId); err != nil {
         return err
@@ -4123,7 +4142,7 @@ func (p *RpcInterfaceApplyArgs)  ReadField1(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI64(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.Account = v
+  p.Receiver = v
 }
   return nil
 }
@@ -4131,6 +4150,15 @@ func (p *RpcInterfaceApplyArgs)  ReadField1(iprot thrift.TProtocol) error {
 func (p *RpcInterfaceApplyArgs)  ReadField2(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI64(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Account = v
+}
+  return nil
+}
+
+func (p *RpcInterfaceApplyArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.Action = v
 }
@@ -4143,6 +4171,7 @@ func (p *RpcInterfaceApplyArgs) Write(oprot thrift.TProtocol) error {
   if p != nil {
     if err := p.writeField1(oprot); err != nil { return err }
     if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
   if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
@@ -4152,22 +4181,32 @@ func (p *RpcInterfaceApplyArgs) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *RpcInterfaceApplyArgs) writeField1(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("account", thrift.I64, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:account: ", p), err) }
-  if err := oprot.WriteI64(int64(p.Account)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.account (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldBegin("receiver", thrift.I64, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:receiver: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Receiver)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.receiver (1) field write error: ", p), err) }
   if err := oprot.WriteFieldEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:account: ", p), err) }
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:receiver: ", p), err) }
   return err
 }
 
 func (p *RpcInterfaceApplyArgs) writeField2(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("action", thrift.I64, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:action: ", p), err) }
-  if err := oprot.WriteI64(int64(p.Action)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.action (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldBegin("account", thrift.I64, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:account: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Account)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.account (2) field write error: ", p), err) }
   if err := oprot.WriteFieldEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:action: ", p), err) }
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:account: ", p), err) }
+  return err
+}
+
+func (p *RpcInterfaceApplyArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("action", thrift.I64, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:action: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Action)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.action (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:action: ", p), err) }
   return err
 }
 

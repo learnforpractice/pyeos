@@ -74,7 +74,7 @@ void apply_context::schedule() {
             mutable_controller.get_wasm_interface().apply(a.code_version, a.code, *this);
          } catch ( const wasm_exit& ){}
       } else if (a.vm_type == 1) {
-         if (apply_context::_whitelist.find(act.account) != apply_context::_whitelist.end()) {
+         if (_whitelist.find(act.account) != _whitelist.end()) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);

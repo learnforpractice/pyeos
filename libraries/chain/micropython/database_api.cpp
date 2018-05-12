@@ -482,4 +482,23 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, uint64_t)
 
 } } /// eosio::chain
 
+extern "C" {
+int mp_action_size() {
+   return eosio::chain::database_api::get().get_action_object().data.size();
+}
+
+int mp_read_action(char* buf, size_t size) {
+   const auto& data = eosio::chain::database_api::get().get_action_object().data;
+   if (size > data.size()) {
+      size = data.size();
+   }
+   memcpy(buf, data.data(), size);
+   return size;
+}
+int mp_is_account(uint64_t account) {
+   eosio::chain::account_name _account(account);
+   return eosio::chain::database_api::get().is_account(_account);
+}
+
+}
 

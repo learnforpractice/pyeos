@@ -11,20 +11,20 @@
 mp_obj_t uint64_to_string_(uint64_t n);
 struct mpapi* c_get_mpapi();
 
-int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act);
+//database_api.cpp
+int mp_action_size();
+int mp_read_action(char* buf, size_t size);
+int mp_is_account(uint64_t account);
 
-int call_onApply(uint64_t receiver, uint64_t code, uint64_t act)
+int call_onApply(uint64_t receiver, uint64_t account, uint64_t act)
 {
-   return micropython_on_apply(receiver, code, act);
+   return onApply(receiver, account, act);
+//   return micropython_on_apply(receiver, code, act);
 }
 
-int read_action(char* buf, size_t size) {
-   GoSlice ret = ReadAction();
-   if (size > ret.len) {
-      size = ret.len;
-   }
-   memcpy(buf, ret.data, size);
-   return size;
+
+void mp_require_auth(uint64_t account) {
+   printf("+++++++++++++++mp_require_auth\n");
 }
 
 int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
@@ -71,6 +71,7 @@ int mp_db_previous_i64( int itr, uint64_t* primary ) {
 }
 
 int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+   printf("+++++++++++mp_db_find_i64\n");
    return DbFindI64((GoInt64)code, (GoInt64)scope, (GoInt64)table, (GoInt64)id);
 }
 
@@ -127,18 +128,29 @@ void mp_init_eosapi() {
    s_eosapi.pack_ = pack_;
    s_eosapi.unpack_ = unpack_;
 
+   s_eosapi.action_size = mp_action_size;
+   s_eosapi.read_action = mp_read_action;
 
-   s_eosapi.db_store_i64 = db_store_i64;
-   s_eosapi.db_update_i64 = db_update_i64;
-   s_eosapi.db_remove_i64 = db_remove_i64;
-   s_eosapi.db_get_i64 = db_get_i64;
-   s_eosapi.db_get_i64_ex = db_get_i64_ex;
-   s_eosapi.db_next_i64 = db_next_i64;
-   s_eosapi.db_previous_i64 = db_previous_i64;
-   s_eosapi.db_find_i64 = db_find_i64;
-   s_eosapi.db_lowerbound_i64 = db_lowerbound_i64;
-   s_eosapi.db_upperbound_i64 = db_upperbound_i64;
-   s_eosapi.db_end_i64 = db_end_i64;
+   s_eosapi.require_auth = mp_require_auth;
+
+   s_eosapi.db_store_i64 = mp_db_store_i64;
+   s_eosapi.db_update_i64 = mp_db_update_i64;
+   s_eosapi.db_remove_i64 = mp_db_remove_i64;
+   s_eosapi.db_get_i64 = mp_db_get_i64;
+//   s_eosapi.db_get_i64_ex = mp_db_get_i64_ex;
+   s_eosapi.db_next_i64 = mp_db_next_i64;
+   s_eosapi.db_previous_i64 = mp_db_previous_i64;
+   s_eosapi.db_find_i64 = mp_db_find_i64;
+   s_eosapi.db_lowerbound_i64 = mp_db_lowerbound_i64;
+   s_eosapi.db_upperbound_i64 = mp_db_upperbound_i64;
+   s_eosapi.db_end_i64 = mp_db_end_i64;
+
+   s_eosapi.is_account = mp_is_account;
+
+
+//mpeoslib.cpp
+   s_eosapi.split_path = split_path;
+
    set_get_eosapi_func(get_eosapi);
 }
 

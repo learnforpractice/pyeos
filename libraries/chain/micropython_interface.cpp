@@ -189,8 +189,17 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 }
 
 extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   eosio::chain::micropython_interface::get().apply(receiver, account, act);
-   return 1;
+   try {
+      eosio::chain::micropython_interface::get().apply(receiver, account, act);
+      return 1;
+   } catch (fc::assert_exception& e) {
+      elog(e.to_detail_string());
+   } catch (fc::exception& e) {
+      elog(e.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return 0;
 }
 
 

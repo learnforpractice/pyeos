@@ -22,7 +22,7 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
   flag.PrintDefaults()
   fmt.Fprintln(os.Stderr, "\nFunctions:")
-  fmt.Fprintln(os.Stderr, "  i32 apply(i64 account, i64 action)")
+  fmt.Fprintln(os.Stderr, "  i32 apply(i64 receiver, i64 account, i64 action)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -121,8 +121,8 @@ func main() {
   
   switch cmd {
   case "apply":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "Apply requires 2 args")
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "Apply requires 3 args")
       flag.Usage()
     }
     argvalue0, err68 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -137,7 +137,13 @@ func main() {
       return
     }
     value1 := argvalue1
-    fmt.Print(client.Apply(context.Background(), value0, value1))
+    argvalue2, err70 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err70 != nil {
+      Usage()
+      return
+    }
+    value2 := argvalue2
+    fmt.Print(client.Apply(context.Background(), value0, value1, value2))
     fmt.Print("\n")
     break
   case "":
