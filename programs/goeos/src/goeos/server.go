@@ -19,18 +19,39 @@ import (
 import "C"
 
 var applyClient *rpc.RpcInterfaceClient;
+
+var applyStart = make(chan rpc.Apply, 1)
+var applyFinish = make(chan bool, 1)
+
 //export onApply
 func onApply(receiver uint64, account uint64, act uint64) int {
-    initApplyClient()
+//    initApplyClient()
 //    fmt.Println("+++++++onApply", receiver, account, act, applyClient)
+    apply := rpc.Apply{int64(receiver), int64(account), int64(act)}
+    applyStart <- apply
+    _ = <- applyFinish
+//    fmt.Println("+++++++onApply finished")
+
+    /*
     if applyClient != nil {
         r, _ := applyClient.Apply(ctx, int64(receiver), int64(account), int64(act))
         return int(r)
     }
+    */
     return 0;
 }
 
 type RpcServiceImpl struct {
+}
+
+func (p *RpcServiceImpl)  ApplyRequest(ctx context.Context) (r *rpc.Apply, err error) {
+    apply := <-applyStart
+    return &apply, nil
+}
+
+func (p *RpcServiceImpl)  ApplyFinish(ctx context.Context) (err error) {
+    applyFinish <- true;
+    return nil
 }
 
 func (this *RpcServiceImpl) FunCall(ctx context.Context, callTime int64, funCode string, paramMap map[string]string) (r []string, err error) {

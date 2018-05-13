@@ -145,7 +145,172 @@ func (p *Result_) String() string {
   return fmt.Sprintf("Result_(%+v)", *p)
 }
 
+// Attributes:
+//  - Receiver
+//  - Account
+//  - Action
+type Apply struct {
+  Receiver int64 `thrift:"receiver,1" db:"receiver" json:"receiver"`
+  Account int64 `thrift:"account,2" db:"account" json:"account"`
+  Action int64 `thrift:"action,3" db:"action" json:"action"`
+}
+
+func NewApply() *Apply {
+  return &Apply{}
+}
+
+
+func (p *Apply) GetReceiver() int64 {
+  return p.Receiver
+}
+
+func (p *Apply) GetAccount() int64 {
+  return p.Account
+}
+
+func (p *Apply) GetAction() int64 {
+  return p.Action
+}
+func (p *Apply) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField1(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField2(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 3:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField3(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *Apply)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Receiver = v
+}
+  return nil
+}
+
+func (p *Apply)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Account = v
+}
+  return nil
+}
+
+func (p *Apply)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.Action = v
+}
+  return nil
+}
+
+func (p *Apply) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("Apply"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *Apply) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("receiver", thrift.I64, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:receiver: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Receiver)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.receiver (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:receiver: ", p), err) }
+  return err
+}
+
+func (p *Apply) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("account", thrift.I64, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:account: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Account)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.account (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:account: ", p), err) }
+  return err
+}
+
+func (p *Apply) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("action", thrift.I64, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:action: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Action)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.action (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:action: ", p), err) }
+  return err
+}
+
+func (p *Apply) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("Apply(%+v)", *p)
+}
+
 type RpcService interface {
+  ApplyRequest(ctx context.Context) (r *Apply, err error)
+  ApplyFinish(ctx context.Context) (err error)
   // Parameters:
   //  - CallTime
   //  - FunCode
@@ -225,29 +390,47 @@ func NewRpcServiceClient(c thrift.TClient) *RpcServiceClient {
   }
 }
 
-// Parameters:
-//  - CallTime
-//  - FunCode
-//  - ParamMap
-func (p *RpcServiceClient) FunCall(ctx context.Context, callTime int64, funCode string, paramMap map[string]string) (r []string, err error) {
-  var _args0 RpcServiceFunCallArgs
-  _args0.CallTime = callTime
-  _args0.FunCode = funCode
-  _args0.ParamMap = paramMap
-  var _result1 RpcServiceFunCallResult
-  if err = p.c.Call(ctx, "funCall", &_args0, &_result1); err != nil {
+func (p *RpcServiceClient) ApplyRequest(ctx context.Context) (r *Apply, err error) {
+  var _args0 RpcServiceApplyRequestArgs
+  var _result1 RpcServiceApplyRequestResult
+  if err = p.c.Call(ctx, "apply_request", &_args0, &_result1); err != nil {
     return
   }
   return _result1.GetSuccess(), nil
 }
 
-func (p *RpcServiceClient) ReadAction(ctx context.Context) (r []byte, err error) {
-  var _args2 RpcServiceReadActionArgs
-  var _result3 RpcServiceReadActionResult
-  if err = p.c.Call(ctx, "read_action", &_args2, &_result3); err != nil {
+func (p *RpcServiceClient) ApplyFinish(ctx context.Context) (err error) {
+  var _args2 RpcServiceApplyFinishArgs
+  var _result3 RpcServiceApplyFinishResult
+  if err = p.c.Call(ctx, "apply_finish", &_args2, &_result3); err != nil {
     return
   }
-  return _result3.GetSuccess(), nil
+  return nil
+}
+
+// Parameters:
+//  - CallTime
+//  - FunCode
+//  - ParamMap
+func (p *RpcServiceClient) FunCall(ctx context.Context, callTime int64, funCode string, paramMap map[string]string) (r []string, err error) {
+  var _args4 RpcServiceFunCallArgs
+  _args4.CallTime = callTime
+  _args4.FunCode = funCode
+  _args4.ParamMap = paramMap
+  var _result5 RpcServiceFunCallResult
+  if err = p.c.Call(ctx, "funCall", &_args4, &_result5); err != nil {
+    return
+  }
+  return _result5.GetSuccess(), nil
+}
+
+func (p *RpcServiceClient) ReadAction(ctx context.Context) (r []byte, err error) {
+  var _args6 RpcServiceReadActionArgs
+  var _result7 RpcServiceReadActionResult
+  if err = p.c.Call(ctx, "read_action", &_args6, &_result7); err != nil {
+    return
+  }
+  return _result7.GetSuccess(), nil
 }
 
 // Parameters:
@@ -257,17 +440,17 @@ func (p *RpcServiceClient) ReadAction(ctx context.Context) (r []byte, err error)
 //  - ID
 //  - Buffer
 func (p *RpcServiceClient) DbStoreI64(ctx context.Context, scope int64, table int64, payer int64, id int64, buffer []byte) (r int32, err error) {
-  var _args4 RpcServiceDbStoreI64Args
-  _args4.Scope = scope
-  _args4.Table = table
-  _args4.Payer = payer
-  _args4.ID = id
-  _args4.Buffer = buffer
-  var _result5 RpcServiceDbStoreI64Result
-  if err = p.c.Call(ctx, "db_store_i64", &_args4, &_result5); err != nil {
+  var _args8 RpcServiceDbStoreI64Args
+  _args8.Scope = scope
+  _args8.Table = table
+  _args8.Payer = payer
+  _args8.ID = id
+  _args8.Buffer = buffer
+  var _result9 RpcServiceDbStoreI64Result
+  if err = p.c.Call(ctx, "db_store_i64", &_args8, &_result9); err != nil {
     return
   }
-  return _result5.GetSuccess(), nil
+  return _result9.GetSuccess(), nil
 }
 
 // Parameters:
@@ -275,12 +458,12 @@ func (p *RpcServiceClient) DbStoreI64(ctx context.Context, scope int64, table in
 //  - Payer
 //  - Buffer
 func (p *RpcServiceClient) DbUpdateI64(ctx context.Context, itr int32, payer int64, buffer []byte) (err error) {
-  var _args6 RpcServiceDbUpdateI64Args
-  _args6.Itr = itr
-  _args6.Payer = payer
-  _args6.Buffer = buffer
-  var _result7 RpcServiceDbUpdateI64Result
-  if err = p.c.Call(ctx, "db_update_i64", &_args6, &_result7); err != nil {
+  var _args10 RpcServiceDbUpdateI64Args
+  _args10.Itr = itr
+  _args10.Payer = payer
+  _args10.Buffer = buffer
+  var _result11 RpcServiceDbUpdateI64Result
+  if err = p.c.Call(ctx, "db_update_i64", &_args10, &_result11); err != nil {
     return
   }
   return nil
@@ -289,10 +472,10 @@ func (p *RpcServiceClient) DbUpdateI64(ctx context.Context, itr int32, payer int
 // Parameters:
 //  - Itr
 func (p *RpcServiceClient) DbRemoveI64(ctx context.Context, itr int32) (err error) {
-  var _args8 RpcServiceDbRemoveI64Args
-  _args8.Itr = itr
-  var _result9 RpcServiceDbRemoveI64Result
-  if err = p.c.Call(ctx, "db_remove_i64", &_args8, &_result9); err != nil {
+  var _args12 RpcServiceDbRemoveI64Args
+  _args12.Itr = itr
+  var _result13 RpcServiceDbRemoveI64Result
+  if err = p.c.Call(ctx, "db_remove_i64", &_args12, &_result13); err != nil {
     return
   }
   return nil
@@ -301,70 +484,34 @@ func (p *RpcServiceClient) DbRemoveI64(ctx context.Context, itr int32) (err erro
 // Parameters:
 //  - Itr
 func (p *RpcServiceClient) DbGetI64(ctx context.Context, itr int32) (r []byte, err error) {
-  var _args10 RpcServiceDbGetI64Args
-  _args10.Itr = itr
-  var _result11 RpcServiceDbGetI64Result
-  if err = p.c.Call(ctx, "db_get_i64", &_args10, &_result11); err != nil {
-    return
-  }
-  return _result11.GetSuccess(), nil
-}
-
-// Parameters:
-//  - Itr
-func (p *RpcServiceClient) DbNextI64(ctx context.Context, itr int32) (r *Result_, err error) {
-  var _args12 RpcServiceDbNextI64Args
-  _args12.Itr = itr
-  var _result13 RpcServiceDbNextI64Result
-  if err = p.c.Call(ctx, "db_next_i64", &_args12, &_result13); err != nil {
-    return
-  }
-  return _result13.GetSuccess(), nil
-}
-
-// Parameters:
-//  - Itr
-func (p *RpcServiceClient) DbPreviousI64(ctx context.Context, itr int32) (r *Result_, err error) {
-  var _args14 RpcServiceDbPreviousI64Args
+  var _args14 RpcServiceDbGetI64Args
   _args14.Itr = itr
-  var _result15 RpcServiceDbPreviousI64Result
-  if err = p.c.Call(ctx, "db_previous_i64", &_args14, &_result15); err != nil {
+  var _result15 RpcServiceDbGetI64Result
+  if err = p.c.Call(ctx, "db_get_i64", &_args14, &_result15); err != nil {
     return
   }
   return _result15.GetSuccess(), nil
 }
 
 // Parameters:
-//  - Code
-//  - Scope
-//  - Table
-//  - ID
-func (p *RpcServiceClient) DbFindI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
-  var _args16 RpcServiceDbFindI64Args
-  _args16.Code = code
-  _args16.Scope = scope
-  _args16.Table = table
-  _args16.ID = id
-  var _result17 RpcServiceDbFindI64Result
-  if err = p.c.Call(ctx, "db_find_i64", &_args16, &_result17); err != nil {
+//  - Itr
+func (p *RpcServiceClient) DbNextI64(ctx context.Context, itr int32) (r *Result_, err error) {
+  var _args16 RpcServiceDbNextI64Args
+  _args16.Itr = itr
+  var _result17 RpcServiceDbNextI64Result
+  if err = p.c.Call(ctx, "db_next_i64", &_args16, &_result17); err != nil {
     return
   }
   return _result17.GetSuccess(), nil
 }
 
 // Parameters:
-//  - Code
-//  - Scope
-//  - Table
-//  - ID
-func (p *RpcServiceClient) DbLowerboundI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
-  var _args18 RpcServiceDbLowerboundI64Args
-  _args18.Code = code
-  _args18.Scope = scope
-  _args18.Table = table
-  _args18.ID = id
-  var _result19 RpcServiceDbLowerboundI64Result
-  if err = p.c.Call(ctx, "db_lowerbound_i64", &_args18, &_result19); err != nil {
+//  - Itr
+func (p *RpcServiceClient) DbPreviousI64(ctx context.Context, itr int32) (r *Result_, err error) {
+  var _args18 RpcServiceDbPreviousI64Args
+  _args18.Itr = itr
+  var _result19 RpcServiceDbPreviousI64Result
+  if err = p.c.Call(ctx, "db_previous_i64", &_args18, &_result19); err != nil {
     return
   }
   return _result19.GetSuccess(), nil
@@ -375,14 +522,14 @@ func (p *RpcServiceClient) DbLowerboundI64(ctx context.Context, code int64, scop
 //  - Scope
 //  - Table
 //  - ID
-func (p *RpcServiceClient) DbUpperboundI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
-  var _args20 RpcServiceDbUpperboundI64Args
+func (p *RpcServiceClient) DbFindI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
+  var _args20 RpcServiceDbFindI64Args
   _args20.Code = code
   _args20.Scope = scope
   _args20.Table = table
   _args20.ID = id
-  var _result21 RpcServiceDbUpperboundI64Result
-  if err = p.c.Call(ctx, "db_upperbound_i64", &_args20, &_result21); err != nil {
+  var _result21 RpcServiceDbFindI64Result
+  if err = p.c.Call(ctx, "db_find_i64", &_args20, &_result21); err != nil {
     return
   }
   return _result21.GetSuccess(), nil
@@ -392,16 +539,52 @@ func (p *RpcServiceClient) DbUpperboundI64(ctx context.Context, code int64, scop
 //  - Code
 //  - Scope
 //  - Table
-func (p *RpcServiceClient) DbEndI64(ctx context.Context, code int64, scope int64, table int64) (r int32, err error) {
-  var _args22 RpcServiceDbEndI64Args
+//  - ID
+func (p *RpcServiceClient) DbLowerboundI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
+  var _args22 RpcServiceDbLowerboundI64Args
   _args22.Code = code
   _args22.Scope = scope
   _args22.Table = table
-  var _result23 RpcServiceDbEndI64Result
-  if err = p.c.Call(ctx, "db_end_i64", &_args22, &_result23); err != nil {
+  _args22.ID = id
+  var _result23 RpcServiceDbLowerboundI64Result
+  if err = p.c.Call(ctx, "db_lowerbound_i64", &_args22, &_result23); err != nil {
     return
   }
   return _result23.GetSuccess(), nil
+}
+
+// Parameters:
+//  - Code
+//  - Scope
+//  - Table
+//  - ID
+func (p *RpcServiceClient) DbUpperboundI64(ctx context.Context, code int64, scope int64, table int64, id int64) (r int32, err error) {
+  var _args24 RpcServiceDbUpperboundI64Args
+  _args24.Code = code
+  _args24.Scope = scope
+  _args24.Table = table
+  _args24.ID = id
+  var _result25 RpcServiceDbUpperboundI64Result
+  if err = p.c.Call(ctx, "db_upperbound_i64", &_args24, &_result25); err != nil {
+    return
+  }
+  return _result25.GetSuccess(), nil
+}
+
+// Parameters:
+//  - Code
+//  - Scope
+//  - Table
+func (p *RpcServiceClient) DbEndI64(ctx context.Context, code int64, scope int64, table int64) (r int32, err error) {
+  var _args26 RpcServiceDbEndI64Args
+  _args26.Code = code
+  _args26.Scope = scope
+  _args26.Table = table
+  var _result27 RpcServiceDbEndI64Result
+  if err = p.c.Call(ctx, "db_end_i64", &_args26, &_result27); err != nil {
+    return
+  }
+  return _result27.GetSuccess(), nil
 }
 
 type RpcServiceProcessor struct {
@@ -424,20 +607,22 @@ func (p *RpcServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFunctio
 
 func NewRpcServiceProcessor(handler RpcService) *RpcServiceProcessor {
 
-  self24 := &RpcServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self24.processorMap["funCall"] = &rpcServiceProcessorFunCall{handler:handler}
-  self24.processorMap["read_action"] = &rpcServiceProcessorReadAction{handler:handler}
-  self24.processorMap["db_store_i64"] = &rpcServiceProcessorDbStoreI64{handler:handler}
-  self24.processorMap["db_update_i64"] = &rpcServiceProcessorDbUpdateI64{handler:handler}
-  self24.processorMap["db_remove_i64"] = &rpcServiceProcessorDbRemoveI64{handler:handler}
-  self24.processorMap["db_get_i64"] = &rpcServiceProcessorDbGetI64{handler:handler}
-  self24.processorMap["db_next_i64"] = &rpcServiceProcessorDbNextI64{handler:handler}
-  self24.processorMap["db_previous_i64"] = &rpcServiceProcessorDbPreviousI64{handler:handler}
-  self24.processorMap["db_find_i64"] = &rpcServiceProcessorDbFindI64{handler:handler}
-  self24.processorMap["db_lowerbound_i64"] = &rpcServiceProcessorDbLowerboundI64{handler:handler}
-  self24.processorMap["db_upperbound_i64"] = &rpcServiceProcessorDbUpperboundI64{handler:handler}
-  self24.processorMap["db_end_i64"] = &rpcServiceProcessorDbEndI64{handler:handler}
-return self24
+  self28 := &RpcServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self28.processorMap["apply_request"] = &rpcServiceProcessorApplyRequest{handler:handler}
+  self28.processorMap["apply_finish"] = &rpcServiceProcessorApplyFinish{handler:handler}
+  self28.processorMap["funCall"] = &rpcServiceProcessorFunCall{handler:handler}
+  self28.processorMap["read_action"] = &rpcServiceProcessorReadAction{handler:handler}
+  self28.processorMap["db_store_i64"] = &rpcServiceProcessorDbStoreI64{handler:handler}
+  self28.processorMap["db_update_i64"] = &rpcServiceProcessorDbUpdateI64{handler:handler}
+  self28.processorMap["db_remove_i64"] = &rpcServiceProcessorDbRemoveI64{handler:handler}
+  self28.processorMap["db_get_i64"] = &rpcServiceProcessorDbGetI64{handler:handler}
+  self28.processorMap["db_next_i64"] = &rpcServiceProcessorDbNextI64{handler:handler}
+  self28.processorMap["db_previous_i64"] = &rpcServiceProcessorDbPreviousI64{handler:handler}
+  self28.processorMap["db_find_i64"] = &rpcServiceProcessorDbFindI64{handler:handler}
+  self28.processorMap["db_lowerbound_i64"] = &rpcServiceProcessorDbLowerboundI64{handler:handler}
+  self28.processorMap["db_upperbound_i64"] = &rpcServiceProcessorDbUpperboundI64{handler:handler}
+  self28.processorMap["db_end_i64"] = &rpcServiceProcessorDbEndI64{handler:handler}
+return self28
 }
 
 func (p *RpcServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -448,13 +633,106 @@ func (p *RpcServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.T
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x25 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x29 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x25.Write(oprot)
+  x29.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush(ctx)
-  return false, x25
+  return false, x29
 
+}
+
+type rpcServiceProcessorApplyRequest struct {
+  handler RpcService
+}
+
+func (p *rpcServiceProcessorApplyRequest) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := RpcServiceApplyRequestArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("apply_request", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := RpcServiceApplyRequestResult{}
+var retval *Apply
+  var err2 error
+  if retval, err2 = p.handler.ApplyRequest(ctx); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing apply_request: " + err2.Error())
+    oprot.WriteMessageBegin("apply_request", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return true, err2
+  } else {
+    result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("apply_request", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type rpcServiceProcessorApplyFinish struct {
+  handler RpcService
+}
+
+func (p *rpcServiceProcessorApplyFinish) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := RpcServiceApplyFinishArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("apply_finish", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := RpcServiceApplyFinishResult{}
+  var err2 error
+  if err2 = p.handler.ApplyFinish(ctx); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing apply_finish: " + err2.Error())
+    oprot.WriteMessageBegin("apply_finish", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return true, err2
+  }
+  if err2 = oprot.WriteMessageBegin("apply_finish", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
 }
 
 type rpcServiceProcessorFunCall struct {
@@ -1030,6 +1308,259 @@ var retval int32
 
 // HELPER FUNCTIONS AND STRUCTURES
 
+type RpcServiceApplyRequestArgs struct {
+}
+
+func NewRpcServiceApplyRequestArgs() *RpcServiceApplyRequestArgs {
+  return &RpcServiceApplyRequestArgs{}
+}
+
+func (p *RpcServiceApplyRequestArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceApplyRequestArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("apply_request_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceApplyRequestArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceApplyRequestArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type RpcServiceApplyRequestResult struct {
+  Success *Apply `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewRpcServiceApplyRequestResult() *RpcServiceApplyRequestResult {
+  return &RpcServiceApplyRequestResult{}
+}
+
+var RpcServiceApplyRequestResult_Success_DEFAULT *Apply
+func (p *RpcServiceApplyRequestResult) GetSuccess() *Apply {
+  if !p.IsSetSuccess() {
+    return RpcServiceApplyRequestResult_Success_DEFAULT
+  }
+return p.Success
+}
+func (p *RpcServiceApplyRequestResult) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *RpcServiceApplyRequestResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if fieldTypeId == thrift.STRUCT {
+        if err := p.ReadField0(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceApplyRequestResult)  ReadField0(iprot thrift.TProtocol) error {
+  p.Success = &Apply{}
+  if err := p.Success.Read(iprot); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceApplyRequestResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("apply_request_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceApplyRequestResult) writeField0(oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := p.Success.Write(oprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *RpcServiceApplyRequestResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceApplyRequestResult(%+v)", *p)
+}
+
+type RpcServiceApplyFinishArgs struct {
+}
+
+func NewRpcServiceApplyFinishArgs() *RpcServiceApplyFinishArgs {
+  return &RpcServiceApplyFinishArgs{}
+}
+
+func (p *RpcServiceApplyFinishArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceApplyFinishArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("apply_finish_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceApplyFinishArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceApplyFinishArgs(%+v)", *p)
+}
+
+type RpcServiceApplyFinishResult struct {
+}
+
+func NewRpcServiceApplyFinishResult() *RpcServiceApplyFinishResult {
+  return &RpcServiceApplyFinishResult{}
+}
+
+func (p *RpcServiceApplyFinishResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceApplyFinishResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("apply_finish_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceApplyFinishResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceApplyFinishResult(%+v)", *p)
+}
+
 // Attributes:
 //  - CallTime
 //  - FunCode
@@ -1140,19 +1671,19 @@ func (p *RpcServiceFunCallArgs)  ReadField3(iprot thrift.TProtocol) error {
   tMap := make(map[string]string, size)
   p.ParamMap =  tMap
   for i := 0; i < size; i ++ {
-var _key26 string
+var _key30 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _key26 = v
+    _key30 = v
 }
-var _val27 string
+var _val31 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _val27 = v
+    _val31 = v
 }
-    p.ParamMap[_key26] = _val27
+    p.ParamMap[_key30] = _val31
   }
   if err := iprot.ReadMapEnd(); err != nil {
     return thrift.PrependError("error reading map end: ", err)
@@ -1287,13 +1818,13 @@ func (p *RpcServiceFunCallResult)  ReadField0(iprot thrift.TProtocol) error {
   tSlice := make([]string, 0, size)
   p.Success =  tSlice
   for i := 0; i < size; i ++ {
-var _elem28 string
+var _elem32 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem28 = v
+    _elem32 = v
 }
-    p.Success = append(p.Success, _elem28)
+    p.Success = append(p.Success, _elem32)
   }
   if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -3950,15 +4481,15 @@ func NewRpcInterfaceClient(c thrift.TClient) *RpcInterfaceClient {
 //  - Account
 //  - Action
 func (p *RpcInterfaceClient) Apply(ctx context.Context, receiver int64, account int64, action int64) (r int32, err error) {
-  var _args64 RpcInterfaceApplyArgs
-  _args64.Receiver = receiver
-  _args64.Account = account
-  _args64.Action = action
-  var _result65 RpcInterfaceApplyResult
-  if err = p.c.Call(ctx, "apply", &_args64, &_result65); err != nil {
+  var _args68 RpcInterfaceApplyArgs
+  _args68.Receiver = receiver
+  _args68.Account = account
+  _args68.Action = action
+  var _result69 RpcInterfaceApplyResult
+  if err = p.c.Call(ctx, "apply", &_args68, &_result69); err != nil {
     return
   }
-  return _result65.GetSuccess(), nil
+  return _result69.GetSuccess(), nil
 }
 
 type RpcInterfaceProcessor struct {
@@ -3981,9 +4512,9 @@ func (p *RpcInterfaceProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewRpcInterfaceProcessor(handler RpcInterface) *RpcInterfaceProcessor {
 
-  self66 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self66.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
-return self66
+  self70 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self70.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
+return self70
 }
 
 func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -3994,12 +4525,12 @@ func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x67 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x71 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x67.Write(oprot)
+  x71.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush(ctx)
-  return false, x67
+  return false, x71
 
 }
 

@@ -73,6 +73,8 @@ void init() {
 }
 
 void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
+   //FIXME: notify client
+   return;
    if (code.size() <= 0) {
       return;
    }

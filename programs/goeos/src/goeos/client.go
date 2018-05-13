@@ -20,6 +20,7 @@ type RpcInterfaceImp struct {
 }
 
 func (p *RpcInterfaceImp) Apply(ctx context.Context, receiver int64, account int64, act int64) (r int32, err error) {
+    panic("oops");
     initRpcService()
     rr := C.micropython_on_apply(C.uint64_t(receiver), C.uint64_t(account), C.uint64_t(act));
     return int32(rr), nil
@@ -37,6 +38,23 @@ var rpcClient *rpc.RpcServiceClient
 
 
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
+    go func() {
+        for {
+            initRpcService()
+            if rpcClient != nil {
+                break;
+            }
+            time.Sleep(100*time.Millisecond);
+        }
+        for {
+            apply, _ := rpcClient.ApplyRequest(ctx)
+            if apply == nil {
+                panic("apply is nil")
+            }
+            C.micropython_on_apply(C.uint64_t(apply.Receiver), C.uint64_t(apply.Account), C.uint64_t(apply.Action));
+            rpcClient.ApplyFinish(ctx)
+        }
+    }()
     runApplyServer(transportFactory, protocolFactory, addr, secure) 
     return nil
 }

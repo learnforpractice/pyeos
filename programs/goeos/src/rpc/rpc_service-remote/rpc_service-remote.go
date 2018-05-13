@@ -22,6 +22,8 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
   flag.PrintDefaults()
   fmt.Fprintln(os.Stderr, "\nFunctions:")
+  fmt.Fprintln(os.Stderr, "  Apply apply_request()")
+  fmt.Fprintln(os.Stderr, "  void apply_finish()")
   fmt.Fprintln(os.Stderr, "   funCall(i64 callTime, string funCode,  paramMap)")
   fmt.Fprintln(os.Stderr, "  string read_action()")
   fmt.Fprintln(os.Stderr, "  i32 db_store_i64(i64 scope, i64 table, i64 payer, i64 id, string buffer)")
@@ -131,32 +133,48 @@ func main() {
   }
   
   switch cmd {
+  case "apply_request":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "ApplyRequest requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.ApplyRequest(context.Background()))
+    fmt.Print("\n")
+    break
+  case "apply_finish":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "ApplyFinish requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.ApplyFinish(context.Background()))
+    fmt.Print("\n")
+    break
   case "funCall":
     if flag.NArg() - 1 != 3 {
       fmt.Fprintln(os.Stderr, "FunCall requires 3 args")
       flag.Usage()
     }
-    argvalue0, err29 := (strconv.ParseInt(flag.Arg(1), 10, 64))
-    if err29 != nil {
+    argvalue0, err33 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+    if err33 != nil {
       Usage()
       return
     }
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg31 := flag.Arg(3)
-    mbTrans32 := thrift.NewTMemoryBufferLen(len(arg31))
-    defer mbTrans32.Close()
-    _, err33 := mbTrans32.WriteString(arg31)
-    if err33 != nil { 
+    arg35 := flag.Arg(3)
+    mbTrans36 := thrift.NewTMemoryBufferLen(len(arg35))
+    defer mbTrans36.Close()
+    _, err37 := mbTrans36.WriteString(arg35)
+    if err37 != nil { 
       Usage()
       return
     }
-    factory34 := thrift.NewTSimpleJSONProtocolFactory()
-    jsProt35 := factory34.GetProtocol(mbTrans32)
+    factory38 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt39 := factory38.GetProtocol(mbTrans36)
     containerStruct2 := rpc.NewRpcServiceFunCallArgs()
-    err36 := containerStruct2.ReadField3(jsProt35)
-    if err36 != nil {
+    err40 := containerStruct2.ReadField3(jsProt39)
+    if err40 != nil {
       Usage()
       return
     }
@@ -178,26 +196,26 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbStoreI64 requires 5 args")
       flag.Usage()
     }
-    argvalue0, err37 := (strconv.ParseInt(flag.Arg(1), 10, 64))
-    if err37 != nil {
+    argvalue0, err41 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+    if err41 != nil {
       Usage()
       return
     }
     value0 := argvalue0
-    argvalue1, err38 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-    if err38 != nil {
+    argvalue1, err42 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+    if err42 != nil {
       Usage()
       return
     }
     value1 := argvalue1
-    argvalue2, err39 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-    if err39 != nil {
+    argvalue2, err43 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err43 != nil {
       Usage()
       return
     }
     value2 := argvalue2
-    argvalue3, err40 := (strconv.ParseInt(flag.Arg(4), 10, 64))
-    if err40 != nil {
+    argvalue3, err44 := (strconv.ParseInt(flag.Arg(4), 10, 64))
+    if err44 != nil {
       Usage()
       return
     }
@@ -212,15 +230,15 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbUpdateI64 requires 3 args")
       flag.Usage()
     }
-    tmp0, err42 := (strconv.Atoi(flag.Arg(1)))
-    if err42 != nil {
+    tmp0, err46 := (strconv.Atoi(flag.Arg(1)))
+    if err46 != nil {
       Usage()
       return
     }
     argvalue0 := int32(tmp0)
     value0 := argvalue0
-    argvalue1, err43 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-    if err43 != nil {
+    argvalue1, err47 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+    if err47 != nil {
       Usage()
       return
     }
@@ -235,8 +253,8 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbRemoveI64 requires 1 args")
       flag.Usage()
     }
-    tmp0, err45 := (strconv.Atoi(flag.Arg(1)))
-    if err45 != nil {
+    tmp0, err49 := (strconv.Atoi(flag.Arg(1)))
+    if err49 != nil {
       Usage()
       return
     }
@@ -250,8 +268,8 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbGetI64 requires 1 args")
       flag.Usage()
     }
-    tmp0, err46 := (strconv.Atoi(flag.Arg(1)))
-    if err46 != nil {
+    tmp0, err50 := (strconv.Atoi(flag.Arg(1)))
+    if err50 != nil {
       Usage()
       return
     }
@@ -265,8 +283,8 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbNextI64 requires 1 args")
       flag.Usage()
     }
-    tmp0, err47 := (strconv.Atoi(flag.Arg(1)))
-    if err47 != nil {
+    tmp0, err51 := (strconv.Atoi(flag.Arg(1)))
+    if err51 != nil {
       Usage()
       return
     }
@@ -280,8 +298,8 @@ func main() {
       fmt.Fprintln(os.Stderr, "DbPreviousI64 requires 1 args")
       flag.Usage()
     }
-    tmp0, err48 := (strconv.Atoi(flag.Arg(1)))
-    if err48 != nil {
+    tmp0, err52 := (strconv.Atoi(flag.Arg(1)))
+    if err52 != nil {
       Usage()
       return
     }
@@ -293,38 +311,6 @@ func main() {
   case "db_find_i64":
     if flag.NArg() - 1 != 4 {
       fmt.Fprintln(os.Stderr, "DbFindI64 requires 4 args")
-      flag.Usage()
-    }
-    argvalue0, err49 := (strconv.ParseInt(flag.Arg(1), 10, 64))
-    if err49 != nil {
-      Usage()
-      return
-    }
-    value0 := argvalue0
-    argvalue1, err50 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-    if err50 != nil {
-      Usage()
-      return
-    }
-    value1 := argvalue1
-    argvalue2, err51 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-    if err51 != nil {
-      Usage()
-      return
-    }
-    value2 := argvalue2
-    argvalue3, err52 := (strconv.ParseInt(flag.Arg(4), 10, 64))
-    if err52 != nil {
-      Usage()
-      return
-    }
-    value3 := argvalue3
-    fmt.Print(client.DbFindI64(context.Background(), value0, value1, value2, value3))
-    fmt.Print("\n")
-    break
-  case "db_lowerbound_i64":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "DbLowerboundI64 requires 4 args")
       flag.Usage()
     }
     argvalue0, err53 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -351,12 +337,12 @@ func main() {
       return
     }
     value3 := argvalue3
-    fmt.Print(client.DbLowerboundI64(context.Background(), value0, value1, value2, value3))
+    fmt.Print(client.DbFindI64(context.Background(), value0, value1, value2, value3))
     fmt.Print("\n")
     break
-  case "db_upperbound_i64":
+  case "db_lowerbound_i64":
     if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "DbUpperboundI64 requires 4 args")
+      fmt.Fprintln(os.Stderr, "DbLowerboundI64 requires 4 args")
       flag.Usage()
     }
     argvalue0, err57 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -383,12 +369,12 @@ func main() {
       return
     }
     value3 := argvalue3
-    fmt.Print(client.DbUpperboundI64(context.Background(), value0, value1, value2, value3))
+    fmt.Print(client.DbLowerboundI64(context.Background(), value0, value1, value2, value3))
     fmt.Print("\n")
     break
-  case "db_end_i64":
-    if flag.NArg() - 1 != 3 {
-      fmt.Fprintln(os.Stderr, "DbEndI64 requires 3 args")
+  case "db_upperbound_i64":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "DbUpperboundI64 requires 4 args")
       flag.Usage()
     }
     argvalue0, err61 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -405,6 +391,38 @@ func main() {
     value1 := argvalue1
     argvalue2, err63 := (strconv.ParseInt(flag.Arg(3), 10, 64))
     if err63 != nil {
+      Usage()
+      return
+    }
+    value2 := argvalue2
+    argvalue3, err64 := (strconv.ParseInt(flag.Arg(4), 10, 64))
+    if err64 != nil {
+      Usage()
+      return
+    }
+    value3 := argvalue3
+    fmt.Print(client.DbUpperboundI64(context.Background(), value0, value1, value2, value3))
+    fmt.Print("\n")
+    break
+  case "db_end_i64":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "DbEndI64 requires 3 args")
+      flag.Usage()
+    }
+    argvalue0, err65 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+    if err65 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    argvalue1, err66 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+    if err66 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    argvalue2, err67 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err67 != nil {
       Usage()
       return
     }

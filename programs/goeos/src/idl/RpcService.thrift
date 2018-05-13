@@ -7,10 +7,17 @@ struct Result {
   2: binary value,
 }
 
-service RpcService {
+struct Apply {
+    1:i64 receiver, 
+    2:i64 account, 
+    3:i64 action
+}
 
-	list<string> funCall(1:i64 callTime, 2:string funCode, 3:map<string, string> paramMap),
-    binary read_action();
+service RpcService {
+    Apply apply_request();
+	void apply_finish()
+	list<string> funCall(1:i64 callTime, 2:string funCode, 3:map<string, string> paramMap);
+	binary read_action();
     
     i32 db_store_i64( 1:i64 scope, 2:i64 table, 3:i64 payer, 4:i64 id, 5:binary buffer );
     void db_update_i64( 1:i32 itr, 2:i64 payer, 3:binary buffer );
