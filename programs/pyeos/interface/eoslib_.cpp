@@ -11,11 +11,11 @@ void n2s_(uint64_t n, string& result) {
    }
 }
 
+extern "C" {
+
 void get_code_( uint64_t account, string& code ) {
    database_api::get().get_code( account, code);
 }
-
-extern "C" {
 
 uint64_t s2n_(const char* str) {
    try {
@@ -75,6 +75,8 @@ int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t 
 
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table ) {
    return database_api::get().db_end_i64( code, scope, table );
+}
+
 }
 
 
@@ -166,6 +168,4 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64,  uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx128, uint128_t_)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t_)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_WRAP(idx_double, uint64_t)
-
-}
 

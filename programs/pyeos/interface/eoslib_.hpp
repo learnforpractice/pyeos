@@ -11,10 +11,13 @@ using namespace eosio::chain;
 
 typedef __uint128_t uint128_t_;
 
+void n2s_(uint64_t n, string& result);
+
+extern "C" {
+
 void get_code_( uint64_t account, string& code );
 bool is_account_( uint64_t account );
 uint64_t s2n_(const char* str);
-void n2s_(uint64_t n, string& result);
 
 void eosio_assert_(int condition, const char* str);
 
@@ -27,6 +30,8 @@ int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
+
+}
 
 
 #define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP_DEF(IDX, TYPE)\

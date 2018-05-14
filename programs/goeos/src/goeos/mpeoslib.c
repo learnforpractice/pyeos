@@ -48,10 +48,10 @@ int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id
 void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
    uint64_t code;
    uint64_t scope;
-   uint64_t payer;
+   uint64_t _payer;
    uint64_t table;
    uint64_t id;
-   mp_db_get_table_i64(itr, (GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   mp_db_get_table_i64(itr, &code, &scope, &_payer, &table, &id);
    DbUpdateI64Ex( (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
 }
 
@@ -61,8 +61,8 @@ void mp_db_remove_i64( int itr ) {
    uint64_t payer;
    uint64_t table;
    uint64_t id;
-   mp_db_get_table_i64(itr, (GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
-   DbRemoveI64Ex((GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   mp_db_get_table_i64(itr, &code, &scope, &payer, &table, &id);
+   DbRemoveI64Ex((GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
 }
 
 int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {

@@ -24,8 +24,8 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     void eosio_assert_(int condition, const char* str);
 
     int db_get_i64_( int iterator, char* buffer, size_t buffer_size )
-    int db_next_i64_( int iterator, uint64_t& primary )
-    int db_previous_i64_( int iterator, uint64_t& primary )
+    int db_next_i64_( int iterator, uint64_t* primary )
+    int db_previous_i64_( int iterator, uint64_t* primary )
     int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
     int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
     int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
@@ -109,12 +109,12 @@ def db_get_i64( int iterator ):
 
 def db_next_i64( int iterator):
     cdef uint64_t primary = 0
-    itr = db_next_i64_( iterator, primary )
+    itr = db_next_i64_( iterator, &primary )
     return (itr, primary)
 
 def db_previous_i64( int iterator ):
     cdef uint64_t primary = 0
-    itr = db_previous_i64_( iterator, primary )
+    itr = db_previous_i64_( iterator, &primary )
     return (itr, primary)
 
 def db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):

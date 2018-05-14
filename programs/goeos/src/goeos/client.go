@@ -214,14 +214,14 @@ func DbEndI64(code int64, scope int64, table int64) (itr int32) {
 }
 
 //export DbUpdateI64Ex
-func  DbUpdateI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64, buffer []byte) () {
-    rpcClient.DbUpdateI64Ex(ctx, scope, payer, table, id, buffer)
+func DbUpdateI64Ex(scope int64, payer int64, table int64, id int64, v unsafe.Pointer, l C.int) () {
+    rpcClient.DbUpdateI64Ex(ctx, scope, payer, table, id, C.GoBytes(v, l))
     return
 }
 
 //export DbRemoveI64Ex
-func DbRemoveI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64) () {
-    rpcClient.DbRemoveI64Ex(ctx scope, payer, table, id)
+func DbRemoveI64Ex(scope int64, payer int64, table int64, id int64) () {
+    rpcClient.DbRemoveI64Ex(ctx, scope, payer, table, id)
     return
 }
 
