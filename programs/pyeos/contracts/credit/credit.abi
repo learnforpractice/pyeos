@@ -1,0 +1,16 @@
+{
+  "actions": [{
+      "name": "addtowl",
+      "type": "name"
+    },{
+      "name": "rmfromwl",
+      "type": "name"
+    },{
+      "name": "addtobl",
+      "type": "name"
+    },{
+      "name": "rmfrombl",
+      "type": "name"
+    },
+  ]
+}
