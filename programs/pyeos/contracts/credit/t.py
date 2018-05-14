@@ -15,7 +15,7 @@ print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init(wasm=False):
-    if not eosapi.get_account('test2').permissions:
+    if not eosapi.get_account('test').permissions:
         r = eosapi.create_account('eosio', 'test2', initeos.key1, initeos.key2)
         assert r
         eosapi.produce_block()

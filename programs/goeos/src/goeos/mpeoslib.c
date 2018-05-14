@@ -7,14 +7,27 @@
 #include "_cgo_export.h"
 #include "mpeoslib.h"
 
+
 //mpeoslib.cpp
 mp_obj_t uint64_to_string_(uint64_t n);
-struct mpapi* c_get_mpapi();
 
 //database_api.cpp
 int mp_action_size();
 int mp_read_action(char* buf, size_t size);
 int mp_is_account(uint64_t account);
+uint64_t mp_get_receiver();
+
+void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id);
+
+//interface/eoslib.hpp
+int db_get_i64_( int iterator, char* buffer, size_t buffer_size );
+int db_next_i64_( int iterator, uint64_t* primary );
+int db_previous_i64_( int iterator, uint64_t* primary );
+int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
+
 
 int call_onApply(uint64_t receiver, uint64_t account, uint64_t act)
 {
@@ -28,60 +41,56 @@ void mp_require_auth(uint64_t account) {
 }
 
 int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   return DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
+   DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
+   return db_find_i64_(mp_get_receiver(), scope, table, id);
 }
 
 void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
-   return DbUpdateI64(itr, payer, (void *)buffer, (GoInt)buffer_size);
+   uint64_t code;
+   uint64_t scope;
+   uint64_t payer;
+   uint64_t table;
+   uint64_t id;
+   mp_db_get_table_i64(itr, (GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   DbUpdateI64Ex( (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
 }
 
 void mp_db_remove_i64( int itr ) {
-   DbRemoveI64(itr);
+   uint64_t code;
+   uint64_t scope;
+   uint64_t payer;
+   uint64_t table;
+   uint64_t id;
+   mp_db_get_table_i64(itr, (GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   DbRemoveI64Ex((GoInt64)code, (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
 }
 
 int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
-   struct DbGetI64_return ret = DbGetI64(itr);
-   if (buffer_size <= 0) {
-      return ret.r0;
-   }
-   if (buffer_size > ret.r0) {
-      buffer_size = ret.r0;
-   }
-   memcpy(buffer, ret.r1, buffer_size);
-   free(ret.r1);
-   return buffer_size;
+   return db_get_i64_(itr, buffer, buffer_size);
 }
 
 int mp_db_next_i64( int itr, uint64_t* primary ) {
-   struct DbNextI64_return ret = DbNextI64(itr);
-   assert(ret.r1 == sizeof(uint64_t));
-   memcpy(primary, ret.r2, sizeof(*primary));
-   free(ret.r2);
-   return ret.r0;
+   return db_next_i64_(itr, primary);
 }
 
 int mp_db_previous_i64( int itr, uint64_t* primary ) {
-   struct DbPreviousI64_return ret = DbPreviousI64(itr);
-   assert(ret.r1 == sizeof(uint64_t));
-   memcpy(primary, ret.r2, sizeof(*primary));
-   free(ret.r2);
-   return ret.r0;
+   return db_previous_i64_(itr, primary);
 }
 
 int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return DbFindI64((GoInt64)code, (GoInt64)scope, (GoInt64)table, (GoInt64)id);
+   return db_find_i64(code, scope, table, id);
 }
 
 int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return DbLowerboundI64((GoInt64)code, (GoInt64)scope, (GoInt64)table, (GoInt64)id);
+   return db_lowerbound_i64_(code, scope, table, id);
 }
 
 int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return DbUpperboundI64((GoInt64)code, (GoInt64)scope, (GoInt64)table, (GoInt64)id);
+   return db_upperbound_i64_(code, scope, table, id);
 }
 
 int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
-   return DbEndI64((GoInt64)code, (GoInt64)scope, (GoInt64)table);
+   return db_end_i64(code, scope, table);
 }
 
 static struct eosapi s_eosapi;

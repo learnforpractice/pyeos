@@ -506,6 +506,8 @@ class database_api {
 
       void update_db_usage( const account_name& payer, int64_t delta );
 
+      void db_get_table_i64( int iterator, uint64_t& code, uint64_t& scope, uint64_t& payer, uint64_t& table, uint64_t& id);
+
       int  db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
       void db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size );
       void db_remove_i64( int iterator );

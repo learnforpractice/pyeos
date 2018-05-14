@@ -212,3 +212,16 @@ func DbEndI64(code int64, scope int64, table int64) (itr int32) {
     itr, _ = rpcClient.DbEndI64(ctx, code, scope, table)
     return
 }
+
+//export DbUpdateI64Ex
+func  DbUpdateI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64, buffer []byte) () {
+    rpcClient.DbUpdateI64Ex(ctx, scope, payer, table, id, buffer)
+    return
+}
+
+//export DbRemoveI64Ex
+func DbRemoveI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64) () {
+    rpcClient.DbRemoveI64Ex(ctx scope, payer, table, id)
+    return
+}
+

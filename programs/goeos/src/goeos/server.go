@@ -185,6 +185,18 @@ func (p *RpcServiceImpl) DbEndI64(ctx context.Context, code int64, scope int64, 
     return int32(ret), nil
 }
 
+
+func (p *RpcServiceImpl) DbUpdateI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64, buffer []byte) (err error) {
+    C.db_update_i64_ex(C.uint64_t(scope), C.uint64_t(payer), C.uint64_t(table), C.uint64_t(id), (*C.char)(unsafe.Pointer(&buffer[0])), C.size_t(len(buffer)))
+    return nil
+}
+
+func (p *RpcServiceImpl) DbRemoveI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64) (err error) {
+    C.db_remove_i64_ex(C.uint64_t(scope), C.uint64_t(payer), C.uint64_t(table), C.uint64_t(id))
+    return nil
+}
+
+
 var client *rpc.RpcInterfaceClient
 var __transportFactory thrift.TTransportFactory
 var __protocolFactory thrift.TProtocolFactory

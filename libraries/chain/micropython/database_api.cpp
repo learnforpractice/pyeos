@@ -178,6 +178,14 @@ const contracts::table_id_object& database_api::find_or_create_table( name code,
 
 int database_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
 //   require_write_lock( scope );
+   /*
+   int itr = db_find_i64(get_receiver(), scope, table, id);
+   if (itr >= 0) {
+      db_update_i64( itr, payer, buffer, buffer_size );
+      return itr;
+   }
+   */
+
    const auto& tab = find_or_create_table( get_receiver(), scope, table, payer );
    auto tableid = tab.id;
 
@@ -196,7 +204,7 @@ int database_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, c
    });
 
    int64_t billable_size = (int64_t)(buffer_size + config::billable_size_v<key_value_object>);
-   update_db_usage( payer, billable_size);
+   update_db_usage( payer, billable_size );
 
    keyval_cache.cache_table( tab );
    return keyval_cache.add( obj );
@@ -274,6 +282,17 @@ void database_api::db_remove_i64( int iterator ) {
    }
 
    keyval_cache.remove( iterator );
+}
+
+void database_api::db_get_table_i64( int iterator, uint64_t& code, uint64_t& scope, uint64_t& payer, uint64_t& table, uint64_t& id) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+   const auto& table_obj = keyval_cache.get_table( obj.t_id );
+
+   code = table_obj.code;
+   scope = table_obj.scope;
+   table = table_obj.table;
+   payer = table_obj.payer;
+   id = obj.primary_key;
 }
 
 const contracts::table_id_object* database_api::find_table( name code, name scope, name table ) {
@@ -482,6 +501,8 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, uint64_t)
 
 } } /// eosio::chain
 
+using namespace eosio::chain;
+
 extern "C" {
 int mp_action_size() {
    return eosio::chain::database_api::get().get_action_object().data.size();
@@ -495,9 +516,18 @@ int mp_read_action(char* buf, size_t size) {
    memcpy(buf, data.data(), size);
    return size;
 }
+
 int mp_is_account(uint64_t account) {
    eosio::chain::account_name _account(account);
    return eosio::chain::database_api::get().is_account(_account);
+}
+
+uint64_t mp_get_receiver() {
+   return database_api::get().get_action_object().receiver;
+}
+
+void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id) {
+   eosio::chain::database_api::get().db_get_table_i64( itr, *code, *scope, *payer, *table, *id );
 }
 
 }

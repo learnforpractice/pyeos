@@ -1,6 +1,21 @@
+#include "micropython/database_api.hpp"
 #include "eoslib_.hpp"
 #include <eosio/chain/exceptions.hpp>
 
+using namespace eosio::chain;
+
+void n2s_(uint64_t n, string& result) {
+   try {
+      result = name(n).to_string();
+   } catch (...) {
+   }
+}
+
+void get_code_( uint64_t account, string& code ) {
+   database_api::get().get_code( account, code);
+}
+
+extern "C" {
 
 uint64_t s2n_(const char* str) {
    try {
@@ -10,21 +25,10 @@ uint64_t s2n_(const char* str) {
    return 0;
 }
 
-void n2s_(uint64_t n, string& result) {
-   try {
-      result = name(n).to_string();
-   } catch (...) {
-   }
-}
-
 void eosio_assert_(int condition, const char* str) {
    std::string message( str );
    if( !condition ) edump((message));
    FC_ASSERT( condition, "assertion failed: ${s}", ("s",message));
-}
-
-void get_code_( uint64_t account, string& code ) {
-   database_api::get().get_code( account, code);
 }
 
 int read_action_( char* buffer, size_t size ) {
@@ -49,12 +53,12 @@ int db_get_i64_( int iterator, char* buffer, size_t buffer_size ) {
    return database_api::get().db_get_i64( iterator, buffer, buffer_size );
 }
 
-int db_next_i64_( int iterator, uint64_t& primary ) {
-   return database_api::get().db_next_i64( iterator, primary );
+int db_next_i64_( int iterator, uint64_t* primary ) {
+   return database_api::get().db_next_i64( iterator, *primary );
 }
 
-int db_previous_i64_( int iterator, uint64_t& primary ) {
-   return database_api::get().db_previous_i64( iterator, primary );
+int db_previous_i64_( int iterator, uint64_t* primary ) {
+   return database_api::get().db_previous_i64( iterator, *primary );
 }
 
 int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
@@ -162,3 +166,6 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64,  uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx128, uint128_t_)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t_)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_WRAP(idx_double, uint64_t)
+
+}
+

@@ -125,20 +125,20 @@ func main() {
       fmt.Fprintln(os.Stderr, "Apply requires 3 args")
       flag.Usage()
     }
-    argvalue0, err72 := (strconv.ParseInt(flag.Arg(1), 10, 64))
-    if err72 != nil {
+    argvalue0, err85 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+    if err85 != nil {
       Usage()
       return
     }
     value0 := argvalue0
-    argvalue1, err73 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-    if err73 != nil {
+    argvalue1, err86 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+    if err86 != nil {
       Usage()
       return
     }
     value1 := argvalue1
-    argvalue2, err74 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-    if err74 != nil {
+    argvalue2, err87 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err87 != nil {
       Usage()
       return
     }

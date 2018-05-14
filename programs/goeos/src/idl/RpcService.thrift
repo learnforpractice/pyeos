@@ -30,6 +30,9 @@ service RpcService {
     i32 db_upperbound_i64( 1:i64 code, 2:i64 scope, 3:i64 table, 4:i64 id );
     i32 db_end_i64( 1:i64 code, 2:i64 scope, 3:i64 table );
 
+    void db_update_i64_ex( 1:i64 scope, 2:i64 payer, 3:i64 table, 4:i64 id, 5:binary buffer );
+    void db_remove_i64_ex( 1:i64 scope, 2:i64 payer, 3:i64 table, 4:i64 id );
+
 }
 
 service RpcInterface {

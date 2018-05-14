@@ -364,6 +364,19 @@ type RpcService interface {
   //  - Scope
   //  - Table
   DbEndI64(ctx context.Context, code int64, scope int64, table int64) (r int32, err error)
+  // Parameters:
+  //  - Scope
+  //  - Payer
+  //  - Table
+  //  - ID
+  //  - Buffer
+  DbUpdateI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64, buffer []byte) (err error)
+  // Parameters:
+  //  - Scope
+  //  - Payer
+  //  - Table
+  //  - ID
+  DbRemoveI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64) (err error)
 }
 
 type RpcServiceClient struct {
@@ -587,6 +600,44 @@ func (p *RpcServiceClient) DbEndI64(ctx context.Context, code int64, scope int64
   return _result27.GetSuccess(), nil
 }
 
+// Parameters:
+//  - Scope
+//  - Payer
+//  - Table
+//  - ID
+//  - Buffer
+func (p *RpcServiceClient) DbUpdateI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64, buffer []byte) (err error) {
+  var _args28 RpcServiceDbUpdateI64ExArgs
+  _args28.Scope = scope
+  _args28.Payer = payer
+  _args28.Table = table
+  _args28.ID = id
+  _args28.Buffer = buffer
+  var _result29 RpcServiceDbUpdateI64ExResult
+  if err = p.c.Call(ctx, "db_update_i64_ex", &_args28, &_result29); err != nil {
+    return
+  }
+  return nil
+}
+
+// Parameters:
+//  - Scope
+//  - Payer
+//  - Table
+//  - ID
+func (p *RpcServiceClient) DbRemoveI64Ex(ctx context.Context, scope int64, payer int64, table int64, id int64) (err error) {
+  var _args30 RpcServiceDbRemoveI64ExArgs
+  _args30.Scope = scope
+  _args30.Payer = payer
+  _args30.Table = table
+  _args30.ID = id
+  var _result31 RpcServiceDbRemoveI64ExResult
+  if err = p.c.Call(ctx, "db_remove_i64_ex", &_args30, &_result31); err != nil {
+    return
+  }
+  return nil
+}
+
 type RpcServiceProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
   handler RpcService
@@ -607,22 +658,24 @@ func (p *RpcServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFunctio
 
 func NewRpcServiceProcessor(handler RpcService) *RpcServiceProcessor {
 
-  self28 := &RpcServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self28.processorMap["apply_request"] = &rpcServiceProcessorApplyRequest{handler:handler}
-  self28.processorMap["apply_finish"] = &rpcServiceProcessorApplyFinish{handler:handler}
-  self28.processorMap["funCall"] = &rpcServiceProcessorFunCall{handler:handler}
-  self28.processorMap["read_action"] = &rpcServiceProcessorReadAction{handler:handler}
-  self28.processorMap["db_store_i64"] = &rpcServiceProcessorDbStoreI64{handler:handler}
-  self28.processorMap["db_update_i64"] = &rpcServiceProcessorDbUpdateI64{handler:handler}
-  self28.processorMap["db_remove_i64"] = &rpcServiceProcessorDbRemoveI64{handler:handler}
-  self28.processorMap["db_get_i64"] = &rpcServiceProcessorDbGetI64{handler:handler}
-  self28.processorMap["db_next_i64"] = &rpcServiceProcessorDbNextI64{handler:handler}
-  self28.processorMap["db_previous_i64"] = &rpcServiceProcessorDbPreviousI64{handler:handler}
-  self28.processorMap["db_find_i64"] = &rpcServiceProcessorDbFindI64{handler:handler}
-  self28.processorMap["db_lowerbound_i64"] = &rpcServiceProcessorDbLowerboundI64{handler:handler}
-  self28.processorMap["db_upperbound_i64"] = &rpcServiceProcessorDbUpperboundI64{handler:handler}
-  self28.processorMap["db_end_i64"] = &rpcServiceProcessorDbEndI64{handler:handler}
-return self28
+  self32 := &RpcServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self32.processorMap["apply_request"] = &rpcServiceProcessorApplyRequest{handler:handler}
+  self32.processorMap["apply_finish"] = &rpcServiceProcessorApplyFinish{handler:handler}
+  self32.processorMap["funCall"] = &rpcServiceProcessorFunCall{handler:handler}
+  self32.processorMap["read_action"] = &rpcServiceProcessorReadAction{handler:handler}
+  self32.processorMap["db_store_i64"] = &rpcServiceProcessorDbStoreI64{handler:handler}
+  self32.processorMap["db_update_i64"] = &rpcServiceProcessorDbUpdateI64{handler:handler}
+  self32.processorMap["db_remove_i64"] = &rpcServiceProcessorDbRemoveI64{handler:handler}
+  self32.processorMap["db_get_i64"] = &rpcServiceProcessorDbGetI64{handler:handler}
+  self32.processorMap["db_next_i64"] = &rpcServiceProcessorDbNextI64{handler:handler}
+  self32.processorMap["db_previous_i64"] = &rpcServiceProcessorDbPreviousI64{handler:handler}
+  self32.processorMap["db_find_i64"] = &rpcServiceProcessorDbFindI64{handler:handler}
+  self32.processorMap["db_lowerbound_i64"] = &rpcServiceProcessorDbLowerboundI64{handler:handler}
+  self32.processorMap["db_upperbound_i64"] = &rpcServiceProcessorDbUpperboundI64{handler:handler}
+  self32.processorMap["db_end_i64"] = &rpcServiceProcessorDbEndI64{handler:handler}
+  self32.processorMap["db_update_i64_ex"] = &rpcServiceProcessorDbUpdateI64Ex{handler:handler}
+  self32.processorMap["db_remove_i64_ex"] = &rpcServiceProcessorDbRemoveI64Ex{handler:handler}
+return self32
 }
 
 func (p *RpcServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -633,12 +686,12 @@ func (p *RpcServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.T
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x29 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x33 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x29.Write(oprot)
+  x33.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush(ctx)
-  return false, x29
+  return false, x33
 
 }
 
@@ -1305,6 +1358,96 @@ var retval int32
   return true, err
 }
 
+type rpcServiceProcessorDbUpdateI64Ex struct {
+  handler RpcService
+}
+
+func (p *rpcServiceProcessorDbUpdateI64Ex) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := RpcServiceDbUpdateI64ExArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("db_update_i64_ex", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := RpcServiceDbUpdateI64ExResult{}
+  var err2 error
+  if err2 = p.handler.DbUpdateI64Ex(ctx, args.Scope, args.Payer, args.Table, args.ID, args.Buffer); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing db_update_i64_ex: " + err2.Error())
+    oprot.WriteMessageBegin("db_update_i64_ex", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return true, err2
+  }
+  if err2 = oprot.WriteMessageBegin("db_update_i64_ex", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type rpcServiceProcessorDbRemoveI64Ex struct {
+  handler RpcService
+}
+
+func (p *rpcServiceProcessorDbRemoveI64Ex) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := RpcServiceDbRemoveI64ExArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("db_remove_i64_ex", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := RpcServiceDbRemoveI64ExResult{}
+  var err2 error
+  if err2 = p.handler.DbRemoveI64Ex(ctx, args.Scope, args.Payer, args.Table, args.ID); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing db_remove_i64_ex: " + err2.Error())
+    oprot.WriteMessageBegin("db_remove_i64_ex", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush(ctx)
+    return true, err2
+  }
+  if err2 = oprot.WriteMessageBegin("db_remove_i64_ex", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
 
 // HELPER FUNCTIONS AND STRUCTURES
 
@@ -1671,19 +1814,19 @@ func (p *RpcServiceFunCallArgs)  ReadField3(iprot thrift.TProtocol) error {
   tMap := make(map[string]string, size)
   p.ParamMap =  tMap
   for i := 0; i < size; i ++ {
-var _key30 string
+var _key34 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _key30 = v
+    _key34 = v
 }
-var _val31 string
+var _val35 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _val31 = v
+    _val35 = v
 }
-    p.ParamMap[_key30] = _val31
+    p.ParamMap[_key34] = _val35
   }
   if err := iprot.ReadMapEnd(); err != nil {
     return thrift.PrependError("error reading map end: ", err)
@@ -1818,13 +1961,13 @@ func (p *RpcServiceFunCallResult)  ReadField0(iprot thrift.TProtocol) error {
   tSlice := make([]string, 0, size)
   p.Success =  tSlice
   for i := 0; i < size; i ++ {
-var _elem32 string
+var _elem36 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem32 = v
+    _elem36 = v
 }
-    p.Success = append(p.Success, _elem32)
+    p.Success = append(p.Success, _elem36)
   }
   if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -4443,6 +4586,542 @@ func (p *RpcServiceDbEndI64Result) String() string {
   return fmt.Sprintf("RpcServiceDbEndI64Result(%+v)", *p)
 }
 
+// Attributes:
+//  - Scope
+//  - Payer
+//  - Table
+//  - ID
+//  - Buffer
+type RpcServiceDbUpdateI64ExArgs struct {
+  Scope int64 `thrift:"scope,1" db:"scope" json:"scope"`
+  Payer int64 `thrift:"payer,2" db:"payer" json:"payer"`
+  Table int64 `thrift:"table,3" db:"table" json:"table"`
+  ID int64 `thrift:"id,4" db:"id" json:"id"`
+  Buffer []byte `thrift:"buffer,5" db:"buffer" json:"buffer"`
+}
+
+func NewRpcServiceDbUpdateI64ExArgs() *RpcServiceDbUpdateI64ExArgs {
+  return &RpcServiceDbUpdateI64ExArgs{}
+}
+
+
+func (p *RpcServiceDbUpdateI64ExArgs) GetScope() int64 {
+  return p.Scope
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) GetPayer() int64 {
+  return p.Payer
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) GetTable() int64 {
+  return p.Table
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) GetID() int64 {
+  return p.ID
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) GetBuffer() []byte {
+  return p.Buffer
+}
+func (p *RpcServiceDbUpdateI64ExArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField1(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField2(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 3:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField3(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 4:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField4(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 5:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField5(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Scope = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Payer = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.Table = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 4: ", err)
+} else {
+  p.ID = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBinary(); err != nil {
+  return thrift.PrependError("error reading field 5: ", err)
+} else {
+  p.Buffer = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("db_update_i64_ex_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("scope", thrift.I64, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:scope: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Scope)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.scope (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:scope: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("payer", thrift.I64, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:payer: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Payer)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.payer (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:payer: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("table", thrift.I64, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:table: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Table)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.table (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:table: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("id", thrift.I64, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:id: ", p), err) }
+  if err := oprot.WriteI64(int64(p.ID)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.id (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:id: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("buffer", thrift.STRING, 5); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:buffer: ", p), err) }
+  if err := oprot.WriteBinary(p.Buffer); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.buffer (5) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:buffer: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbUpdateI64ExArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceDbUpdateI64ExArgs(%+v)", *p)
+}
+
+type RpcServiceDbUpdateI64ExResult struct {
+}
+
+func NewRpcServiceDbUpdateI64ExResult() *RpcServiceDbUpdateI64ExResult {
+  return &RpcServiceDbUpdateI64ExResult{}
+}
+
+func (p *RpcServiceDbUpdateI64ExResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("db_update_i64_ex_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceDbUpdateI64ExResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceDbUpdateI64ExResult(%+v)", *p)
+}
+
+// Attributes:
+//  - Scope
+//  - Payer
+//  - Table
+//  - ID
+type RpcServiceDbRemoveI64ExArgs struct {
+  Scope int64 `thrift:"scope,1" db:"scope" json:"scope"`
+  Payer int64 `thrift:"payer,2" db:"payer" json:"payer"`
+  Table int64 `thrift:"table,3" db:"table" json:"table"`
+  ID int64 `thrift:"id,4" db:"id" json:"id"`
+}
+
+func NewRpcServiceDbRemoveI64ExArgs() *RpcServiceDbRemoveI64ExArgs {
+  return &RpcServiceDbRemoveI64ExArgs{}
+}
+
+
+func (p *RpcServiceDbRemoveI64ExArgs) GetScope() int64 {
+  return p.Scope
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) GetPayer() int64 {
+  return p.Payer
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) GetTable() int64 {
+  return p.Table
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) GetID() int64 {
+  return p.ID
+}
+func (p *RpcServiceDbRemoveI64ExArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField1(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField2(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 3:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField3(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 4:
+      if fieldTypeId == thrift.I64 {
+        if err := p.ReadField4(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Scope = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Payer = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.Table = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return thrift.PrependError("error reading field 4: ", err)
+} else {
+  p.ID = v
+}
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("db_remove_i64_ex_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("scope", thrift.I64, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:scope: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Scope)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.scope (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:scope: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("payer", thrift.I64, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:payer: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Payer)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.payer (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:payer: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("table", thrift.I64, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:table: ", p), err) }
+  if err := oprot.WriteI64(int64(p.Table)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.table (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:table: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("id", thrift.I64, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:id: ", p), err) }
+  if err := oprot.WriteI64(int64(p.ID)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.id (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:id: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceDbRemoveI64ExArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceDbRemoveI64ExArgs(%+v)", *p)
+}
+
+type RpcServiceDbRemoveI64ExResult struct {
+}
+
+func NewRpcServiceDbRemoveI64ExResult() *RpcServiceDbRemoveI64ExResult {
+  return &RpcServiceDbRemoveI64ExResult{}
+}
+
+func (p *RpcServiceDbRemoveI64ExResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("db_remove_i64_ex_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *RpcServiceDbRemoveI64ExResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RpcServiceDbRemoveI64ExResult(%+v)", *p)
+}
+
 
 type RpcInterface interface {
   // Parameters:
@@ -4481,15 +5160,15 @@ func NewRpcInterfaceClient(c thrift.TClient) *RpcInterfaceClient {
 //  - Account
 //  - Action
 func (p *RpcInterfaceClient) Apply(ctx context.Context, receiver int64, account int64, action int64) (r int32, err error) {
-  var _args68 RpcInterfaceApplyArgs
-  _args68.Receiver = receiver
-  _args68.Account = account
-  _args68.Action = action
-  var _result69 RpcInterfaceApplyResult
-  if err = p.c.Call(ctx, "apply", &_args68, &_result69); err != nil {
+  var _args81 RpcInterfaceApplyArgs
+  _args81.Receiver = receiver
+  _args81.Account = account
+  _args81.Action = action
+  var _result82 RpcInterfaceApplyResult
+  if err = p.c.Call(ctx, "apply", &_args81, &_result82); err != nil {
     return
   }
-  return _result69.GetSuccess(), nil
+  return _result82.GetSuccess(), nil
 }
 
 type RpcInterfaceProcessor struct {
@@ -4512,9 +5191,9 @@ func (p *RpcInterfaceProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewRpcInterfaceProcessor(handler RpcInterface) *RpcInterfaceProcessor {
 
-  self70 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self70.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
-return self70
+  self83 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self83.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
+return self83
 }
 
 func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -4525,12 +5204,12 @@ func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x71 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x84 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x71.Write(oprot)
+  x84.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush(ctx)
-  return false, x71
+  return false, x84
 
 }
 

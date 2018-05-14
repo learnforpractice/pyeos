@@ -19,8 +19,10 @@ void n2s_(uint64_t n, string& result);
 void eosio_assert_(int condition, const char* str);
 
 int db_get_i64_( int iterator, char* buffer, size_t buffer_size );
-int db_next_i64_( int iterator, uint64_t& primary );
-int db_previous_i64_( int iterator, uint64_t& primary );
+
+int db_next_i64_( int iterator, uint64_t* primary );
+int db_previous_i64_( int iterator, uint64_t* primary );
+
 int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
