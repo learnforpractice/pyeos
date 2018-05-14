@@ -10,7 +10,7 @@ def apply(receiver, code, action):
         if itr >=0:
             res = db_get_i64(itr)
             eosio_assert(res != b'1', 'account already in whitelist')
-            db_update_i64(itr, account, b'1')
+            db_update_i64(itr, code, b'1')
         else:
             db_store_i64(code, code, code, account, b'1')
     elif action == N('rmfromwl'):

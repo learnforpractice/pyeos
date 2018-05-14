@@ -17,6 +17,11 @@ typedef void (*fn_init)();
 static fn_init s_init_eos = 0;
 static bool client_connected = false;
 
+static fn_rpc_apply rpc_apply = nullptr;
+extern "C" void rpc_register_apply_call(fn_rpc_apply fn) {
+   rpc_apply = fn;
+}
+
 void init_eos() {
    if (s_init_eos) {
       s_init_eos();
@@ -85,9 +90,8 @@ rpc_interface& rpc_interface::get() {
 void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
 }
 
-static fn_rpc_apply rpc_apply = nullptr;
-extern "C" void rpc_register_apply_call(fn_rpc_apply fn) {
-   rpc_apply = fn;
+bool rpc_interface::ready() {
+   return rpc_apply != nullptr;
 }
 
 void rpc_interface::apply(apply_context& c) {

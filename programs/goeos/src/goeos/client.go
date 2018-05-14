@@ -27,9 +27,18 @@ func (p *RpcInterfaceImp) Apply(ctx context.Context, receiver int64, account int
 }
 
 var ctx = context.Background()
+var timeCounter = int64(0)
 
 func currentTimeMillis() int64 {
 	return time.Now().UnixNano() / 1000000
+}
+
+func timeitStart() {
+    timeCounter = currentTimeMillis();
+}
+
+func timeitEnd() {
+    fmt.Println(currentTimeMillis() - timeCounter)
 }
 
 var _transportFactory thrift.TTransportFactory

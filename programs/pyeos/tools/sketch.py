@@ -32,7 +32,7 @@ def init(wasm={1}):
     return init_decorator
 
 @init()
-def test(msg='hello,world', wasm={1}):
+def test(msg='hello,world'):
     with producer:
         r = eosapi.push_message('{0}', 'sayhello', msg, {{'{0}':'active'}})
         assert r

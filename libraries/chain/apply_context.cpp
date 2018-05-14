@@ -11,6 +11,7 @@
 #include <boost/container/flat_set.hpp>
 
 #include "micropython/mpeoslib.h"
+#include "micropython/database_api.hpp"
 
 #include "rpc_interface/rpc_interface.hpp"
 
@@ -74,7 +75,19 @@ void apply_context::schedule() {
             mutable_controller.get_wasm_interface().apply(a.code_version, a.code, *this);
          } catch ( const wasm_exit& ){}
       } else if (a.vm_type == 1) {
-         if (_whitelist.find(act.account) != _whitelist.end()) {
+         bool trusted = false;
+         int itr = database_api::get().db_find_i64(N(credit), N(credit), N(credit), receiver.value);
+         if (itr >= 0) {
+            char c = 0;
+            int ret = database_api::get().db_get_i64(itr, &c, sizeof(c));
+            if (ret == 1) {
+               FC_ASSERT(c != '2', "account has been blocked out!");
+               if (c == '1') {
+                  trusted = true;
+               }
+            }
+         }
+         if (trusted || !rpc_interface::get().ready()) { //_whitelist.find(act.account) != _whitelist.end()) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);

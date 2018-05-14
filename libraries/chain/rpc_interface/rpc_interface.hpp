@@ -31,6 +31,7 @@ public:
 
    void on_setcode(uint64_t _account, bytes& code);
    void apply(apply_context& c);
+   bool ready();
 
    apply_context* current_apply_context = nullptr;
 
@@ -51,4 +52,4 @@ void init_eos();
 void install_ctrl_c_handler();
 
 typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act);
-void rpc_register_apply_call(fn_rpc_apply fn);
+extern "C" void rpc_register_apply_call(fn_rpc_apply fn);
