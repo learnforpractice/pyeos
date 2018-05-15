@@ -153,14 +153,16 @@ def preinit():
 from apitest import t as at
 from cryptokitties import t as kt
 from currency import t as ct
-from counter import t as cot
+from counter import t as ct1
+from credit import t as ct2
 from hello import t as ht
 from backyard import t as bt
 from rpctest import t as rt
 from vote import t as vt
 from simpleauction import t as st
 from lab import t as lt
-    
+
+
 def init():
 
     psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'

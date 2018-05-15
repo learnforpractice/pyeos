@@ -75,6 +75,10 @@ func (p *RpcServiceImpl) ReadAction(ctx context.Context) (r []byte, err error) {
 //  - ID
 //  - Buffer
 func (p *RpcServiceImpl) DbStoreI64(ctx context.Context, scope int64, table int64, payer int64, id int64, buffer []byte) (r int32, err error) {
+    if buffer == nil || len(buffer) == 0 {
+        fmt.Println("+++++++++invalide buffer", buffer);
+        return -1, nil
+    }
     ret := C.db_store_i64(C.uint64_t(scope), C.uint64_t(table), C.uint64_t(payer), C.uint64_t(id), (*C.char)(unsafe.Pointer(&buffer[0])), C.size_t(len(buffer)))
     return int32(ret), nil
 }
