@@ -49,6 +49,10 @@ bool is_account_( uint64_t account ) {
    return database_api::get().is_account( account );
 }
 
+void db_remove_i64_(int itr) {
+   database_api::get().db_remove_i64(itr);
+}
+
 int db_get_i64_( int iterator, char* buffer, size_t buffer_size ) {
    return database_api::get().db_get_i64( iterator, buffer, buffer_size );
 }

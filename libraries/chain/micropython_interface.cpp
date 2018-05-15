@@ -18,6 +18,8 @@
 
 #include "micropython/mpeoslib.h"
 #include "micropython/database_api.hpp"
+#include "rpc_interface/rpc_interface.hpp"
+
 
 struct mpapi& get_mpapi();
 
@@ -72,13 +74,33 @@ void init() {
    get_mpapi().init = 1;
 }
 
+void micropython_interface::on_server_setcode(uint64_t _account, bytes& code) {
+   if (rpc_interface::get().ready()) {
+      rpc_interface::get().on_setcode(_account, code);
+      return;
+   }
+}
+
+void micropython_interface::on_client_setcode(uint64_t _account) {
+   string code;
+   database_api::get().get_code(_account, code);
+   vector<char> _code(code.begin(), code.end());
+   on_setcode(_account, _code);
+}
+
+
 void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
-   //FIXME: notify client
-//   return;
    if (code.size() <= 0) {
       return;
    }
 
+   //call at server side
+   if (rpc_interface::get().ready()) {
+      rpc_interface::get().on_setcode(_account, code);
+      return;
+   }
+
+   //call at client side
    init();
 
    std::thread::id this_id = std::this_thread::get_id();
@@ -189,10 +211,15 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 
 }
 }
-
+using namespace eosio::chain;
+//called by rpc client
 extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    try {
-      eosio::chain::micropython_interface::get().apply(receiver, account, act);
+      if (account == N(eosio) && act == N(setcode)) {
+         micropython_interface::get().on_client_setcode(receiver);
+      } else {
+         micropython_interface::get().apply(receiver, account, act);
+      }
       return 1;
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());

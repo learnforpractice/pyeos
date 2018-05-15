@@ -131,10 +131,7 @@ void apply_eosio_setcode_py(apply_context& context) {
       throw FC_EXCEPTION( fc::exception, "code size must be <= 5KB, actual code size is ${n}", ("n", act.code.size()));
    }
 
-   micropython_interface::get().on_setcode(act.account, act.code);
-
    const auto& account = db.get<account_object,by_name>(act.account);
-
 
    int64_t code_size = (int64_t)act.code.size();
    int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
@@ -159,6 +156,7 @@ void apply_eosio_setcode_py(apply_context& context) {
          new_size - old_size
       );
    }
+   micropython_interface::get().on_setcode(act.account, act.code);
 }
 
 void apply_eosio_setcode_evm(apply_context& context) {

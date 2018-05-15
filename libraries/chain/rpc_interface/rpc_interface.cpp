@@ -88,6 +88,16 @@ rpc_interface& rpc_interface::get() {
 }
 
 void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
+   try {
+      assert(rpc_apply != nullptr);
+      rpc_apply(_account, N(eosio), N(setcode));
+   } catch (fc::exception& ex) {
+      elog(ex.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   } catch(...) {
+      wlog("unkown exception!");
+   }
 }
 
 bool rpc_interface::ready() {
