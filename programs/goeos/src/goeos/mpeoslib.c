@@ -35,7 +35,6 @@ int call_onApply(uint64_t receiver, uint64_t account, uint64_t act)
 //   return micropython_on_apply(receiver, code, act);
 }
 
-
 void mp_require_auth(uint64_t account) {
    printf("+++++++++++++++mp_require_auth\n");
 }
@@ -52,6 +51,7 @@ void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffe
    uint64_t table;
    uint64_t id;
    mp_db_get_table_i64(itr, &code, &scope, &_payer, &table, &id);
+   printf("++++++++++++%llu %lu\n", (uint64_t)buffer, buffer_size);
    DbUpdateI64Ex( (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
 }
 
@@ -78,7 +78,7 @@ int mp_db_previous_i64( int itr, uint64_t* primary ) {
 }
 
 int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_find_i64(code, scope, table, id);
+   return db_find_i64_(code, scope, table, id);
 }
 
 int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
@@ -90,7 +90,7 @@ int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_
 }
 
 int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
-   return db_end_i64(code, scope, table);
+   return db_end_i64_(code, scope, table);
 }
 
 static struct eosapi s_eosapi;
