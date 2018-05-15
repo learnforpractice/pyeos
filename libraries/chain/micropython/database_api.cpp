@@ -410,6 +410,20 @@ int database_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return keyval_cache.cache_table( *tab );
 }
 
+bool database_api::is_in_whitelist(uint64_t account) {
+   int itr = database_api::get().db_find_i64(N(credit), N(credit), N(credit), account);
+   if (itr >= 0) {
+      char c = 0;
+      int ret = database_api::get().db_get_i64(itr, &c, sizeof(c));
+      if (ret == 1) {
+         FC_ASSERT(c != '2', "account has been blocked out!");
+         if (c == '1') {
+            return true;
+         }
+      }
+   }
+   return false;
+}
 
 #define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(IDX, TYPE)\
       int database_api::db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary ) {\

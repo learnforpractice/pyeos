@@ -524,6 +524,7 @@ class database_api {
       generic_index<contracts::index256_object, uint128_t*, const uint128_t*>   idx256;
       generic_index<contracts::index_double_object> idx_double;
 
+      bool is_in_whitelist(uint64_t account);
       static constexpr uint32_t base_row_fee = 200;
 
 

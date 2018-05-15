@@ -87,7 +87,7 @@ void apply_context::schedule() {
                }
             }
          }
-         if (trusted || !rpc_interface::get().ready()) { //_whitelist.find(act.account) != _whitelist.end()) {
+         if (trusted) { //_whitelist.find(act.account) != _whitelist.end()) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);
@@ -95,6 +95,7 @@ void apply_context::schedule() {
                throw;
             }
          } else {
+            FC_ASSERT(rpc_interface::get().ready(), "RPC not ready");
             auto &py = rpc_interface::get();
             try {
                py.apply(*this);

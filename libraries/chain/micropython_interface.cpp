@@ -94,13 +94,14 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       return;
    }
 
-   //call at server side
-   if (rpc_interface::get().ready()) {
-      rpc_interface::get().on_setcode(_account, code);
-      return;
+   if (!database_api::get().is_in_whitelist(_account)) {
+      if (rpc_interface::get().ready()) {
+         rpc_interface::get().on_setcode(_account, code);
+         return;
+      }
+      FC_ASSERT(false, "RPC not ready");
    }
 
-   //call at client side
    init();
 
    std::thread::id this_id = std::this_thread::get_id();
