@@ -1,4 +1,4 @@
-An Experimental Project for Writing Smart Contract in Python Base on The Development of EOSIO 
+An Experimental Project for Writing Smart Contract With Python Base on The Development of EOSIO 
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
 2. [Creating Your First Python Smart Contract](#creatsmartcontract)
@@ -48,7 +48,7 @@ Open a terminal, cd to [PROJECT_DIR]/build/program, run the following command
 ./pyeos/pyeos --manual-gen-block --debug -i
 ```
 
-If it's the first time you start PyEos, PyEos will create a test wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:
+If it's the first time you start PyEos, PyEos will create a testing wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:
 
 ```
 wallet password: PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ
@@ -127,7 +127,7 @@ Congratulations, you have successfully run your first Python smart contract.
 
 Now you can open hello.py for coding. Once it's done, just run t.test() again, 
 there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
-republish to the testnet if it's been changed. You can also edit the testing code in t.py to test your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
+republish to the testnet if it's been changed during the running of t.test(). You can also edit the testing code in t.py to test your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
 
 There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
 
