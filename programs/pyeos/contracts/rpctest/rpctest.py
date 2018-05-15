@@ -1,4 +1,5 @@
 from eoslib import *
+code = N('rpctest')
 
 def sayHello():
     n = N('rpctest')
@@ -30,7 +31,6 @@ def test():
         print('not found!')
 
 def apply(receiver, code, action):
-    print('apply:', name, type)
     if action == N('sayhello'):
 #        print('read_action:', read_action())
         sayHello()
