@@ -38,7 +38,6 @@ func HelloFromGo() {
 
 func main() {
     C.mp_init_eosapi();
-    C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
     
 	flag.Usage = Usage
 	server := flag.Bool("server", false, "Run server")
@@ -96,6 +95,7 @@ func main() {
     			fmt.Println("error running server:", err)
     		}
 	    }()
+        C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
 	    bridge.GoeosMain()
 	} else {
 		if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
