@@ -49,19 +49,23 @@ var rpcClient *rpc.RpcServiceClient
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
     go func() {
         for {
-            initRpcService()
-            if rpcClient != nil {
-                break;
+            for {
+                initRpcService()
+                if rpcClient != nil {
+                    break;
+                }
+                time.Sleep(1000*time.Millisecond);
             }
-            time.Sleep(100*time.Millisecond);
-        }
-        for {
-            apply, _ := rpcClient.ApplyRequest(ctx)
-            if apply == nil {
-                panic("apply is nil")
+            for {
+                apply, err := rpcClient.ApplyRequest(ctx)
+                if err != nil {//server side exist unexpectedly
+                    fmt.Println("ApplyRequest failed, reconnecting...:", err)
+                    rpcClient = nil
+                    break;
+                }
+                C.micropython_on_apply(C.uint64_t(apply.Receiver), C.uint64_t(apply.Account), C.uint64_t(apply.Action));
+                rpcClient.ApplyFinish(ctx)
             }
-            C.micropython_on_apply(C.uint64_t(apply.Receiver), C.uint64_t(apply.Account), C.uint64_t(apply.Action));
-            rpcClient.ApplyFinish(ctx)
         }
     }()
     runApplyServer(transportFactory, protocolFactory, addr, secure) 
