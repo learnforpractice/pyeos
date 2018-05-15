@@ -261,6 +261,7 @@ void database_api::update_db_usage( const account_name& payer, int64_t delta ) {
 }
 
 void database_api::db_remove_i64( int iterator ) {
+#if 0
    const key_value_object& obj = keyval_cache.get( iterator );
 
    update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key_value_object>) );
@@ -280,7 +281,7 @@ void database_api::db_remove_i64( int iterator ) {
    if (table_obj.count == 0) {
       remove_table(table_obj);
    }
-
+#endif
    keyval_cache.remove( iterator );
 }
 
@@ -504,6 +505,7 @@ DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, uint64_t)
 using namespace eosio::chain;
 
 extern "C" {
+
 int mp_action_size() {
    return eosio::chain::database_api::get().get_action_object().data.size();
 }

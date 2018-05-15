@@ -20,6 +20,7 @@ uint64_t mp_get_receiver();
 void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id);
 
 //interface/eoslib.hpp
+void db_remove_i64_(int itr);
 int db_get_i64_( int iterator, char* buffer, size_t buffer_size );
 int db_next_i64_( int iterator, uint64_t* primary );
 int db_previous_i64_( int iterator, uint64_t* primary );
@@ -63,6 +64,7 @@ void mp_db_remove_i64( int itr ) {
    uint64_t id;
    mp_db_get_table_i64(itr, &code, &scope, &payer, &table, &id);
    DbRemoveI64Ex((GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   db_remove_i64_(itr);
 }
 
 int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
