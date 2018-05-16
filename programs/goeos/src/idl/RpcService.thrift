@@ -1,3 +1,4 @@
+//thrift -r -out .. --gen go RpcService.thrift
 
 namespace go rpc
 namespace java rpc
@@ -13,9 +14,14 @@ struct Apply {
     3:i64 action
 }
 
+struct ApplyResult {
+  1: i32 status = 0,
+  2: string err,
+}
+
 service RpcService {
     Apply apply_request();
-	void apply_finish()
+	void apply_finish(1:i32 status, 2:string errMsg);
 	list<string> funCall(1:i64 callTime, 2:string funCode, 3:map<string, string> paramMap);
 	binary read_action();
     

@@ -29,11 +29,12 @@ int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t 
 int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
 
-
-int call_onApply(uint64_t receiver, uint64_t account, uint64_t act)
+int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, int* len)
 {
-   return onApply(receiver, account, act);
-//   return micropython_on_apply(receiver, code, act);
+   struct onApply_return ret = onApply(receiver, account, act);
+   *err = ret.r2;
+   *len = ret.r1;
+   return ret.r0;
 }
 
 void mp_require_auth(uint64_t account) {

@@ -308,9 +308,139 @@ func (p *Apply) String() string {
   return fmt.Sprintf("Apply(%+v)", *p)
 }
 
+// Attributes:
+//  - Status
+//  - Err
+type ApplyResult_ struct {
+  Status int32 `thrift:"status,1" db:"status" json:"status"`
+  Err string `thrift:"err,2" db:"err" json:"err"`
+}
+
+func NewApplyResult_() *ApplyResult_ {
+  return &ApplyResult_{}
+}
+
+
+func (p *ApplyResult_) GetStatus() int32 {
+  return p.Status
+}
+
+func (p *ApplyResult_) GetErr() string {
+  return p.Err
+}
+func (p *ApplyResult_) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I32 {
+        if err := p.ReadField1(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField2(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *ApplyResult_)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Status = v
+}
+  return nil
+}
+
+func (p *ApplyResult_)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Err = v
+}
+  return nil
+}
+
+func (p *ApplyResult_) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ApplyResult"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *ApplyResult_) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("status", thrift.I32, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:status: ", p), err) }
+  if err := oprot.WriteI32(int32(p.Status)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.status (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:status: ", p), err) }
+  return err
+}
+
+func (p *ApplyResult_) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("err", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:err: ", p), err) }
+  if err := oprot.WriteString(string(p.Err)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.err (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:err: ", p), err) }
+  return err
+}
+
+func (p *ApplyResult_) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("ApplyResult_(%+v)", *p)
+}
+
 type RpcService interface {
   ApplyRequest(ctx context.Context) (r *Apply, err error)
-  ApplyFinish(ctx context.Context) (err error)
+  // Parameters:
+  //  - Status
+  //  - ErrMsg
+  ApplyFinish(ctx context.Context, status int32, errMsg string) (err error)
   // Parameters:
   //  - CallTime
   //  - FunCode
@@ -412,8 +542,13 @@ func (p *RpcServiceClient) ApplyRequest(ctx context.Context) (r *Apply, err erro
   return _result1.GetSuccess(), nil
 }
 
-func (p *RpcServiceClient) ApplyFinish(ctx context.Context) (err error) {
+// Parameters:
+//  - Status
+//  - ErrMsg
+func (p *RpcServiceClient) ApplyFinish(ctx context.Context, status int32, errMsg string) (err error) {
   var _args2 RpcServiceApplyFinishArgs
+  _args2.Status = status
+  _args2.ErrMsg = errMsg
   var _result3 RpcServiceApplyFinishResult
   if err = p.c.Call(ctx, "apply_finish", &_args2, &_result3); err != nil {
     return
@@ -762,7 +897,7 @@ func (p *rpcServiceProcessorApplyFinish) Process(ctx context.Context, seqId int3
   iprot.ReadMessageEnd()
   result := RpcServiceApplyFinishResult{}
   var err2 error
-  if err2 = p.handler.ApplyFinish(ctx); err2 != nil {
+  if err2 = p.handler.ApplyFinish(ctx, args.Status, args.ErrMsg); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing apply_finish: " + err2.Error())
     oprot.WriteMessageBegin("apply_finish", thrift.EXCEPTION, seqId)
     x.Write(oprot)
@@ -1602,13 +1737,26 @@ func (p *RpcServiceApplyRequestResult) String() string {
   return fmt.Sprintf("RpcServiceApplyRequestResult(%+v)", *p)
 }
 
+// Attributes:
+//  - Status
+//  - ErrMsg
 type RpcServiceApplyFinishArgs struct {
+  Status int32 `thrift:"status,1" db:"status" json:"status"`
+  ErrMsg string `thrift:"errMsg,2" db:"errMsg" json:"errMsg"`
 }
 
 func NewRpcServiceApplyFinishArgs() *RpcServiceApplyFinishArgs {
   return &RpcServiceApplyFinishArgs{}
 }
 
+
+func (p *RpcServiceApplyFinishArgs) GetStatus() int32 {
+  return p.Status
+}
+
+func (p *RpcServiceApplyFinishArgs) GetErrMsg() string {
+  return p.ErrMsg
+}
 func (p *RpcServiceApplyFinishArgs) Read(iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -1621,8 +1769,31 @@ func (p *RpcServiceApplyFinishArgs) Read(iprot thrift.TProtocol) error {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
-    if err := iprot.Skip(fieldTypeId); err != nil {
-      return err
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I32 {
+        if err := p.ReadField1(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField2(iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
     }
     if err := iprot.ReadFieldEnd(); err != nil {
       return err
@@ -1634,16 +1805,56 @@ func (p *RpcServiceApplyFinishArgs) Read(iprot thrift.TProtocol) error {
   return nil
 }
 
+func (p *RpcServiceApplyFinishArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Status = v
+}
+  return nil
+}
+
+func (p *RpcServiceApplyFinishArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.ErrMsg = v
+}
+  return nil
+}
+
 func (p *RpcServiceApplyFinishArgs) Write(oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin("apply_finish_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
   if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
   if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
+}
+
+func (p *RpcServiceApplyFinishArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("status", thrift.I32, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:status: ", p), err) }
+  if err := oprot.WriteI32(int32(p.Status)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.status (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:status: ", p), err) }
+  return err
+}
+
+func (p *RpcServiceApplyFinishArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("errMsg", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:errMsg: ", p), err) }
+  if err := oprot.WriteString(string(p.ErrMsg)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.errMsg (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:errMsg: ", p), err) }
+  return err
 }
 
 func (p *RpcServiceApplyFinishArgs) String() string {
@@ -5160,15 +5371,15 @@ func NewRpcInterfaceClient(c thrift.TClient) *RpcInterfaceClient {
 //  - Account
 //  - Action
 func (p *RpcInterfaceClient) Apply(ctx context.Context, receiver int64, account int64, action int64) (r int32, err error) {
-  var _args81 RpcInterfaceApplyArgs
-  _args81.Receiver = receiver
-  _args81.Account = account
-  _args81.Action = action
-  var _result82 RpcInterfaceApplyResult
-  if err = p.c.Call(ctx, "apply", &_args81, &_result82); err != nil {
+  var _args83 RpcInterfaceApplyArgs
+  _args83.Receiver = receiver
+  _args83.Account = account
+  _args83.Action = action
+  var _result84 RpcInterfaceApplyResult
+  if err = p.c.Call(ctx, "apply", &_args83, &_result84); err != nil {
     return
   }
-  return _result82.GetSuccess(), nil
+  return _result84.GetSuccess(), nil
 }
 
 type RpcInterfaceProcessor struct {
@@ -5191,9 +5402,9 @@ func (p *RpcInterfaceProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewRpcInterfaceProcessor(handler RpcInterface) *RpcInterfaceProcessor {
 
-  self83 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self83.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
-return self83
+  self85 := &RpcInterfaceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self85.processorMap["apply"] = &rpcInterfaceProcessorApply{handler:handler}
+return self85
 }
 
 func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -5204,12 +5415,12 @@ func (p *RpcInterfaceProcessor) Process(ctx context.Context, iprot, oprot thrift
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x84 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x86 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x84.Write(oprot)
+  x86.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush(ctx)
-  return false, x84
+  return false, x86
 
 }
 

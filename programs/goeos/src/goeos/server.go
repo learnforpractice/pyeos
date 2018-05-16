@@ -12,33 +12,56 @@ import (
 )
 
 /*
-#include <goeos.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
+
+void arg_size(int n);
+void arg_add(char * arg);
+void arg_show();
+
+int goeos_main();
+
+int read_action_(char* memory, size_t size);
+int read_action(char* memory, size_t size);
+
+int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
+void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
+void db_remove_i64( int itr );
+int db_get_i64( int itr, char* buffer, size_t buffer_size );
+int db_next_i64( int itr, uint64_t* primary );
+int db_previous_i64( int itr, uint64_t* primary );
+int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
+
+void db_update_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
+void db_remove_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id );
+
+//mpeoslib.cpp
+void set_client_mode(int client_mode);
+
 */
 import "C"
 
 var applyClient *rpc.RpcInterfaceClient;
 
 var applyStart = make(chan rpc.Apply, 1)
-var applyFinish = make(chan bool, 1)
+var applyFinish = make(chan rpc.ApplyResult_, 1)
 
 //export onApply
-func onApply(receiver uint64, account uint64, act uint64) int {
+func onApply(receiver uint64, account uint64, act uint64) (status C.int, l C.int, err *C.char) {
 //    initApplyClient()
 //    fmt.Println("+++++++onApply", receiver, account, act, applyClient)
     apply := rpc.Apply{int64(receiver), int64(account), int64(act)}
     applyStart <- apply
-    _ = <- applyFinish
-//    fmt.Println("+++++++onApply finished")
-
-    /*
-    if applyClient != nil {
-        r, _ := applyClient.Apply(ctx, int64(receiver), int64(account), int64(act))
-        return int(r)
+    res := <- applyFinish
+//    fmt.Println(res.Status, res.Err);
+    if res.Status == 0 {
+        return C.int(0), C.int(0), nil
     }
-    */
-    return 0;
+    return C.int(res.Status), C.int(len(res.Err)), C.CString(res.Err)
 }
 
 type RpcServiceImpl struct {
@@ -49,10 +72,12 @@ func (p *RpcServiceImpl)  ApplyRequest(ctx context.Context) (r *rpc.Apply, err e
     return &apply, nil
 }
 
-func (p *RpcServiceImpl)  ApplyFinish(ctx context.Context) (err error) {
-    applyFinish <- true;
+func (p *RpcServiceImpl) ApplyFinish(ctx context.Context, status int32, errMsg string) (err error) {
+    res := rpc.ApplyResult_{status, errMsg};
+    applyFinish <- res;
     return nil
 }
+
 
 func (this *RpcServiceImpl) FunCall(ctx context.Context, callTime int64, funCode string, paramMap map[string]string) (r []string, err error) {
 //  fmt.Println("-->FunCall:", callTime, funCode, paramMap)

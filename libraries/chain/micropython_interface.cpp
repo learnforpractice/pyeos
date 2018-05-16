@@ -219,22 +219,31 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 }
 using namespace eosio::chain;
 //called by rpc client
-extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act, char** err) {
+   string _err;
    try {
       if (account == N(eosio) && act == N(setcode)) {
          micropython_interface::get().on_client_setcode(receiver);
       } else {
          micropython_interface::get().apply(receiver, account, act);
       }
-      return 1;
+      return 0;
    } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
+      _err = e.to_detail_string();
+      elog(_err);
    } catch (fc::exception& e) {
-      elog(e.to_detail_string());
+      _err = e.to_detail_string();
+      elog(_err);
    } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
+      _err = boost::diagnostic_information(ex);
+      elog(_err);
    }
-   return 0;
+   if (!_err.empty()) {
+      wlog(_err);
+      *err = (char*)calloc(_err.length()+1, sizeof(char));
+      memcpy(*err, _err.c_str(), _err.length());
+   }
+   return 1;
 }
 
 

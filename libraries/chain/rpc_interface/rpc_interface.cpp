@@ -88,15 +88,14 @@ rpc_interface& rpc_interface::get() {
 }
 
 void rpc_interface::on_setcode(uint64_t _account, bytes& code) {
-   try {
-      assert(rpc_apply != nullptr);
-      rpc_apply(_account, N(eosio), N(setcode));
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   } catch(...) {
-      wlog("unkown exception!");
+   assert(rpc_apply != nullptr);
+   char *err;
+   int len;
+   int ret = rpc_apply(_account, N(eosio), N(setcode), &err, &len);
+   if (ret != 0) {
+      string msg(err, len);
+      free(err);
+      throw fc::exception(0, "RPC", msg);
    }
 }
 
@@ -105,18 +104,17 @@ bool rpc_interface::ready() {
 }
 
 void rpc_interface::apply(apply_context& c) {
-   try {
-      assert(rpc_apply != nullptr);
-      rpc_apply(c.receiver.value, c.act.account.value, c.act.name.value);
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   } catch(...) {
-      wlog("unkown exception!");
+   assert(rpc_apply != nullptr);
+   char *err;
+   int len;
+   int ret = rpc_apply(c.receiver.value, c.act.account.value, c.act.name.value, &err, &len);
+   if (ret != 0) {
+      string msg(err, len);
+      wlog(msg);
+      free(err);
+      throw fc::exception(0, "RPC", msg);
    }
 }
-
 
 }
 }

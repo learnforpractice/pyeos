@@ -16,9 +16,9 @@ import (
 #include <stdio.h>
 #include <stdint.h>
 
-typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act);
+typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act, char** err, int* len);
 void rpc_register_apply_call(fn_rpc_apply fn);
-int call_onApply(uint64_t receiver, uint64_t code, uint64_t act);
+int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, int* len);
 
 void mp_init_eosapi();
 void set_client_mode(int client_mode);

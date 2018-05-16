@@ -11,8 +11,9 @@ import (
 )
 
 /*
+#include <stdlib.h>
 #include <stdint.h>
-int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act);
+int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act, char** err);
 */
 import "C"
 
@@ -21,9 +22,9 @@ type RpcInterfaceImp struct {
 
 func (p *RpcInterfaceImp) Apply(ctx context.Context, receiver int64, account int64, act int64) (r int32, err error) {
     panic("oops");
-    initRpcService()
-    rr := C.micropython_on_apply(C.uint64_t(receiver), C.uint64_t(account), C.uint64_t(act));
-    return int32(rr), nil
+//    initRpcService()
+//    rr := C.micropython_on_apply(C.uint64_t(receiver), C.uint64_t(account), C.uint64_t(act));
+    return int32(0), nil
 }
 
 var ctx = context.Background()
@@ -63,8 +64,15 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
                     rpcClient = nil
                     break;
                 }
-                C.micropython_on_apply(C.uint64_t(apply.Receiver), C.uint64_t(apply.Account), C.uint64_t(apply.Action));
-                rpcClient.ApplyFinish(ctx)
+                var _err *C.char
+                ret := C.micropython_on_apply(C.uint64_t(apply.Receiver), C.uint64_t(apply.Account), C.uint64_t(apply.Action), &_err);
+                if ret == 0 {
+                    rpcClient.ApplyFinish(ctx, int32(ret), "")
+                } else {
+                    __err := C.GoString(_err)
+                    C.free(unsafe.Pointer(_err))
+                    rpcClient.ApplyFinish(ctx, int32(ret), __err)
+                }
             }
         }
     }()
