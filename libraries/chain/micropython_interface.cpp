@@ -94,12 +94,17 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       return;
    }
 
-   if (!database_api::get().is_in_whitelist(_account)) {
-      if (rpc_interface::get().ready()) {
-         rpc_interface::get().on_setcode(_account, code);
-         return;
+   if (appbase::app().client_mode()) {
+      //called by client
+   } else {
+      //called by server
+      if (!database_api::get().is_in_whitelist(_account)) {
+         if (rpc_interface::get().ready()) {
+            rpc_interface::get().on_setcode(_account, code);
+            return;
+         }
+         FC_ASSERT(false, "RPC not ready");
       }
-      FC_ASSERT(false, "RPC not ready");
    }
 
    init();

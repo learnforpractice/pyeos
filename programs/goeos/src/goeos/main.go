@@ -21,6 +21,7 @@ void rpc_register_apply_call(fn_rpc_apply fn);
 int call_onApply(uint64_t receiver, uint64_t code, uint64_t act);
 
 void mp_init_eosapi();
+void set_client_mode(int client_mode);
 
 */
 import "C"
@@ -98,6 +99,7 @@ func main() {
 	    bridge.GoeosMain()
 	} else {
         C.mp_init_eosapi();
+        C.set_client_mode(C.int(1))
 		if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
 			fmt.Println("error running client:", err)
 		}

@@ -58,7 +58,7 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
             }
             for {
                 apply, err := rpcClient.ApplyRequest(ctx)
-                if err != nil {//server side exist unexpectedly
+                if err != nil {//server side exit unexpectedly
                     fmt.Println("ApplyRequest failed, reconnecting...:", err)
                     rpcClient = nil
                     break;

@@ -73,6 +73,7 @@ namespace appbase {
          bool                 debug_mode() const;
          bool                 rpc_enabled() const;
          bool                 client_mode() const;
+         void                 set_client_mode(bool client_mode);
          bool                 interactive_mode() const;
 
          static application&  instance();

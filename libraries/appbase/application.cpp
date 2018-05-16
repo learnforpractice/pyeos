@@ -211,6 +211,10 @@ bool application::client_mode() const {
    return my->_client;
 }
 
+void application::set_client_mode(bool client_mode) {
+   my->_client = client_mode;
+}
+
 bool application::rpc_enabled() const {
    return my->_rpc;
 }
@@ -310,3 +314,7 @@ bfs::path application::config_dir() const {
 }
 
 } /// namespace appbase
+
+extern "C" void set_client_mode(int client_mode) {
+   appbase::app().set_client_mode(client_mode);
+}
