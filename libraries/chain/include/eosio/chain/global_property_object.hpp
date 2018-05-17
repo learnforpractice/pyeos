@@ -17,6 +17,7 @@
 namespace eosio { namespace chain {
    struct permission_level;
 
+
    /**
     * @class global_property_object
     * @brief Maintains global state information (committee_member list, current fees)

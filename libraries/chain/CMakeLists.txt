@@ -1,5 +1,4 @@
 file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.hpp")
-
 find_package(LevelDB)
 
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
@@ -22,17 +21,14 @@ add_library( eosio_chain
              merkle.cpp
              name.cpp
              transaction.cpp
-
              block_header.cpp
              block_header_state.cpp
              block_state.cpp
-
              fork_database.cpp
              controller.cpp
              authorization_manager.cpp
              resource_limits.cpp
              block_log.cpp
-
              genesis_state.cpp
              transaction_context.cpp
              eosio_contract.cpp
@@ -48,14 +44,21 @@ add_library( eosio_chain
               abi_serializer.cpp
               asset.cpp
 
-             evm/EosState.cpp
-             evm/EosExecutive.cpp
-             evm/EosDB.cpp
-             evm/EosExtVM.cpp
-
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
 
+#             get_config.cpp
+#             global_property_object.cpp
+#
+#             contracts/chain_initializer.cpp
+
+
+#             transaction_metadata.cpp
+
+              evm/EosState.cpp
+              evm/EosExecutive.cpp
+              evm/EosDB.cpp
+              evm/EosExtVM.cpp
 
              ${HEADERS}
              )
@@ -77,7 +80,7 @@ message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
 target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared 
-        binaryen softfloat ${ETH_LIBRARY} python3 ${OPENSSL_LIBRARIES})
+        binaryen softfloat builtins ${ETH_LIBRARY} python3 ${OPENSSL_LIBRARIES})
 
 #micropython compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on micropython, 

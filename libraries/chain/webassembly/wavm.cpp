@@ -119,7 +119,7 @@ wavm_runtime::wavm_runtime() {
 wavm_runtime::~wavm_runtime() {
 }
 
-std::shared_ptr<wasm_instantiated_module_interface> wavm_runtime::instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) {
+std::unique_ptr<wasm_instantiated_module_interface> wavm_runtime::instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) {
    Module* module = new Module();
    try {
       Serialization::MemoryInputStream stream((const U8*)code_bytes, code_size);
@@ -133,7 +133,7 @@ std::shared_ptr<wasm_instantiated_module_interface> wavm_runtime::instantiate_mo
    ModuleInstance *instance = instantiateModule(*module, std::move(link_result.resolvedImports));
    FC_ASSERT(instance != nullptr);
 
-   return std::make_shared<wavm_instantiated_module>(instance, module, initial_memory);
+   return std::make_unique<wavm_instantiated_module>(instance, module, initial_memory);
 }
 
 }}}}

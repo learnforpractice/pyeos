@@ -562,9 +562,9 @@ class apply_context {
 
       name get_receiver();
 
-
+      
    private:
-      void schedule();
+         void schedule();
 
       const table_id_object* find_table( name code, name scope, name table );
       const table_id_object& find_or_create_table( name code, name scope, name table, const account_name &payer );
@@ -621,7 +621,7 @@ class apply_context {
       vector<action>                      _cfa_inline_actions; ///< queued inline messages
       std::ostringstream                  _pending_console_output;
 
-      static map<account_name, account_name> _whitelist;
+      //bytes                               _cached_trx;
 };
 
 using apply_handler = std::function<void(apply_context&)>;

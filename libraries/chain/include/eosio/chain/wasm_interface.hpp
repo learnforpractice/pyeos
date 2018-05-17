@@ -60,8 +60,9 @@ namespace eosio { namespace chain {
          //validates code -- does a WASM validation pass and checks the wasm against EOSIO specific constraints
          static void validate(const bytes& code);
 
-         //Calls apply or error on a given code
          void call( const digest_type& code_id, const shared_string& code, string& func, vector<uint64_t>& args, apply_context& context );
+
+         //Calls apply or error on a given code
          void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
 
       private:

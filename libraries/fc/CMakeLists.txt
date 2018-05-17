@@ -16,11 +16,8 @@ endif()
 
 SET (ORIGINAL_LIB_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
-
 find_package(Secp256k1 REQUIRED)
 find_package(GMP REQUIRED)
-
-message(STATUS "${CMAKE_CURRENT_LIST_FILE}: +++++++++++++++++++++++++++"${GMP_LIBRARIES})
 
 IF( ECC_IMPL STREQUAL openssl )
   SET( ECC_REST src/crypto/elliptic_impl_pub.cpp )
@@ -91,7 +88,6 @@ set( fc_sources
      src/crypto/sha256.cpp
      src/crypto/sha224.cpp
      src/crypto/sha512.cpp
-     src/crypto/xxhash.c
      src/crypto/dh.cpp
      src/crypto/blowfish.cpp
      src/crypto/elliptic_common.cpp
@@ -108,7 +104,8 @@ set( fc_sources
      src/network/url.cpp
      src/compress/smaz.cpp
      src/compress/zlib.cpp
-     src/stacktrace.cxx
+     src/crypto/xxhash.c
+
      )
 
 file( GLOB_RECURSE fc_headers ${CMAKE_CURRENT_SOURCE_DIR} *.hpp *.h )
@@ -125,8 +122,8 @@ list(APPEND sources ${fc_headers})
 hunter_add_package(ZLIB)
 
 setup_library( fc SOURCES ${sources} LIBRARY_TYPE STATIC DONT_INSTALL_LIBRARY )
-  
 
+  
 IF(APPLE)
   # As of 10.10 yosemite, the OpenSSL static libraries shipped with os x have a dependency
   # on zlib, so any time you link in openssl you also need to link zlib.  .  We really want to detect whether openssl was configured with the --no-zlib
@@ -162,7 +159,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_ASIO_HAS_STD_CHRONO")
 
 target_include_directories(fc
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${Boost_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${Secp256k1_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/websocketpp

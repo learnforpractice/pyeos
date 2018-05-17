@@ -8,7 +8,7 @@ plugins are configured, initialized, started, and shutdown in the proper order.
 ## Key Features
 
 - Dynamically Specify Plugins to Load
-- Automaticly Load Dependent Plugins in Order
+- Automatically Load Dependent Plugins in Order
 - Plugins can specify commandline arguments and configuration file options
 - Program gracefully exits from SIGINT and SIGTERM
 - Minimal Dependencies (Boost 1.60, c++14)
@@ -87,7 +87,7 @@ exited cleanly
 ### Boost ASIO 
 
 AppBase maintains a singleton `application` instance which can be accessed via `appbase::app()`.  This 
-application owns a `boost::asio::io_service` which starts running when appbase::exec() is called. If 
+application owns a `boost::asio::io_service` which starts running when `appbase::exec()` is called. If 
 a plugin needs to perform IO or other asynchronous operations then it should dispatch it via 
 `app().get_io_service().post( lambda )`.  
 
@@ -105,6 +105,7 @@ To trigger a graceful exit call `appbase::app().quit()` or send SIGTERM or SIGIN
 
 To compile boost with c++14 use:
 
-   ./b2 ...  cxxflags="-std=c++0x -stdlib=libc++" linkflags="-stdlib=libc++" ...
-
+```
+./b2 ...  cxxflags="-std=c++0x -stdlib=libc++" linkflags="-stdlib=libc++" ...
+```
 

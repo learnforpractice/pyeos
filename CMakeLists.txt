@@ -1,5 +1,4 @@
 cmake_minimum_required( VERSION 3.5 )
-
 if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     # The default toolchain file configures compilers and build environment.
     # This configuration is also used by hunter to build dependencies.
@@ -48,7 +47,7 @@ HunterGate(
     SHA1 "a8829718f514ba870f8be876ed508638c2e9cac7"
     LOCAL
 )
-
+# Defines EOS library target.
 project( EOS )
 
 enable_testing()
@@ -221,7 +220,7 @@ else( WIN32 ) # Apple AND Linux
 
     # based on http://www.delorie.com/gnu/docs/gdb/gdb_70.html
     # uncomment this line to tell GDB about macros (slows compile times)
-    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -gdwarf-2 -g3" )
+    # set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2 -g3" )
 
 endif( WIN32 )
 
@@ -243,8 +242,8 @@ add_subdirectory( contracts )
 add_subdirectory( plugins )
 add_subdirectory( programs )
 add_subdirectory( scripts )
-add_subdirectory( unittests )
-add_subdirectory( tests )
+#add_subdirectory( unittests )
+#add_subdirectory( tests )
 add_subdirectory( tools )
 add_subdirectory( debian )
 

@@ -309,6 +309,7 @@ void resource_limits_manager::process_block_usage(uint32_t block_num) {
       state.pending_net_usage = 0;
 
    });
+
 }
 
 uint64_t resource_limits_manager::get_virtual_block_cpu_limit() const {

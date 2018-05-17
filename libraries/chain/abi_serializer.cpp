@@ -48,7 +48,7 @@ namespace eosio { namespace chain {
       );
    }
 
-   auto pack_unpack_raw() {
+      auto pack_unpack_raw() {
       return std::make_pair<abi_serializer::unpack_function, abi_serializer::pack_function>(
          []( fc::datastream<const char*>& stream, bool is_array, bool is_optional) -> fc::variant  {
                vector<char> v(stream.remaining());

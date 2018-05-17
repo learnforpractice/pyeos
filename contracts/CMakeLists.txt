@@ -1,6 +1,6 @@
 # will be implictly used for any compilation unit if not overrided by SYSTEM_INCLUDE_FOLDERS parameter
 # these directories go as -isystem <dir> to avoid warnings from code of third-party libraries
-set(DEFAULT_SYSTEM_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include ${CMAKE_SOURCE_DIR}/contracts/musl/upstream/include ${Boost_INCLUDE_DIRS})
+set(DEFAULT_SYSTEM_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include ${CMAKE_SOURCE_DIR}/contracts/musl/upstream/include ${Boost_INCLUDE_DIR})
 
 set(STANDARD_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts ${CMAKE_SOURCE_DIR}/externals/magic_get/include)
 
@@ -20,12 +20,12 @@ add_subdirectory(test.inline)
 #add_subdirectory(bancor)
 add_subdirectory(hello)
 add_subdirectory(asserter)
-add_subdirectory(infinite)
+#add_subdirectory(infinite)
 add_subdirectory(proxy)
-add_subdirectory(test_api)
-add_subdirectory(test_api_mem)
-add_subdirectory(test_api_db)
-add_subdirectory(test_api_multi_index)
+#add_subdirectory(test_api)
+#add_subdirectory(test_api_mem)
+#add_subdirectory(test_api_db)
+#add_subdirectory(test_api_multi_index)
 #add_subdirectory(social)
 add_subdirectory(eosio.bios)
 add_subdirectory(noop)

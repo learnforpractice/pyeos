@@ -2,29 +2,33 @@
 project( AppBase )
 cmake_minimum_required( VERSION 2.8.12 )
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+
+include( InstallDirectoryPermissions )
+
 file(GLOB HEADERS "include/appbase/*.hpp")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
-SET(BOOST_COMPONENTS)
-LIST(APPEND BOOST_COMPONENTS thread
+set(BOOST_COMPONENTS)
+list(APPEND BOOST_COMPONENTS thread
                              date_time
-                             system
                              filesystem
+                             system
                              chrono
                              program_options
                              unit_test_framework
                              locale)
 
-FIND_PACKAGE(Boost 1.60 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost 1.60 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 set( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 
 if( APPLE )
   # Apple Specific Options Here
-  message( STATUS "Configuring ChainBase on OS X" )
+  message( STATUS "Configuring AppBase on OS X" )
   set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -stdlib=libc++ -Wall -Wno-conversion -Wno-deprecated-declarations" )
 else( APPLE )
   # Linux Specific Options Here
-  message( STATUS "Configuring ChainBase on Linux" )
+  message( STATUS "Configuring AppBase on Linux" )
   set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -Wall" )
   set( rt_library rt )
   set( pthread_library pthread)
@@ -46,15 +50,20 @@ add_library( appbase
 target_link_libraries( appbase ${Boost_LIBRARIES})
 
 target_include_directories( appbase
-                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" ${Boost_INCLUDE_DIRS})
+                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" ${Boost_INCLUDE_DIR})
 
-INSTALL( TARGETS
+set_target_properties( appbase PROPERTIES PUBLIC_HEADER "${HEADERS}" )
+
+set(CPACK_PACKAGING_INSTALL_PREFIX /)
+
+install( TARGETS
    appbase
 
-   RUNTIME DESTINATION bin
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/appbase
 )
-INSTALL( FILES ${HEADERS} DESTINATION "include/appbase" )
+install_directory_permissions( DIRECTORY ${CMAKE_INSTALL_FULL_INCLUDEDIR}/appbase )
 
 add_subdirectory( examples )

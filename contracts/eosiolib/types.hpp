@@ -60,16 +60,6 @@ namespace eosio {
       return value;
    }
 
-   void name_to_string(uint64_t value, char* str) {
-      static const char* charmap = ".12345abcdefghijklmnopqrstuvwxyz";
-      uint64_t tmp = value;
-      for( uint32_t i = 0; i <= 12; ++i ) {
-         char c = charmap[tmp & (i == 0 ? 0x0f : 0x1f)];
-         str[12-i] = c;
-         tmp >>= (i == 0 ? 4 : 5);
-      }
-   }
-
    /**
     * @brief used to generate a compile time uint64_t from the base32 encoded string interpretation of X
     * @ingroup types

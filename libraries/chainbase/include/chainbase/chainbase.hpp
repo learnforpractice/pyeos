@@ -55,6 +55,8 @@ namespace chainbase {
    template<typename T>
    using shared_vector = std::vector<T, allocator<T> >;
 
+   constexpr char _db_dirty_flag_string[] = "db_dirty_flag";
+
    struct strcmp_less
    {
       bool operator()( const shared_string& a, const shared_string& b )const
@@ -301,9 +303,7 @@ namespace chainbase {
             }
          }
 
-         const index_type& indicies()const { return _indices; }
          int64_t revision()const { return _revision; }
-
 
          /**
           *  Restores the state to how it was prior to the current session discarding all changes
@@ -576,6 +576,8 @@ namespace chainbase {
          virtual void    commit( int64_t revision )const = 0;
          virtual void    undo_all()const = 0;
          virtual uint32_t type_id()const  = 0;
+         virtual uint64_t row_count()const = 0;
+         virtual const std::string& type_name()const = 0;
 
          virtual void remove_object( int64_t id ) = 0;
 
@@ -600,10 +602,13 @@ namespace chainbase {
          virtual void     commit( int64_t revision )const  override { _base.commit(revision); }
          virtual void     undo_all() const override {_base.undo_all(); }
          virtual uint32_t type_id()const override { return BaseIndex::value_type::type_id; }
+         virtual uint64_t row_count()const override { return _base.indices().size(); }
+         virtual const std::string& type_name() const override { return BaseIndex_name; }
 
          virtual void     remove_object( int64_t id ) override { return _base.remove_object( id ); }
       private:
          BaseIndex& _base;
+         std::string BaseIndex_name = boost::core::demangle( typeid( typename BaseIndex::value_type ).name() );
    };
 
    template<typename IndexType>
@@ -655,6 +660,8 @@ namespace chainbase {
             read_only     = 0,
             read_write    = 1
          };
+
+         using database_index_row_count_multiset = std::multiset<std::pair<unsigned, std::string>>;
 
          database(const bfs::path& dir, open_flags write = read_only, uint64_t shared_file_size = 0);
          ~database();
@@ -792,14 +799,14 @@ namespace chainbase {
          }
 
          template<typename MultiIndexType, typename ByIndex>
-         auto get_index()const -> decltype( ((generic_index<MultiIndexType>*)( nullptr ))->indicies().template get<ByIndex>() )
+         auto get_index()const -> decltype( ((generic_index<MultiIndexType>*)( nullptr ))->indices().template get<ByIndex>() )
          {
             CHAINBASE_REQUIRE_READ_LOCK("get_index", typename MultiIndexType::value_type);
             typedef generic_index<MultiIndexType> index_type;
             typedef index_type*                   index_type_ptr;
             assert( _index_map.size() > index_type::value_type::type_id );
             assert( _index_map[index_type::value_type::type_id] );
-            return index_type_ptr( _index_map[index_type::value_type::type_id]->get() )->indicies().template get<ByIndex>();
+            return index_type_ptr( _index_map[index_type::value_type::type_id]->get() )->indices().template get<ByIndex>();
          }
 
          template<typename MultiIndexType>
@@ -818,7 +825,7 @@ namespace chainbase {
          {
              CHAINBASE_REQUIRE_READ_LOCK("find", ObjectType);
              typedef typename get_index_type< ObjectType >::type index_type;
-             const auto& idx = get_index< index_type >().indicies().template get< IndexedByType >();
+             const auto& idx = get_index< index_type >().indices().template get< IndexedByType >();
              auto itr = idx.find( std::forward< CompatibleKey >( key ) );
              if( itr == idx.end() ) return nullptr;
              return &*itr;
@@ -931,6 +938,16 @@ namespace chainbase {
             return callback();
          }
 
+         database_index_row_count_multiset row_count_per_index() {
+            database_index_row_count_multiset ret;
+            for(const auto& ai_ptr : _index_map) {
+               if(!ai_ptr)
+                  continue;
+               ret.emplace(make_pair(ai_ptr->row_count(), ai_ptr->type_name()));
+            }
+            return ret;
+         }
+
       private:
          unique_ptr<bip::managed_mapped_file>                        _segment;
          unique_ptr<bip::managed_mapped_file>                        _meta;
@@ -939,7 +956,7 @@ namespace chainbase {
          bip::file_lock                                              _flock;
 
          /**
-          * This is a sparse list of known indicies kept to accelerate creation of undo sessions
+          * This is a sparse list of known indices kept to accelerate creation of undo sessions
           */
          vector<abstract_index*>                                     _index_list;
 

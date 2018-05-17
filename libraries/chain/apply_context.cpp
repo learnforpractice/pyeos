@@ -36,9 +36,6 @@ extern "C" {
 
 using boost::container::flat_set;
 
-extern "C" void execution_start();
-extern "C" void execution_end();
-
 namespace eosio { namespace chain {
 
 bool apply_context::get_code(uint64_t _account, std::vector<uint8_t>& v) {
@@ -144,8 +141,8 @@ static inline void print_debug(account_name receiver, const action_trace& ar) {
 }
 
 action_trace apply_context::exec_one()
-{
-   current_context = this;
+{   
+  current_context = this;
 
    auto start = fc::time_point::now();
 
@@ -584,8 +581,6 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
 
 void apply_context::db_remove_i64( int iterator ) {
    const key_value_object& obj = keyval_cache.get( iterator );
-
-   update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key_value_object>) );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
    FC_ASSERT( table_obj.code == receiver, "db access violation" );

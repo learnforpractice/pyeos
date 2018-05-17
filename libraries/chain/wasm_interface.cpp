@@ -950,22 +950,18 @@ class console_api : public context_aware_api {
       :context_aware_api(ctx,true){}
 
       void prints(null_terminated_ptr str) {
-//         dlog("${n1}", ("n1", str.value));
          context.console_append<const char*>(str);
       }
 
       void prints_l(array_ptr<const char> str, size_t str_len ) {
-//         dlog("${n1}", ("n1", string(str, str_len)));
          context.console_append(string(str, str_len));
       }
 
       void printi(int64_t val) {
-//         dlog("${n1}", ("n1", val));
          context.console_append(val);
       }
 
       void printui(uint64_t val) {
-//         dlog("${n1}", ("n1", val));
          context.console_append(val);
       }
 
