@@ -69,10 +69,7 @@ class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):
         self.ignore_files = _ignore 
 
-        if not isinstance(_account, int):
-            self.account = eosapi.N(_account)
-        else:
-            self.account = _account
+        self.account = _account
 
         if _dir:
             if not os.path.exists(_dir):
@@ -87,7 +84,7 @@ class Sync(object):
         else:
             id = eosapi.hash64(src_file)
 
-        code = self.account
+        code = eosapi.N(self.account)
         itr = eoslib.db_find_i64(code, code, code, id)
         if itr < 0:
             return True
@@ -124,7 +121,7 @@ class Sync(object):
         msg += src_code
         with producer:
             print('++++++++++++++++deply:', mod_name)
-            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
+            r = eosapi.push_message(self.account, 'deploy',msg,{self.account:'active'})
             assert r
 
     def deploy_depend_libs(self, _libs_dir, depend_libs):
@@ -140,7 +137,7 @@ class Sync(object):
             msg += src_code.encode('utf8')
 
             print('++++++++++++++++deply:', file_name)
-            r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
+            r = eosapi.push_message(self.account,'deploy',msg,{self.account:'active'})
             assert r
         producer.produce_block()
 
@@ -170,7 +167,7 @@ class Sync(object):
         msg += src_code
 
         print('++++++++++++++++deply:', file_name)
-        r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
+        r = eosapi.push_message(self.account,'deploy',msg,{self.account:'active'})
         assert r
 
         producer.produce_block()
