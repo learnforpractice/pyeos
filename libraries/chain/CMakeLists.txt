@@ -19,43 +19,34 @@ add_custom_command(
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
-             chain_config.cpp
              merkle.cpp
              name.cpp
              transaction.cpp
-             block.cpp
-             block_trace.cpp
-             wast_to_wasm.cpp
-             wasm_interface.cpp
 
-             evm_interface.cpp
-             micropython_interface.cpp
-             micropython/mpeoslib.cpp
-             micropython/database_api.cpp
-
-             rpc_interface/rpc_interface.cpp
-             rpc_interface/rpc_interface_.wrap.cpp
-
-#             wasm_eosio_constraints.cpp
-
-             wasm_eosio_validation.cpp
-             wasm_eosio_injection.cpp
-
-             apply_context.cpp
-             resource_limits.cpp
+             block_header.cpp
+             block_header_state.cpp
+             block_state.cpp
 
              fork_database.cpp
-             get_config.cpp
+             controller.cpp
+             authorization_manager.cpp
+             resource_limits.cpp
              block_log.cpp
-             asset.cpp
 
-             global_property_object.cpp
-             chain_controller.cpp
+             genesis_state.cpp
+             transaction_context.cpp
+             eosio_contract.cpp
+             eosio_contract_abi.cpp
 
-             contracts/eosio_contract.cpp
-             contracts/chain_initializer.cpp
-             contracts/genesis_state.cpp
-             contracts/abi_serializer.cpp
+#             chain_config.cpp
+#             block_trace.cpp
+              wast_to_wasm.cpp
+              wasm_interface.cpp
+              wasm_eosio_validation.cpp
+              wasm_eosio_injection.cpp
+              apply_context.cpp
+              abi_serializer.cpp
+              asset.cpp
 
              evm/EosState.cpp
              evm/EosExecutive.cpp
@@ -65,9 +56,7 @@ add_library( eosio_chain
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
 
-             eoslib/eoslib_.wrap.cpp
-             eoslib/eoslib_.cpp
-             transaction_metadata.cpp
+
              ${HEADERS}
              )
 
@@ -111,7 +100,7 @@ target_include_directories( eosio_chain
                             PRIVATE ${CPP_ETHEREUM_DIR}
                             )
 
-if(MSVC)
-  set_source_files_properties( db_init.cpp db_block.cpp database.cpp block_log.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
-endif(MSVC)
 
+#if(MSVC)
+#  set_source_files_properties( db_init.cpp db_block.cpp database.cpp block_log.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
+#endif(MSVC)

@@ -2,6 +2,7 @@ add_subdirectory( python )
 #add_subdirectory( python-single-thread )
 add_subdirectory( micropython )
 
+add_subdirectory( builtins )
 add_subdirectory( softfloat )
 
 add_subdirectory( chainbase )

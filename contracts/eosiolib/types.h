@@ -61,6 +61,7 @@ struct fixed_string16 {
 };
 
 typedef struct checksum256 transaction_id_type;
+typedef struct checksum256 block_id_type;
 
 typedef struct fixed_string16 field_name;
 

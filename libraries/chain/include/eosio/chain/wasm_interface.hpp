@@ -61,8 +61,8 @@ namespace eosio { namespace chain {
          static void validate(const bytes& code);
 
          //Calls apply or error on a given code
-         void apply(const digest_type& code_id, const shared_vector<char>& code, apply_context& context);
-         void call( const digest_type& code_id, const shared_vector<char>& code, string& func, vector<uint64_t>& args, apply_context& context );
+         void call( const digest_type& code_id, const shared_string& code, string& func, vector<uint64_t>& args, apply_context& context );
+         void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
 
       private:
          unique_ptr<struct wasm_interface_impl> my;
@@ -74,3 +74,5 @@ namespace eosio { namespace chain {
 namespace eosio{ namespace chain {
    std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime);
 }}
+
+FC_REFLECT_ENUM( eosio::chain::wasm_interface::vm_type, (wavm)(binaryen) )
