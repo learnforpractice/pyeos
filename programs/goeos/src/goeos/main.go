@@ -1,13 +1,14 @@
 package main
 
 import (
-    "C"
-	"os"
-	"fmt"
+	"C"
+	"bridge"
 	"flag"
+	"fmt"
+	"os"
 	"time"
 	"unsafe"
-    "bridge"
+
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/learnforpractice/panicwrap"
 )
@@ -33,13 +34,8 @@ func Usage() {
 	fmt.Fprint(os.Stderr, "\n")
 }
 
-//export HelloFromGo
-func HelloFromGo() {
-   fmt.Printf("Hello from Go!")
-}
-
 func main() {
-    
+
 	flag.Usage = Usage
 	server := flag.Bool("server", false, "Run server")
 	rpc_server := flag.Bool("rpc-server", false, "Run rpc server")
@@ -59,7 +55,7 @@ func main() {
 
 	data_dir := flag.String("data-dir", "data-dir", "data directory")
 
-    _, _, _ , _, _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client, replay
+	_, _, _, _, _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client, replay
 
 	flag.Parse()
 
@@ -81,7 +77,7 @@ func main() {
 
 	var transportFactory thrift.TTransportFactory
 	if *buffered {
-		transportFactory = thrift.NewTBufferedTransportFactory(1024*1024)
+		transportFactory = thrift.NewTBufferedTransportFactory(1024 * 1024)
 	} else {
 		transportFactory = thrift.NewTTransportFactory()
 	}
@@ -91,44 +87,43 @@ func main() {
 	}
 
 	if *server || (!*client && !*server) {
-	    go func() {
-    		if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
-    			fmt.Println("error running server:", err)
-    		}
-	    }()
-        C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
-	    bridge.GoeosMain()
+		go func() {
+			if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
+				fmt.Println("error running server:", err)
+			}
+		}()
+		C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
+		bridge.GoeosMain()
 	} else {
-       for i:=0;i<0;i++ {
-            wrap := panicwrap.WrapConfig{
-                    Handler: panicHandler,
-//                  ExePath: "ls",
-//                  Args	: []string{"-l"},
-            }
-            exitStatus, err := panicwrap.Wrap(&wrap)
-            fmt.Println("panicwrap.Wrap return: ", exitStatus, err)
-            if err != nil {
-                // Something went wrong setting up the panic wrapper. Unlikely,
-                // but possible.
-                panic(err)
-            }
-            if exitStatus < 0 {
-                break
-            }
-        }
-        C.mp_init_eosapi()
-        C.set_client_mode(C.int(1))
-        if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
-            fmt.Println("error running client:", err)
-        }
-    }
-    time.Sleep(0)
+		for i := 0; i < 0; i++ {
+			wrap := panicwrap.WrapConfig{
+				Handler: panicHandler,
+				//                  ExePath: "ls",
+				//                  Args	: []string{"-l"},
+			}
+			exitStatus, err := panicwrap.Wrap(&wrap)
+			fmt.Println("panicwrap.Wrap return: ", exitStatus, err)
+			if err != nil {
+				// Something went wrong setting up the panic wrapper. Unlikely,
+				// but possible.
+				panic(err)
+			}
+			if exitStatus < 0 {
+				break
+			}
+		}
+		C.mp_init_eosapi()
+		C.set_client_mode(C.int(1))
+		if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
+			fmt.Println("error running client:", err)
+		}
+	}
+	time.Sleep(0)
 }
-
 
 func panicHandler(output string) {
 	// output contains the full output (including stack traces) of the
 	// panic. Put it in a file or something.
 	fmt.Printf("+++++++++++The child panicked:\n\n%s\n", output)
-//	os.Exit(1)
+	//	os.Exit(1)
 }
