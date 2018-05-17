@@ -200,7 +200,7 @@ def init():
     assert r
     '''
 
-    contracts_path = os.path.join(src_dir, '../../build', 'contracts')
+    contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         print('account', account)
