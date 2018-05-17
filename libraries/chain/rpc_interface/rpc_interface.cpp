@@ -109,6 +109,9 @@ void rpc_interface::apply(apply_context& c) {
    int len;
    int ret = rpc_apply(c.receiver.value, c.act.account.value, c.act.name.value, &err, &len);
    if (ret != 0) {
+     if (ret == 911) {
+       //TODO: Fix serious condition
+     }
       string msg(err, len);
       wlog(msg);
       free(err);

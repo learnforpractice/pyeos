@@ -29,8 +29,7 @@ int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t 
 int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
 
-int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, int* len)
-{
+int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, int* len) {
    struct onApply_return ret = onApply(receiver, account, act);
    *err = ret.r2;
    *len = ret.r1;
