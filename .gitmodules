@@ -35,3 +35,9 @@
 	path = libraries/python-single-thread
 	url = https://github.com/learnforpractice/cpython
 	branch = python-v3.6.3-single-thread
+[submodule "programs/goeos/src/github.com/learnforpractice/panicwrap"]
+	path = programs/goeos/src/github.com/learnforpractice/panicwrap
+	url = https://github.com/learnforpractice/panicwrap
+[submodule "programs/goeos/src/github.com/kardianos/osext"]
+	path = programs/goeos/src/github.com/kardianos/osext
+	url = https://github.com/kardianos/osext
