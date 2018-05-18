@@ -13,7 +13,7 @@ producer = eosapi.Producer()
 def init():
     with producer:
         r = eosapi.get_account('evm')
-        if not r.permissions:
+        if not r:
             print('evm account not exist, create it.')
             r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
             assert r
@@ -82,7 +82,7 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
         print('++++make_request:', method, params)
         if method == 'eth_sendTransaction':
             if 'to' in params[0]:
-                r = eosapi.push_message(params[0]['to'], '', args, {params[0]['from']:'active'}, True)
+                r = eosapi.push_action(params[0]['to'], '', args, {params[0]['from']:'active'}, True)
             else:
                 r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:

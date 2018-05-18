@@ -33,5 +33,5 @@ def init(wasm=False):
 @init()
 def test(msg='hello,world'):
     with producer:
-        r = eosapi.push_message('renter', 'sayhello', msg, {'codestore':'active'})
+        r = eosapi.push_action('renter', 'sayhello', msg, {'codestore':'active'})
         assert r

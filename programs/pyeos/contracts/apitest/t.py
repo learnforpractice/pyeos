@@ -19,45 +19,38 @@ def init(func):
 @init
 def test():
     with producer:
-        r = eosapi.push_message('apitest','dbtest','',{'apitest':'active'})
+        r = eosapi.push_action('apitest','dbtest','',{'apitest':'active'})
         assert r
 
 @init
 def inline_send():
     with producer:
-        r = eosapi.push_message('apitest', 'inlinesend', '', {'hello':'active','apitest':'active'})
+        r = eosapi.push_action('apitest', 'inlinesend', '', {'hello':'active','apitest':'active'})
         assert r
 
 @init
 def deffer_send():
     with producer:
-        r = eosapi.push_message('apitest', 'deffersend', '', {'apitest':'active', 'hello':'active'})
+        r = eosapi.push_action('apitest', 'deffersend', '', {'apitest':'active', 'hello':'active'})
         assert r
 
 @init
 def call_wasm():
     with producer:
-        r = eosapi.push_message('apitest', 'callwasm', '', {'apitest':'active'})
+        r = eosapi.push_action('apitest', 'callwasm', '', {'apitest':'active'})
         assert r
 
 @init
 def test2(count):
-    contracts = []
-    functions = []
-    args = []
-    per = []
+    actions = []
     for i in range(count):
-        functions.append('callwasm')
-        arg = str(i)
-        args.append(arg)
-        contracts.append('apitest')
-        per.append({'apitest':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True)
+        action = ['apitest', 'callwasm', {'apitest':'active'}, str(i)]
+        actions.append(action)
+
+    res, cost = eosapi.push_actions(actions, True)
     assert ret
-    cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
-
 
 def change_owner_key():
     '''
@@ -114,7 +107,7 @@ def create_multisig_account():
     index = 0
     for key in keys:
         a = accounts[index]
-        if not eosapi.get_account(a).permissions:
+        if not eosapi.get_account(a):
             eosapi.create_account('eosio', a, key[0], key[1])
         index += 1
 

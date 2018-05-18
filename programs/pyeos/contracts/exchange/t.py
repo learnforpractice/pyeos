@@ -31,7 +31,7 @@ def test_deposit():
                 ]
     for msg in messages:
         args, scopes, permissions = msg
-        r = eosapi.push_message('currency', 'transfer', args, scopes, permissions)
+        r = eosapi.push_action('currency', 'transfer', args, scopes, permissions)
 
     messages = [
                 [ {"from":"inita", "to":"exchange", "amount":1000, "memo":"hello"}, ['exchange', 'inita'], {'inita':'active'}],
@@ -39,7 +39,7 @@ def test_deposit():
                 ]
     for msg in messages:
         args, scopes, permissions = msg
-        r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
+        r = eosapi.push_action('eos', 'transfer', args, scopes, permissions)
     producer()
     
 def test_withdraw():
@@ -57,7 +57,7 @@ def test_withdraw():
                 ]
     for msg in messages:
         args, scopes, permissions = msg
-        r = eosapi.push_message('eos', 'transfer', args, scopes, permissions)
+        r = eosapi.push_action('eos', 'transfer', args, scopes, permissions)
         
 
     messages = [
@@ -65,20 +65,20 @@ def test_withdraw():
                 [{"from":"exchange", "to":"initb", "quantity":1, "memo":"hello"}, ['exchange', 'initb'], {'exchange':'active', 'initb':'active'}]
                ]
 
-# r = eosapi.push_message('currency','transfer',{"from":"exchange","to":"initb","amount":1,"memo":"hello"},['exchange','initb'],{'exchange':'active','initb':'active'})
+# r = eosapi.push_action('currency','transfer',{"from":"exchange","to":"initb","amount":1,"memo":"hello"},['exchange','initb'],{'exchange':'active','initb':'active'})
 
     for msg in messages:
         args, scopes, permissions = msg
-        r = eosapi.push_message('currency', 'transfer', args, scopes, permissions)
+        r = eosapi.push_action('currency', 'transfer', args, scopes, permissions)
     
     producer()
     
 def test_deadlock():
 # raise a "tx_missing_scope: missing required scope" exception
-    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['inita'], {'currency':'active'})
+    r = eosapi.push_action('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['inita'], {'currency':'active'})
 
 # raise a "tx_missing_auth: missing required authority" exception
-    r = eosapi.push_message('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['currency', 'inita'], {})
+    r = eosapi.push_action('currency', 'transfer', {"from":"currency", "to":"inita", "quantity":1, "memo":"hello"}, ['currency', 'inita'], {})
     producer()
 
 def test_bs():
@@ -88,12 +88,12 @@ def test_bs():
         scopes = ['exchange', 'inita']
         permissions = {'inita':'active'}
 
-        r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
+        r = eosapi.push_action('exchange', 'buy', args, scopes, permissions)
         
         args = {"seller" : {"name":"initb", "number":1}, "at_price" : "2", "quantity" : 2, "expiration" : "2018-11-11T13:12:28", "fill_or_kill":0}
         scopes = ['exchange', 'inita']
         permissions = {'initb':'active'}
-        r = eosapi.push_message('exchange', 'sell', args, scopes, permissions)
+        r = eosapi.push_action('exchange', 'sell', args, scopes, permissions)
 
     r = eosapi.get_table('exchange', 'exchange', 'account')
     print(r)
@@ -103,7 +103,7 @@ def t2():
     scopes = ['exchange', 'inita']
     permissions = {'inita':'active'}
     with producer:
-        r = eosapi.push_message('exchange', 'buy', args, scopes, permissions)
+        r = eosapi.push_action('exchange', 'buy', args, scopes, permissions)
         assert r
 
 

@@ -9,6 +9,7 @@ import wallet
 import eosapi
 import initeos
 import traceback
+from eosapi import N, mp_compile, pack_bytes, pack_setabi, push_transactions
 from common import prepare, producer
 
 def init(func):
@@ -19,31 +20,26 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_message('hello','sayhello', name, {'hello':'active'})
+    r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
     assert r
+    print(eosapi.JsonStruct(r[0]))
     eosapi.produce_block()
 
 @init
 def play():
     with producer:
-        r = eosapi.push_message('hello', 'play', '', {'hello':'active'})
+        r = eosapi.push_action('hello', 'play', '', {'hello':'active'})
         assert r
 
 @init
-def test2(count=100):
-    contracts = []
-    functions = []
-    args = []
-    per = []
+def test2(count):
+    actions = []
     for i in range(count):
-        functions.append('sayhello')
-        arg = str(i)
-        args.append(arg)
-        contracts.append('hello')
-        per.append({'hello':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True)
-    assert ret
-    cost = ret['cost_time']
+        action = ['hello', 'sayhello', {'hello':'active'}, str(i)]
+        actions.append(action)
+
+    res, cost = eosapi.push_actions(actions, True)
+    assert ret[0]
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
 
@@ -61,7 +57,7 @@ def deploy_mpy():
     msg += src_code
 
     print('++++++++++++++++deply:', file_name)
-    r = eosapi.push_message('kitties','deploy',msg,{'kitties':'active'})
+    r = eosapi.push_action('kitties','deploy',msg,{'kitties':'active'})
     assert r
 
     producer.produce_block()

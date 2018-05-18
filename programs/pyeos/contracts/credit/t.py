@@ -17,7 +17,7 @@ print('./pyeos/pyeos --manual-gen-block --debug -i')
 def init(wasm=False):
     def init_decorator(func):
         def func_wrapper(*args, **kwargs):
-            if not eosapi.get_account('test').permissions:
+            if not eosapi.get_account('test'):
                 r = eosapi.create_account('eosio', 'test', initeos.key1, initeos.key2)
                 assert r
                 eosapi.produce_block()
@@ -32,25 +32,25 @@ def init(wasm=False):
 @init()
 def addtowl(account):
     with producer:
-        r = eosapi.push_message('credit', 'addtowl', struct.pack('Q', N(account)), {'credit':'active'})
+        r = eosapi.push_action('credit', 'addtowl', struct.pack('Q', N(account)), {'credit':'active'})
         assert r
 
 @init()
 def rmfromwl(account):
     with producer:
-        r = eosapi.push_message('credit', 'rmfromwl', struct.pack('Q', N(account)), {'credit':'active'})
+        r = eosapi.push_action('credit', 'rmfromwl', struct.pack('Q', N(account)), {'credit':'active'})
         assert r
 
 @init()
 def addtobl(account):
     with producer:
-        r = eosapi.push_message('credit', 'addtobl', struct.pack('Q', N(account)), {'credit':'active'})
+        r = eosapi.push_action('credit', 'addtobl', struct.pack('Q', N(account)), {'credit':'active'})
         assert r
 
 @init()
 def rmfrombl(account):
     with producer:
-        r = eosapi.push_message('credit', 'rmfrombl', struct.pack('Q', N(account)), {'credit':'active'})
+        r = eosapi.push_action('credit', 'rmfrombl', struct.pack('Q', N(account)), {'credit':'active'})
         assert r
 
 def testall():

@@ -55,7 +55,7 @@ def test():
         data = pickle.dumps([d, ])
         data = zlib.compress(data)
     #    print(data)
-        r = eosapi.push_message('mnist', 'train', data, ['mnist'], {'mnist':'active'})
+        r = eosapi.push_action('mnist', 'train', data, ['mnist'], {'mnist':'active'})
         assert r
         print(r.transaction_id)
         if r.transaction_id in txids:

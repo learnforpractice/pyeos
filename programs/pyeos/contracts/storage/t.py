@@ -29,7 +29,7 @@ def init(wasm=False):
 @init()
 def test(msg='hello,world', wasm=False):
     with producer:
-        r = eosapi.push_message('storagetest', 'sayhello', msg, {'storagetest':'active'})
+        r = eosapi.push_action('storagetest', 'sayhello', msg, {'storagetest':'active'})
         assert r
 
 @init()
@@ -38,23 +38,17 @@ def test2(count=100):
     for i in range(count):
         act = [N('storagetest'), N('sayhello'), [[N('storagetest'), N('active')]], b'hello,world%d'%(i,)]
         actions.append([act])
-    cost_time = eosapi.push_transactions2(actions, True)
+    cost_time = eosapi.push_transactions(actions, True)
     print(1.0/(cost_time/1e6/100.0), cost_time)
 
 @init()
 def test3(count=1000):
-    contracts = []
-    functions = []
-    args = []
-    per = []
+    actions = []
     for i in range(count):
-        functions.append('sayhello')
-        arg = str(i)
-        args.append(arg)
-        contracts.append('storagetest')
-        per.append({'storagetest':'active'})
-    ret = eosapi.push_messages(contracts, functions, args, per, True)
-    assert ret
-    cost = ret['cost_time']
+        action = ['storagetest', 'sayhello', {'storagetest':'active'}, str(i)]
+        actions.append(action)
+
+    ret, cost = eosapi.push_actions(actions, True)
+    assert ret[0]
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()

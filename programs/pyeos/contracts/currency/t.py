@@ -19,7 +19,7 @@ def init(func):
 @init
 def test_issue(wasm=False):
     with producer:
-        r = eosapi.push_message('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
+        r = eosapi.push_action('currency','issue',{"to":"currency","quantity":"1000.0000 CUR","memo":""},{'currency':'active'})
         assert r
 
 '''
@@ -39,7 +39,7 @@ def test_create(wasm=False):
             "can_whitelist":'1'
             }
     with producer:
-        r = eosapi.push_message('currency','create',args,{'currency':'active'})
+        r = eosapi.push_action('currency','create',args,{'currency':'active'})
         assert r
 '''
 account_name from;
@@ -51,12 +51,12 @@ string       memo;
 def test_transfer(wasm=False):
     args = {"from":"currency","to":"eosio","quantity":"20.0000 CUR","memo":"my first transfer"}
     with producer:
-        r = eosapi.push_message('currency','transfer',args,{'currency':'active'})
+        r = eosapi.push_action('currency','transfer',args,{'currency':'active'})
         assert r
 @init
 def test(wasm=False):
     args = {"to":"currency","quantity":"1000.0000 CUR","memo":""}
-    r = eosapi.push_message('eosio.token','issue',args,{'eosio.token':'active'})
+    r = eosapi.push_action('eosio.token','issue',args,{'eosio.token':'active'})
     assert r
     eosapi.produce_block()
 
@@ -109,22 +109,15 @@ def test2(count, wasm=False):
     import time
     import json
     
-    contracts = []
-    functions = []
-    args = []
-    per = []
+    actions = []
     for i in range(count):
-        functions.append(b'issue')
-        arg = str(i)
-        args.append({"to":"currency","quantity":"1000.0000 CUR","memo":""})
-        contracts.append(b'currency')
-        per.append({b'currency':b'active'})
+        action = ['currency', 'issue', {'vote':'active'}, {"to":"currency","quantity":"1000.0000 CUR","memo":""}]
+        actions.append(action)
 
-    ret = eosapi.push_messages(contracts, functions, args, per, True)
-    assert ret
+    ret, cost = eosapi.push_actions(actions, True)
+    assert ret[0]
     eosapi.produce_block()
     
-    cost = ret['cost_time']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 def n2s(n, max_digits=5):
@@ -170,7 +163,7 @@ def test3(count, d=0):
         key1 = keys[i]
         key2 = keys[10000+i]
 
-        if not eosapi.get_account(currency).permissions:
+        if not eosapi.get_account(currency):
             r = eosapi.create_account('eosio', currency, key1, key2)
             assert r
         deploy_contract(currency, d)
@@ -179,21 +172,15 @@ def test3(count, d=0):
 
     time.sleep(0.5)
 
-    accounts = []
-    functions = []
-    args = []
-    per = []
-    
-    for i in range(0, count):
+    actions = []
+    for i in range(count):
         currency = 'curre'+n2s(i)
-        accounts.append(currency)
-        per.append({currency:'active'})
-        functions.append('issue')
-        arg = str(i)
-        args.append({"to":currency,"quantity":"1000.0000 CUD","memo":""})
-    ret = eosapi.push_messages(accounts, functions, args, per, True)
+        action = [currency, 'issue', {'currency':'active'}, {"to":currency,"quantity":"1000.0000 CUD","memo":""}]
+        actions.append(action)
 
-    assert ret
+    ret, cost = eosapi.push_actions(actions, True)
+
+    assert ret[0]
     eosapi.produce_block()
 
     cost = ret['cost_time']
@@ -209,7 +196,7 @@ def test4(count, d=0):
         key1 = keys[i]
         key2 = keys[10000+i]
 
-        if not eosapi.get_account(currency).permissions:
+        if not eosapi.get_account(currency):
             r = eosapi.create_account('eosio', currency, key1, key2)
             assert r
         deploy_contract(currency, d)
@@ -242,19 +229,19 @@ def test4(count, d=0):
 def create():
     with producer:
         msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
-        r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
+        r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
         assert r
 
 @init
 def issue():
     with producer:
-        r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+        r = eosapi.push_action('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
         assert r
 
 @init
 def transfer():
     with producer:
         msg = {"from":"hello", "to":"auction1", "quantity":"100.0000 EOS", "memo":"m"}
-        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active'})
-#        r = eosapi.push_message('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
+        r = eosapi.push_action('eosio.token', 'transfer', msg, {'hello':'active'})
+#        r = eosapi.push_action('eosio.token', 'transfer', msg, {'hello':'active', 'auction1':'active'})
         assert r
