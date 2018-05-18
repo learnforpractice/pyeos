@@ -226,6 +226,7 @@ def init():
             if code == old_code:
                 need_update = False
         if need_update:
+            print('+++++++++code update', account)
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
             r = eosapi.set_contract(account, wast, abi, 0)

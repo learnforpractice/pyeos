@@ -93,7 +93,7 @@ cdef extern from "eosapi_.hpp":
         vector[permission_level]    authorization;
         vector[char]                data;
 
-    object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async)
+    object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async, bool _compress)
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
@@ -490,7 +490,7 @@ def get_transactions(account_name, skip_seq: int, num_seq: int):
         return result
     return None
 
-def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False):
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False):
     '''Send transactions
 
     Args:
@@ -546,7 +546,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False):
             memcpy(act.data.data(), a[3], len(a[3]))
             v.push_back(act)
         vv.push_back(v)
-    return push_transactions_(vv, sign, skip_flag, _async)
+    return push_transactions_(vv, sign, skip_flag, _async, compress)
 
 def push_action(string& contract, string& action, args, permissions: Dict, sign=True):
     '''Publishing message to blockchain
@@ -662,7 +662,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     setabi = pack_setabi(abi_file, account)
     setabi = [N('eosio'), N('setabi'), [[account, N('active')]], setabi]
 
-    return push_transactions([[setcode, setabi]], sign)
+    return push_transactions([[setcode, setabi]], sign, compress = True)
 
 def set_evm_contract(eth_address, sol_bin, sign=True):
     ilog("set_evm_contract.....");

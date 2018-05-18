@@ -207,10 +207,15 @@ bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 10
    return true;
 }
 
-PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async) {
-   packed_transaction::compression_type compression = packed_transaction::none;
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {
    vector<signed_transaction* > trxs;
    vector<fc::variant> outputs;
+   packed_transaction::compression_type compression;
+   if (compress) {
+      compression = packed_transaction::zlib;
+   } else {
+      compression = packed_transaction::none;
+   }
 
    uint64_t cost_time = 0;
 
@@ -229,9 +234,11 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
       for (auto& strx : trxs) {
          auto pt = packed_transaction(std::move(*strx), compression);
          auto mtrx = std::make_shared<transaction_metadata>(pt);
+
          controller& ctrl = app().get_plugin<chain_plugin>().chain();
          uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
          auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
+
          fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
          outputs.emplace_back(std::move(pretty_output));
       }
