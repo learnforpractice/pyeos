@@ -1,13 +1,13 @@
 #include <appbase/application.hpp>
 
-#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
-#include <eosio/account_history_plugin/account_history_plugin.hpp>
+//#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
+//#include <eosio/account_history_plugin/account_history_plugin.hpp>
 #include <eosio/chain_api_plugin/chain_api_plugin.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/http_plugin/http_plugin.hpp>
 #include <eosio/net_plugin/net_plugin.hpp>
 #include <eosio/producer_plugin/producer_plugin.hpp>
-#include <eos/py_plugin/py_plugin.hpp>
+//#include <eos/py_plugin/py_plugin.hpp>
 #include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
@@ -81,12 +81,12 @@ void start_eos() {
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
-      app().register_plugin<account_history_plugin>();
-      app().register_plugin<account_history_api_plugin>();
+//      app().register_plugin<account_history_plugin>();
+//      app().register_plugin<account_history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
-      app().register_plugin<py_plugin>();
+//      app().register_plugin<py_plugin>();
 
-      if (!app().initialize<chain_plugin, http_plugin, net_plugin, py_plugin>(g_argc, g_argv)) {
+      if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;

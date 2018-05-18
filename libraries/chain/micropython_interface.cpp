@@ -2,7 +2,10 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/thread/thread.hpp>
 #include <eosio/chain/micropython_interface.hpp>
-#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/controller.hpp>
+#include <eosio/chain/account_object.hpp>
+#include <eosio/chain/apply_context.hpp>
+
 #include "Platform/Platform.h"
 #include "WAST/WAST.h"
 #include "Runtime/Runtime.h"
@@ -11,7 +14,6 @@
 #include "IR/Module.h"
 #include "IR/Operators.h"
 #include "IR/Validate.h"
-#include <eosio/chain/account_object.hpp>
 #include <chrono>
 #include <appbase/application.hpp>
 #include <fc/crypto/xxhash.h>
@@ -157,7 +159,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    }
 }
 
-void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_vector<char>& code) {
+void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_string& code) {
    init();
    get_mpapi().execution_start();
 
@@ -211,7 +213,7 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 }
 
 void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   const shared_vector<char>& src = database_api::get().get_code(receiver);
+   const shared_string& src = database_api::get().get_code(receiver);
    apply(receiver, account, act, src);
 }
 

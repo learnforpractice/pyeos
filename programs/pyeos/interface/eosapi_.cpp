@@ -1,12 +1,15 @@
+#include "micropython/mpeoslib.h"
+
 #include "eosapi_.hpp"
 
 #include <fc/time.hpp>
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
-#include <eosio/chain/wast_to_wasm.hpp>
-#include <eosio/chain/contracts/types.hpp>
 
-#include "micropython/mpeoslib.h"
+#include <eosio/utilities/common.hpp>
+#include <eosio/chain/wast_to_wasm.hpp>
+#include <eosio/chain/contract_types.hpp>
+
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -16,6 +19,7 @@
 #include "localize.hpp"
 #include <regex>
 
+using namespace eosio;
 using namespace eosio::client::localize;
 using namespace eosio::chain;
 
@@ -67,7 +71,7 @@ string convert_from_eth_address(string& eth_address) {
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
-chain_controller& get_db() { return app().get_plugin<chain_plugin>().chain(); }
+controller& get_db() { return app().get_plugin<chain_plugin>().chain(); }
 
 wallet_manager& get_wm() {
    return app().get_plugin<wallet_plugin>().get_wallet_manager();
@@ -132,21 +136,22 @@ vector<uint8_t> assemble_wast(const std::string& wast) {
 
 read_only::get_info_results get_info() {
    auto& db = get_db();
-   auto itoh = [](uint32_t n, size_t hlen = sizeof(uint32_t)<<1) {
-    static const char* digits = "0123456789abcdef";
-    std::string r(hlen, '0');
-    for(size_t i = 0, j = (hlen - 1) * 4 ; i < hlen; ++i, j -= 4)
-      r[i] = digits[(n>>j) & 0x0f];
-    return r;
-   };
-
+   const auto& rm = db.get_resource_limits_manager();
    return {
-       itoh(static_cast<uint32_t>(app().version())),
-       db.head_block_num(),
-       db.last_irreversible_block_num(),
-       db.head_block_id(),
-       db.head_block_time(),
-       db.head_block_producer()};
+      eosio::utilities::common::itoh(static_cast<uint32_t>(app().version())),
+      db.head_block_num(),
+      db.last_irreversible_block_num(),
+      db.last_irreversible_block_id(),
+      db.head_block_id(),
+      db.head_block_time(),
+      db.head_block_producer(),
+      rm.get_virtual_block_cpu_limit(),
+      rm.get_virtual_block_net_limit(),
+      rm.get_block_cpu_limit(),
+      rm.get_block_net_limit()
+      //std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string(),
+      //__builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0
+   };
 }
 
 string generate_nonce_value() {
@@ -190,7 +195,7 @@ PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcp
    auto required_keys = determine_required_keys(trx);
    size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
 
-   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+//   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
    trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
 
    if (sign) {
@@ -204,7 +209,7 @@ PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcp
    uint64_t cost_time = 0;
    try {
       if (async) {
-         app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(trx, compression), skip_nothing);
+//         app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(trx, compression), skip_nothing);
       } else {
          auto params = fc::variant(packed_transaction(trx, compression)).get_object();
          cost_time = get_microseconds();
@@ -255,7 +260,7 @@ bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 10
    auto required_keys = determine_required_keys(trx);
    size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
 
-   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+//   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
    trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
 
    if (sign) {
@@ -353,13 +358,15 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
 
       for (auto& strx : trxs) {
          if (async) {
-            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(std::move(*strx), compression), skip_flag);
+//            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(std::move(*strx), compression), skip_flag);
          } else {
             chain_apis::read_write::push_transaction_results result;
 //            auto params = fc::variant(packed_transaction(std::move(*strx), compression)).get_object();
 //            result = rw.push_transaction(params);
-            auto ptrx = packed_transaction(std::move(*strx), compression);
-            app().get_plugin<chain_plugin>().chain().push_transaction(ptrx, skip_flag);
+            auto pt = packed_transaction(std::move(*strx), compression);
+            auto mtrx = std::make_shared<transaction_metadata>(pt);
+
+            app().get_plugin<chain_plugin>().chain().push_transaction(mtrx, fc::time_point::maximum(), false);
          }
       }
    } catch (fc::assert_exception& e) {
@@ -397,7 +404,7 @@ PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
       trx.expiration = info.head_block_time + fc::seconds(expiration);
       trx.set_reference_block(info.head_block_id);
 
-      trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
+//      trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       return python::json::to_string(fc::variant(trx));
 
@@ -540,7 +547,13 @@ PyObject* create_account_(string creator, string newaccount, string owner,
 
       vector<chain::action> actions;
       actions.emplace_back( vector<chain::permission_level>{{creator,"active"}},
-                                contracts::newaccount{creator, newaccount, owner_auth, active_auth, recovery_auth});
+                                eosio::chain::newaccount{
+                                        .creator      = creator,
+                                        .name         = newaccount,
+                                        .owner        = owner_auth,
+                                        .active       = active_auth
+                                }
+      );
 
       return send_actions(std::move(actions), sign);
 
@@ -561,7 +574,7 @@ PyObject* get_info_() {
    return python::json::to_string(results);
 
    PyDict dict;
-   const chain_controller& db = get_db();
+   const controller& db = get_db();
    string key;
    string value;
 
@@ -641,6 +654,7 @@ PyObject* get_account_(const char* _name) {
 
 PyObject* get_accounts_(char* public_key) {
    PyArray arr;
+   #if 0
    try {
       if (public_key == NULL) {
          return arr.get();
@@ -663,6 +677,7 @@ PyObject* get_accounts_(char* public_key) {
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
+   #endif
    return arr.get();
 }
 
@@ -681,6 +696,7 @@ PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol
 
 PyObject* get_controlled_accounts_(const char* account_name) {
    PyArray arr;
+   #if 0
    try {
       if (account_name == NULL) {
          return arr.get();
@@ -698,10 +714,12 @@ PyObject* get_controlled_accounts_(const char* account_name) {
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
+   #endif
    return arr.get();
 }
 
 int get_transaction_(string& id, string& result) {
+   #if 0
    eosio::account_history_apis::read_only::get_transaction_params params = {
        chain::transaction_id_type(id)};
    try {
@@ -714,11 +732,13 @@ int get_transaction_(string& id, string& result) {
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
+   #endif
    return -1;
 }
 
 int get_transactions_(string& account_name, int skip_seq, int num_seq,
                       string& result) {
+   #if 0
    try {
       const eosio::account_history_apis::read_only::get_transactions_params
           params = {chain::account_name(account_name), skip_seq, num_seq};
@@ -733,6 +753,7 @@ int get_transactions_(string& account_name, int skip_seq, int num_seq,
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
+   #endif
    return -1;
 }
 
@@ -1011,7 +1032,7 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
                         int vm_type, bool sign) {
    try {
       std::string _src;
-      contracts::setcode handler;
+      setcode handler;
       handler.vmtype = vm_type;
       if (vm_type == 0) {
          std::cout << localized("Reading WAST...") << std::endl;
@@ -1067,10 +1088,10 @@ PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
       actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
 
       if (!abiPath.empty()) {
-         contracts::setabi handler;
+         setabi handler;
          handler.account = account;
          try {
-            handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
+            handler.abi = fc::json::from_file(abiPath).as<abi_def>();
          } EOS_CAPTURE_AND_RETHROW(abi_type_exception)
          actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
       }
@@ -1095,7 +1116,7 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
    try {
       string account = convert_from_eth_address(eth_address);
 
-      contracts::setcode handler;
+      setcode handler;
       handler.vmtype = 2;
 
       sol_bin = fc::trim(sol_bin);
@@ -1120,16 +1141,13 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
    return py_new_none();
 }
 
-#include <eosio/chain/contracts/types.hpp>
-using namespace eosio;
-
 int get_code_(string& name, string& wast, string& str_abi, string& code_hash, int& vm_type) {
    try {
-      chain_controller& db = app().get_plugin<chain_plugin>().chain();
+      controller& db = app().get_plugin<chain_plugin>().chain();
 
       chain_apis::read_only::get_code_results result;
       result.account_name = name;
-      const auto& d = db.get_database();
+      const auto& d = db.db();
       const auto& accnt = d.get<account_object, by_name>(name);
 
       if (accnt.code.size()) {
@@ -1142,8 +1160,8 @@ int get_code_(string& name, string& wast, string& str_abi, string& code_hash, in
          result.code_hash = fc::sha256::hash(accnt.code.data(), accnt.code.size());
       }
 
-      chain::contracts::abi_def abi;
-      if( chain::contracts::abi_serializer::to_abi(accnt.abi, abi) ) {
+      chain::abi_def abi;
+      if( chain::abi_serializer::to_abi(accnt.abi, abi) ) {
          result.abi = std::move(abi);
       }
 
@@ -1212,16 +1230,16 @@ void unpack_bytes_(string& in, string& out) {
    out = fc::raw::unpack<string>(v);
 }
 
-void fc_pack_setcode_(chain::contracts::setcode _setcode, vector<char>& out) {
+void fc_pack_setcode_(chain::setcode _setcode, vector<char>& out) {
    out = fc::raw::pack(_setcode);
 }
 
 #include <fc/io/raw.hpp>
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
-   contracts::setabi handler;
+   setabi handler;
    handler.account = account;
-   handler.abi = fc::json::from_file(abiPath).as<contracts::abi_def>();
+   handler.abi = fc::json::from_file(abiPath).as<abi_def>();
    auto _out = fc::raw::pack(handler);
    out = string(_out.begin(), _out.end());
 }
@@ -1238,7 +1256,7 @@ void fc_pack_uint8_(uint8_t n, string& out) {
 
 void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result) {
    authority auth = parse_json_authority_or_key(_auth);
-   eosio::chain::contracts::updateauth _updateauth = {_account, _permission, _parent, auth, _delay};
+   eosio::chain::updateauth _updateauth = {_account, _permission, _parent, auth};
    vector<char> v = fc::raw::pack(_updateauth);
    result = string(v.data(), v.size());
 }

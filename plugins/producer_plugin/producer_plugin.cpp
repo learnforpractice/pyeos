@@ -81,6 +81,9 @@ class producer_plugin_impl {
 
       boost::program_options::variables_map _options;
       bool     _production_enabled                 = false;
+      bool 		_manual_gen_block 							= false;
+      bool 		_gen_empty_block 							= false;
+
       uint32_t _required_producer_participation    = uint32_t(config::required_producer_participation);
       uint32_t _production_skip_flags              = 0; //eosio::chain::skip_nothing;
 
@@ -418,7 +421,7 @@ void producer_plugin::plugin_shutdown() {
 int producer_plugin::produce_block() {
    int ret = -1;
    if (my->_manual_gen_block) {
-      ret = my->start_block();
+      ret = (int)my->start_block();
       ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
       ilog("not in manual generate block mode.");

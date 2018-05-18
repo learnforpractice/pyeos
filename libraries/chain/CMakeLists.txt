@@ -59,7 +59,15 @@ add_library( eosio_chain
               evm/EosExecutive.cpp
               evm/EosDB.cpp
               evm/EosExtVM.cpp
+              micropython/database_api.cpp
+              micropython/mpeoslib.cpp
+              evm_interface.cpp
+              micropython_interface.cpp
+              rpc_interface/rpc_interface.cpp
 
+              rpc_interface/rpc_interface_.wrap.cpp
+              eoslib/eoslib_.wrap.cpp
+              eoslib/eoslib_.cpp
              ${HEADERS}
              )
 

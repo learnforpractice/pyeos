@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
+//#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
 #include <eosio/chain/config.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 

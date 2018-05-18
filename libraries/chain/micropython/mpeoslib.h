@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "py/objlist.h"
 #include "py/objstringio.h"
@@ -39,11 +40,9 @@ struct mp_transaction {
    size_t                 actions_len;
 
    uint32_t               expiration;   ///< the time at which a transaction expires
-   uint16_t               region              ; ///< the computational memory region this transaction applies to.
    uint16_t               ref_block_num       ; ///< specifies a block num in the last 2^16 blocks.
    uint32_t               ref_block_prefix    ; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
    uint32_t               max_net_usage_words ; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
-   uint32_t               max_kcpu_usage      ; /// upper limit on the total number of kilo CPU usage units billed for this transaction
    uint32_t               delay_sec           ; /// number of seconds to delay this transaction for during which it may be canceled.
 };
 
@@ -64,10 +63,10 @@ void assert_sha256(const char* data, size_t datalen, const char* hash, size_t ha
 void assert_sha1(const char* data, size_t datalen, const char* hash, size_t hash_len);
 void assert_sha512(const char* data, size_t datalen, const char* hash, size_t hash_len);
 void assert_ripemd160(const char* data, size_t datalen, const char* hash, size_t hash_len);
-mp_obj_t sha1(const char* data, size_t datalen);
-mp_obj_t sha256(const char* data, size_t datalen);
-mp_obj_t sha512(const char* data, size_t datalen);
-mp_obj_t ripemd160(const char* data, size_t datalen);
+mp_obj_t sha1_(const char* data, size_t datalen);
+mp_obj_t sha256_(const char* data, size_t datalen);
+mp_obj_t sha512_(const char* data, size_t datalen);
+mp_obj_t ripemd160_(const char* data, size_t datalen);
 
 
 
@@ -82,7 +81,7 @@ mp_obj_t unpack_(const char* str, int nsize);
 //int get_account_balance_(Name account, uint64_t& eos_balance, uint64_t& staked_balance, uint32_t& unstaking_balance, uint32_t& last_unstaking_time);
 mp_obj_t get_account_balance_(Name account);
 uint64_t get_active_producers_();
-mp_obj_t  sha256_(const char* str, int nsize);
+mp_obj_t  sha256_(const char* str, size_t nsize);
 
 int read_transaction( char* data, size_t data_len );
 int transaction_size();
@@ -94,8 +93,6 @@ int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size 
 
 void require_auth(uint64_t account);
 void require_auth_ex(uint64_t account, uint64_t permission);
-void require_write_lock(uint64_t scope);
-void require_read_lock(uint64_t account, uint64_t scope);
 int is_account(uint64_t account);
 void require_recipient(uint64_t account);
 

@@ -6,6 +6,7 @@
 
 #include <eosio/chain/abi_serializer.hpp>
 #include <eosio/chain/account_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
 
 namespace chainbase {
    class database;
@@ -50,6 +51,9 @@ namespace eosio { namespace chain {
          ~controller();
 
          void startup();
+
+         void set_action_object(const account_name& receiver, const action& act);
+         const action_object& get_action_object() const;
 
          /**
           * Starts a new pending block session upon which new transactions can

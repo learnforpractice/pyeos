@@ -1,18 +1,18 @@
 #include "mpeoslib.h"
 
-#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/controller.hpp>
 #include <eosio/chain/micropython_interface.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
 
 //#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/apply_context.hpp>
-#include <eosio/chain/chain_controller.hpp>
 #include <eosio/chain/producer_schedule.hpp>
 #include <eosio/chain/asset.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/config.hpp>
+#include <eosio/chain/transaction_context.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -170,7 +170,6 @@ mp_obj_t unpack_(const char* str, int nsize) {
 }
 
 using namespace eosio::chain;
-using namespace eosio::chain::contracts;
 
 namespace eosio { namespace micropython {
 
@@ -869,14 +868,14 @@ int transaction_size() {
 }
 
 int expiration() {
-  return ctx().trx_meta.trx().expiration.sec_since_epoch();
+  return ctx().trx_context.trx.expiration.sec_since_epoch();
 }
 
 int tapos_block_num() {
-  return ctx().trx_meta.trx().ref_block_num;
+   return ctx().trx_context.trx.ref_block_num;
 }
 int tapos_block_prefix() {
-  return ctx().trx_meta.trx().ref_block_prefix;
+  return ctx().trx_context.trx.ref_block_prefix;
 }
 
 int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size ) {
@@ -902,15 +901,11 @@ uint64_t current_receiver() {
 }
 
 uint64_t publication_time() {
-   return ctx().trx_meta.published.time_since_epoch().count();
+   return ctx().trx_context.published.time_since_epoch().count();
 }
 
 uint64_t current_sender() {
-   if (ctx().trx_meta.sender) {
-      return (*ctx().trx_meta.sender).value;
-   } else {
-      return 0;
-   }
+   assert(0);
 }
 
 //apply_context
@@ -920,14 +915,6 @@ void require_auth(uint64_t account) {
 
 void require_auth_ex(uint64_t account, uint64_t permission) {
    ctx().require_authorization(account_name(account), name(permission));
-}
-
-void require_write_lock(uint64_t scope) {
-   ctx().require_write_lock(name(scope));
-}
-
-void require_read_lock(uint64_t account, uint64_t scope) {
-   ctx().require_read_lock(name(account), name(scope));
 }
 
 int is_account(uint64_t account) {
@@ -1003,11 +990,9 @@ bool unpack_transaction(struct mp_transaction* mp_trx, transaction& trx) {
    }
 
    trx.expiration             = time_point_sec(mp_trx->expiration);
-   trx.region                 = mp_trx->region;
    trx.ref_block_num          = mp_trx->ref_block_num;
    trx.ref_block_prefix       = mp_trx->ref_block_prefix;
    trx.max_net_usage_words    = mp_trx->max_net_usage_words;
-   trx.max_kcpu_usage         = mp_trx->max_kcpu_usage;
    trx.delay_sec              = mp_trx->delay_sec;
 
    for (int i=0;i<mp_trx->free_actions_len;i++) {
@@ -1046,6 +1031,7 @@ void send_context_free_inline(struct mp_action* mp_act) {
 }
 
 void send_deferred( eosio::chain::uint128_t sender_id, uint64_t payer, struct mp_transaction* mp_trx ) {
+   #if 0
    deferred_transaction dtrx;
    try {
       unpack_transaction(mp_trx, dtrx);
@@ -1056,15 +1042,16 @@ void send_deferred( eosio::chain::uint128_t sender_id, uint64_t payer, struct mp
             dtrx.payer = payer;
       ctx().execute_deferred(std::move(dtrx));
    } FC_CAPTURE_AND_RETHROW((fc::to_hex((char*)&dtrx, sizeof(dtrx))));
+   #endif
 }
 
 void cancel_deferred( eosio::chain::uint128_t  val ) {
    fc::uint128_t sender_id(val>>64, uint64_t(val) );
-   ctx().cancel_deferred( (eosio::chain::uint128_t)sender_id );
+//   ctx().cancel_deferred( (eosio::chain::uint128_t)sender_id );
 }
 
 uint32_t now() {
-   auto& ctrl = ctx().controller;
+   auto& ctrl = ctx().control;
    return ctrl.head_block_time().sec_since_epoch();
 }
 
@@ -1131,22 +1118,22 @@ void assert_ripemd160(const char* data, size_t datalen, const char* hash, size_t
    FC_ASSERT( result == hash_val, "hash miss match" );
 }
 
-mp_obj_t sha1(const char* data, size_t datalen) {
+mp_obj_t sha1_(const char* data, size_t datalen) {
    string str_hash = fc::sha1::hash( data, datalen ).str();
    return get_mpapi().mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
-mp_obj_t sha256(const char* data, size_t datalen) {
+mp_obj_t sha256_(const char* data, size_t datalen) {
    string str_hash = fc::sha256::hash( data, datalen ).str();
    return get_mpapi().mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
-mp_obj_t sha512(const char* data, size_t datalen) {
+mp_obj_t sha512_(const char* data, size_t datalen) {
    string str_hash = fc::sha512::hash( data, datalen ).str();
    return get_mpapi().mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
 
-mp_obj_t ripemd160(const char* data, size_t datalen) {
+mp_obj_t ripemd160_(const char* data, size_t datalen) {
    string str_hash = fc::ripemd160::hash( data, datalen ).str();
    return get_mpapi().mp_obj_new_str(str_hash.c_str(), str_hash.size());
 }
@@ -1227,8 +1214,8 @@ int wasm_call_(uint64_t _code, const char* _func, size_t _func_size, uint64_t* _
 
    apply_context& ctx = apply_context::ctx();
 
-   const auto &a = ctx.mutable_controller.get_database().get<account_object, by_name>(name(_code));
-   auto& interface = ctx.mutable_controller.get_wasm_interface();
+   const auto &a = ctx.control.db().get<account_object, by_name>(name(_code));
+   auto& interface = ctx.control.get_wasm_interface();
    interface.call(a.code_version, a.code, func, args, ctx);
 
    return 1;
@@ -1254,10 +1241,10 @@ void init_eosapi() {
    s_eosapi.assert_sha1 = assert_sha1;
    s_eosapi.assert_sha512 = assert_sha512;
    s_eosapi.assert_ripemd160 = assert_ripemd160;
-   s_eosapi.sha1 = sha1;
-   s_eosapi.sha256 = sha256;
-   s_eosapi.sha512 = sha512;
-   s_eosapi.ripemd160 = ripemd160;
+   s_eosapi.sha1 = sha1_;
+   s_eosapi.sha256 = sha256_;
+   s_eosapi.sha512 = sha512_;
+   s_eosapi.ripemd160 = ripemd160_;
 
    s_eosapi.string_to_uint64_ = string_to_uint64_;
    s_eosapi.uint64_to_string_ = uint64_to_string_;
@@ -1278,8 +1265,6 @@ void init_eosapi() {
 
    s_eosapi.require_auth = require_auth;
    s_eosapi.require_auth_ex = require_auth_ex;
-   s_eosapi.require_write_lock = require_write_lock;
-   s_eosapi.require_read_lock = require_read_lock;
    s_eosapi.is_account = is_account;
    s_eosapi.require_recipient = require_recipient;
 

@@ -27,7 +27,7 @@ int exec_func_(char* code_, char* action_, char* json_, char* scope,
 #include <string>
 #include <vector>
 
-#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
+//#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
 #include <eosio/chain/config.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 
@@ -71,7 +71,7 @@ void quit_app_();
 bool app_isshutdown_();
 uint32_t now2_();
 
-chain_controller& db();
+controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
 PyObject* push_transaction(signed_transaction& trx, bool sign);

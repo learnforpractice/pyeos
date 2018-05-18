@@ -214,6 +214,8 @@ struct controller_impl {
       db.add_index<transaction_multi_index>();
       db.add_index<generated_transaction_multi_index>();
 
+      db.add_index<action_object_index>();
+
       authorization.add_indices();
       resource_limits.add_indices();
    }
@@ -319,6 +321,9 @@ struct controller_impl {
         gpo.configuration = conf.genesis.initial_configuration;
       });
       db.create<dynamic_global_property_object>([](auto&){});
+      
+      db.create<action_object>([&](action_object& p) {
+      });
 
       authorization.initialize_database();
       resource_limits.initialize_database();
@@ -1363,5 +1368,25 @@ void controller::validate_tapos( const transaction& trx )const { try {
               ("tapos_summary", tapos_block_summary));
 } FC_CAPTURE_AND_RETHROW() }
 
+const action_object& controller::get_action_object() const{
+   return db().get<action_object>();
+}
+
+void controller::set_action_object(const account_name& receiver, const action& act) {
+   const action_object& _act_obj = get_action_object();
+   db().modify(_act_obj, [&](action_object& act_obj) {
+      act_obj.receiver = receiver;
+      act_obj.account = act.account;
+      act_obj.name = act.name;
+
+      act_obj.authorization.resize(0);
+      act_obj.authorization.resize(act.authorization.size());
+      memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
+
+      act_obj.data.resize(0);
+      act_obj.data.resize(act.data.size());
+      memcpy(act_obj.data.data(), act.data.data(), act.data.size());
+   });
+}
 
 } } /// eosio::chain

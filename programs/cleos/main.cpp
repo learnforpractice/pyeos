@@ -1824,7 +1824,7 @@ int main( int argc, char** argv ) {
       std::vector<chain::action> actions;
 
       try {
-         actions.emplace_back( create_setabi(account, fc::json::from_file(abiPath).as<contracts::abi_def>()) );
+         actions.emplace_back( create_setabi(account, fc::json::from_file(abiPath).as<abi_def>()) );
       } EOS_RETHROW_EXCEPTIONS(abi_type_exception,  "Fail to parse ABI JSON")
 
       std::cout << localized("Updating contract abi...") << std::endl;

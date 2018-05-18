@@ -46,7 +46,7 @@ public:
    void on_server_setcode(uint64_t _account, bytes& code);
    void on_client_setcode(uint64_t _account);
 
-   void apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_vector<char>& code);
+   void apply(uint64_t receiver, uint64_t account, uint64_t act, const shared_string& code);
    void apply(uint64_t receiver, uint64_t account, uint64_t act);
 private:
    struct py_module {

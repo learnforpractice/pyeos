@@ -203,7 +203,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
    my->chain.emplace(*my->chain_config);
    // replay will call micropython and micropython relies on my->chain, but replay called in constructor of chain_controller,
    //so remove replay from constructor and replay it here.
-   my->chain->replay();
+//   my->chain->replay();
 
    // set up method providers
    my->get_block_by_number_provider = app().get_method<methods::get_block_by_number>().register_provider([this](uint32_t block_num) -> signed_block_ptr {

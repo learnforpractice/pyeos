@@ -88,7 +88,7 @@ add_library(pyeos-shared eos_main.cpp py_plugin.cpp interface/json.cpp interface
     interface/eoslib_.cpp
     interface/wasm_.cpp
     interface/ipc_.cpp
-    interface/httpc.cpp
+#    interface/httpc.cpp
 #    interface/codelimit.c 
     wrap/ipc.wrap.cpp 
     wrap/eosapi.wrap.cpp 
@@ -100,13 +100,13 @@ add_library(pyeos-shared eos_main.cpp py_plugin.cpp interface/json.cpp interface
 
 
 if( APPLE )
-target_link_libraries( pyeos-shared appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+target_link_libraries( pyeos-shared appbase chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
     python3 eosio_chain intl )
 else( APPLE )
-target_link_libraries( pyeos-shared appbase account_history_api_plugin account_history_plugin chain_api_plugin 
+target_link_libraries( pyeos-shared appbase chain_api_plugin 
     producer_plugin chain_plugin net_plugin http_plugin fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     wallet_plugin wallet_api_plugin
     chainbase eos_utilities fc
@@ -122,6 +122,7 @@ target_include_directories( pyeos-shared PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/interface"
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/util"
+                                  PRIVATE "${CMAKE_SOURCE_DIR}/plugins/account_history_api_plugin/include"
                                   PRIVATE "${CPP_ETHEREUM_DIR}"
                                   )
 

@@ -1,5 +1,16 @@
 #include "database_api.hpp"
 
+#include <eosio/chain/generated_transaction_object.hpp>
+
+#include <eosio/chain/permission_object.hpp>
+#include <eosio/chain/block_summary_object.hpp>
+#include <eosio/chain/generated_transaction_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/permission_link_object.hpp>
+#include <eosio/chain/producer_object.hpp>
+#include <eosio/chain/transaction_object.hpp>
+#include <eosio/chain/permission_object.hpp>
+
 extern "C" {
 #include <stdio.h>
 #include <string.h>
@@ -24,34 +35,25 @@ database_api *database_api::_instance = 0;
 
 database_api::database_api(const action& a)
 : db(fc::path("data-dir/shared_mem"), chainbase::database::read_only, config::default_shared_memory_size),
- act(a),
- used_authorizations(act.authorization.size(), false),
- idx64(*this),
- idx128(*this),
- idx256(*this),
- idx_double(*this),
- _cpu_usage(0)
+ act(a)
 {
    db.add_index<account_index>();
-   db.add_index<permission_index>();
-   db.add_index<permission_usage_index>();
-   db.add_index<permission_link_index>();
-   db.add_index<action_permission_index>();
+   db.add_index<account_sequence_index>();
 
-   db.add_index<contracts::table_id_multi_index>();
-   db.add_index<contracts::key_value_index>();
-   db.add_index<contracts::index64_index>();
-   db.add_index<contracts::index128_index>();
-   db.add_index<contracts::index256_index>();
-   db.add_index<contracts::index_double_index>();
+   db.add_index<table_id_multi_index>();
+   db.add_index<key_value_index>();
+   db.add_index<index64_index>();
+   db.add_index<index128_index>();
+   db.add_index<index256_index>();
+   db.add_index<index_double_index>();
+   db.add_index<index_long_double_index>();
 
    db.add_index<global_property_multi_index>();
    db.add_index<dynamic_global_property_multi_index>();
    db.add_index<block_summary_multi_index>();
    db.add_index<transaction_multi_index>();
    db.add_index<generated_transaction_multi_index>();
-   db.add_index<producer_multi_index>();
-   db.add_index<scope_sequence_multi_index>();
+
    db.add_index<action_object_index>();
 }
 
@@ -86,29 +88,13 @@ void database_api::get_code(uint64_t account, string& code) {
    code = string(a.code.data(), a.code.size());
 }
 
-const shared_vector<char>& database_api::get_code(uint64_t account) {
+const shared_string& database_api::get_code(uint64_t account) {
    const auto &a = db.get<account_object, by_name>(account);
    return a.code;
 }
 
 bool database_api::is_account(const account_name& account)const {
    return nullptr != db.find<account_object,by_name>( account );
-}
-
-bool database_api::all_authorizations_used()const {
-   for ( bool has_auth : used_authorizations ) {
-      if ( !has_auth )
-         return false;
-   }
-   return true;
-}
-
-vector<permission_level> database_api::unused_authorizations()const {
-   vector<permission_level> ret_auths;
-   for ( uint32_t i=0; i < act.authorization.size(); i++ )
-      if ( !used_authorizations[i] )
-         ret_auths.push_back( act.authorization[i] );
-   return ret_auths;
 }
 
 void database_api::require_authorization( const account_name& account ) {
@@ -118,7 +104,7 @@ void database_api::require_authorization( const account_name& account ) {
         return;
      }
    }
-   EOS_ASSERT( false, tx_missing_auth, "missing authority of ${account}", ("account",account));
+   EOS_ASSERT( false, missing_auth_exception, "missing authority of ${account}", ("account",account));
 }
 
 bool database_api::has_authorization( const account_name& account )const {
@@ -137,38 +123,22 @@ void database_api::require_authorization(const account_name& account,
            return;
         }
      }
-  EOS_ASSERT( false, tx_missing_auth, "missing authority of ${account}/${permission}",
+  EOS_ASSERT( false, missing_auth_exception, "missing authority of ${account}/${permission}",
               ("account",account)("permission",permission) );
 }
 
-void database_api::require_read_lock(const account_name& account, const scope_name& scope) {
-   /*
-   if (trx_meta.allowed_read_locks || trx_meta.allowed_write_locks ) {
-      bool locked_for_read = trx_meta.allowed_read_locks && locks_contain(**trx_meta.allowed_read_locks, account, scope);
-      if (!locked_for_read && trx_meta.allowed_write_locks) {
-         locked_for_read = locks_contain(**trx_meta.allowed_write_locks, account, scope);
-      }
-      EOS_ASSERT( locked_for_read , block_lock_exception, "read lock \"${a}::${s}\" required but not provided", ("a", account)("s",scope) );
-   }
-
-   if (!locks_contain(_read_locks, account, scope)) {
-      _read_locks.emplace_back(shard_lock{account, scope});
-   }
-   */
-}
-
-const contracts::table_id_object& database_api::find_or_create_table( name code, name scope, name table, const account_name &payer ) {
-   require_read_lock(code, scope);
-   const auto* existing_tid =  db.find<contracts::table_id_object, contracts::by_code_scope_table>(boost::make_tuple(code, scope, table));
+const table_id_object& database_api::find_or_create_table( name code, name scope, name table, const account_name &payer ) {
+//   require_read_lock(code, scope);
+   const auto* existing_tid =  db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));
    if (existing_tid != nullptr) {
       return *existing_tid;
    }
 
 //   require_write_lock(scope);
 
-   update_db_usage(payer, config::billable_size_v<contracts::table_id_object>);
+   update_db_usage(payer, config::billable_size_v<table_id_object>);
 
-   return db.create<contracts::table_id_object>([&](contracts::table_id_object &t_id){
+   return db.create<table_id_object>([&](table_id_object &t_id){
       t_id.code = code;
       t_id.scope = scope;
       t_id.table = table;
@@ -242,8 +212,8 @@ void database_api::db_update_i64( int iterator, account_name payer, const char* 
    });
 }
 
-void database_api::remove_table( const contracts::table_id_object& tid ) {
-   update_db_usage(tid.payer, - config::billable_size_v<contracts::table_id_object>);
+void database_api::remove_table( const table_id_object& tid ) {
+   update_db_usage(tid.payer, - config::billable_size_v<table_id_object>);
    db.remove(tid);
 }
 
@@ -296,9 +266,9 @@ void database_api::db_get_table_i64( int iterator, uint64_t& code, uint64_t& sco
    id = obj.primary_key;
 }
 
-const contracts::table_id_object* database_api::find_table( name code, name scope, name table ) {
-   require_read_lock(code, scope);
-   return db.find<table_id_object, contracts::by_code_scope_table>(boost::make_tuple(code, scope, table));
+const table_id_object* database_api::find_table( name code, name scope, name table ) {
+//   require_read_lock(code, scope);
+   return db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));
 }
 
 int database_api::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
@@ -312,7 +282,7 @@ int database_api::db_next_i64( int iterator, uint64_t& primary ) {
    if( iterator < -1 ) return -1; // cannot increment past end iterator of table
 
    const auto& obj = keyval_cache.get( iterator ); // Check for iterator != -1 happens in this call
-   const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
+   const auto& idx = db.get_index<key_value_index, by_scope_primary>();
 
    auto itr = idx.iterator_to( obj );
    ++itr;
@@ -324,7 +294,7 @@ int database_api::db_next_i64( int iterator, uint64_t& primary ) {
 }
 
 int database_api::db_previous_i64( int iterator, uint64_t& primary ) {
-   const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
+   const auto& idx = db.get_index<key_value_index, by_scope_primary>();
 
    if( iterator < -1 ) // is end iterator
    {
@@ -356,28 +326,28 @@ int database_api::db_previous_i64( int iterator, uint64_t& primary ) {
 }
 
 int database_api::db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope ); // redundant?
+//   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
 
    auto table_end_itr = keyval_cache.cache_table( *tab );
 
-   const key_value_object* obj = db.find<key_value_object, contracts::by_scope_primary>( boost::make_tuple( tab->id, id ) );
+   const key_value_object* obj = db.find<key_value_object, by_scope_primary>( boost::make_tuple( tab->id, id ) );
    if( !obj ) return table_end_itr;
 
    return keyval_cache.add( *obj );
 }
 
 int database_api::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope ); // redundant?
+//   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
 
    auto table_end_itr = keyval_cache.cache_table( *tab );
 
-   const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
+   const auto& idx = db.get_index<key_value_index, by_scope_primary>();
    auto itr = idx.lower_bound( boost::make_tuple( tab->id, id ) );
    if( itr == idx.end() ) return table_end_itr;
    if( itr->t_id != tab->id ) return table_end_itr;
@@ -386,14 +356,14 @@ int database_api::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t tab
 }
 
 int database_api::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   require_read_lock( code, scope ); // redundant?
+//   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
 
    auto table_end_itr = keyval_cache.cache_table( *tab );
 
-   const auto& idx = db.get_index<contracts::key_value_index, contracts::by_scope_primary>();
+   const auto& idx = db.get_index<key_value_index, by_scope_primary>();
    auto itr = idx.upper_bound( boost::make_tuple( tab->id, id ) );
    if( itr == idx.end() ) return table_end_itr;
    if( itr->t_id != tab->id ) return table_end_itr;
@@ -402,7 +372,7 @@ int database_api::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t tab
 }
 
 int database_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
-   require_read_lock( code, scope ); // redundant?
+//   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
    if( !tab ) return -1;
@@ -424,95 +394,6 @@ bool database_api::is_in_whitelist(uint64_t account) {
    }
    return false;
 }
-
-#define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(IDX, TYPE)\
-      int database_api::db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary ) {\
-         return IDX.find_secondary(code, scope, table, secondary, primary);\
-      }\
-      int database_api::db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t primary ) {\
-         return IDX.find_primary(code, scope, table, secondary, primary);\
-      }\
-      int database_api::db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary ) {\
-         return IDX.lowerbound_secondary(code, scope, table, secondary, primary);\
-      }\
-      int database_api::db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table,  TYPE& secondary, uint64_t& primary ) {\
-         return IDX.upperbound_secondary(code, scope, table, secondary, primary);\
-      }\
-      int database_api::db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ) {\
-         return IDX.end_secondary(code, scope, table);\
-      }\
-      int database_api::db_##IDX##_next( int iterator, uint64_t& primary  ) {\
-         return IDX.next_secondary(iterator, primary);\
-      }\
-      int database_api::db_##IDX##_previous( int iterator, uint64_t& primary ) {\
-         return IDX.previous_secondary(iterator, primary);\
-      }
-
-#define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
-      int database_api::db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<const ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return IDX.find_secondary(code, scope, table, data, primary);\
-      }\
-      int database_api::db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return IDX.find_primary(code, scope, table, data.value, primary);\
-      }\
-      int database_api::db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return IDX.lowerbound_secondary(code, scope, table, data.value, primary);\
-      }\
-      int database_api::db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return IDX.upperbound_secondary(code, scope, table, data.value, primary);\
-      }\
-      int database_api::db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ) {\
-         return IDX.end_secondary(code, scope, table);\
-      }\
-      int database_api::db_##IDX##_next( int iterator, uint64_t& primary  ) {\
-         return IDX.next_secondary(iterator, primary);\
-      }\
-      int database_api::db_##IDX##_previous( int iterator, uint64_t& primary ) {\
-         return IDX.previous_secondary(iterator, primary);\
-      }
-
-#define DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(IDX, TYPE)\
-      int database_api::db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const char* secondary, size_t data_len, uint64_t* primary ) {\
-         EOS_ASSERT( !softfloat_api::is_nan( *((float64_t*)secondary) ), transaction_exception, "NaN is not an allowed value for a secondary key" );\
-         return IDX.find_secondary(code, scope, table, *((float64_t*)secondary), *primary);\
-      }\
-      int database_api::db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, char* secondary, size_t data_len, uint64_t primary ) {\
-         return IDX.find_primary(code, scope, table, *((float64_t*)secondary), primary);\
-      }\
-      int database_api::db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  char* secondary, size_t data_len, uint64_t* primary ) {\
-         EOS_ASSERT( !softfloat_api::is_nan( *((float64_t*)secondary) ), transaction_exception, "NaN is not an allowed value for a secondary key" );\
-         return IDX.lowerbound_secondary(code, scope, table, *((float64_t*)secondary), *primary);\
-      }\
-      int database_api::db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table,  char* secondary, size_t data_len, uint64_t* primary ) {\
-         EOS_ASSERT( !softfloat_api::is_nan( *((float64_t*)secondary) ), transaction_exception, "NaN is not an allowed value for a secondary key" );\
-         return IDX.upperbound_secondary(code, scope, table, *((float64_t*)secondary), *primary);\
-      }\
-      int database_api::db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ) {\
-         return IDX.end_secondary(code, scope, table);\
-      }\
-      int database_api::db_##IDX##_next( int iterator, uint64_t* primary  ) {\
-         return IDX.next_secondary(iterator, *primary);\
-      }\
-      int database_api::db_##IDX##_previous( int iterator, uint64_t* primary ) {\
-         return IDX.previous_secondary(iterator, *primary);\
-      }
-
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx64,  uint64_t)
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx128, uint128_t)
-DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(idx256, 2, uint128_t)
-DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, uint64_t)
 
 } } /// eosio::chain
 

@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <eosio/chain/apply_context.hpp>
-#include <eosio/chain/chain_controller.hpp>
+#include <eosio/chain/controller.hpp>
 #include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/micropython_interface.hpp>
 
@@ -10,7 +10,6 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 
 #include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/scope_sequence_object.hpp>
 #include <eosio/chain/account_object.hpp>
 
 #include <eosio/chain/types.hpp>
@@ -172,7 +171,7 @@ int wasm_test___(string& code, string& func, string& contract, string& action, s
 }
 
 int wasm_test_(string& code, string& func, vector<uint64_t>& args, uint64_t _account, uint64_t _action, vector<char>& data) {
-
+   #if 0
    vector<chain::permission_level> accountPermissions;
    accountPermissions.push_back(chain::permission_level{_account, name("active")});
    action act;
@@ -191,6 +190,7 @@ int wasm_test_(string& code, string& func, vector<uint64_t>& args, uint64_t _acc
 
    auto code_id = fc::sha256::hash(code.c_str(), (uint32_t)code.length());
    vm_wasm::get().get_module(code_id, code)->call(func, args, ctx);
+   #endif
    return 1;
 }
 

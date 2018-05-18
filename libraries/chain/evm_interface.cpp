@@ -52,7 +52,7 @@ void evm_interface::init() {
    NoProof::init();
 }
 
-void evm_interface::apply(apply_context& c, const shared_vector<char>& code) {
+void evm_interface::apply(apply_context& c, const shared_string& code) {
    try {
       current_apply_context = &c;
    }FC_CAPTURE_AND_RETHROW()
@@ -102,7 +102,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    Address sender;
 
    if (code.empty()) { //setcode
-      auto act = context.act.data_as<eosio::chain::contracts::setcode>();
+      auto act = context.act.data_as<eosio::chain::setcode>();
       memcpy(contractDestination.data(), &act.account.value, sizeof(act.account.value));
       sender = contractDestination;
       ilog( "+++++++++++++act.account:${n}", ("n", act.account.to_string()) );
@@ -111,9 +111,6 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
       sender = contractDestination;
    }
 
-   if (context.trx_meta.sender) {
-      ilog( "+++++++++++++sender:${n}", ("n", context.trx_meta.sender->to_string()) );
-   }
    ilog( "+++++++++++++receiver:${n}", ("n", context.receiver.to_string()) );
    ilog( "+++++++++++++account:${n}", ("n", context.act.account.to_string()) );
 
@@ -175,10 +172,10 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    executive.setResultRecipient(res);
    t.forceSender(sender);
 
-   std::unordered_map<byte, std::pair<unsigned, bigint>> counts;
+   std::unordered_map<byte, std::pair<unsigned, dev::bigint>> counts;
    unsigned total = 0;
-   bigint memTotal;
-   auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
+   dev::bigint memTotal;
+   auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, dev::bigint m, dev::bigint gasCost, dev::bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
 //      std::cout << "++++++gasCost: " << gasCost << "\n";
       if (mode == Mode::Statistics)
       {
@@ -295,10 +292,10 @@ void evm_test_(string _code, string _data)
    executive.setResultRecipient(res);
    t.forceSender(sender);
 
-   std::unordered_map<byte, std::pair<unsigned, bigint>> counts;
+   std::unordered_map<byte, std::pair<unsigned, dev::bigint>> counts;
    unsigned total = 0;
-   bigint memTotal;
-   auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, bigint m, bigint gasCost, bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
+   dev::bigint memTotal;
+   auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, dev::bigint m, dev::bigint gasCost, dev::bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
 //      std::cout << "++++++gasCost: " << gasCost << "\n";
       if (mode == Mode::Statistics)
       {

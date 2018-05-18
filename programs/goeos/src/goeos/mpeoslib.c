@@ -125,10 +125,10 @@ void mp_init_eosapi() {
    s_eosapi.assert_sha1 = assert_sha1;
    s_eosapi.assert_sha512 = assert_sha512;
    s_eosapi.assert_ripemd160 = assert_ripemd160;
-   s_eosapi.sha1 = sha1;
-   s_eosapi.sha256 = sha256;
-   s_eosapi.sha512 = sha512;
-   s_eosapi.ripemd160 = ripemd160;
+   s_eosapi.sha1 = sha1_;
+   s_eosapi.sha256 = sha256_;
+   s_eosapi.sha512 = sha512_;
+   s_eosapi.ripemd160 = ripemd160_;
 
    s_eosapi.string_to_uint64_ = string_to_uint64_;
    s_eosapi.uint64_to_string_ = uint64_to_string_;

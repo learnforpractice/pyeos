@@ -59,7 +59,6 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
 }
 
 apply_context* apply_context::current_context = 0;
-map<account_name, account_name> apply_context::_whitelist = map<account_name, account_name>();
 
 apply_context& apply_context::ctx() {
    return *current_context;
@@ -91,7 +90,7 @@ void apply_context::schedule() {
                }
             }
          }
-         if (trusted) { //_whitelist.find(act.account) != _whitelist.end()) {
+         if (trusted) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);
@@ -511,9 +510,9 @@ int apply_context::db_store_i64( uint64_t scope, uint64_t table, const account_n
 }
 
 name apply_context::get_receiver() {
-  if ( act.account == contracts::setcode::get_account() ) {
-     if ( act.name == contracts::setcode::get_name() ) {
-        auto  a = act.data_as<contracts::setcode>();
+  if ( act.account == setcode::get_account() ) {
+     if ( act.name == setcode::get_name() ) {
+        auto  a = act.data_as<setcode>();
         return a.account;
      }
   }

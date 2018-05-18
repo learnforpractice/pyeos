@@ -27,7 +27,7 @@ cdef extern from "<eosio/chain/wast_to_wasm.hpp>":
     ctypedef unsigned char uint8_t
     vector[uint8_t] wast_to_wasm( string& wast )
 
-cdef extern from "<eosio/chain/contracts/types.hpp>" namespace "eosio::chain::contracts":
+cdef extern from "<eosio/chain/contract_types.hpp>" namespace "eosio::chain":
     cdef cppclass setcode:
         uint64_t                     account;
         unsigned char                            vmtype;
