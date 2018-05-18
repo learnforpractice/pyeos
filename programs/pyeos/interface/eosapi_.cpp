@@ -187,7 +187,10 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
 
 bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
-   trx.expiration = info.head_block_time + tx_expiration;
+
+//   trx.expiration = info.head_block_time + tx_expiration;
+   trx.expiration = fc::time_point::now() + tx_expiration;
+
    trx.set_reference_block(info.head_block_id);
 
    if (tx_force_unique) {
@@ -474,12 +477,20 @@ PyObject* get_account_(const char* _name) {
    PyArray arr;
    PyDict dict;
 
-   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   try {
+      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
 
-   eosio::chain_apis::read_only::get_account_results result;
-   eosio::chain_apis::read_only::get_account_params params = {chain::name(_name).value};
-   result = ro_api.get_account(params);
-   return python::json::to_string(result);
+      eosio::chain_apis::read_only::get_account_results result;
+      eosio::chain_apis::read_only::get_account_params params = {chain::name(_name).value};
+      result = ro_api.get_account(params);
+      return python::json::to_string(result);
+
+   } catch (fc::exception& ex) {
+      elog(ex.to_detail_string());
+   } catch (boost::exception& ex) {
+      elog(boost::diagnostic_information(ex));
+   }
+   return py_new_none();
 }
 
 PyObject* get_accounts_(char* public_key) {

@@ -34,7 +34,7 @@ def init(wasm={1}):
 @init()
 def test(msg='hello,world'):
     with producer:
-        r = eosapi.push_message('{0}', 'sayhello', msg, {{'{0}':'active'}})
+        r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
         assert r
 '''
 py_src = \

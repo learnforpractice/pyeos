@@ -192,11 +192,11 @@ def init():
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
     '''
-    r = eosapi.push_message('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
-    r = eosapi.push_message('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
+    r = eosapi.push_action('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
+    r = eosapi.push_action('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
     assert r
     msg = {"from":"eosio", "to":"hello", "quantity":"25.0000 EOS", "memo":"m"}
-    r = eosapi.push_message('eosio.token', 'transfer', msg, {'eosio':'active'})
+    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
     assert r
     '''
 
@@ -204,12 +204,12 @@ def init():
     sys.path.append(os.getcwd())
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         print('account', account)
-        if not eosapi.get_account(account).permissions:
+        if not eosapi.get_account(account):
             r = eosapi.create_account('eosio', account, key1, key2)
             assert r
             eosapi.produce_block()
 
-        old_code = eosapi.get_code(account)[0]
+        old_code = eosapi.get_code(account)
         need_update = not old_code
         if False: #old_code:
             print('+++++++++old_code[:4]', old_code[:4])
@@ -231,9 +231,9 @@ def init():
 
             if False: #account == 'eosio.token':
                 msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
-                r = eosapi.push_message('eosio.token', 'create', msg, {'eosio.token':'active'})
+                r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
                 assert r
-                r = eosapi.push_message('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+                r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
                 assert r
                 eosapi.produce_block()
 

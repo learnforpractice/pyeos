@@ -90,7 +90,7 @@ void apply_context::schedule() {
                }
             }
          }
-         if (trusted) {
+         if (trusted || !rpc_interface::get().ready()) {
             auto &py = micropython_interface::get();
             try {
                py.apply(receiver.value, act.account.value, act.name.value, a.code);

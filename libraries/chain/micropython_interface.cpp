@@ -105,7 +105,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
             rpc_interface::get().on_setcode(_account, code);
             return;
          }
-         FC_ASSERT(false, "RPC not ready");
+         //FC_ASSERT(false, "RPC not ready");
       }
    }
 

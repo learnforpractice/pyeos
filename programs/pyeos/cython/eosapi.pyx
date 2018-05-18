@@ -134,7 +134,7 @@ class JsonStruct(object):
 
     def __str__(self):
 #        return str(self.__dict__)
-        return json.dumps(self, default=lambda x: x.__dict__)
+        return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
 
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
@@ -229,9 +229,9 @@ def create_account(creator, newaccount, owner_key, active_key, sign=True):
     else:
         sign = 0
 
-    result = create_account_(creator, newaccount, owner_key, active_key, sign)
-    if result:
-        return JsonStruct(result)
+    result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
+    if result[0]:
+        return JsonStruct(result[0])
     return None
 
 def create_key():
@@ -574,7 +574,25 @@ def push_action(string& contract, string& action, args, permissions: Dict, sign=
         pers.append([N(per), N(permissions[per])])
     act = [_contract, _action, pers, args]
     outputs, cost_time = push_transactions([[act]], sign)
-    return (outputs[0], cost_time)
+    if outputs:
+        return (outputs[0], cost_time)
+    return None
+
+def push_actions(actions, sign=True):
+    _actions = []
+    for act in actions:
+        _act = [N(act[0]), N(act[1])]
+        pers = []
+        for per in act[2]:
+            pers.append([N(per), N(act[2][per])])
+        _act.append(pers)
+        args = act[3]
+        if isinstance(args, dict):
+            args = pack_args(_act[0], _act[1], args)
+        _act.append(args)
+
+    return push_transactions([_actions], sign)
+
 
 def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=False):
     cdef string contract_
@@ -633,7 +651,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
             wasm = wast2wasm(f.read())
             code += pack_bytes(wasm)
     elif vmtype == 1:
-        mpy_code = '\x01'
+        mpy_code = b'\x01'
         mpy_code += mp_compile(src_file)
         code += pack_bytes(mpy_code)
     else:
@@ -654,7 +672,7 @@ def set_evm_contract(eth_address, sol_bin, sign=True):
         sign = 0
     if sol_bin[0:2] == '0x':
         sol_bin = sol_bin[2:]
-    result = set_evm_contract_(eth_address, sol_bin, sign);
+    result = set_evm_contract_(eth_address, sol_bin, sign)
 
     if result:
         return JsonStruct(result)

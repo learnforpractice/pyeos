@@ -36,13 +36,8 @@ def prepare(name, src, abi, full_src_path):
     if abi and abi.find('/') < 0:
         abi = os.path.join(_src_dir, abi)
 
-    if code_type == CODE_TYPE_PY:
-        mpy_file = src[:-3] + '.mpy'
-        with open(mpy_file, 'wb') as f:
-            f.write(eosapi.mp_compile(src))
-        src = mpy_file
-
-    if not eosapi.get_account(name).permissions:
+    if not eosapi.get_account(name):
+        print('*'*20, 'create_account')
         r = eosapi.create_account('eosio', name, initeos.key1, initeos.key2)
         assert r
 
@@ -121,7 +116,7 @@ class Sync(object):
         msg += src_code
         with producer:
             print('++++++++++++++++deply:', mod_name)
-            r = eosapi.push_message(self.account, 'deploy',msg,{self.account:'active'})
+            r = eosapi.push_action(self.account, 'deploy',msg,{self.account:'active'})
             assert r
 
     def deploy_depend_libs(self, _libs_dir, depend_libs):
@@ -137,7 +132,7 @@ class Sync(object):
             msg += src_code.encode('utf8')
 
             print('++++++++++++++++deply:', file_name)
-            r = eosapi.push_message(self.account,'deploy',msg,{self.account:'active'})
+            r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
             assert r
         producer.produce_block()
 
@@ -167,7 +162,7 @@ class Sync(object):
         msg += src_code
 
         print('++++++++++++++++deply:', file_name)
-        r = eosapi.push_message(self.account,'deploy',msg,{self.account:'active'})
+        r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
         assert r
 
         producer.produce_block()
