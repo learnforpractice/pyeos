@@ -444,7 +444,7 @@ def pack_args(code, action, args):
 
     fc_pack_args(code, action, args, bin)
 
-    return bin
+    return <bytes>bin
 
 
 def gen_transaction(actions, int expiration=100):

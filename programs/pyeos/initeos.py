@@ -210,8 +210,10 @@ def init():
             eosapi.produce_block()
 
         old_code = eosapi.get_code(account)
+        if old_code:
+            old_code = old_code[0]
         need_update = not old_code
-        if False: #old_code:
+        if old_code:
             print('+++++++++old_code[:4]', old_code[:4])
             if old_code[:4] != b'\x00asm':
                 old_code = eosapi.wast2wasm(old_code)
