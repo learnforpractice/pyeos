@@ -2,11 +2,12 @@
 
 import os
 import sys
+import time
+import json
+import struct
 import signal
 import atexit
 
-import time
-import json
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
@@ -57,14 +58,9 @@ cdef extern from "eosapi_.hpp":
     object create_key_()
     object get_public_key_(string& wif_key)
 
-    object push_transaction2_(void* signed_trx, bool sign)
-
     int get_transaction_(string& id, string& result);
     int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
     
-    object transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
-    object push_message_(string& contract, string& action, string& args, map[string, string]& permissions, bool sign, bool rawargs)
-    object set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
     object set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
 
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
@@ -76,12 +72,6 @@ cdef extern from "eosapi_.hpp":
     object get_currency_balance_(string& _code, string& _account, string& _symbol)
 
     object traceback_()
-
-    object push_messages_(vector[string]& contract, vector[string]& functions, vector[string]& args, vector[map[string, string]]& permissions,bool sign, bool rawargs)
-
-    object push_messages_ex_(string& contract, vector[string]& functions, vector[string]& args, map[string, string]& permissions,bool sign, bool rawargs)
-
-    object push_transactions_(vector[string]& contracts, vector[string]& functions, vector[string]& args, vector[map[string, string]]& permissions, bool sign, bool rawargs);
 
     int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
@@ -103,12 +93,14 @@ cdef extern from "eosapi_.hpp":
         vector[permission_level]    authorization;
         vector[char]                data;
 
-    object push_transactions2_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async)
+    object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async)
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
+    void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin)
+
 
     object gen_transaction_(vector[action]& v, int expiration)
     object sign_transaction_(string& trx_json_to_sign, string& str_private_key)
@@ -259,136 +251,7 @@ def get_transaction(id):
         return JsonStruct(result)
     return None
 
-def get_transactions(account_name, skip_seq: int, num_seq: int):
-    cdef string result
-    if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
-        return result
-    return None
 
-def transfer(sender, recipient, int amount, memo, sign=True):
-    memo = tobytes(memo)
-    if sign:
-        sign = 1
-    else:
-        sign = 0
-    result = transfer_(sender, recipient, amount, memo, sign)
-    if result:
-        return JsonStruct(result)
-    return None
-
-def push_message(string& contract, string& action, args, permissions: Dict, sign=True):
-    '''Publishing message to blockchain
-
-    Args:
-        account (str)      : account name
-        action (str)       : action name
-        args (dict|bytes)  : action paramater, can be a dict or raw bytes
-        abi_file (str)   : abi file path
-        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
-        sign    (bool)    : True to sign transaction
-
-    Returns:
-        JsonStruct|None: 
-    '''
-
-    cdef map[string, string] permissions_;
-    cdef int sign_
-    cdef int rawargs_ = 1
-    if isinstance(args, dict):
-        args = json.dumps(args)
-        rawargs_ = 0
-
-    for per in permissions:
-        key = permissions[per]
-        permissions_[per] = key
-
-    if sign:
-        sign_ = 1
-    else:
-        sign_ = 0
-
-#    print(contract_,action_,args_,scopes_,permissions_,sign_)
-    result = push_message_(contract, action, args, permissions_, sign_, rawargs_)
-    if result:
-        return JsonStruct(result)
-    return None
-
-def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=False):
-    cdef string contract_
-    cdef string action_
-    cdef string args_
-    cdef map[string, string] permissions_;
-    cdef int sign_
-    cdef int rawargs_
-    
-    contract_ = convert_from_eth_address(eth_address)
-    print('===eth_address:', eth_address)
-    print('===contract_:', contract_)
-
-    if not rawargs:
-        if not isinstance(args, str):
-            args = json.dumps(args)
-    args_ = tobytes(args)
-    
-    for per in permissions:
-        key = permissions[per]
-        per = convert_from_eth_address(per)
-        permissions_[per] = key
-
-    if sign:
-        sign_ = 1
-    else:
-        sign_ = 0
-    if rawargs:
-        rawargs_ = 1
-    else:
-        rawargs_ = 0
-    result = push_message_(contract_, '', args_, permissions_, sign_, rawargs_)
-    if result:
-        return JsonStruct(result)
-    return None
-
-
-def set_contract(string& account, string& src_file, string& abi_file, vmtype=1, sign=True):
-    '''Set code and abi for the account
-
-    Args:
-        account (str)    : account name
-        src_file (str)   : source file path
-        abi_file (str)   : abi file path
-        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
-        sign    (bool)    : True to sign transaction
-
-    Returns:
-        JsonStruct|None: 
-    '''
-
-    if not os.path.exists(src_file):
-        return False
-    if sign:
-        sign = 1
-    else:
-        sign = 0
-
-    result = set_contract_(account, src_file, abi_file, vmtype, sign)
-    
-    if result:
-        return JsonStruct(result)
-    return None
-
-def set_evm_contract(eth_address, sol_bin, sign=True):
-    ilog("set_evm_contract.....");
-    if sign:
-        sign = 1
-    else:
-        sign = 0
-    if sol_bin[0:2] == '0x':
-        sol_bin = sol_bin[2:]
-    result = set_evm_contract_(eth_address, sol_bin, sign);
-
-    if result:
-        return JsonStruct(result)
-    return None
 
 def get_code(name):
     cdef string wast
@@ -458,151 +321,6 @@ class Producer(object):
     
     def __exit__(self, type, value, traceback):
         self.produce_block()
-
-def push_transaction2(signed_trx,sign=True):
-    cdef uint64_t ptr
-    ptr = signed_trx()
-    return push_transaction2_(<void*>ptr,sign)
-
-def traceback():
-    return traceback_()
-
-def quit_app():
-    quit_app_()
-
-exit_by_signal_handler = False
-
-def signal_handler(signal, frame):
-    exit()
-
-cdef extern void py_exit() with gil:
-    exit()
-
-def register_signal_handler():
-    signal.signal(signal.SIGINT, signal_handler)
-
-def on_python_exit():
-    quit_app_()
-
-atexit.register(on_python_exit)
-
-
-def push_messages(vector[string]& contracts, vector[string]& functions, args, permissions, bool sign):
-    cdef vector[map[string, string]] _permissions
-    cdef map[string, string] __permissions;
-    cdef vector[string] _args
-    cdef int rawargs = 1
-    
-    for per in permissions:#list
-        __permissions = map[string, string]()
-        for _key in per: #dict
-            value = per[_key]
-            __permissions[_key] = value
-        _permissions.push_back(__permissions)
-
-    for arg in args:
-        if isinstance(arg, dict):
-            arg = json.dumps(arg)
-            rawargs = 0
-        _args.push_back(arg)
-
-    ret = push_messages_(contracts, functions, _args, _permissions,sign, rawargs)
-    return (ret)
-
-def push_messages_ex(string& contract, vector[string]& functions, args, permissions,bool sign, bool rawargs):
-    cdef map[string, string] _permissions
-    cdef vector[string] _args
-    
-    for per in permissions:
-        key = permissions[per]
-        _permissions[per] = key
-
-    for arg in args:
-        if isinstance(arg, dict):
-            arg = json.dumps(arg)
-        _args.push_back(arg)
-
-    ret = push_messages_ex_(contract, functions, _args, _permissions,sign, rawargs)
-    return (ret)
-
-
-def push_transactions(vector[string]& contracts, vector[string]& functions, args, permissions,bool sign, bool rawargs):
-    cdef vector[map[string, string]] _permissions
-    cdef map[string, string] __permissions;
-    cdef vector[string] _args
-    
-    for per in permissions:#list
-        __permissions = map[string, string]()
-        for _key in per: #dict
-            value = per[_key]
-            __permissions[_key] = value
-        _permissions.push_back(__permissions)
-
-    for arg in args:
-        if isinstance(arg, dict):
-            arg = json.dumps(arg)
-        _args.push_back(arg)
-
-    ret = push_transactions_(contracts, functions, _args, _permissions,sign, rawargs)
-    return ret
-
-def push_transactions2(actions, sign = True, uint64_t skip_flag=0, _async=False):
-    '''Send transactions
-
-    Args:
-        actions (list): two dimension action list, structured in [[action1,action2, ...],[action1,action2,...]]
-            each action represented in [account, name, [[actor1, permission1],[actor2, permission2]], data],
-            according to C++ structure defined in transaction.hpp
-           struct action {
-              account_name               account;
-              action_name                name;
-              vector<permission_level>   authorization;
-              bytes                      data;
-            }
-        sign (bool)     : whether to sign the transaction 
-        skip_flag (int) : skip flag, default to 0,
-            all flags are defined in enum validation_steps in eosio/chain/chain_controller.hpp
-        _async          : default to False, True to send in asynchronized mode, 
-            False to send in synchronized mode
-    Returns:
-        int: Sending transactions total cost time 
-    '''
-
-    cdef vector[vector[action]] vv
-    cdef vector[action] v
-    cdef action act
-    cdef permission_level per
-    cdef vector[permission_level] pers
-    '''
-    cdef cppclass permission_level:
-        uint64_t    actor;
-        uint64_t permission;
-
-    cdef cppclass action:
-        uint64_t                    account;
-        uint64_t                    name;
-        vector[permission_level]    authorization;
-        vector[char]                data;
-    '''
-    for aa in actions:
-        v = vector[action]()
-        for a in aa:
-            act = action()
-            act.account = a[0]
-            act.name = a[1]
-            pers = vector[permission_level]()
-            for auth in a[2]:
-                per = permission_level()
-                per.actor = auth[0]
-                per.permission = auth[1]
-                pers.push_back(per)
-            act.authorization = pers
-            act.data.resize(0)
-            act.data.resize(len(a[3]))
-            memcpy(act.data.data(), a[3], len(a[3]))
-            v.push_back(act)
-        vv.push_back(v)
-    return push_transactions2_(vv, sign, skip_flag, _async)
 
 def mp_compile(py_file):
     '''Compile Micropython source to binary code.
@@ -714,6 +432,19 @@ def pack_updateauth(string& _account, string& _permission, string& _parent, stri
     fc_pack_updateauth(_account, _permission, _parent, _auth, _delay, result)
     return <bytes>result
 
+def pack_args(code, action, args):
+    cdef string bin
+    args = json.dumps(args)
+
+    if isinstance(code, str):
+        code = N(code)
+
+    if isinstance(action, str):
+        action = N(action)
+
+    fc_pack_args(code, action, args, bin)
+
+    return bin
 
 
 def gen_transaction(actions, int expiration=100):
@@ -752,4 +483,200 @@ def push_raw_transaction(signed_trx):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
 
+
+def get_transactions(account_name, skip_seq: int, num_seq: int):
+    cdef string result
+    if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
+        return result
+    return None
+
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False):
+    '''Send transactions
+
+    Args:
+        actions (list): two dimension action list, structured in [[action1,action2, ...],[action1,action2,...]]
+            each action represented in [account, name, [[actor1, permission1],[actor2, permission2]], data],
+            according to C++ structure defined in transaction.hpp
+           struct action {
+              account_name               account;
+              action_name                name;
+              vector<permission_level>   authorization;
+              bytes                      data;
+            }
+        sign (bool)     : whether to sign the transaction 
+        skip_flag (int) : skip flag, default to 0,
+            all flags are defined in enum validation_steps in eosio/chain/chain_controller.hpp
+        _async          : default to False, True to send in asynchronized mode, 
+            False to send in synchronized mode
+    Returns:
+        int: Sending transactions total cost time 
+    '''
+
+    cdef vector[vector[action]] vv
+    cdef vector[action] v
+    cdef action act
+    cdef permission_level per
+    cdef vector[permission_level] pers
+    '''
+    cdef cppclass permission_level:
+        uint64_t    actor;
+        uint64_t permission;
+
+    cdef cppclass action:
+        uint64_t                    account;
+        uint64_t                    name;
+        vector[permission_level]    authorization;
+        vector[char]                data;
+    '''
+    for aa in actions:
+        v = vector[action]()
+        for a in aa:
+            act = action()
+            act.account = a[0]
+            act.name = a[1]
+            pers = vector[permission_level]()
+            for auth in a[2]:
+                per = permission_level()
+                per.actor = auth[0]
+                per.permission = auth[1]
+                pers.push_back(per)
+            act.authorization = pers
+            act.data.resize(0)
+            act.data.resize(len(a[3]))
+            memcpy(act.data.data(), a[3], len(a[3]))
+            v.push_back(act)
+        vv.push_back(v)
+    return push_transactions_(vv, sign, skip_flag, _async)
+
+def push_action(string& contract, string& action, args, permissions: Dict, sign=True):
+    '''Publishing message to blockchain
+
+    Args:
+        account (str)      : account name
+        action (str)       : action name
+        args (dict|bytes)  : action paramater, can be a dict or raw bytes
+        abi_file (str)   : abi file path
+        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
+        sign    (bool)    : True to sign transaction
+
+    Returns:
+        JsonStruct|None: 
+    '''
+    
+    _contract = s2n(contract)
+    _action = s2n(action)
+
+    if isinstance(args, dict):
+        args = pack_args(_contract, _action, args)
+
+    pers = []
+    for per in permissions:
+        pers.append([N(per), N(permissions[per])])
+    act = [_contract, _action, pers, args]
+    outputs, cost_time = push_transactions([[act]], sign)
+    return (outputs[0], cost_time)
+
+def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=False):
+    cdef string contract_
+    cdef string action_
+    cdef string args_
+    cdef map[string, string] permissions_;
+    cdef int sign_
+    cdef int rawargs_
+    
+    contract_ = convert_from_eth_address(eth_address)
+    print('===eth_address:', eth_address)
+    print('===contract_:', contract_)
+
+    if not rawargs:
+        if not isinstance(args, str):
+            args = json.dumps(args)
+    args_ = tobytes(args)
+    
+    for per in permissions:
+        key = permissions[per]
+        per = convert_from_eth_address(per)
+        permissions_[per] = key
+
+    if sign:
+        sign_ = 1
+    else:
+        sign_ = 0
+    if rawargs:
+        rawargs_ = 1
+    else:
+        rawargs_ = 0
+    result = push_action(contract_, '', args_, permissions_, sign_, rawargs_)
+    if result:
+        return JsonStruct(result)
+    return None
+
+
+def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
+    '''Set code and abi for the account
+
+    Args:
+        account (str)    : account name
+        src_file (str)   : source file path
+        abi_file (str)   : abi file path
+        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
+        sign    (bool)    : True to sign transaction
+
+    Returns:
+        JsonStruct|None: 
+    '''
+    account = N(account)
+    code = struct.pack('QBB', account, vmtype, 0)
+
+    if vmtype == 0:
+        with open(src_file, 'rb') as f:
+            wasm = wast2wasm(f.read())
+            code += pack_bytes(wasm)
+    elif vmtype == 1:
+        mpy_code = '\x01'
+        mpy_code += mp_compile(src_file)
+        code += pack_bytes(mpy_code)
+    else:
+        raise Exception("unknown code")
+
+    setcode = [N('eosio'), N('setcode'), [[account, N('active')]], code]
+
+    setabi = pack_setabi(abi_file, account)
+    setabi = [N('eosio'), N('setabi'), [[account, N('active')]], setabi]
+
+    return push_transactions([[setcode, setabi]], sign)
+
+def set_evm_contract(eth_address, sol_bin, sign=True):
+    ilog("set_evm_contract.....");
+    if sign:
+        sign = 1
+    else:
+        sign = 0
+    if sol_bin[0:2] == '0x':
+        sol_bin = sol_bin[2:]
+    result = set_evm_contract_(eth_address, sol_bin, sign);
+
+    if result:
+        return JsonStruct(result)
+    return None
+
+
+def quit_app():
+    quit_app_()
+
+exit_by_signal_handler = False
+
+def signal_handler(signal, frame):
+    exit()
+
+cdef extern void py_exit() with gil:
+    exit()
+
+def register_signal_handler():
+    signal.signal(signal.SIGINT, signal_handler)
+
+def on_python_exit():
+    quit_app_()
+
+atexit.register(on_python_exit)
 

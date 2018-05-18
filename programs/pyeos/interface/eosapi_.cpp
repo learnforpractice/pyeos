@@ -3,6 +3,8 @@
 #include "eosapi_.hpp"
 
 #include <fc/time.hpp>
+#include <fc/io/raw.hpp>
+
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
@@ -183,71 +185,6 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
    return fc::variant(results.required_keys);
 }
 
-PyObject* push_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none, bool async=false) {
-   auto info = get_info();
-   trx.expiration = info.head_block_time + tx_expiration;
-   trx.set_reference_block(info.head_block_id);
-
-   if (tx_force_unique) {
-      trx.context_free_actions.emplace_back( generate_nonce() );
-   }
-
-   auto required_keys = determine_required_keys(trx);
-   size_t num_keys = required_keys.is_array() ? required_keys.get_array().size() : 1;
-
-//   trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
-   trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
-
-   if (sign) {
-      sign_transaction(trx);
-   }
-
-   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   chain_apis::read_write::push_transaction_results result;
-
-   bool success = false;
-   uint64_t cost_time = 0;
-   try {
-      if (async) {
-//         app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(trx, compression), skip_nothing);
-      } else {
-         auto params = fc::variant(packed_transaction(trx, compression)).get_object();
-         cost_time = get_microseconds();
-         result = rw.push_transaction(params);
-         cost_time = get_microseconds() - cost_time;
-         success = true;
-      }
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-
-   if (success) {
-      PyObject* dict = python::json::to_string(result);
-      string _key = string("cost_time");
-      PyObject* key = py_new_string(_key);
-      PyObject* value = py_new_uint64(cost_time);
-      dict_add(dict, key, value);
-      return dict;
-   }
-   return py_new_none();
-}
-
-PyObject* push_actions(std::vector<chain::action>&& actions, bool sign, packed_transaction::compression_type compression = packed_transaction::none ) {
-   signed_transaction trx;
-   trx.actions = std::forward<decltype(actions)>(actions);
-
-//   wlog("++++++++++++++++++++++push_transaction");
-   return push_transaction(trx, sign, 10000000, compression);
-}
-
-PyObject* send_actions(std::vector<chain::action>&& actions, bool sign, packed_transaction::compression_type compression = packed_transaction::none) {
-   return push_actions(std::forward<decltype(actions)>(actions), sign, compression);
-}
-
 bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
    trx.expiration = info.head_block_time + tx_expiration;
@@ -269,78 +206,10 @@ bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 10
    return true;
 }
 
-PyObject* push_transactions_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
-      vector<map<string, string>>& permissions, bool sign, bool rawargs) {
-   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-
-   vector<vector<chain::permission_level>> accountPermissions;
-
-   for (int i=0;i<permissions.size();i++) {
-      auto& per = permissions[i];
-      vector<chain::permission_level> _v;
-      for (auto it = per.begin(); it != per.end(); it++) {
-         _v.push_back(chain::permission_level{name(it->first), name(it->second)});
-      }
-      accountPermissions.push_back(_v);
-   }
-
-   vector<chain::action> actions;
-
-   eosio::chain_apis::read_only::abi_json_to_bin_params params;
-   for (int i=0;i<functions.size();i++) {
-         string& action = functions[i];
-         string& arg = args[i];
-         if (!rawargs) {
-         params = {contracts[i], action, fc::json::from_string(arg)};
-      } else {
-         std::vector<char> v(arg.begin(), arg.end());
-         params = {contracts[i], action, fc::variant(v)};
-      }
-      auto result = ro_api.abi_json_to_bin(params);
-      actions.emplace_back(accountPermissions[i], contracts[i], action, result.binargs);
-   }
-
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async) {
    packed_transaction::compression_type compression = packed_transaction::none;
    vector<signed_transaction* > trxs;
-
-   for (auto& action: actions) {
-      signed_transaction *trx = new signed_transaction();
-      trxs.push_back(trx);
-      trx->actions.push_back(action);
-      gen_transaction(*trx, sign, 10000000, compression);
-   }
-
-   uint64_t cost_time = get_microseconds();
-
-   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   for (auto& strx : trxs) {
-      chain_apis::read_write::push_transaction_results result;
-      bool success = false;
-      try {
-         auto params = fc::variant(packed_transaction(*strx, compression)).get_object();
-         result = rw.push_transaction(params);
-         success = true;
-      } catch (fc::assert_exception& e) {
-         elog(e.to_detail_string());
-      } catch (fc::exception& e) {
-         elog(e.to_detail_string());
-      } catch (boost::exception& ex) {
-         elog(boost::diagnostic_information(ex));
-      }
-   }
-   cost_time = get_microseconds() - cost_time;
-
-   for (auto& st : trxs) {
-      free(st);
-   }
-
-   return py_new_uint64(cost_time);
-}
-
-
-PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async) {
-   packed_transaction::compression_type compression = packed_transaction::none;
-   vector<signed_transaction* > trxs;
+   vector<fc::variant> outputs;
 
    uint64_t cost_time = 0;
 
@@ -349,7 +218,7 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
          signed_transaction *trx = new signed_transaction();
          trxs.push_back(trx);
          for(auto& action: v) {
-            trx->actions.push_back(std::move(action));
+            trx->actions.emplace_back(std::move(action));
          }
          gen_transaction(*trx, sign, 10000000, compression);
       }
@@ -357,17 +226,13 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
       auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
 
       for (auto& strx : trxs) {
-         if (async) {
-//            app().get_plugin<chain_plugin>().chain().push_transaction_async(packed_transaction(std::move(*strx), compression), skip_flag);
-         } else {
-            chain_apis::read_write::push_transaction_results result;
-//            auto params = fc::variant(packed_transaction(std::move(*strx), compression)).get_object();
-//            result = rw.push_transaction(params);
-            auto pt = packed_transaction(std::move(*strx), compression);
-            auto mtrx = std::make_shared<transaction_metadata>(pt);
-
-            app().get_plugin<chain_plugin>().chain().push_transaction(mtrx, fc::time_point::maximum(), false);
-         }
+         auto pt = packed_transaction(std::move(*strx), compression);
+         auto mtrx = std::make_shared<transaction_metadata>(pt);
+         controller& ctrl = app().get_plugin<chain_plugin>().chain();
+         uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
+         auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
+         fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
+         outputs.emplace_back(std::move(pretty_output));
       }
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
@@ -384,7 +249,15 @@ PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint
       delete st;
    }
 
-   return py_new_uint64(cost_time);
+   PyArray _outputs;
+   for (auto& output : outputs) {
+      _outputs.append(python::json::to_string(output));
+   }
+
+   PyArray res;
+   res.append(_outputs.get());
+   res.append(py_new_uint64(cost_time));
+   return res.get();
 }
 
 
@@ -464,50 +337,6 @@ PyObject* push_raw_transaction_(string& signed_trx) {
    return py_new_none();
 }
 
-
-PyObject* push_transaction2_(void* signed_trx, bool sign) {
-
-   if (signed_trx == NULL) {
-      return py_new_none();
-   }
-
-   signed_transaction& trx = *((signed_transaction *)signed_trx);
-
-   auto info = get_info();
-   trx.expiration = info.head_block_time + 100;
-   trx.ref_block_num = fc::endian_reverse_u32(info.head_block_id._hash[0]);
-   trx.ref_block_prefix = info.head_block_id._hash[1];
-//   boost::sort(trx.scope);
-
-   if (sign) {
-      sign_transaction(trx);
-   }
-
-   auto rw = app().get_plugin<chain_plugin>().get_read_write_api();
-   chain_apis::read_write::push_transaction_results result;
-
-   bool success = false;
-//   PyThreadState* state = PyEval_SaveThread();
-   try {
-      result = rw.push_transaction(fc::variant(trx).get_object());
-      success = true;
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-
-//   PyEval_RestoreThread(state);
-
-   if (success) {
-      return python::json::to_string(result);
-   }
-   return py_new_none();
-}
-
-
 int produce_block_() {
    return app().get_plugin<producer_plugin>().produce_block();
 }
@@ -545,6 +374,7 @@ PyObject* create_account_(string creator, string newaccount, string owner,
       auto active_auth = eosio::chain::authority{1, {{public_key_type(active), 1}}, {}};
       auto recovery_auth = eosio::chain::authority{1, {}, {{{creator, "active"}, 1}}};
 
+      vector<vector<chain::action>> vv;
       vector<chain::action> actions;
       actions.emplace_back( vector<chain::permission_level>{{creator,"active"}},
                                 eosio::chain::newaccount{
@@ -554,8 +384,8 @@ PyObject* create_account_(string creator, string newaccount, string owner,
                                         .active       = active_auth
                                 }
       );
-
-      return send_actions(std::move(actions), sign);
+      vv.emplace_back(std::move(actions));
+      return push_transactions_(vv, sign);
 
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
@@ -757,360 +587,6 @@ int get_transactions_(string& account_name, int skip_seq, int num_seq,
    return -1;
 }
 
-
-PyObject* transfer_(string& sender, string& recipient, int amount, string memo, bool sign) {
-
-   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-
-   auto transfer = fc::mutable_variant_object
-         ("from", sender)
-         ("to", recipient)
-         ("quantity", asset(amount))
-         ("memo", memo);
-
-   eosio::chain_apis::read_only::abi_json_to_bin_params params = {
-         name(config::system_account_name), "transfer", transfer
-   };
-
-   auto result = ro_api.abi_json_to_bin(params);
-
-   std::vector<chain::action> actions;
-   actions.emplace_back(vector<chain::permission_level>{{sender,"active"}},
-                            config::system_account_name,
-                            "transfer",
-                            result.binargs);
-
-   if (tx_force_unique) {
-      actions.emplace_back( generate_nonce() );
-   }
-
-   return send_actions(std::move(actions), sign);
-
-}
-
-PyObject* push_message_(string& contract, string& action, string& args, map<string, string>& permissions,
-                        bool sign, bool rawargs) {
-//   wlog("+++++++++++++++++push_message:${n}", ("n", contract));
-   try {
-      //      ilog("Converting argument to binary...");
-      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-
-      vector<chain::permission_level> accountPermissions;
-      for (auto it = permissions.begin(); it != permissions.end(); it++) {
-         accountPermissions.push_back(chain::permission_level{name(it->first), name(it->second)});
-      }
-
-      vector<chain::action> actions;
-
-      if (action.size() == 0) {//evm
-            string _args;
-            if (args[0] == '0' && args[1] == 'x') {
-               _args = string(args.begin()+2, args.end());
-            } else {
-               _args = args;
-            }
-            bytes v;
-            v.resize(0);
-            v.resize(_args.size()/2);
-            fc::from_hex(_args, v.data(), v.size());
-         actions.emplace_back(accountPermissions, contract, action, v);
-      } else {
-         std::vector<char> v;
-         if (rawargs) {
-            v = std::vector<char>(args.begin(), args.end());
-         } else {
-            eosio::chain_apis::read_only::abi_json_to_bin_params params;
-            params = {contract, action, fc::json::from_string(args)};
-            auto result = ro_api.abi_json_to_bin(params);
-            v = result.binargs;
-         }
-         actions.emplace_back(accountPermissions, contract, action, v);
-      }
-
-      if (tx_force_unique) {
-         actions.emplace_back( generate_nonce() );
-      }
-
-      return send_actions(std::move(actions), sign);
-
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-   /*
-    auto obj =
-    get_db().get_database().get<eosio::chain::block_summary_object>((uint16_t)trx.refBlockNum);
-    ilog("obj.block_id._hash[0] ${n} ", ("n",
-    fc::endian_reverse_u32(obj.block_id._hash[0]))); ilog("trx.refBlockNum ${n}
-    ", ("n", trx.refBlockNum) );
-    */
-   return py_new_none();
-}
-
-PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
-      vector<map<string, string>>& permissions, bool sign, bool rawargs) {
-   signed_transaction trx;
-//   ilog("+++++++++++++++++push_message:${n}", ("n", contract));
-   try {
-      //      ilog("Converting argument to binary...");
-      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-
-      vector<vector<chain::permission_level>> accountPermissions;
-
-      for (int i=0;i<permissions.size();i++) {
-         auto& per = permissions[i];
-         vector<chain::permission_level> _v;
-         for (auto it = per.begin(); it != per.end(); it++) {
-            _v.push_back(chain::permission_level{name(it->first), name(it->second)});
-         }
-         accountPermissions.push_back(_v);
-      }
-
-      vector<chain::action> actions;
-
-      if (functions.size() == 0) {//evm
-//            for (auto& arg : args) {
-         for (int i=0;i<args.size();i++) {
-            auto& arg = args[i];
-            string _args;
-            if (arg[0] == '0' && arg[1] == 'x') {
-               _args = string(arg.begin()+2, arg.end());
-            } else {
-               _args = arg;
-            }
-            bytes v;
-            v.resize(0);
-            v.resize(_args.size()/2);
-            fc::from_hex(_args, v.data(), v.size());
-            actions.emplace_back(accountPermissions[i], contracts[i], "", v);
-         }
-      } else {
-         eosio::chain_apis::read_only::abi_json_to_bin_params params;
-         for (int i=0;i<functions.size();i++) {
-               string& action = functions[i];
-               string& arg = args[i];
-               if (!rawargs) {
-               params = {contracts[i], action, fc::json::from_string(arg)};
-            } else {
-               std::vector<char> v(arg.begin(), arg.end());
-               params = {contracts[i], action, fc::variant(v)};
-            }
-            auto result = ro_api.abi_json_to_bin(params);
-            actions.emplace_back(accountPermissions[i], contracts[i], action, result.binargs);
-         }
-      }
-
-      if (tx_force_unique) {
-         actions.emplace_back( generate_nonce() );
-      }
-      PyObject* ret = send_actions(std::move(actions), sign);
-      return ret;
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-
-   return py_new_none();
-}
-
-PyObject* push_messages_ex_(string& contract, vector<string>& functions, vector<string>& args,
-                              map<string, string>& permissions, bool sign, bool rawargs) {
-   signed_transaction trx;
-//   ilog("+++++++++++++++++push_message:${n}", ("n", contract));
-   try {
-      //      ilog("Converting argument to binary...");
-      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-
-      vector<chain::permission_level> accountPermissions;
-      for (auto it = permissions.begin(); it != permissions.end(); it++) {
-         accountPermissions.push_back(chain::permission_level{name(it->first), name(it->second)});
-      }
-
-      vector<chain::action> actions;
-
-      if (functions.size() == 0) {//evm
-//            for (auto& arg : args) {
-         for (int i=0;i<args.size();i++) {
-            auto& arg = args[i];
-            string _args;
-            if (arg[0] == '0' && arg[1] == 'x') {
-               _args = string(arg.begin()+2, arg.end());
-            } else {
-               _args = arg;
-            }
-            bytes v;
-            v.resize(0);
-            v.resize(_args.size()/2);
-            fc::from_hex(_args, v.data(), v.size());
-            actions.emplace_back(accountPermissions, contract, "", v);
-         }
-      } else {
-         eosio::chain_apis::read_only::abi_json_to_bin_params params;
-         for (int i=0;i<functions.size();i++) {
-               string action = functions[i];
-               string arg = args[i];
-               if (!rawargs) {
-               params = {contract, action, fc::json::from_string(arg)};
-            } else {
-               std::vector<char> v(arg.begin(), arg.end());
-               params = {contract, action, fc::variant(v)};
-            }
-            auto result = ro_api.abi_json_to_bin(params);
-            actions.emplace_back(accountPermissions, contract, action, result.binargs);
-         }
-      }
-
-      if (tx_force_unique) {
-         actions.emplace_back( generate_nonce() );
-      }
-      PyObject* ret = send_actions(std::move(actions), sign);
-      return ret;
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-
-   return py_new_none();
-}
-
-PyObject* push_evm_message_(string& contract, string& args, map<string, string>& permissions,
-                        bool sign, bool rawargs) {
-   signed_transaction trx;
-
-   try {
-      //      ilog("Converting argument to binary...");
-      auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
-      auto rw_api = app().get_plugin<chain_plugin>().get_read_write_api();
-      eosio::chain_apis::read_only::abi_json_to_bin_params params;
-      if (!rawargs) {
-         params = {contract, "", fc::json::from_string(args)};
-      } else {
-         std::vector<char> v(args.begin(), args.end());
-         params = {contract, "", fc::variant(v)};
-      }
-
-      vector<chain::permission_level> accountPermissions;
-      for (auto it = permissions.begin(); it != permissions.end(); it++) {
-         accountPermissions.push_back(chain::permission_level{name(it->first), name(it->second)});
-      }
-
-      vector<chain::action> actions;
-
-      string _args;
-      if (args[0] == '0' && args[1] == 'x') {
-         _args = string(args.begin()+2, args.end());
-      } else {
-         _args = args;
-      }
-      bytes v;
-      v.resize(0);
-      v.resize(_args.size()/2);
-      fc::from_hex(_args, v.data(), v.size());
-      actions.emplace_back(accountPermissions, contract, "", v);
-
-      if (tx_force_unique) {
-         actions.emplace_back( generate_nonce() );
-      }
-
-      return send_actions(std::move(actions), sign);
-
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-   return py_new_none();
-}
-
-
-PyObject* set_contract_(string& account, string& srcPath, string& abiPath,
-                        int vm_type, bool sign) {
-   try {
-      std::string _src;
-      setcode handler;
-      handler.vmtype = vm_type;
-      if (vm_type == 0) {
-         std::cout << localized("Reading WAST...") << std::endl;
-         fc::read_file_contents(srcPath, _src);
-
-         vector<uint8_t> wasm;
-         const string binary_wasm_header = "\x00\x61\x73\x6d";
-         if(_src.compare(0, 4, binary_wasm_header) == 0) {
-            std::cout << localized("Using already assembled WASM...") << std::endl;
-            wasm = vector<uint8_t>(_src.begin(), _src.end());
-         }
-         else {
-            std::cout << localized("Assembling WASM...") << std::endl;
-            if (false) {
-               wasm = assemble_wast(_src);
-            } else {
-               wasm = wast_to_wasm(_src);
-            }
-         }
-         handler.account = account;
-         handler.code.assign(wasm.begin(), wasm.end());
-      } else if (vm_type == 1) {
-         fc::read_file_contents(srcPath, _src);
-         handler.account = account;
-         handler.code.resize(0);
-         handler.code.resize(_src.length()+1);
-         if (srcPath[srcPath.length() - 3] == 'm') {//compiled code
-               handler.code.data()[0] = '\x01';
-         } else {
-               handler.code.data()[0] = '\x00';
-         }
-         memcpy(&handler.code.data()[1], _src.c_str(), _src.length());
-//         handler.code.assign(_src.begin(), _src.end());
-      } else if (vm_type == 2) {
-         fc::read_file_contents(srcPath, _src);
-         _src = fc::trim(_src);
-         bytes bin;
-         bin.resize(0);
-         bin.resize(_src.size()/2);
-         fc::from_hex(_src, bin.data(), bin.size());
-         handler.account = account;
-         handler.code.assign(bin.begin(), bin.end());
-      }  else if (vm_type == 3) {
-         fc::read_file_contents(srcPath, _src);
-         handler.account = account;
-         handler.code.resize(0);
-         handler.code.resize(_src.length());
-         memcpy(handler.code.data(), _src.c_str(), _src.length());
-//         handler.code.assign(_src.begin(), _src.end());
-      }
-
-      vector<chain::action> actions;
-      actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
-
-      if (!abiPath.empty()) {
-         setabi handler;
-         handler.account = account;
-         try {
-            handler.abi = fc::json::from_file(abiPath).as<abi_def>();
-         } EOS_CAPTURE_AND_RETHROW(abi_type_exception)
-         actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
-      }
-
-      std::cout << localized("Publishing contract...") << std::endl;
-
-      uint64_t cost_time = get_microseconds();
-      auto ret = send_actions(std::move(actions), sign, packed_transaction::zlib);
-      cost_time = get_microseconds() - cost_time;
-      wlog("cost time: ${n}", ("n", cost_time));
-      return ret;
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-   return py_new_none();
-}
-
 PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
 
    try {
@@ -1131,7 +607,8 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
       actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
 
       std::cout << localized("Publishing contract...") << std::endl;
-      return send_actions(std::move(actions), sign, packed_transaction::zlib);
+//FIXME:
+      //      return send_actions(std::move(actions), sign, packed_transaction::zlib);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
@@ -1234,7 +711,6 @@ void fc_pack_setcode_(chain::setcode _setcode, vector<char>& out) {
    out = fc::raw::pack(_setcode);
 }
 
-#include <fc/io/raw.hpp>
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
    setabi handler;
@@ -1261,41 +737,10 @@ void fc_pack_updateauth(string& _account, string& _permission, string& _parent, 
    result = string(v.data(), v.size());
 }
 
-/*
-account_name                      account;
-permission_name                   permission;
-permission_name                   parent;
-authority                         data;
-uint32_t                          delay;
-*/
-
-
-#include <frameobject.h>
-
-PyObject* traceback_()
-{
-    PyThreadState *tstate;
-    PyFrameObject *pyframe;
-    PyArray ret_arr;
-
-#ifdef WITH_THREAD
-    tstate = PyGILState_GetThisThreadState();
-#else
-    tstate = PyThreadState_Get();
-#endif
-
-    if (tstate == NULL) {
-        return py_new_none();
-    }
-
-    for (pyframe = tstate->frame; pyframe != NULL; pyframe = pyframe->f_back) {
-       PyArray arr;
-       arr.append(pyframe->f_code->co_name);
-       arr.append(pyframe->f_lineno);
-       ret_arr.append(arr.get());
-    }
-    return ret_arr.get();
+void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   eosio::chain_apis::read_only::abi_json_to_bin_params params;
+   params = {code, action, fc::json::from_string(json)};
+   auto result = ro_api.abi_json_to_bin(params);
+   bin = string(result.binargs.data(), result.binargs.size());
 }
-
-
-

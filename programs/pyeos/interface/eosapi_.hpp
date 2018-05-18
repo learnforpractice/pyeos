@@ -74,8 +74,6 @@ uint32_t now2_();
 controller& db();
 string to_bitset(uint64_t val);
 wallet_manager& get_wm();
-PyObject* push_transaction(signed_transaction& trx, bool sign);
-PyObject* push_transaction2_(void* signed_trx, bool sign);
 
 #define INT_65 65
 
@@ -99,38 +97,21 @@ PyObject* create_key_();
 PyObject* get_public_key_(string& wif_key);
 
 int get_transaction_(string& id, string& result);
-int get_transactions_(string& account_name, int skip_seq, int num_seq,
-                      string& result);
-PyObject* transfer_(string& sender, string& recipient, int amount, string memo,
-                    bool sign);
-PyObject* push_message_(string& contract, string& action, string& args,
-                        map<string, string>& permissions,
-                        bool sign, bool rawargs);
-PyObject* set_contract_(string& account, string& wastPath, string& abiPath,
-                        int vmtype, bool sign);
-int get_code_(string& name, string& wast, string& abi, string& code_hash,
-              int& vm_type);
+int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
+
+PyObject* transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
+PyObject* set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
+
+int get_code_(string& name, string& wast, string& abi, string& code_hash, int& vm_type);
 int get_table_(string& scope, string& code, string& table, string& result);
-
-PyObject* traceback_();
-
 
 uint64_t string_to_uint64_(string str);
 string uint64_to_string_(uint64_t n);
 string convert_to_eth_address(string& name);
 string convert_from_eth_address(string& eth_address);
 
-PyObject* push_messages_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
-      vector<map<string, string>>& permissions, bool sign, bool rawargs);
 
-PyObject* push_transactions_(vector<string>& contracts, vector<string>& functions, vector<string>& args,
-      vector<map<string, string>>& permissions, bool sign, bool rawargs);
-
-PyObject* push_transactions2_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async);
-
-
-PyObject* push_messages_ex_(string& contracts, vector<string>& functions, vector<string>& args, map<string, string>& permissions,
-                         bool sign, bool rawargs);
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag = 0, bool async = false);
 
 
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
@@ -144,6 +125,9 @@ void unpack_bytes_(string& in, string& out);
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out);
 void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
+void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin);
+
+
 PyObject* gen_transaction_(vector<chain::action>& v, int expiration);
 PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key);
 PyObject* push_raw_transaction_(string& signed_trx);
