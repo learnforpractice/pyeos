@@ -18,11 +18,9 @@
 #include "pyobject.hpp"
 #include "wallet_.h"
 
-#include "localize.hpp"
 #include <regex>
 
 using namespace eosio;
-using namespace eosio::client::localize;
 using namespace eosio::chain;
 
 auto tx_expiration = fc::seconds(30);
@@ -617,7 +615,7 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
       vector<chain::action> actions;
       actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
 
-      std::cout << localized("Publishing contract...") << std::endl;
+      std::cout << "Publishing contract..." << std::endl;
 //FIXME:
       //      return send_actions(std::move(actions), sign, packed_transaction::zlib);
 

@@ -22,7 +22,7 @@ def init(func):
 def test(name='mike'):
     r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
     assert r
-    print(eosapi.JsonStruct(r[0]))
+#    print(eosapi.JsonStruct(r[0]))
     eosapi.produce_block()
 
 @init

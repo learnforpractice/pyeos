@@ -37,27 +37,9 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/database.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/database.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd ${CMAKE_CURRENT_SOURCE_DIR}/cython/database_object.pxd
-)
-
-add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eoslib.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eoslib.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/ipc.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/ipc.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/blockchain.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/blockchain.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
 
 add_custom_command(
@@ -65,7 +47,6 @@ add_custom_command(
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eostypes.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes.pyx ${CMAKE_CURRENT_SOURCE_DIR}/cython/eostypes_.pxd
 )
-
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/util.wrap.cpp
@@ -79,20 +60,14 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/debug.pyx
 )
 
-add_library(pyeos-shared eos_main.cpp py_plugin.cpp interface/json.cpp interface/eosapi_.cpp 
-    interface/wallet_.cpp interface/pyobject.cpp interface/database_.cpp
+add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
+    interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
-    interface/common.cpp
     interface/debug_.cpp
     interface/debug_.cpp
     interface/eoslib_.cpp
     interface/wasm_.cpp
-    interface/ipc_.cpp
-#    interface/httpc.cpp
-#    interface/codelimit.c 
-    wrap/ipc.wrap.cpp 
     wrap/eosapi.wrap.cpp 
-    wrap/database.wrap.cpp 
     wrap/eoslib.wrap.cpp 
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp

@@ -599,11 +599,12 @@ block_production_condition::block_production_condition_enum producer_plugin_impl
             const auto& db = app().get_plugin<chain_plugin>().chain();
             auto producer  = db.head_block_producer();
             auto pending   = db.head_block_state();
-
+#if 0
             ilog("Produced block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, confirmed: ${confs}]",
                  ("p",producer)("id",fc::variant(pending->id).as_string().substr(0,16))
                  ("n",pending->block_num)("t",pending->block->timestamp)
                  ("count",pending->block->transactions.size())("lib",db.last_irreversible_block_num())("confs", pending->header.confirmed)(capture) );
+#endif
             break;
          }
          case block_production_condition::not_synced:

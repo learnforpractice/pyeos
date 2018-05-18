@@ -52,18 +52,9 @@ void quit_app_() {
 
 extern "C" {
    void PyInit_eosapi();
-   PyObject* PyInit_eostypes();
    PyObject* PyInit_wallet();
-   //extern "C" PyObject* PyInit_hello();
-   PyObject* PyInit_database();
    PyObject* PyInit_eoslib();
-   PyObject* PyInit_ipc();
-   PyObject* PyInit_blockchain();
-   PyObject* PyInit_util();
    PyObject* PyInit_debug();
-
-   PyThreadState *tiny_PyEval_SaveThread(void);
-   void tiny_PyEval_RestoreThread(PyThreadState *tstate);
 
    int main_micropython(int argc, char **argv);
 }
@@ -84,20 +75,15 @@ void start_eos() {
 //      app().register_plugin<account_history_plugin>();
 //      app().register_plugin<account_history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
-//      app().register_plugin<py_plugin>();
 
       if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
       }
-//      init_debug();
       app().startup();
       init_finished = true;
-
-//      PyThreadState*  state = tiny_PyEval_SaveThread();
       app().exec();
-//      tiny_PyEval_RestoreThread(state);
 
    } catch (const fc::exception& e) {
       elog("${e}", ("e", e.to_detail_string()));
@@ -125,12 +111,7 @@ void init_console() {
    PyRun_SimpleString("import readline");
    PyInit_wallet();
    PyInit_eosapi();
-//   PyInit_eostypes();
-   PyInit_database();
    PyInit_eoslib();
-   PyInit_ipc();
-//   PyInit_blockchain();
-//   PyInit_util();
    PyInit_debug();
 
    PyRun_SimpleString(
@@ -139,9 +120,7 @@ void init_console() {
         "sys.path.append('../../programs/pyeos/contracts');"
    );
    PyRun_SimpleString("import wallet");
-   PyRun_SimpleString("import ipc");
    PyRun_SimpleString("import eosapi;");
-   PyRun_SimpleString("import database;");
    PyRun_SimpleString("import eoslib;");
    //   PyRun_SimpleString("import util;");
    PyRun_SimpleString("import debug;");
@@ -197,13 +176,6 @@ void interactive_console() {
          boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
       }
    }
-
-
-//   PyRun_SimpleString("debug.run_code('import initrpc;initrpc.init()')");
-
-//   PyRun_SimpleString("from main import chain_controller as ctrl");
-
-//   ilog("+++++++++++++interactive_console: ${n}", ("n", app().get_plugin<py_plugin>().interactive));
 
 }
 
