@@ -1,23 +1,6 @@
 #include <Python.h>
 
-#ifndef __HELLO_H
-#define __HELLO_H
-#ifdef __cplusplus
-
-extern "C" {
-#endif
-int create_key_(char* pub_, int pub_length, char* priv_, int priv_length);
-int get_transaction_(char* id, char* result, int length);
-int transfer_(char* sender_, char* recipient_, int amount, char* result,
-              int length);
-int setcode_(char* account_, char* wast_file, char* abi_file, char* ts_buffer,
-             int length);
-int exec_func_(char* code_, char* action_, char* json_, char* scope,
-               char* authorization, char* ts_result, int length);
-#ifdef __cplusplus
-}
-#endif
-#endif
+#pragma once
 
 #include <boost/asio.hpp>
 #include <fc/exception/exception.hpp>
@@ -96,10 +79,6 @@ PyObject* create_key_();
 PyObject* get_public_key_(string& wif_key);
 
 int get_transaction_(string& id, string& result);
-int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
-
-PyObject* transfer_(string& sender, string& recipient, int amount, string memo, bool sign);
-PyObject* set_contract_(string& account, string& wastPath, string& abiPath, int vmtype, bool sign);
 
 int get_code_(string& name, string& wast, string& abi, string& code_hash, int& vm_type);
 int get_table_(string& scope, string& code, string& table, string& result);
@@ -130,4 +109,7 @@ void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin);
 PyObject* gen_transaction_(vector<chain::action>& v, int expiration);
 PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key);
 PyObject* push_raw_transaction_(string& signed_trx);
+
+PyObject* get_actions_(uint64_t account, int pos, int offset);
+PyObject* get_transaction_(string& id);
 

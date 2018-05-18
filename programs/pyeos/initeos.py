@@ -39,8 +39,8 @@ plugin = eosio::wallet_api_plugin
 # As well as API and HTTP plugins
 plugin = eosio::chain_api_plugin
 plugin = eosio::http_plugin
-plugin = eosio::account_history_plugin
-plugin = eosio::account_history_api_plugin
+plugin = eosio::history_plugin
+plugin = eosio::history_api_plugin
 '''
 
 genesis = '''

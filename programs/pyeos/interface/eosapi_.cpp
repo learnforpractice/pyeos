@@ -11,6 +11,7 @@
 #include <eosio/utilities/common.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
 #include <eosio/chain/contract_types.hpp>
+#include <eosio/history_plugin.hpp>
 
 
 #include "fc/bitutil.hpp"
@@ -564,43 +565,37 @@ PyObject* get_controlled_accounts_(const char* account_name) {
    return arr.get();
 }
 
-int get_transaction_(string& id, string& result) {
-   #if 0
-   eosio::account_history_apis::read_only::get_transaction_params params = {
-       chain::transaction_id_type(id)};
+PyObject* get_actions_(uint64_t account, int pos, int offset) {
+
+   eosio::history_apis::read_only::get_actions_params params = {
+       name(account),
+       pos,
+       offset
+   };
    try {
-      auto ro_api =
-          app().get_plugin<account_history_plugin>().get_read_only_api();
-      eosio::account_history_apis::read_only::get_transaction_results results =
-          ro_api.get_transaction(params);
-      result = fc::json::to_string(fc::variant(results));
-      return 0;
+      auto ro_api = app().get_plugin<history_plugin>().get_read_only_api();
+      auto results = ro_api.get_actions(params);
+      return python::json::to_string(fc::variant(results));
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
-   #endif
-   return -1;
+   return py_new_none();
 }
 
-int get_transactions_(string& account_name, int skip_seq, int num_seq,
-                      string& result) {
-   #if 0
+
+PyObject* get_transaction_(string& id) {
+
+   eosio::history_apis::read_only::get_transaction_params params = {
+       chain::transaction_id_type(id)
+   };
    try {
-      const eosio::account_history_apis::read_only::get_transactions_params
-          params = {chain::account_name(account_name), skip_seq, num_seq};
-
-      auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-
-      eosio::account_history_apis::read_only::get_transactions_results results =
-          ro_api.get_transactions(params);
-
-      result = fc::json::to_string(results);
-      return 0;
+      auto ro_api = app().get_plugin<history_plugin>().get_read_only_api();
+      auto results = ro_api.get_transaction(params);
+      return python::json::to_string(fc::variant(results));
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
    }
-   #endif
-   return -1;
+   return py_new_none();
 }
 
 PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {

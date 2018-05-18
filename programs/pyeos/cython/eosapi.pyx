@@ -49,6 +49,7 @@ cdef extern from "eosapi_.hpp":
     void quit_app_()
     uint32_t now2_()
     int produce_block_();
+
     object get_info_ ()
     object get_block_(char* num_or_id)
     object get_account_(char* name)
@@ -58,20 +59,15 @@ cdef extern from "eosapi_.hpp":
     object create_key_()
     object get_public_key_(string& wif_key)
 
-    int get_transaction_(string& id, string& result);
-    int get_transactions_(string& account_name, int skip_seq, int num_seq, string& result);
-    
+    object get_actions_(uint64_t account, int pos, int offset);
+    object get_transaction_(string& id);
+
     object set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
 
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
     int get_table_(string& scope, string& code, string& table, string& result);
 
-    int setcode_(char* account_, char* wast_file, char* abi_file, char* ts_buffer, int length) 
-    int exec_func_(char* code_, char* action_, char* json_, char* scope, char* authorization, char* ts_result, int length)
-
     object get_currency_balance_(string& _code, string& _account, string& _symbol)
-
-    object traceback_()
 
     int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
@@ -243,15 +239,21 @@ def create_key():
 def get_public_key(priv_key):
     return get_public_key_(priv_key)
 
+def get_actions(account, pos, offset):
+    if isinstance(account, str):
+        account = s2n(account)
+
+    ret = get_actions_(account, pos, offset)
+    if ret:
+        return JsonStruct(ret)
+
 def get_transaction(id):
-    cdef string result
     if isinstance(id, int):
         id = str(id)
-    if 0 == get_transaction_(id, result):
-        return JsonStruct(result)
+    ret = get_transaction_(id)
+    if ret:
+        return JsonStruct(ret)
     return None
-
-
 
 def get_code(name):
     cdef string wast
@@ -482,13 +484,6 @@ def push_raw_transaction(signed_trx):
     if isinstance(signed_trx, dict):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
-
-
-def get_transactions(account_name, skip_seq: int, num_seq: int):
-    cdef string result
-    if 0 == get_transactions_(account_name, skip_seq, num_seq, result):
-        return result
-    return None
 
 def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False):
     '''Send transactions

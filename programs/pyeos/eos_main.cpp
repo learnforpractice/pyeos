@@ -1,22 +1,20 @@
 #include <appbase/application.hpp>
-
-//#include <eosio/account_history_api_plugin/account_history_api_plugin.hpp>
-//#include <eosio/account_history_plugin/account_history_plugin.hpp>
-#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
-#include <eosio/chain_plugin/chain_plugin.hpp>
-#include <eosio/http_plugin/http_plugin.hpp>
-#include <eosio/net_plugin/net_plugin.hpp>
-#include <eosio/producer_plugin/producer_plugin.hpp>
-//#include <eos/py_plugin/py_plugin.hpp>
-#include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
-#include <eosio/wallet_plugin/wallet_plugin.hpp>
-
-#include <fc/exception/exception.hpp>
 #include <fc/log/logger_config.hpp>
+#include <fc/exception/exception.hpp>
+#include <eosio/history_plugin.hpp>
+#include <eosio/net_plugin/net_plugin.hpp>
+#include <eosio/http_plugin/http_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <eosio/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/producer_plugin/producer_plugin.hpp>
+#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
+#include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
+#include <eosio/history_api_plugin/history_api_plugin.hpp>
+
 
 #include <boost/chrono.hpp>
-#include <boost/exception/diagnostic_information.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 
 
 #include <Python.h>
@@ -72,8 +70,8 @@ void start_eos() {
       app().register_plugin<net_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<producer_plugin>();
-//      app().register_plugin<account_history_plugin>();
-//      app().register_plugin<account_history_api_plugin>();
+      app().register_plugin<history_plugin>();
+      app().register_plugin<history_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
 
       if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
