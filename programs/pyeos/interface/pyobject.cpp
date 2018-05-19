@@ -21,6 +21,10 @@ void PyArray::append(uint64_t n) { array_append_uint64(arr, n); }
 
 void PyArray::append(double n) { array_append_double(arr, n); }
 
+int PyArray::length() {
+   return array_length(arr);
+}
+
 PyObject* PyArray::get() {
    Py_XINCREF(arr);
    return arr;

@@ -30,7 +30,6 @@ def test(name=None):
         r = eosapi.push_action('counter', 'count', '', {'counter':'active'})
         assert r
 
-
     counter_end = 0
     itr = eoslib.db_find_i64(code, code, code, counter_id)
     if itr >= 0:
@@ -41,12 +40,10 @@ def test(name=None):
 
     assert counter_begin + 1 == counter_end
 
-def test2(count):
+@init
+def test2(count=100):
     import time
     import json
-
-    if not eosapi.get_account('counter'):
-        init()
 
     code = N('counter')
     counter_id = N('counter')
@@ -63,7 +60,7 @@ def test2(count):
         action = ['hello', 'sayhello', {'hello':'active'}, str(i)]
         actions.append(action)
 
-    res, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions, True)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
@@ -74,7 +71,7 @@ def test2(count):
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)
-    assert ret[0]
+    assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
 

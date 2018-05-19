@@ -32,14 +32,14 @@ def play():
         assert r
 
 @init
-def test2(count):
+def test2(count=100):
     actions = []
     for i in range(count):
         action = ['hello', 'sayhello', {'hello':'active'}, str(i)]
         actions.append(action)
 
-    res, cost = eosapi.push_actions(actions, True)
-    assert ret[0]
+    ret, cost = eosapi.push_actions(actions, True)
+    assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
 

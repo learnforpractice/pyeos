@@ -586,6 +586,8 @@ def push_actions(actions, sign=True):
             args = pack_args(_act[0], _act[1], args)
         _act.append(args)
 
+        _actions.append(_act)
+
     return push_transactions([_actions], sign)
 
 

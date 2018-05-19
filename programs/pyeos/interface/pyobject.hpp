@@ -25,6 +25,7 @@ void array_append_string(PyObject* arr, std::string& s);
 void array_append_int(PyObject* arr, int n);
 void array_append_double(PyObject* arr, double n);
 void array_append_uint64(PyObject* arr, unsigned long long n);
+int array_length(PyObject* arr);
 
 PyObject* dict_create();
 void dict_add(PyObject* d, PyObject* key, PyObject* value);
@@ -41,6 +42,7 @@ class PyArray {
    void append(unsigned int n);
    void append(uint64_t n);
    void append(double n);
+   int length();
    PyObject* get();
 
   private:

@@ -44,9 +44,13 @@ cdef extern void array_append_double(object arr, double n):
 cdef extern void array_append_uint64(object arr, unsigned long long n):
     arr.append(n)
 
+cdef extern int array_length(object arr):
+    return len(arr)
+
 cdef extern object dict_create():
     return {}
 
 cdef extern void dict_add(object d, object key, object value):
     d[key] = value
-    
+
+

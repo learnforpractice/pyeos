@@ -47,7 +47,7 @@ def test2(count):
         action = ['apitest', 'callwasm', {'apitest':'active'}, str(i)]
         actions.append(action)
 
-    res, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions, True)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()

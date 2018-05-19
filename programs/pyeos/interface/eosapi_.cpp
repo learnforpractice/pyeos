@@ -250,9 +250,11 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
    } catch (boost::exception& ex) {
       elog(boost::diagnostic_information(ex));
    }
-
-   cost_time = get_microseconds() - cost_time;
-
+   if (cost_time == 0) {
+      //
+   } else {
+      cost_time = get_microseconds() - cost_time;
+   }
 
    for (auto& st : trxs) {
       delete st;
