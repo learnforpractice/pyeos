@@ -49,12 +49,13 @@ namespace eosio { namespace chain {
       //there are a couple opportunties for improvement here--
       //Easy: Cache the Module created here so it can be reused for instantiaion
       //Hard: Kick off instantiation in a separate thread at this location
-	   }
+   }
 
    void wasm_interface::call( const digest_type& code_id, const shared_string& code, string& func, vector<uint64_t>& args, apply_context& context ) {
-//      my->get_instantiated_module(context.act.account, code_id, code)->call(func, args, context);
-      my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
+   //      my->get_instantiated_module(context.act.account, code_id, code)->call(func, args, context);
+         my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
    }
+
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
       my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
    }
@@ -1279,9 +1280,9 @@ class transaction_api : public context_aware_api {
          } FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
       }
 
-      void cancel_deferred( const unsigned __int128& val ) {
+      bool cancel_deferred( const unsigned __int128& val ) {
          fc::uint128_t sender_id(val>>64, uint64_t(val) );
-         context.cancel_deferred_transaction( (unsigned __int128)sender_id );
+         return context.cancel_deferred_transaction( (unsigned __int128)sender_id );
       }
 };
 
@@ -1778,7 +1779,7 @@ REGISTER_INTRINSICS(transaction_api,
    (send_inline,               void(int, int)               )
    (send_context_free_inline,  void(int, int)               )
    (send_deferred,             void(int, int64_t, int, int, int32_t) )
-   (cancel_deferred,           void(int)                    )
+   (cancel_deferred,           int(int)                     )
 );
 
 REGISTER_INTRINSICS(context_free_api,

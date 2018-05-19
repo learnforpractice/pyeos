@@ -225,15 +225,15 @@ void apply_eosio_setcode_py(apply_context& context) {
       a.last_code_update = context.control.pending_block_time();
       a.code_version = code_id;
       a.code.resize( code_size );
-      a.last_code_update = context.control.pending_block_time();
-      memcpy( a.code.data(), act.code.data(), code_size );
+      if( code_size > 0 )
+         memcpy( a.code.data(), act.code.data(), code_size );
 
    });
 
    const auto& account_sequence = db.get<account_sequence_object, by_name>(act.account);
    db.modify( account_sequence, [&]( auto& aso ) {
       aso.code_sequence += 1;
-   }); 
+   });
 
    if (new_size != old_size) {
       context.trx_context.add_ram_usage( act.account, new_size - old_size );

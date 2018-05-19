@@ -630,6 +630,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_major_approve, eosio_msig_tester
 
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(alice1111112), N(eosio), core_from_string("1.0000"), false ),
                             eosio_assert_message_exception, eosio_assert_message_is("Unknown Test")
+
    );
 } FC_LOG_AND_RETHROW()
 
