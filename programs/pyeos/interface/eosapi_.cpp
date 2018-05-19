@@ -726,7 +726,7 @@ void fc_pack_setcode_(chain::setcode _setcode, vector<char>& out) {
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
    setabi handler;
    handler.account = account;
-   handler.abi = fc::json::from_file(abiPath).as<abi_def>();
+   handler.abi = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
    auto _out = fc::raw::pack(handler);
    out = string(_out.begin(), _out.end());
 }
