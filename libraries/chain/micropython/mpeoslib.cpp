@@ -13,6 +13,7 @@
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/config.hpp>
 #include <eosio/chain/transaction_context.hpp>
+#include <eosio/chain/transaction.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -934,41 +935,6 @@ int get_active_producers(uint64_t* producers, size_t datalen) {
    return len;
 }
 
-
-#if 0
-extern "C" mp_obj_t send_inline(size_t n_args, const mp_obj_t *args) {
-   size_t len = 0;
-   action act;
-
-   const char* account = (const char *)mp_obj_str_get_data(args[0], &len);
-   if (!account) {
-      return mp_const_none;
-   }
-   len = 0;
-   char* action_name = (char *)mp_obj_str_get_data(args[1], &len);
-   if (!action_name) {
-      return mp_const_none;
-   }
-   act.account = account;
-   act.name = action_name;
-   mp_map_t *map = mp_obj_dict_get_map(args[2]);
-   for (size_t i = 0; i < map->alloc; i++) {
-       if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-           // the key must be a qstr, so intern it if it's a string
-           const char* key = mp_obj_str_get_str(map->table[i].key);
-           const char* value = mp_obj_str_get_str(map->table[i].value);
-           permission_level per = {name(key), name(value)};
-           act.authorization.emplace_back(per);
-       }
-   }
-   len = 0;
-   char* data = (char *)mp_obj_str_get_data(args[3], &len);
-   act.data = bytes(data, data+len);
-   ctx().execute_inline(std::move(act));
-   return mp_obj_new_int(0);
-}
-#endif
-
 bool unpack_action(struct mp_action* mp_act , action& act) {
    act.account = name(mp_act->account);
    act.name = name(mp_act->name);
@@ -1006,6 +972,14 @@ bool unpack_transaction(struct mp_transaction* mp_trx, transaction& trx) {
       unpack_action(mp_trx->actions[i], act);
       trx.actions.emplace_back(std::move(act));
    }
+
+   for (int i=0;i<mp_trx->extensions_len;i++) {
+      char* ext = mp_trx->extensions[i];
+      int type = ((short*)ext)[0];
+      int data_len = ((short*)ext)[1];
+      trx.transaction_extensions.emplace_back(std::make_pair(type, vector<char>(ext+4, ext+4+data_len)));
+   }
+
    return true;
 
 }
@@ -1031,18 +1005,13 @@ void send_context_free_inline(struct mp_action* mp_act) {
 }
 
 void send_deferred( eosio::chain::uint128_t sender_id, uint64_t payer, struct mp_transaction* mp_trx ) {
-   #if 0
-   deferred_transaction dtrx;
-   try {
-      unpack_transaction(mp_trx, dtrx);
 
-      dtrx.sender = ctx().receiver;
-      dtrx.sender_id = sender_id;
-      dtrx.execute_after = time_point_sec( (ctx().controller.head_block_time() + fc::seconds(dtrx.delay_sec)) + fc::microseconds(999'999) ); // rounds up to nearest second
-            dtrx.payer = payer;
-      ctx().execute_deferred(std::move(dtrx));
-   } FC_CAPTURE_AND_RETHROW((fc::to_hex((char*)&dtrx, sizeof(dtrx))));
-   #endif
+   eosio::chain::transaction trx;
+   try {
+      unpack_transaction(mp_trx, trx);
+      ctx().schedule_deferred_transaction(sender_id, payer, std::move(trx), false);
+   } FC_CAPTURE_AND_RETHROW((fc::to_hex((char*)&trx, sizeof(trx))));
+
 }
 
 void cancel_deferred( eosio::chain::uint128_t  val ) {

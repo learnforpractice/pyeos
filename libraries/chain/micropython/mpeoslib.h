@@ -35,15 +35,19 @@ struct mp_action {
 
 struct mp_transaction {
    struct mp_action**      context_free_actions;
-   size_t                 free_actions_len;
+   size_t                  free_actions_len;
    struct mp_action**      actions;
-   size_t                 actions_len;
+   size_t                  actions_len;
 
-   uint32_t               expiration;   ///< the time at which a transaction expires
-   uint16_t               ref_block_num       ; ///< specifies a block num in the last 2^16 blocks.
-   uint32_t               ref_block_prefix    ; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
-   uint32_t               max_net_usage_words ; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
-   uint32_t               delay_sec           ; /// number of seconds to delay this transaction for during which it may be canceled.
+   char**                  extensions;
+   size_t                  extensions_len;
+
+   uint32_t                expiration;   ///< the time at which a transaction expires
+   uint16_t                ref_block_num       ; ///< specifies a block num in the last 2^16 blocks.
+   uint32_t                ref_block_prefix    ; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
+   uint32_t                max_net_usage_words ; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
+   uint8_t                 max_cpu_usage_ms    ; /// upper limit on the total CPU time billed for this transaction
+   uint32_t                delay_sec           ; /// number of seconds to delay this transaction for during which it may be canceled.
 };
 
 void send_inline( struct mp_action* mp_act );
