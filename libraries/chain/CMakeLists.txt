@@ -66,8 +66,11 @@ add_library( eosio_chain
               evm_interface.cpp
               micropython_interface.cpp
               rpc_interface/rpc_interface.cpp
-
               rpc_interface/rpc_interface_.wrap.cpp
+
+              rpc_interface/cpp/RpcService.cpp
+              rpc_interface/cpp/RpcService_server.skeleton.cpp
+              
               eoslib/eoslib_.wrap.cpp
               eoslib/eoslib_.cpp
              ${HEADERS}
@@ -90,7 +93,7 @@ message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
 target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared 
-        binaryen softfloat builtins ${ETH_LIBRARY} python3 ${OPENSSL_LIBRARIES})
+        binaryen softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #micropython compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on micropython, 
@@ -109,6 +112,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
+                            PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PRIVATE ${LevelDB_INCLUDE}
                             PRIVATE ${CPP_ETHEREUM_DIR}
                             )

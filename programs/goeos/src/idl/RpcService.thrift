@@ -2,6 +2,7 @@
 
 namespace go rpc
 namespace java rpc
+namespace cpp cpp
 
 struct Result {
   1: i32 status = 0,
