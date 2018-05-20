@@ -69,7 +69,7 @@ func onApply(receiver uint64, account uint64, act uint64) (status C.int, l C.int
 	case <-time.After(20 * 1000 * time.Microsecond):
 		{
 			//apply timeout, something went wrong at the client side,
-			//that indicates client side was possiblely brought down by an unknown bug triggered by a deliberate attack or not
+			//that indicates client side was possibly brought down by an unknown bug triggered by a deliberate attack or not
 			//to preventing the account from further damage of the network:
 			//step 1:
 			//  if node is a BP, freeze the account by sending a special transaction from BP and execute it immediately

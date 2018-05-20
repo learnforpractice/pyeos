@@ -557,7 +557,7 @@ def push_action(string& contract, string& action, args, permissions: Dict, sign=
     Returns:
         JsonStruct|None: 
     '''
-    
+    assert type(args) in (str, dict, bytes)
     _contract = s2n(contract)
     _action = s2n(action)
 

@@ -587,7 +587,7 @@ class database_api {
       const action&                 act; ///< message being applied
       account_name                  receiver; ///< the code that is currently running
       vector<bool> used_authorizations; ///< Parallel to act.authorization; tracks which permissions have been used while processing the message
-      uint32_t                      recurse_depth; ///< how deep inline actions can recurse
+//      uint32_t                      recurse_depth; ///< how deep inline actions can recurse
       bool                          privileged   = false;
       bool                          context_free = false;
       bool                          used_context_free_api = false;

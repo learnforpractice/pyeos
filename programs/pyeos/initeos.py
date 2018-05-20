@@ -68,6 +68,7 @@ genesis = '''
     "max_inline_depth": 4,
     "max_inline_action_size": 4096,
     "max_generated_transaction_count": 16
+    "max-transaction-time": 1000
   },
   "initial_chain_id": "0000000000000000000000000000000000000000000000000000000000000000"
 }
@@ -233,7 +234,8 @@ def init():
             eosapi.produce_block()
 
             if False: #account == 'eosio.token':
-                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
+#                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
+                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS"}
                 r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
                 assert r
                 r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})

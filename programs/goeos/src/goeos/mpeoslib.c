@@ -7,6 +7,12 @@
 #include "_cgo_export.h"
 #include "mpeoslib.h"
 
+static struct eosapi s_eosapi;
+
+//mpeoslib.cpp
+typedef struct eosapi* (*fn_get_eosapi)();
+void set_get_eosapi_func(fn_get_eosapi fn);
+
 
 //mpeoslib.cpp
 mp_obj_t uint64_to_string_(uint64_t n);
@@ -94,12 +100,6 @@ int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_
 int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_end_i64_(code, scope, table);
 }
-
-static struct eosapi s_eosapi;
-
-//mpeoslib.cpp
-typedef struct eosapi* (*fn_get_eosapi)();
-void set_get_eosapi_func(fn_get_eosapi fn);
 
 struct eosapi* get_eosapi() {
    return &s_eosapi;
