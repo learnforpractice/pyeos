@@ -56,6 +56,7 @@ def prepare(name, src, abi, full_src_path):
             need_update = False
 
     if need_update:
+        print('Updating contract', src)
         with producer:
             r = eosapi.set_contract(name, src, abi, code_type)
             assert r, 'set_contract failed'

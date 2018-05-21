@@ -86,15 +86,7 @@ func main() {
 		transportFactory = thrift.NewTFramedTransportFactory(transportFactory)
 	}
 
-	if *server || (!*client && !*server) {
-		go func() {
-			if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
-				fmt.Println("error running server:", err)
-			}
-		}()
-		C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
-		bridge.GoeosMain()
-	} else {
+	if (*client) {
 		for i := 0; i < 0; i++ {
 			wrap := panicwrap.WrapConfig{
 				Handler: panicHandler,
@@ -117,6 +109,16 @@ func main() {
 		if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
 			fmt.Println("error running client:", err)
 		}
+	} else {
+	    if (*server) {
+            go func() {
+            	if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
+            		fmt.Println("error running server:", err)
+            	}
+            }()
+	    }
+		C.rpc_register_apply_call((C.fn_rpc_apply)(unsafe.Pointer(C.call_onApply)))
+		bridge.GoeosMain()
 	}
 	time.Sleep(0)
 }

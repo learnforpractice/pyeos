@@ -153,7 +153,7 @@ func runApplyServer(transportFactory thrift.TTransportFactory, protocolFactory t
 //	processor := idl.EoslibServiceProcessor(handler)
 	server := thrift.NewTSimpleServer4(processor, transport, transportFactory, protocolFactory)
 
-	fmt.Println("Starting the apply server... on ", addr)
+//	fmt.Println("Starting the apply server... on ", addr)
 	return server.Serve()
 }
 
