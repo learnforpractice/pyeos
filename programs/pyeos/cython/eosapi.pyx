@@ -226,7 +226,7 @@ def create_account(creator, newaccount, owner_key, active_key, sign=True):
         sign = 0
 
     result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
-    if result[0]:
+    if result:
         return JsonStruct(result[0])
     return None
 
