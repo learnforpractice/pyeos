@@ -19,6 +19,7 @@
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set (WITH_STATIC_LIB true)
+set (BUILD_TESTING false)
 
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 include_directories(src)
