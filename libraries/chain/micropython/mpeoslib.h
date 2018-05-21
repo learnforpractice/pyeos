@@ -114,7 +114,9 @@ uint64_t get_action_account();
 
 int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
 void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
+void db_update_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
 void db_remove_i64( int itr );
+void db_remove_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id );
 int db_get_i64( int itr, char* buffer, size_t buffer_size );
 int db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
 int db_next_i64( int itr, uint64_t* primary );
@@ -123,6 +125,7 @@ int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
+
 
 
 #define DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_DEF(IDX, TYPE)\

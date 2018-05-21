@@ -14,6 +14,8 @@
 
 #include "../../micropython/mpeoslib.h"
 #include "readerwriterqueue.h"
+#include "blockingconcurrentqueue.h"
+
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -29,17 +31,27 @@ struct ApplyFinish {
 
 using namespace moodycamel;
 
-BlockingReaderWriterQueue<Apply> apply_request_queue(1);
-BlockingReaderWriterQueue<ApplyFinish> apply_finish_queue(1);
+//BlockingReaderWriterQueue<Apply> apply_request_queue(1);
+//BlockingReaderWriterQueue<ApplyFinish> apply_finish_queue(1);
 
-//micropython_interface.cpp
-extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act, char** err);
+BlockingConcurrentQueue<Apply> apply_request_queue;
+BlockingConcurrentQueue<ApplyFinish> apply_finish_queue;
 
-//mpeoslib.cpp
-typedef struct eosapi* (*fn_get_eosapi)();
-extern "C" void set_get_eosapi_func(fn_get_eosapi fn);
+extern "C" {
+   //micropython_interface.cpp
+   int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act, char** err);
 
-mp_obj_t uint64_to_string_(uint64_t n);
+   //mpeoslib.cpp
+   typedef struct eosapi* (*fn_get_eosapi)();
+   void set_get_eosapi_func(fn_get_eosapi fn);
+
+   mp_obj_t uint64_to_string_(uint64_t n);
+
+   void rpc_register_cpp_apply_call();
+   void cpp_init_eosapi();
+   void set_client_mode(int mode);
+
+}
 
 static struct eosapi s_eosapi;
 static RpcServiceClient* rpcclient = nullptr;
@@ -71,8 +83,9 @@ class RpcServiceHandler : virtual public RpcServiceIf {
   }
 
   void apply_request(Apply& _return) {
-     wlog("apply_request");
+     wlog("++++++++++++++apply_request");
      apply_request_queue.wait_dequeue(_return);
+     wlog("++++++++++++++apply_request return");
   }
 
   void apply_finish(const int32_t status, const std::string& errMsg) {
@@ -91,63 +104,59 @@ class RpcServiceHandler : virtual public RpcServiceIf {
   }
 
   int32_t db_store_i64(const int64_t scope, const int64_t table, const int64_t payer, const int64_t id, const std::string& buffer) {
-    // Your implementation goes here
-    return -1;
+    return ::db_store_i64(scope, table, payer, id, buffer.c_str(), buffer.length());
   }
 
   void db_update_i64(const int32_t itr, const int64_t payer, const std::string& buffer) {
-    // Your implementation goes here
-    printf("db_update_i64\n");
+     ::db_update_i64(itr, payer, buffer.c_str(), buffer.length());
   }
 
   void db_remove_i64(const int32_t itr) {
-    // Your implementation goes here
-    printf("db_remove_i64\n");
+     ::db_remove_i64(itr);
   }
 
   void db_get_i64(std::string& _return, const int32_t itr) {
-    // Your implementation goes here
-    printf("db_get_i64\n");
+     int size = ::db_get_i64(itr, nullptr, 0);
+     char* buffer = new char[size];
+     ::db_get_i64(itr, buffer, size);
+     _return = std::string(buffer, size);
+     delete[] buffer;
   }
 
   void db_next_i64(Result& _return, const int32_t itr) {
-    // Your implementation goes here
-    printf("db_next_i64\n");
+     uint64_t primary = 0;
+     _return.status = ::db_next_i64(itr, &primary);
+     _return.value = std::string((char*)&primary, sizeof(primary));
   }
 
   void db_previous_i64(Result& _return, const int32_t itr) {
-    // Your implementation goes here
-    printf("db_previous_i64\n");
+     uint64_t primary = 0;
+     _return.status = ::db_previous_i64(itr, &primary);
+     _return.value = std::string((char*)&primary, sizeof(primary));
   }
 
   int32_t db_find_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
-    // Your implementation goes here
-    return -1;
+     return ::db_find_i64(code, scope, table, id);
   }
 
   int32_t db_lowerbound_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
-    // Your implementation goes here
-     return -1;
+     return ::db_lowerbound_i64(code, scope, table, id);
   }
 
   int32_t db_upperbound_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
-    // Your implementation goes here
-     return -1;
+     return ::db_upperbound_i64(code, scope, table, id);
   }
 
   int32_t db_end_i64(const int64_t code, const int64_t scope, const int64_t table) {
-    // Your implementation goes here
-     return -1;
+     return ::db_end_i64(code, scope, table);
   }
 
   void db_update_i64_ex(const int64_t scope, const int64_t payer, const int64_t table, const int64_t id, const std::string& buffer) {
-    // Your implementation goes here
-    return;
+     ::db_update_i64_ex(scope, payer, table, id, buffer.c_str(), buffer.length());
   }
 
   void db_remove_i64_ex(const int64_t scope, const int64_t payer, const int64_t table, const int64_t id) {
-    // Your implementation goes here
-    return;
+     ::db_remove_i64_ex(scope, payer, table, id);
   }
 
 };
@@ -157,12 +166,13 @@ static int on_apply(uint64_t receiver, uint64_t account, uint64_t action, char**
    apply.receiver = receiver;
    apply.account = account;
    apply.action = action;
-
+   wlog("++++++++++++on_apply");
    apply_request_queue.enqueue(apply);
    ApplyFinish finish = {};
 
-   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(5))) {
-      std::string errMsg("execution time out!");
+   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(10))) {
+      std::string errMsg("++++on_apply: execution time out!");
+      wlog(errMsg);
       *err = (char*)malloc(errMsg.length());
       memcpy(*err, errMsg.c_str(), errMsg.length());
       *len = errMsg.length();
@@ -183,6 +193,7 @@ extern "C" void rpc_register_cpp_apply_call() {
 }
 
 extern "C" int start_server() {
+   rpc_register_cpp_apply_call();
    boost::thread eos( [&]{
       int port = 9090;
      ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
@@ -202,12 +213,20 @@ extern "C" int start_client() {
       return 0;
    }
 
-   std::string addr("localhost");
-   stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9090));
-   stdcxx::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-   stdcxx::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-   rpcclient = new RpcServiceClient(protocol);
+   rpc_register_cpp_apply_call();
+   cpp_init_eosapi();
+   set_client_mode(1);
+
    while (true) {
+      if (rpcclient) {
+         delete rpcclient;
+      }
+      std::string addr("localhost");
+      stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9090));
+      stdcxx::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+      stdcxx::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+      rpcclient = new RpcServiceClient(protocol);
+
       while (true) {
          try {
             transport->open();
@@ -224,16 +243,20 @@ extern "C" int start_client() {
          try {
            Apply apply;
            std::string err("");
+           wlog("+++++++++++apply_request");
            rpcclient->apply_request(apply);
+           wlog("+++++++++++apply_request return");
            char* _err;
            int ret = micropython_on_apply(apply.receiver, apply.account, apply.action, &_err);
            if (ret != 0) {
               err = std::string(_err);
               free(_err);
            }
+           wlog("+++++++++++++apply_finish");
            rpcclient->apply_finish(ret, err);
-         } catch (...) {
-            wlog("exception in client, try to reconnect...");
+           wlog("+++++++++++++apply_finish return");
+         } catch (TTransportException& ex) {
+            wlog("+++++++++++=exception ocurr when executing code: ${n}", ("n", ex.what()));
             break;
          }
       }
