@@ -42,16 +42,16 @@ int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, 
    return ret.r0;
 }
 
-void mp_require_auth(uint64_t account) {
+static void mp_require_auth(uint64_t account) {
    printf("+++++++++++++++mp_require_auth\n");
 }
 
-int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
+static int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
    DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
    return db_find_i64_(mp_get_receiver(), scope, table, id);
 }
 
-void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
+static void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
    uint64_t code;
    uint64_t scope;
    uint64_t _payer;
@@ -62,7 +62,7 @@ void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffe
    DbUpdateI64Ex( (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
 }
 
-void mp_db_remove_i64( int itr ) {
+static void mp_db_remove_i64( int itr ) {
    uint64_t code;
    uint64_t scope;
    uint64_t payer;
@@ -73,35 +73,35 @@ void mp_db_remove_i64( int itr ) {
    db_remove_i64_(itr);
 }
 
-int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
+static int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
    return db_get_i64_(itr, buffer, buffer_size);
 }
 
-int mp_db_next_i64( int itr, uint64_t* primary ) {
+static int mp_db_next_i64( int itr, uint64_t* primary ) {
    return db_next_i64_(itr, primary);
 }
 
-int mp_db_previous_i64( int itr, uint64_t* primary ) {
+static int mp_db_previous_i64( int itr, uint64_t* primary ) {
    return db_previous_i64_(itr, primary);
 }
 
-int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_find_i64_(code, scope, table, id);
 }
 
-int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_lowerbound_i64_(code, scope, table, id);
 }
 
-int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_upperbound_i64_(code, scope, table, id);
 }
 
-int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
+static int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_end_i64_(code, scope, table);
 }
 
-struct eosapi* get_eosapi() {
+static struct eosapi* get_eosapi() {
    return &s_eosapi;
 }
 

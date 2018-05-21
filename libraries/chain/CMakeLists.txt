@@ -69,8 +69,9 @@ add_library( eosio_chain
               rpc_interface/rpc_interface_.wrap.cpp
 
               rpc_interface/cpp/RpcService.cpp
-              rpc_interface/cpp/RpcService_server.skeleton.cpp
-              
+              rpc_interface/cpp/RpcService_types.cpp
+              rpc_interface/cpp/rpceoslib.cpp
+
               eoslib/eoslib_.wrap.cpp
               eoslib/eoslib_.cpp
              ${HEADERS}

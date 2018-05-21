@@ -192,41 +192,13 @@ extern "C" int eos_main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
-   for (int i=0; i<argc; i++) {
-      if (0 == strcmp(argv[i], "--rpc-server")) {
-         wlog("rpc enabled");
-         rpc_server = true;
-      } else  if (0 == strcmp(argv[i], "--rpc-client")) {
-         wlog("rpc enabled");
-         rpc_client = true;
-      }
-   }
-
    install_ctrl_c_handler();
 
    init_console();
 
-   if (rpc_client) {
-      PyRun_SimpleString(
-         "import sys;"
-         "sys.path.append('../../libraries/chain/rpc_interface');"
-      );
-      PyRun_SimpleString("import eosclient;eosclient.start()");
-      return 0;
-   } else if (rpc_server) {
-      init_rpcserver(init);
-      //should not return to here
-      assert(0);
-   } else {
-      boost::thread t( start_eos );
-      interactive_console();
-   }
-
-   return 0;
-
-//   init_smart_contract(start_eos, interactive_console);
    boost::thread t( start_eos );
    interactive_console();
    return 0;
 }
+
 

@@ -1,111 +1,313 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
+#include "RpcService.h"
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
 
-#include "mpeoslib.h"
-#include "rpceoslib.h"
+#include <thrift/transport/TSocket.h>
 
-static struct eosapi s_eosapi;
+#include <boost/chrono.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
+
+#include <fc/log/logger.hpp>
+
+#include "../../micropython/mpeoslib.h"
+#include "readerwriterqueue.h"
+
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
+
+using namespace  ::cpp;
+
+struct ApplyFinish {
+   int32_t status;
+   std::string errMsg;
+};
+
+using namespace moodycamel;
+
+BlockingReaderWriterQueue<Apply> apply_request_queue(1);
+BlockingReaderWriterQueue<ApplyFinish> apply_finish_queue(1);
+
+//micropython_interface.cpp
+extern "C" int micropython_on_apply(uint64_t receiver, uint64_t account, uint64_t act, char** err);
 
 //mpeoslib.cpp
 typedef struct eosapi* (*fn_get_eosapi)();
-void set_get_eosapi_func(fn_get_eosapi fn);
+extern "C" void set_get_eosapi_func(fn_get_eosapi fn);
 
-
-//mpeoslib.cpp
 mp_obj_t uint64_to_string_(uint64_t n);
 
+static struct eosapi s_eosapi;
+static RpcServiceClient* rpcclient = nullptr;
+
 //database_api.cpp
-int mp_action_size();
-int mp_read_action(char* buf, size_t size);
-int mp_is_account(uint64_t account);
-uint64_t mp_get_receiver();
+extern "C" {
+   int mp_action_size();
+   int mp_read_action(char* buf, size_t size);
+   int mp_is_account(uint64_t account);
+   uint64_t mp_get_receiver();
 
-void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id);
+   void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id);
 
-//interface/eoslib.hpp
-void db_remove_i64_(int itr);
-int db_get_i64_( int iterator, char* buffer, size_t buffer_size );
-int db_next_i64_( int iterator, uint64_t* primary );
-int db_previous_i64_( int iterator, uint64_t* primary );
-int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
-
-int call_onApply(uint64_t receiver, uint64_t account, uint64_t act, char** err, int* len) {
-   struct onApply_return ret = onApply(receiver, account, act);
-   *err = ret.r2;
-   *len = ret.r1;
-   return ret.r0;
+   //interface/eoslib.hpp
+   void db_remove_i64_(int itr);
+   int db_get_i64_( int iterator, char* buffer, size_t buffer_size );
+   int db_next_i64_( int iterator, uint64_t* primary );
+   int db_previous_i64_( int iterator, uint64_t* primary );
+   int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
 }
 
-void mp_require_auth(uint64_t account) {
+class RpcServiceHandler : virtual public RpcServiceIf {
+ public:
+  RpcServiceHandler() {
+    // Your initialization goes here
+  }
+
+  void apply_request(Apply& _return) {
+     wlog("apply_request");
+     apply_request_queue.wait_dequeue(_return);
+  }
+
+  void apply_finish(const int32_t status, const std::string& errMsg) {
+     wlog("apply_finish");
+     apply_finish_queue.enqueue({status, errMsg});
+  }
+
+  void funCall(std::vector<std::string> & _return, const int64_t callTime, const std::string& funCode, const std::map<std::string, std::string> & paramMap) {
+    // Your implementation goes here
+    printf("funCall\n");
+  }
+
+  void read_action(std::string& _return) {
+    // Your implementation goes here
+    printf("read_action\n");
+  }
+
+  int32_t db_store_i64(const int64_t scope, const int64_t table, const int64_t payer, const int64_t id, const std::string& buffer) {
+    // Your implementation goes here
+    return -1;
+  }
+
+  void db_update_i64(const int32_t itr, const int64_t payer, const std::string& buffer) {
+    // Your implementation goes here
+    printf("db_update_i64\n");
+  }
+
+  void db_remove_i64(const int32_t itr) {
+    // Your implementation goes here
+    printf("db_remove_i64\n");
+  }
+
+  void db_get_i64(std::string& _return, const int32_t itr) {
+    // Your implementation goes here
+    printf("db_get_i64\n");
+  }
+
+  void db_next_i64(Result& _return, const int32_t itr) {
+    // Your implementation goes here
+    printf("db_next_i64\n");
+  }
+
+  void db_previous_i64(Result& _return, const int32_t itr) {
+    // Your implementation goes here
+    printf("db_previous_i64\n");
+  }
+
+  int32_t db_find_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
+    // Your implementation goes here
+    return -1;
+  }
+
+  int32_t db_lowerbound_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
+    // Your implementation goes here
+     return -1;
+  }
+
+  int32_t db_upperbound_i64(const int64_t code, const int64_t scope, const int64_t table, const int64_t id) {
+    // Your implementation goes here
+     return -1;
+  }
+
+  int32_t db_end_i64(const int64_t code, const int64_t scope, const int64_t table) {
+    // Your implementation goes here
+     return -1;
+  }
+
+  void db_update_i64_ex(const int64_t scope, const int64_t payer, const int64_t table, const int64_t id, const std::string& buffer) {
+    // Your implementation goes here
+    return;
+  }
+
+  void db_remove_i64_ex(const int64_t scope, const int64_t payer, const int64_t table, const int64_t id) {
+    // Your implementation goes here
+    return;
+  }
+
+};
+
+static int on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len) {
+   Apply apply;
+   apply.receiver = receiver;
+   apply.account = account;
+   apply.action = action;
+
+   apply_request_queue.enqueue(apply);
+   ApplyFinish finish = {};
+
+   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(5))) {
+      std::string errMsg("execution time out!");
+      *err = (char*)malloc(errMsg.length());
+      memcpy(*err, errMsg.c_str(), errMsg.length());
+      *len = errMsg.length();
+      return 911;
+   }
+
+   *err = (char*)malloc(finish.errMsg.length());
+   memcpy(*err, finish.errMsg.c_str(), finish.errMsg.length());
+   *len = finish.errMsg.length();
+   return finish.status;
+}
+
+typedef int (*fn_rpc_apply)(uint64_t receiver, uint64_t code, uint64_t act, char** err, int* len);
+extern "C" void rpc_register_apply_call(fn_rpc_apply fn);
+
+extern "C" void rpc_register_cpp_apply_call() {
+   rpc_register_apply_call(on_apply);
+}
+
+extern "C" int start_server() {
+   boost::thread eos( [&]{
+      int port = 9090;
+     ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
+     ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
+     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+     ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+     ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+     TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+     server.serve();
+   } );
+  return 0;
+}
+
+extern "C" int start_client() {
+   if (rpcclient) {
+      return 0;
+   }
+
+   std::string addr("localhost");
+   stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9090));
+   stdcxx::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+   stdcxx::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+   rpcclient = new RpcServiceClient(protocol);
+   while (true) {
+      while (true) {
+         try {
+            transport->open();
+            break;
+         } catch (...) {
+            wlog("exception in transport->open()!");
+         }
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+      }
+
+      wlog("transport->open() successfully returned.");
+
+      while (true) {
+         try {
+           Apply apply;
+           std::string err("");
+           rpcclient->apply_request(apply);
+           char* _err;
+           int ret = micropython_on_apply(apply.receiver, apply.account, apply.action, &_err);
+           if (ret != 0) {
+              err = std::string(_err);
+              free(_err);
+           }
+           rpcclient->apply_finish(ret, err);
+         } catch (...) {
+            wlog("exception in client, try to reconnect...");
+            break;
+         }
+      }
+   }
+   return 0;
+}
+
+
+
+static void mp_require_auth(uint64_t account) {
    printf("+++++++++++++++mp_require_auth\n");
 }
 
-int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   DbStoreI64((GoInt64)scope, (GoInt64)table, (GoInt64)payer, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
+static int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
+   std::string _buffer(buffer, buffer_size);
+   rpcclient->db_store_i64(scope, table, payer, id, _buffer);
    return db_find_i64_(mp_get_receiver(), scope, table, id);
 }
 
-void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
+static void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
    uint64_t code;
    uint64_t scope;
    uint64_t _payer;
    uint64_t table;
    uint64_t id;
    mp_db_get_table_i64(itr, &code, &scope, &_payer, &table, &id);
-   printf("++++++++++++%llu %lu\n", (uint64_t)buffer, buffer_size);
-   DbUpdateI64Ex( (GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id, (void *)buffer, (GoInt)buffer_size);
+   std::string _buffer(buffer, buffer_size);
+   rpcclient->db_update_i64_ex( scope, payer, table, id, _buffer);
 }
 
-void mp_db_remove_i64( int itr ) {
+static void mp_db_remove_i64( int itr ) {
    uint64_t code;
    uint64_t scope;
    uint64_t payer;
    uint64_t table;
    uint64_t id;
    mp_db_get_table_i64(itr, &code, &scope, &payer, &table, &id);
-   DbRemoveI64Ex((GoInt64)scope, (GoInt64)payer, (GoInt64)table, (GoInt64)id);
+   rpcclient->db_remove_i64_ex(scope, payer, table, id);
    db_remove_i64_(itr);
 }
 
-int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
+static int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
    return db_get_i64_(itr, buffer, buffer_size);
 }
 
-int mp_db_next_i64( int itr, uint64_t* primary ) {
+static int mp_db_next_i64( int itr, uint64_t* primary ) {
    return db_next_i64_(itr, primary);
 }
 
-int mp_db_previous_i64( int itr, uint64_t* primary ) {
+static int mp_db_previous_i64( int itr, uint64_t* primary ) {
    return db_previous_i64_(itr, primary);
 }
 
-int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_find_i64_(code, scope, table, id);
 }
 
-int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_lowerbound_i64_(code, scope, table, id);
 }
 
-int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+static int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return db_upperbound_i64_(code, scope, table, id);
 }
 
-int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
+static int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_end_i64_(code, scope, table);
 }
 
-struct eosapi* get_eosapi() {
+static struct eosapi* get_eosapi() {
    return &s_eosapi;
 }
 
-void mp_init_eosapi() {
+extern "C" void cpp_init_eosapi() {
    static bool _init = false;
    if (_init) {
       return;
@@ -161,4 +363,3 @@ void mp_init_eosapi() {
 
    set_get_eosapi_func(get_eosapi);
 }
-
