@@ -49,6 +49,8 @@ cdef extern from "eosapi_.hpp":
     void quit_app_()
     uint32_t now2_()
     int produce_block_();
+    int produce_block_start_();
+    int produce_block_end_();
 
     object get_info_ ()
     object get_block_(char* num_or_id)
@@ -167,7 +169,14 @@ def now():
     return now2_()
 
 def produce_block():
-    ret = produce_block_()
+    return
+
+def produce_block_start():
+    ret = produce_block_start_()
+    return ret
+
+def produce_block_end():
+    ret = produce_block_end_()
     time.sleep(0.5)
     return ret
 
@@ -319,10 +328,12 @@ class Producer(object):
         self.produce_block()
 
     def __enter__(self):
-        pass
+        produce_block_start_()
     
     def __exit__(self, type, value, traceback):
-        self.produce_block()
+        produce_block_end_()
+        time.sleep(0.5)
+
 
 def mp_compile(py_file):
     '''Compile Micropython source to binary code.
@@ -485,7 +496,7 @@ def push_raw_transaction(signed_trx):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
 
-def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False):
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, debug=True):
     '''Send transactions
 
     Args:
@@ -541,7 +552,14 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             memcpy(act.data.data(), a[3], len(a[3]))
             v.push_back(act)
         vv.push_back(v)
-    return push_transactions_(vv, sign, skip_flag, _async, compress)
+    if debug:
+        produce_block_start_()
+        ret = push_transactions_(vv, sign, skip_flag, _async, compress)
+        time.sleep(0.5)
+        produce_block_end_()
+        return ret
+    else:
+        return push_transactions_(vv, sign, skip_flag, _async, compress)
 
 def push_action(string& contract, string& action, args, permissions: Dict, sign=True):
     '''Publishing message to blockchain

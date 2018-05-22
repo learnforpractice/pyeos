@@ -55,7 +55,9 @@ func main() {
 
 	data_dir := flag.String("data-dir", "data-dir", "data directory")
 
-	_, _, _, _, _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client, replay
+	resync := flag.Bool("resync", true, "Debug mode")
+
+	_, _, _, _, _, _, _, _, _ = interactive, manual_gen_block, debug, rpc_client, data_dir, rpc_server, client, replay, resync
 
 	flag.Parse()
 

@@ -16,6 +16,10 @@ CODE_TYPE_PY = 1
 CODE_TYPE_EVM = 2
 
 def prepare(name, src, abi, full_src_path):
+    with producer:
+        prepare_(name, src, abi, full_src_path)
+
+def prepare_(name, src, abi, full_src_path):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if src.endswith('.wast'):
         code_type = CODE_TYPE_WAST
@@ -35,6 +39,7 @@ def prepare(name, src, abi, full_src_path):
 
     if abi and abi.find('/') < 0:
         abi = os.path.join(_src_dir, abi)
+
 
     if not eosapi.get_account(name):
         print('*'*20, 'create_account')
@@ -57,9 +62,8 @@ def prepare(name, src, abi, full_src_path):
 
     if need_update:
         print('Updating contract', src)
-        with producer:
-            r = eosapi.set_contract(name, src, abi, code_type)
-            assert r, 'set_contract failed'
+        r = eosapi.set_contract(name, src, abi, code_type)
+        assert r, 'set_contract failed'
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):

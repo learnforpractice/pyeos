@@ -34,6 +34,8 @@ public:
 
    producer_plugin();
    int produce_block();
+   int produce_block_start();
+   int produce_block_end();
    virtual ~producer_plugin();
 
    virtual void set_program_options(

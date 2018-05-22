@@ -428,6 +428,39 @@ int producer_plugin::produce_block() {
    }
    return 0;
 }
+static bool _produce_block_start = false;
+int producer_plugin::produce_block_start() {
+   if (_produce_block_start) {
+      return 0;
+   }
+
+   _produce_block_start = true;
+
+   if (my->_manual_gen_block) {
+      return (int)my->start_block();
+//      ilog("block_production_loop return: ${n}",("n",(int)ret));
+   } else {
+      ilog("not in manual generate block mode.");
+      return -1;
+   }
+   return 0;
+}
+
+int producer_plugin::produce_block_end() {
+   if (!_produce_block_start) {
+      ilog("block producing not started.");
+      return -1;
+   }
+   _produce_block_start = false;
+   if (my->_manual_gen_block) {
+      my->block_production_loop();
+//      ilog("block_production_loop return: ${n}",("n",(int)ret));
+   } else {
+      ilog("not in manual generate block mode.");
+      return -1;
+   }
+   return 0;
+}
 
 producer_plugin_impl::start_block_result producer_plugin_impl::start_block() {
    chain::controller& chain = app().get_plugin<chain_plugin>().chain();

@@ -20,10 +20,11 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
-    assert r
+    with producer:
+        r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
+        assert r
 #    print(eosapi.JsonStruct(r[0]))
-    eosapi.produce_block()
+#    eosapi.produce_block()
 
 @init
 def play():

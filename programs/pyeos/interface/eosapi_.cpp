@@ -352,6 +352,14 @@ int produce_block_() {
    return app().get_plugin<producer_plugin>().produce_block();
 }
 
+int produce_block_start_() {
+   return app().get_plugin<producer_plugin>().produce_block_start();
+}
+
+int produce_block_end_() {
+   return app().get_plugin<producer_plugin>().produce_block_end();
+}
+
 PyObject* create_key_() {
    auto pk    = private_key_type::generate();
    auto privs = string(pk);

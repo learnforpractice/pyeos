@@ -10,6 +10,8 @@ from code import InteractiveConsole
 from tools import sketch
 from imp import reload
 
+producer = eosapi.Producer()
+
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.
 # filter_on_accounts = 
@@ -206,9 +208,9 @@ def init():
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
         print('account', account)
         if not eosapi.get_account(account):
-            r = eosapi.create_account('eosio', account, key1, key2)
-            assert r
-            eosapi.produce_block()
+            with producer:
+                r = eosapi.create_account('eosio', account, key1, key2)
+                assert r
 
         old_code = eosapi.get_code(account)
         if old_code:
@@ -230,17 +232,17 @@ def init():
             print('+++++++++code update', account)
             wast = os.path.join(contracts_path, account, account+'.wast')
             abi = os.path.join(contracts_path, account, account+'.abi')
-            r = eosapi.set_contract(account, wast, abi, 0)
-            eosapi.produce_block()
+            with producer:
+                r = eosapi.set_contract(account, wast, abi, 0)
 
             if False: #account == 'eosio.token':
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
-                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS"}
-                r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
-                assert r
-                r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
-                assert r
-                eosapi.produce_block()
+                with producer:
+                    msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS"}
+                    r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
+                    assert r
+                    r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+                    assert r
 
     from backyard import t
     t.deploy_mpy()

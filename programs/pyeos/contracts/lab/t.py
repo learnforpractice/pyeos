@@ -36,13 +36,13 @@ def deploy_mpy():
     sync.deploy_all_mpy()
 
 @init()
-def test2(count):
+def test2(count=100):
     import time
     import json
 
     actions = []
     for i in range(count):
-        action = ['lab', 'call', {'lab':'active'}, str(i)]
+        action = ['lab', 'sayhello', {'lab':'active'}, str(i)]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

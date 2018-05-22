@@ -60,6 +60,8 @@ wallet_manager& get_wm();
 #define INT_65 65
 
 int produce_block_();
+int produce_block_start_();
+int produce_block_end_();
 
 PyObject* get_info_();
 PyObject* get_block_(char* num_or_id);
