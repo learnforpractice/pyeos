@@ -59,7 +59,11 @@ set(CFLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 if (APPLE)
-    set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeos.dylib")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeosd.dylib")
+    else()
+        set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeos.dylib")
+    endif()
 else (APPLE)
     set(LDFLAGS "-L${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libgoeos.so")
 endif(APPLE)

@@ -93,6 +93,10 @@ set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
 message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+   target_compile_options(eosio_chain PRIVATE -DDEBUG)
+endif()
+
 target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared 
         binaryen softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
 

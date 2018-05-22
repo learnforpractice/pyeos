@@ -92,10 +92,19 @@ mpapi& get_mpapi() {
    counter += 1;
 
 #ifdef __APPLE__
-   sprintf(buffer, "../libraries/micropython/libmicropython-%d.dylib", counter);
+   #ifdef DEBUG
+      sprintf(buffer, "../libraries/micropython/libmicropython-%dd.dylib", counter);
+   #else
+      sprintf(buffer, "../libraries/micropython/libmicropython-%d.dylib", counter);
+   #endif
 #else
-   sprintf(buffer, "../libraries/micropython/libmicropython-%d.so", counter);
+   #ifdef DEBUG
+      sprintf(buffer, "../libraries/micropython/libmicropython-%dd.so", counter);
+   #else
+      sprintf(buffer, "../libraries/micropython/libmicropython-%d.so", counter);
+   #endif
 #endif
+
 
    void *handle = dlopen(buffer, RTLD_LAZY | RTLD_LOCAL);
 
