@@ -165,18 +165,18 @@ from vote import t as vt
 from simpleauction import t as st
 from lab import t as lt
 
-
-def init():
-
-    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
-    
+def init_wallet():
     if not os.path.exists('data-dir/mywallet.wallet'):
         psw = wallet.create('mywallet')
         print('wallet password:', psw)
-    
+
     wallet.open('mywallet')
+    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
     wallet.unlock('mywallet',psw)
-    
+
+def init():
+    init_wallet()
+
     priv_keys = [   
                     '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
                     '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
@@ -235,7 +235,7 @@ def init():
             with producer:
                 r = eosapi.set_contract(account, wast, abi, 0)
 
-            if False: #account == 'eosio.token':
+            if account == 'eosio.token':
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
                 with producer:
                     msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS"}
