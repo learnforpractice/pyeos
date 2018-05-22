@@ -57,6 +57,10 @@ def prepare_(name, src, abi, full_src_path):
             old_code = eosapi.wast2wasm(old_code)
             if code == old_code:
                 need_update = False
+        elif CODE_TYPE_PY == code_type:
+            code = eosapi.mp_compile(src)
+            if code == old_code[1:]:
+                need_update = False
         elif (code == old_code[1:] or code == old_code):
             need_update = False
 
