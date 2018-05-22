@@ -505,7 +505,7 @@ int apply_context::get_context_free_data( uint32_t index, char* buffer, size_t b
 }
 
 int apply_context::db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   return db_store_i64( receiver, scope, table, payer, id, buffer, buffer_size);
+   return db_store_i64( get_receiver(), scope, table, payer, id, buffer, buffer_size);
 }
 
 name apply_context::get_receiver() {

@@ -7,16 +7,20 @@ from web3.contract import ConciseContract
 import eosapi
 import wallet
 import initeos
+from common import prepare, producer
 
 producer = eosapi.Producer()
 
-def init():
-    with producer:
-        r = eosapi.get_account('evm')
-        if not r:
+def init(func):
+    def func_wrapper(*args, **kwargs):
+        if not eosapi.get_account('evm'):
             print('evm account not exist, create it.')
-            r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
-            assert r
+            with producer:
+                r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
+                assert r
+        func(*args, **kwargs)
+    return func_wrapper
+
 
 from eth_utils import (
     to_dict,
@@ -44,10 +48,11 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
     def request_func_(self, method, params):
         print('----request_func', method, params)
         if method == 'eth_sendTransaction':
+            print(params)
             if 'to' in params[0]:
-                r = eosapi.push_evm_message(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True)
+                r, cost = eosapi.push_evm_action(params[0]['to'], params[0]['data'], {params[0]['from']:'active'}, True)
             else:
-                r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
+                r, cost  = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
             if r:
                 return {'result':r}
         elif method == 'eth_call':
@@ -180,6 +185,8 @@ def kitties_test(contract_interface):
 contract_source_code = '''
 
 '''
+
+@init
 def test():
     main_class = '<stdin>:Greeter'
     with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:

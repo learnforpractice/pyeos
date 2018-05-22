@@ -625,11 +625,14 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
       handler.code.assign(bin.begin(), bin.end());
 
       vector<chain::action> actions;
-      actions.emplace_back( vector<chain::permission_level>{{account,"active"}}, handler);
+      actions.emplace_back(vector<chain::permission_level>{{account,"active"}}, handler);
 
       std::cout << "Publishing contract..." << std::endl;
-//FIXME:
-      //      return send_actions(std::move(actions), sign, packed_transaction::zlib);
+
+      vector<vector<chain::action>> vv;
+      vv.emplace_back(std::move(actions));
+
+      return push_transactions_(vv, sign, 0, false, true);
 
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());

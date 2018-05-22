@@ -609,39 +609,23 @@ def push_actions(actions, sign=True):
     return push_transactions([_actions], sign)
 
 
-def push_evm_message(eth_address, args, permissions: Dict, sign=True, rawargs=False):
+def push_evm_action(eth_address, args, permissions: Dict, sign=True):
     cdef string contract_
-    cdef string action_
-    cdef string args_
-    cdef map[string, string] permissions_;
-    cdef int sign_
-    cdef int rawargs_
-    
+
     contract_ = convert_from_eth_address(eth_address)
     print('===eth_address:', eth_address)
     print('===contract_:', contract_)
 
-    if not rawargs:
-        if not isinstance(args, str):
-            args = json.dumps(args)
-    args_ = tobytes(args)
-    
-    for per in permissions:
-        key = permissions[per]
-        per = convert_from_eth_address(per)
-        permissions_[per] = key
+    pers = []
+    for key in permissions:
+        value = permissions[key]
+        key = convert_from_eth_address(key)
+        pers.append([N(key), N(value)])
 
-    if sign:
-        sign_ = 1
-    else:
-        sign_ = 0
-    if rawargs:
-        rawargs_ = 1
-    else:
-        rawargs_ = 0
-    result = push_action(contract_, '', args_, permissions_, sign_, rawargs_)
-    if result:
-        return JsonStruct(result)
+    act = [s2n(contract_), N('call'), pers, args]
+    outputs, cost_time = push_transactions([[act]], sign)
+    if outputs:
+        return (outputs[0], cost_time)
     return None
 
 
@@ -681,18 +665,14 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
 
 def set_evm_contract(eth_address, sol_bin, sign=True):
     ilog("set_evm_contract.....");
+
     if sign:
         sign = 1
     else:
         sign = 0
     if sol_bin[0:2] == '0x':
         sol_bin = sol_bin[2:]
-    result = set_evm_contract_(eth_address, sol_bin, sign)
-
-    if result:
-        return JsonStruct(result)
-    return None
-
+    return set_evm_contract_(eth_address, sol_bin, sign)
 
 def quit_app():
     quit_app_()
