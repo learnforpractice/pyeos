@@ -419,14 +419,14 @@ void producer_plugin::plugin_shutdown() {
 }
 
 int producer_plugin::produce_block() {
-   int ret = -1;
    if (my->_manual_gen_block) {
-      ret = (int)my->start_block();
-      ilog("block_production_loop return: ${n}",("n",(int)ret));
+      my->schedule_production_loop();
+//      ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
       ilog("not in manual generate block mode.");
+      return -1;
    }
-   return ret;
+   return 0;
 }
 
 producer_plugin_impl::start_block_result producer_plugin_impl::start_block() {
