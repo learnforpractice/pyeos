@@ -52,7 +52,11 @@ extern "C" {
    void PyInit_eosapi();
    PyObject* PyInit_wallet();
    PyObject* PyInit_eoslib();
+//only used in debug
+   PyObject* PyInit_eoslib();
+   PyObject* PyInit_db();
    PyObject* PyInit_debug();
+   PyObject* PyInit_python_contract();
 
    int main_micropython(int argc, char **argv);
 }
@@ -62,7 +66,6 @@ static char** g_argv = NULL;
 
 
 typedef void (*fn_init)();
-extern "C" int init_rpcserver(fn_init _init);
 
 void start_eos() {
    try {
@@ -110,7 +113,9 @@ void init_console() {
    PyInit_wallet();
    PyInit_eosapi();
    PyInit_eoslib();
+   PyInit_db();
    PyInit_debug();
+   PyInit_python_contract();
 
    PyRun_SimpleString(
        "import sys;"

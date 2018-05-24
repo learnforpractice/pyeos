@@ -6,9 +6,9 @@ find_package(LevelDB)
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
  
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib/eoslib_.pyx
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.pyx
 )
 
 add_custom_command(
@@ -17,6 +17,11 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.pyx
+)
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
@@ -61,19 +66,20 @@ add_library( eosio_chain
               evm/EosExecutive.cpp
               evm/EosDB.cpp
               evm/EosExtVM.cpp
-              micropython/database_api.cpp
+              micropython/db_api.cpp
               micropython/mpeoslib.cpp
               evm_interface.cpp
               micropython_interface.cpp
               rpc_interface/rpc_interface.cpp
               rpc_interface/rpc_interface_.wrap.cpp
+              python_contract.wrap.cpp
 
               rpc_interface/cpp/RpcService.cpp
               rpc_interface/cpp/RpcService_types.cpp
               rpc_interface/cpp/rpceoslib.cpp
 
-              eoslib/eoslib_.wrap.cpp
-              eoslib/eoslib_.cpp
+              python/eoslib.wrap.cpp
+              python/eoslib_.cpp
              ${HEADERS}
              )
 

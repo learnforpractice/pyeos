@@ -8,11 +8,6 @@
 
 #include "rpc_interface.hpp"
 
-extern "C" void PyInit_eoslib_();
-extern "C" void PyInit_rpc_interface_();
-extern "C" void PyInit_mytest();
-
-void eos_main();
 typedef void (*fn_init)();
 static fn_init s_init_eos = 0;
 static bool client_connected = false;
@@ -36,41 +31,6 @@ bool is_client_connected() {
    return client_connected;
 }
 
-extern "C" int init_rpcserver(fn_init _init) {
-   Py_InitializeEx(0);
-//   _Py_InitializeEx_Private(0, 1);
-   s_init_eos = _init;
-
-#ifdef WITH_THREAD
-   PyEval_InitThreads();
-#endif
-
-   PyInit_eoslib_();
-   PyInit_rpc_interface_();
-   PyRun_SimpleString("import eoslib_");
-
-   PyRun_SimpleString(
-       "import sys;"
-        "sys.path.append('../../libraries/chain/rpc_interface');"
-   );
-
-//   PyRun_SimpleString("eosapi.register_signal_handler()");
-
-   wlog("run ipcserver");
-   PyRun_SimpleString("import eosserver;eosserver.start()");
-
- /*
-   while(true) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(1000000));
-   }
-*/
-   //   PyRun_SimpleString("initrpc.init()");
-
-//   Py_Finalize();
-   return 0;
-}
-
-//int rpc_interface_apply(unsigned long long account, unsigned long long action);
 
 namespace eosio {
 namespace chain {

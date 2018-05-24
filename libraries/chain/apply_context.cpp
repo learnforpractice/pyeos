@@ -15,9 +15,8 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include "micropython/db_api.hpp"
 #include "micropython/mpeoslib.h"
-#include "micropython/database_api.hpp"
-
 #include "rpc_interface/rpc_interface.hpp"
 
 
@@ -35,6 +34,17 @@ extern "C" {
 }
 
 using boost::container::flat_set;
+
+static bool _py_debug_enable = 0;
+void py_debug_enable_(int enable) {
+   _py_debug_enable = enable;
+}
+
+bool py_debug_enabled_() {
+   return _py_debug_enable;
+}
+
+int contract_debug_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 
 namespace eosio { namespace chain {
 
@@ -64,63 +74,67 @@ apply_context& apply_context::ctx() {
    return *current_context;
 }
 
-
 void apply_context::schedule() {
   const auto &a = control.db().get<account_object, by_name>(receiver);
   privileged = a.privileged;
 
   control.set_action_object(get_receiver(), act);
 
-  if( a.code.size() > 0
-          && !(act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
-      if (a.vm_type == 0) {
-         try {
-            control.get_wasm_interface().apply(a.code_version, a.code, *this);
-         } catch ( const wasm_exit& ){}
-      } else if (a.vm_type == 1) {
-         bool trusted = false;
-         int itr = database_api::get().db_find_i64(N(credit), N(credit), N(credit), receiver.value);
-         if (itr >= 0) {
-            char c = 0;
-            int ret = database_api::get().db_get_i64(itr, &c, sizeof(c));
-            if (ret == 1) {
-               FC_ASSERT(c != '2', "account has been blocked out!");
-               if (c == '1') {
-                  trusted = true;
-               }
+  if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
+     return;
+  }
+   if (a.vm_type == 0) {
+      try {
+         control.get_wasm_interface().apply(a.code_version, a.code, *this);
+      } catch ( const wasm_exit& ){}
+   } else if (a.vm_type == 1) {
+      if (py_debug_enabled_()) {
+         contract_debug_apply(receiver.value, act.account.value, act.name.value);
+         return;
+      }
+      bool trusted = false;
+      int itr = db_api::get().db_find_i64(N(credit), N(credit), N(credit), receiver.value);
+      if (itr >= 0) {
+         char c = 0;
+         int ret = db_api::get().db_get_i64(itr, &c, sizeof(c));
+         if (ret == 1) {
+            FC_ASSERT(c != '2', "account has been blocked out!");
+            if (c == '1') {
+               trusted = true;
             }
          }
-         if (trusted || !rpc_interface::get().ready()) {
-            auto &py = micropython_interface::get();
-            try {
-               py.apply(receiver.value, act.account.value, act.name.value, a.code);
-            } catch (...) {
-               throw;
-            }
-         } else {
-            FC_ASSERT(rpc_interface::get().ready(), "RPC not ready");
-            auto &py = rpc_interface::get();
-            try {
-               py.apply(*this);
-            } catch (...) {
-               throw;
-            }
-         }
-      } else if (a.vm_type == 2) {
-         bytes code(a.code.begin(), a.code.end());
-         bytes args(act.data.begin(), act.data.end());
-         bytes output;
-         evm_interface::get().run_code(*this, code, args, output);
-         ilog("${n}",("n", output.size()));
-      } else if (a.vm_type == 3) {
-         auto &rpc = rpc_interface::get();
+      }
+      if (trusted || !rpc_interface::get().ready()) {
+         auto &py = micropython_interface::get();
          try {
-            rpc.apply(*this);
+            py.apply(receiver.value, act.account.value, act.name.value, a.code);
+         } catch (...) {
+            throw;
+         }
+      } else {
+         FC_ASSERT(rpc_interface::get().ready(), "RPC not ready");
+         auto &py = rpc_interface::get();
+         try {
+            py.apply(*this);
          } catch (...) {
             throw;
          }
       }
+   } else if (a.vm_type == 2) {
+      bytes code(a.code.begin(), a.code.end());
+      bytes args(act.data.begin(), act.data.end());
+      bytes output;
+      evm_interface::get().run_code(*this, code, args, output);
+      ilog("${n}",("n", output.size()));
+   } else if (a.vm_type == 3) {
+      auto &rpc = rpc_interface::get();
+      try {
+         rpc.apply(*this);
+      } catch (...) {
+         throw;
+      }
    }
+
 }
 
 static inline void print_debug(account_name receiver, const action_trace& ar) {
