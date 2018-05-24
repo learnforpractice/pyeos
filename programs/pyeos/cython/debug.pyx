@@ -1,5 +1,6 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 from libcpp.string cimport string
+from libcpp cimport bool
 
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
     void* execute_from_str(const char* str);
@@ -17,6 +18,8 @@ cdef extern from "../interface/debug_.hpp":
     void run_code_(string code)
     mpapi& get_mpapi();
 
+    void py_debug_enable_(int enable);
+    bool py_debug_enabled_();
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -45,4 +48,14 @@ def test():
 
 def run_code(string code):
     run_code_(code)
-  
+
+def enable():
+    py_debug_enable_(1)
+
+def disable():
+    py_debug_enable_(0)
+
+def is_enabled():
+    return py_debug_enabled_()
+
+
