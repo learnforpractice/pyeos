@@ -1,75 +1,124 @@
-# cython: c_string_type=bytes, c_string_encoding=ascii
-
-from libcpp.string cimport string
+# cython: c_string_type=str, c_string_encoding=ascii
 from libcpp.vector cimport vector
-from threading import Thread
+from libcpp.string cimport string
+from libcpp cimport bool
 
-
-cdef extern from "eoslib_.hpp":
+cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
-    ctypedef int int32_t
-    ctypedef unsigned int uint32_t
-    int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size )
-    void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size )
-    void db_remove_i64( int itr )
-    int db_get_i64( int itr, char* buffer, size_t buffer_size )
-    int db_next_i64( int itr, uint64_t* primary )
-    int db_previous_i64( int itr, uint64_t* primary )
-    int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_end_i64( uint64_t code, uint64_t scope, uint64_t table )
 
-    int read_action_(char* memory, size_t size);
+cdef extern from "<stdlib.h>":
+    char * malloc(size_t size)
+    void free(char* ptr)
 
+cdef extern from "<fc/log/logger.hpp>":
+    void ilog(char* log)
+    void elog(char* log)
 
-def read_action():
-    cdef char buffer[128]
-    cdef int size
-    cdef string s;
-    size = read_action_(buffer, sizeof(buffer))
-    s = string(buffer, size)
-    return s
+cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
+    ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
 
-def store_i64( scope, table, payer, id , string buffer):
-    return db_store_i64( scope, table, payer, id, buffer.c_str(), buffer.length() )
+    bool is_account_( uint64_t account )
+    uint64_t s2n_(const char* str);
+    void n2s_(uint64_t n, string& result);
 
-def update_i64( itr, payer, string buffer ):
-    db_update_i64( itr, payer, buffer.c_str(), buffer.length())
+    void eosio_assert_(int condition, const char* str);
 
-def remove_i64( int itr ):
-    db_remove_i64(itr)
+    int db_get_i64_( int iterator, char* buffer, size_t buffer_size )
+    int db_next_i64_( int iterator, uint64_t* primary )
+    int db_previous_i64_( int iterator, uint64_t* primary )
+    int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
+    int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
+    int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
+    int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table )
 
-def get_i64( int itr):
-    cdef string _buffer
-    cdef char buffer[512]
-    cdef int size
+    int db_idx64_find_secondary_( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
+    int db_idx64_find_primary_( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
+    int db_idx64_lowerbound_( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
+    int db_idx64_upperbound_( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
+    int db_idx64_end_( uint64_t code, uint64_t scope, uint64_t table )
+    int db_idx64_next_( int iterator, uint64_t& primary  )
+    int db_idx64_previous_( int iterator, uint64_t& primary )
+    
 
-    size = db_get_i64( itr, buffer, sizeof(buffer) )
-    _buffer = string(buffer, size)
-    return _buffer
+    
+    int db_idx_double_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
+    int db_idx_double_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
+    int db_idx_double_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
+    int db_idx_double_upperbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
+    int db_idx_double_end( uint64_t code, uint64_t scope, uint64_t table )
+    int db_idx_double_next( int iterator, uint64_t& primary  )
+    int db_idx_double_previous( int iterator, uint64_t& primary )
+    
+'''
+int db_idx128_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint128_t& secondary, uint64_t& primary )
+int db_idx128_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint128_t& secondary, uint64_t primary )
+int db_idx128_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  uint128_t& secondary, uint64_t& primary )
+int db_idx128_upperbound( uint64_t code, uint64_t scope, uint64_t table,  uint128_t& secondary, uint64_t& primary )
+int db_idx128_end( uint64_t code, uint64_t scope, uint64_t table )
+int db_idx128_next( int iterator, uint64_t& primary  )
+int db_idx128_previous( int iterator, uint64_t& primary )
 
-def next_i64( int itr):
-    cdef uint64_t primary
-    cdef int itr_next
-    itr_next = db_next_i64( itr, &primary )
-    return (itr_next, primary)
+int db_idx256_find_secondary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<const idx256> data, size_t data_len, uint64_t& primary )
+int db_idx256_find_primary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<idx256> data, size_t data_len, uint64_t primary )
+int db_idx256_lowerbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<idx256> data, size_t data_len, uint64_t& primary )
+int db_idx256_upperbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<idx256> data, size_t data_len, uint64_t& primary )
+int db_idx256_end( uint64_t code, uint64_t scope, uint64_t table )
+int db_idx256_next( int iterator, uint64_t& primary  )
+int db_idx256_previous( int iterator, uint64_t& primary )
+'''
 
-def previous_i64( int itr ):
-    cdef uint64_t primary
-    cdef int itr_next
-    itr_next = db_previous_i64( itr, &primary )
-    return (itr_next, primary)
+def is_account(uint64_t account):
+    return is_account_(account)
 
-def find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_find_i64( code, scope, table, id )
+def N(const char* _str):
+    return s2n_(_str);
 
-def lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_lowerbound_i64( code, scope, table, id )
+def s2n(const char* _str):
+    return s2n_(_str);
 
-def upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_upperbound_i64( code, scope, table, id )
+def n2s(uint64_t n):
+    cdef string result
+    n2s_(n, result);
+    return result
 
-def end_i64( uint64_t code, uint64_t scope, uint64_t table ):
-    return db_end_i64( code, scope, table )
+def eosio_assert(_cond, const char* str):
+    cdef int cond
+    if _cond:
+        cond = 1
+    else:
+        cond = 0
+    eosio_assert_(cond, str)
 
+def db_get_i64( int iterator ):
+    cdef vector[char] buffer
+    cdef size_t size
+    ret = None
+    size = db_get_i64_( iterator, <char*>0, 0 )
+    if size <= 0:
+        return None
+
+    buffer.resize(size)
+    size = db_get_i64_( iterator, buffer.data(), size )
+    return <bytes>buffer.data()
+
+def db_next_i64( int iterator):
+    cdef uint64_t primary = 0
+    itr = db_next_i64_( iterator, &primary )
+    return (itr, primary)
+
+def db_previous_i64( int iterator ):
+    cdef uint64_t primary = 0
+    itr = db_previous_i64_( iterator, &primary )
+    return (itr, primary)
+
+def db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
+    return db_find_i64_( code, scope, table, id )
+
+def db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
+    return db_lowerbound_i64_( code, scope, table, id )
+
+def db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
+    return db_upperbound_i64_( code, scope, table, id )
+
+def db_end_i64( uint64_t code, uint64_t scope, uint64_t table ):
+    return db_end_i64_( code, scope, table )
