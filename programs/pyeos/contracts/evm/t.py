@@ -182,6 +182,7 @@ def kitties_test(contract_interface):
     #    r = contract_instance.getValue(call={'from': address})
         r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
+
 contract_source_code = '''
 
 '''
@@ -195,7 +196,21 @@ def test():
         deploy(contract_interface)
         call_contract(contract_interface)
 
+@init
 def test2():
+    import pydevd
+    pydevd.settrace(suspend=False)
+
+    main_class = '<stdin>:Greeter'
+    with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
+        contract_source_code = f.read()
+        contract_interface = compile(contract_source_code, main_class)
+#        deploy(contract_interface)
+        call_contract(contract_interface)
+
+
+@init
+def test3():
     main_class = '<stdin>:KittyCore'
     with open('../../programs/pyeos/contracts/evm/cryptokitties.sol', 'r') as f:
         contract_source_code = f.read()
@@ -205,7 +220,9 @@ def test2():
 
 
 if __name__ == '__main__':
-    test()
+    import pydevd
+    pydevd.settrace(suspend=False)
+    test2()
 
 
 
