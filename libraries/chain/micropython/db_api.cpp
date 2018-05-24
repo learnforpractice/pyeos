@@ -1,7 +1,3 @@
-#include "database_api.hpp"
-
-#include <eosio/chain/generated_transaction_object.hpp>
-
 #include <eosio/chain/permission_object.hpp>
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/chain/generated_transaction_object.hpp>
@@ -10,6 +6,7 @@
 #include <eosio/chain/producer_object.hpp>
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/permission_object.hpp>
+#include "db_api.hpp"
 
 extern "C" {
 #include <stdio.h>
@@ -31,9 +28,9 @@ extern "C" void execution_end();
 
 namespace eosio { namespace chain {
 
-database_api *database_api::_instance = 0;
+db_api *db_api::_instance = 0;
 
-database_api::database_api(const action& a)
+db_api::db_api(const action& a)
 : db(fc::path("data-dir/shared_mem"), chainbase::database::read_only, config::default_shared_memory_size),
  act(a)
 {
@@ -57,7 +54,7 @@ database_api::database_api(const action& a)
    db.add_index<action_object_index>();
 }
 
-bool database_api::get_action(action& act) {
+bool db_api::get_action(action& act) {
    const auto &a = db.get<action_object>();
 
    act.account = a.account;
@@ -74,30 +71,30 @@ bool database_api::get_action(action& act) {
    return true;
 }
 
-const name& database_api::get_receiver() {
+const name& db_api::get_receiver() {
    const auto &a = db.get<action_object>();
    return a.receiver;
 }
 
-const action_object& database_api::get_action_object() const {
+const action_object& db_api::get_action_object() const {
    return db.get<action_object>();
 }
 
-void database_api::get_code(uint64_t account, string& code) {
+void db_api::get_code(uint64_t account, string& code) {
    const auto &a = db.get<account_object, by_name>(account);
    code = string(a.code.data(), a.code.size());
 }
 
-const shared_string& database_api::get_code(uint64_t account) {
+const shared_string& db_api::get_code(uint64_t account) {
    const auto &a = db.get<account_object, by_name>(account);
    return a.code;
 }
 
-bool database_api::is_account(const account_name& account)const {
+bool db_api::is_account(const account_name& account)const {
    return nullptr != db.find<account_object,by_name>( account );
 }
 
-void database_api::require_authorization( const account_name& account ) {
+void db_api::require_authorization( const account_name& account ) {
    for( uint32_t i=0; i < act.authorization.size(); i++ ) {
      if( act.authorization[i].actor == account ) {
         used_authorizations[i] = true;
@@ -107,14 +104,14 @@ void database_api::require_authorization( const account_name& account ) {
    EOS_ASSERT( false, missing_auth_exception, "missing authority of ${account}", ("account",account));
 }
 
-bool database_api::has_authorization( const account_name& account )const {
+bool db_api::has_authorization( const account_name& account )const {
    for( const auto& auth : act.authorization )
      if( auth.actor == account )
         return true;
   return false;
 }
 
-void database_api::require_authorization(const account_name& account,
+void db_api::require_authorization(const account_name& account,
                                           const permission_name& permission) {
   for( uint32_t i=0; i < act.authorization.size(); i++ )
      if( act.authorization[i].actor == account ) {
@@ -127,7 +124,7 @@ void database_api::require_authorization(const account_name& account,
               ("account",account)("permission",permission) );
 }
 
-const table_id_object& database_api::find_or_create_table( name code, name scope, name table, const account_name &payer ) {
+const table_id_object& db_api::find_or_create_table( name code, name scope, name table, const account_name &payer ) {
 //   require_read_lock(code, scope);
    const auto* existing_tid =  db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));
    if (existing_tid != nullptr) {
@@ -146,7 +143,7 @@ const table_id_object& database_api::find_or_create_table( name code, name scope
    });
 }
 
-int database_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
+int db_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
 //   require_write_lock( scope );
    /*
    int itr = db_find_i64(get_receiver(), scope, table, id);
@@ -180,7 +177,7 @@ int database_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, c
    return keyval_cache.add( obj );
 }
 
-void database_api::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size ) {
+void db_api::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size ) {
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
@@ -212,12 +209,12 @@ void database_api::db_update_i64( int iterator, account_name payer, const char* 
    });
 }
 
-void database_api::remove_table( const table_id_object& tid ) {
+void db_api::remove_table( const table_id_object& tid ) {
    update_db_usage(tid.payer, - config::billable_size_v<table_id_object>);
    db.remove(tid);
 }
 
-void database_api::update_db_usage( const account_name& payer, int64_t delta ) {
+void db_api::update_db_usage( const account_name& payer, int64_t delta ) {
 #if 0
    require_write_lock( payer );
    if( (delta > 0) ) {
@@ -230,7 +227,7 @@ void database_api::update_db_usage( const account_name& payer, int64_t delta ) {
 #endif
 }
 
-void database_api::db_remove_i64( int iterator ) {
+void db_api::db_remove_i64( int iterator ) {
 #if 0
    const key_value_object& obj = keyval_cache.get( iterator );
 
@@ -255,7 +252,7 @@ void database_api::db_remove_i64( int iterator ) {
    keyval_cache.remove( iterator );
 }
 
-void database_api::db_get_table_i64( int iterator, uint64_t& code, uint64_t& scope, uint64_t& payer, uint64_t& table, uint64_t& id) {
+void db_api::db_get_table_i64( int iterator, uint64_t& code, uint64_t& scope, uint64_t& payer, uint64_t& table, uint64_t& id) {
    const key_value_object& obj = keyval_cache.get( iterator );
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
 
@@ -266,19 +263,19 @@ void database_api::db_get_table_i64( int iterator, uint64_t& code, uint64_t& sco
    id = obj.primary_key;
 }
 
-const table_id_object* database_api::find_table( name code, name scope, name table ) {
+const table_id_object* db_api::find_table( name code, name scope, name table ) {
 //   require_read_lock(code, scope);
    return db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));
 }
 
-int database_api::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
+int db_api::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
    const key_value_object& obj = keyval_cache.get( iterator );
    memcpy( buffer, obj.value.data(), std::min(obj.value.size(), buffer_size) );
 
    return obj.value.size();
 }
 
-int database_api::db_next_i64( int iterator, uint64_t& primary ) {
+int db_api::db_next_i64( int iterator, uint64_t& primary ) {
    if( iterator < -1 ) return -1; // cannot increment past end iterator of table
 
    const auto& obj = keyval_cache.get( iterator ); // Check for iterator != -1 happens in this call
@@ -293,7 +290,7 @@ int database_api::db_next_i64( int iterator, uint64_t& primary ) {
    return keyval_cache.add( *itr );
 }
 
-int database_api::db_previous_i64( int iterator, uint64_t& primary ) {
+int db_api::db_previous_i64( int iterator, uint64_t& primary ) {
    const auto& idx = db.get_index<key_value_index, by_scope_primary>();
 
    if( iterator < -1 ) // is end iterator
@@ -325,7 +322,7 @@ int database_api::db_previous_i64( int iterator, uint64_t& primary ) {
    return keyval_cache.add(*itr);
 }
 
-int database_api::db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+int db_api::db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
 //   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
@@ -339,7 +336,7 @@ int database_api::db_find_i64( uint64_t code, uint64_t scope, uint64_t table, ui
    return keyval_cache.add( *obj );
 }
 
-int database_api::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+int db_api::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
 //   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
@@ -355,7 +352,7 @@ int database_api::db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t tab
    return keyval_cache.add( *itr );
 }
 
-int database_api::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+int db_api::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
 //   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
@@ -371,7 +368,7 @@ int database_api::db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t tab
    return keyval_cache.add( *itr );
 }
 
-int database_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
+int db_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 //   require_read_lock( code, scope ); // redundant?
 
    const auto* tab = find_table( code, scope, table );
@@ -380,11 +377,11 @@ int database_api::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return keyval_cache.cache_table( *tab );
 }
 
-bool database_api::is_in_whitelist(uint64_t account) {
-   int itr = database_api::get().db_find_i64(N(credit), N(credit), N(credit), account);
+bool db_api::is_in_whitelist(uint64_t account) {
+   int itr = db_api::get().db_find_i64(N(credit), N(credit), N(credit), account);
    if (itr >= 0) {
       char c = 0;
-      int ret = database_api::get().db_get_i64(itr, &c, sizeof(c));
+      int ret = db_api::get().db_get_i64(itr, &c, sizeof(c));
       if (ret == 1) {
          FC_ASSERT(c != '2', "account has been blocked out!");
          if (c == '1') {
@@ -402,11 +399,11 @@ using namespace eosio::chain;
 extern "C" {
 
 int mp_action_size() {
-   return eosio::chain::database_api::get().get_action_object().data.size();
+   return eosio::chain::db_api::get().get_action_object().data.size();
 }
 
 int mp_read_action(char* buf, size_t size) {
-   const auto& data = eosio::chain::database_api::get().get_action_object().data;
+   const auto& data = eosio::chain::db_api::get().get_action_object().data;
    if (size > data.size()) {
       size = data.size();
    }
@@ -416,16 +413,46 @@ int mp_read_action(char* buf, size_t size) {
 
 int mp_is_account(uint64_t account) {
    eosio::chain::account_name _account(account);
-   return eosio::chain::database_api::get().is_account(_account);
+   return eosio::chain::db_api::get().is_account(_account);
 }
 
 uint64_t mp_get_receiver() {
-   return database_api::get().get_action_object().receiver;
+   return db_api::get().get_action_object().receiver;
 }
 
 void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id) {
-   eosio::chain::database_api::get().db_get_table_i64( itr, *code, *scope, *payer, *table, *id );
+   eosio::chain::db_api::get().db_get_table_i64( itr, *code, *scope, *payer, *table, *id );
 }
 
 }
+
+
+int db_api_get_i64( int itr, char* buffer, size_t buffer_size ) {
+   return db_api::get().db_get_i64(itr, buffer, buffer_size);
+}
+
+int db_api_next_i64( int itr, uint64_t* primary ) {
+   return db_api::get().db_next_i64(itr, *primary);
+}
+
+int db_api_previous_i64( int itr, uint64_t* primary ) {
+   return db_api::get().db_previous_i64(itr, *primary);
+}
+
+int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+   return db_api::get().db_find_i64(code, scope, table, id);
+}
+
+int db_api_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+   return db_api::get().db_lowerbound_i64(code, scope, table, id);
+}
+
+int db_api_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+   return db_api::get().db_upperbound_i64(code, scope, table, id);
+}
+
+int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
+   return db_api::get().db_end_i64(code, scope, table);
+}
+
 

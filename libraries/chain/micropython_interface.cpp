@@ -17,9 +17,9 @@
 #include <chrono>
 #include <appbase/application.hpp>
 #include <fc/crypto/xxhash.h>
+#include "micropython/db_api.hpp"
 
 #include "micropython/mpeoslib.h"
-#include "micropython/database_api.hpp"
 #include "rpc_interface/rpc_interface.hpp"
 
 
@@ -68,7 +68,7 @@ void init() {
 
    uint64_t hash = XXH64("asset.mpy", strlen("asset.mpy"), 0);
 
-   int itr = database_api::get().db_find_i64(N(backyard), N(backyard), N(backyard), hash);
+   int itr = db_api::get().db_find_i64(N(backyard), N(backyard), N(backyard), hash);
    if (itr < 0) {
       return;
    }
@@ -85,7 +85,7 @@ void micropython_interface::on_server_setcode(uint64_t _account, bytes& code) {
 
 void micropython_interface::on_client_setcode(uint64_t _account) {
    string code;
-   database_api::get().get_code(_account, code);
+   db_api::get().get_code(_account, code);
    vector<char> _code(code.begin(), code.end());
    on_setcode(_account, _code);
 }
@@ -100,7 +100,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       //called by client
    } else {
       //called by server
-      if (!database_api::get().is_in_whitelist(_account)) {
+      if (!db_api::get().is_in_whitelist(_account)) {
          if (rpc_interface::get().ready()) {
             rpc_interface::get().on_setcode(_account, code);
             return;
@@ -213,7 +213,7 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 }
 
 void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   const shared_string& src = database_api::get().get_code(receiver);
+   const shared_string& src = db_api::get().get_code(receiver);
    apply(receiver, account, act, src);
 }
 

@@ -18,7 +18,7 @@ namespace eosio { namespace chain {
 class controller;
 class transaction_context;
 
-class database_api {
+class db_api {
    private:
       template<typename T>
       class iterator_cache {
@@ -174,7 +174,7 @@ class database_api {
 
             using secondary_key_helper_t = secondary_key_helper<secondary_key_type, secondary_key_proxy_type, secondary_key_proxy_const_type>;
 
-            generic_index( database_api& c ):context(c){}
+            generic_index( db_api& c ):context(c){}
 
             int store( uint64_t scope, uint64_t table, const account_name& payer,
                        uint64_t id, secondary_key_proxy_const_type value )
@@ -444,7 +444,7 @@ class database_api {
             }
 
          private:
-            database_api&              context;
+            db_api&              context;
             iterator_cache<ObjectType>  itr_cache;
       }; /// class generic_index
 
@@ -452,14 +452,14 @@ class database_api {
    /// Constructor
    public:
    private:
-      database_api(const action& a);
+      db_api(const action& a);
 
    public:
-      static database_api *_instance;
-      static database_api& get() {
+      static db_api *_instance;
+      static db_api& get() {
          static action act;
          if (!_instance) {
-            _instance = new database_api(act);
+            _instance = new db_api(act);
          }
          return *_instance;
       }
@@ -608,3 +608,11 @@ class database_api {
 } } // namespace eosio::chain
 
 //FC_REFLECT(eosio::chain::apply_context::apply_results, (applied_actions)(deferred_transaction_requests)(deferred_transactions_count))
+
+int db_api_get_i64( int itr, char* buffer, size_t buffer_size );
+int db_api_next_i64( int itr, uint64_t* primary );
+int db_api_previous_i64( int itr, uint64_t* primary );
+int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_api_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_api_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table );
