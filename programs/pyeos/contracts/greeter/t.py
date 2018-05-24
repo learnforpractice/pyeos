@@ -4,7 +4,7 @@ import struct
 
 import wallet
 import eosapi
-import eoslib
+import db
 import initeos
 
 from common import prepare, producer
@@ -42,9 +42,9 @@ def test2(count=100):
     code = eosapi.N('greeter')
     id = eosapi.hash64('greeting', 0)
     greeting = 0
-    itr = eoslib.db_find_i64(code, code, code, id)
+    itr = db.find_i64(code, code, code, id)
     if itr >= 0:
-        greeting = eoslib.db_get_i64(itr)
+        greeting = db.get_i64(itr)
         print(greeting[1:])
 
 

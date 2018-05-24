@@ -2,7 +2,7 @@ import time
 import wallet
 import eosapi
 import initeos
-import eoslib
+import db
 
 from eosapi import N
 
@@ -19,9 +19,9 @@ def test(name=None):
     code = N('counter')
     counter_id = N('counter')
     counter_begin = 0
-    itr = eoslib.db_find_i64(code, code, code, counter_id)
+    itr = db.db_find_i64(code, code, code, counter_id)
     if itr >= 0:
-        counter_begin = eoslib.db_get_i64(itr)
+        counter_begin = db.db_get_i64(itr)
         counter_begin = int.from_bytes(counter_begin, 'little')
 
     print('counter begin: ', counter_begin)
@@ -31,9 +31,9 @@ def test(name=None):
         assert r
 
     counter_end = 0
-    itr = eoslib.db_find_i64(code, code, code, counter_id)
+    itr = db.db_find_i64(code, code, code, counter_id)
     if itr >= 0:
-        counter_end = eoslib.db_get_i64(itr)
+        counter_end = db.db_get_i64(itr)
         counter_end = int.from_bytes(counter_end, 'little')
 
     print('counter end: ', counter_end)
@@ -48,9 +48,9 @@ def test2(count=100):
     code = N('counter')
     counter_id = N('counter')
     counter_begin = 0
-    itr = eoslib.db_find_i64(code, code, code, counter_id)
+    itr = db.db_find_i64(code, code, code, counter_id)
     if itr >= 0:
-        counter_begin = eoslib.db_get_i64(itr)
+        counter_begin = db.db_get_i64(itr)
         counter_begin = int.from_bytes(counter_begin, 'little')
 
     print('counter begin: ', counter_begin)
@@ -76,9 +76,9 @@ def test2(count=100):
     eosapi.produce_block()
 
     counter_end = 0
-    itr = eoslib.db_find_i64(code, code, code, counter_id)
+    itr = db.db_find_i64(code, code, code, counter_id)
     if itr >= 0:
-        counter_end = eoslib.db_get_i64(itr)
+        counter_end = db.db_get_i64(itr)
         counter_end = int.from_bytes(counter_end, 'little')
     print('counter end: ', counter_end)
     assert counter_begin + count == counter_end

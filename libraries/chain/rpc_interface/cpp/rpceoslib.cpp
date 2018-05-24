@@ -11,11 +11,14 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <fc/log/logger.hpp>
+#include "../../micropython/db_api.hpp"
 
 #include "../../micropython/mpeoslib.h"
 #include "readerwriterqueue.h"
 #include "blockingconcurrentqueue.h"
 
+
+using namespace eosio::chain;
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -56,7 +59,7 @@ extern "C" {
 static struct eosapi s_eosapi;
 static RpcServiceClient* rpcclient = nullptr;
 
-//database_api.cpp
+//db_api.cpp
 extern "C" {
    int mp_action_size();
    int mp_read_action(char* buf, size_t size);
@@ -273,7 +276,7 @@ static void mp_require_auth(uint64_t account) {
 static int mp_db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
    std::string _buffer(buffer, buffer_size);
    rpcclient->db_store_i64(scope, table, payer, id, _buffer);
-   return db_find_i64_(mp_get_receiver(), scope, table, id);
+   return db_api::get().db_find_i64(mp_get_receiver(), scope, table, id);
 }
 
 static void mp_db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
@@ -295,35 +298,35 @@ static void mp_db_remove_i64( int itr ) {
    uint64_t id;
    mp_db_get_table_i64(itr, &code, &scope, &payer, &table, &id);
    rpcclient->db_remove_i64_ex(scope, payer, table, id);
-   db_remove_i64_(itr);
+   db_api::get().db_remove_i64(itr);
 }
 
 static int mp_db_get_i64( int itr, char* buffer, size_t buffer_size ) {
-   return db_get_i64_(itr, buffer, buffer_size);
+   return db_api::get().db_get_i64(itr, buffer, buffer_size);
 }
 
 static int mp_db_next_i64( int itr, uint64_t* primary ) {
-   return db_next_i64_(itr, primary);
+   return db_api::get().db_next_i64(itr, *primary);
 }
 
 static int mp_db_previous_i64( int itr, uint64_t* primary ) {
-   return db_previous_i64_(itr, primary);
+   return db_api::get().db_previous_i64(itr, *primary);
 }
 
 static int mp_db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_find_i64_(code, scope, table, id);
+   return db_api::get().db_find_i64(code, scope, table, id);
 }
 
 static int mp_db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_lowerbound_i64_(code, scope, table, id);
+   return db_api::get().db_lowerbound_i64(code, scope, table, id);
 }
 
 static int mp_db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_upperbound_i64_(code, scope, table, id);
+   return db_api::get().db_upperbound_i64(code, scope, table, id);
 }
 
 static int mp_db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
-   return db_end_i64_(code, scope, table);
+   return db_api::get().db_end_i64(code, scope, table);
 }
 
 static struct eosapi* get_eosapi() {

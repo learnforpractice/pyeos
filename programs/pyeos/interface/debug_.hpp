@@ -11,3 +11,7 @@ void run_code_(std::string code);
 
 //mpeoslib.cpp
 struct mpapi& get_mpapi();
+
+void py_debug_enable_(int enable);
+bool py_debug_enabled_();
+
