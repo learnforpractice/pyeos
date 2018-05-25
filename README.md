@@ -2,7 +2,8 @@ An Experimental Project for Writing Smart Contract With Python Base on The Devel
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
 2. [Creating Your First Python Smart Contract](#creatsmartcontract)
-3. [PyEos api overview](#pyeosapioverview)
+3. [Smart Contract Debugging](#smartcontractdebugging)
+4. [PyEos api overview](#pyeosapioverview)
 
 <a name="buildingPyEos"></a>
 
@@ -130,6 +131,42 @@ there is no need to run other command to publish your testing smart contract, th
 republish to the testnet if it's been changed during the running of t.test(). You can also edit the testing code in t.py to test your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos has do the magic for you. That also works at the situation of adding a new function in test. 
 
 There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
+
+<a name="smartcontractdebugging"></a>
+
+# Smart Contract Debugging
+
+Python smart contract support source level debugging. Developers can debug their smart contract in Eclipse IDE with pydevd Eclipse pluging, other IDE such as Visual Studio Code may also supported, Please search for online resources to find out how to debug Python source remotely. for pydevd, there is a reference from here [manual_adv_remote_debugger](http://www.pydev.org/manual_adv_remote_debugger.html). After the environment has been successfully setting up, run the following command in PyEos console to enable debugging.
+
+```
+debug.enable()
+import pydevd
+pydevd.settrace(suspend=False)
+```
+
+Set breakpoint at your python smart contract source code in Eclipse. If your Python smart contract source code does not placed in pyeos/contracts directory, them you need to run the following code to specify your source code directory and your smart contract source code file name must under directory with the same name.
+
+```
+ sys.path.append(<folder where source code directory in>)
+```
+
+Deploy your smart contract to the testnet, Use hello contract in pyeos/contracts as example, set breakpoint at hello.py, and run the following code to call hello.py
+
+```
+from hello import t
+t.test()
+```
+
+Smart contract execution will be stopped when the code at the line of breakpoint is being executed.
+
+
+To disable debugging, run the following command.
+
+```
+debug.disable()
+```
+
+![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/wrap/debugging.png)
 
 
 <a name="pyeosapioverview"></a>
