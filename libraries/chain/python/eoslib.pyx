@@ -23,6 +23,18 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
 
     void eosio_assert_(int condition, const char* str);
 
+    int action_size_();
+    int read_action_(char* memory, size_t size);
+
+    void require_auth_(uint64_t account);
+    void require_recipient_(uint64_t account);
+
+
+    int db_store_i64_( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size )
+    void db_update_i64_( int itr, uint64_t payer, const char* buffer, size_t buffer_size )
+    void db_remove_i64_( int itr )
+
+
     int db_get_i64_( int iterator, char* buffer, size_t buffer_size )
     int db_next_i64_( int iterator, uint64_t* primary )
     int db_previous_i64_( int iterator, uint64_t* primary )
@@ -89,17 +101,38 @@ def eosio_assert(_cond, const char* str):
         cond = 0
     eosio_assert_(cond, str)
 
+def read_action():
+    cdef int size
+    size = action_size_()
+    buf = bytes(size)
+    read_action_(buf, size);
+    return buf
+
+def require_auth(uint64_t account):
+    return require_auth_(account)
+
+def require_recipient(uint64_t account):
+    return require_recipient_(account)
+
+def db_store_i64(scope, table, payer, id, buffer):
+    db_store_i64_(scope, table, payer, id, buffer, len(buffer))
+
+def db_update_i64(int itr, uint64_t payer, buffer):
+    db_update_i64_(itr, payer, buffer, len(buffer))
+
+def db_remove_i64(int itr):
+    db_remove_i64_(itr)
+
 def db_get_i64( int iterator ):
-    cdef vector[char] buffer
     cdef size_t size
     ret = None
     size = db_get_i64_( iterator, <char*>0, 0 )
     if size <= 0:
         return None
 
-    buffer.resize(size)
-    size = db_get_i64_( iterator, buffer.data(), size )
-    return <bytes>buffer.data()
+    buffer = bytes(size)
+    size = db_get_i64_( iterator, buffer, size )
+    return buffer
 
 def db_next_i64( int iterator):
     cdef uint64_t primary = 0

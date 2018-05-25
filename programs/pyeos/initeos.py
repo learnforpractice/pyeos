@@ -6,11 +6,15 @@ import traceback
 
 import wallet
 import eosapi
+import debug
+
 from code import InteractiveConsole
 from tools import sketch
 from imp import reload
 
 producer = eosapi.Producer()
+
+sys.path.insert(0, '/Applications/Eclipse.app/Contents//Eclipse/plugins/org.python.pydev_5.9.2.201708151115/pysrc')
 
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.
@@ -243,6 +247,8 @@ def init():
                     assert r
                     r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
                     assert r
+                    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
+                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
 
     from backyard import t
     t.deploy_mpy()

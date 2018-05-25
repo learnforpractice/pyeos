@@ -15,6 +15,14 @@ void eosio_assert_(int condition, const char* str) {
    eosio_assert(condition, str);
 }
 
+void require_auth_(uint64_t account) {
+   require_auth(account);
+}
+
+void require_recipient_(uint64_t account) {
+   require_recipient(account);
+}
+
 int is_account_(uint64_t account) {
    return is_account(account);
 }
