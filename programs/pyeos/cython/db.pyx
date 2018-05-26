@@ -13,16 +13,15 @@ cdef extern from "micropython/db_api.hpp":
     int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 
 def get_i64( int iterator ):
-    cdef vector[char] buffer
     cdef size_t size
     ret = None
     size = db_api_get_i64( iterator, <char*>0, 0 )
     if size <= 0:
         return None
 
-    buffer.resize(size)
-    size = db_api_get_i64( iterator, buffer.data(), size )
-    return <bytes>buffer.data()
+    buffer = bytes(size)
+    size = db_api_get_i64( iterator, buffer, size )
+    return buffer
 
 def next_i64( int iterator):
     cdef uint64_t primary = 0
