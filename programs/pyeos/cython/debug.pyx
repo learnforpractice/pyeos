@@ -51,9 +51,13 @@ def run_code(string code):
 
 def enable():
     py_debug_enable_(1)
+    import pydevd
+    pydevd.settrace(suspend=False)
 
 def disable():
     py_debug_enable_(0)
+    import pydevd
+    pydevd.stoptrace()
 
 def is_enabled():
     return py_debug_enabled_()
