@@ -36,4 +36,9 @@ int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t 
 int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
 
+//interface/wasm_.cpp
+namespace eosio { namespace chain {
+   uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result);
+}}
+
 #endif /* EOSLIB__HPP_ */

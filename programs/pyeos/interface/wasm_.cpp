@@ -194,21 +194,22 @@ int wasm_test_(string& code, string& func, vector<uint64_t>& args, uint64_t _acc
    return 1;
 }
 
-int wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result) {
+uint64_t wasm_call2_(uint64_t account, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result) {
 
 //   chain_controller& mutable_controller = appbase::app().get_plugin<chain_plugin>().chain();
+   wlog("${n1}, ${n2}, ${n3}",  ("n1", account)("n2", file_name)("n3", func));
 
    apply_context& ctx = apply_context::ctx();
 
    //FIXME key conflict
-   uint64_t id = XXH64(file_name.c_str(), file_name.length(), receiver);
+   uint64_t id = XXH64(file_name.c_str(), file_name.length(), 0);
 
-   int itr = ctx.db_find_i64(receiver, receiver, receiver, id);
+   int itr = ctx.db_find_i64(account, account, account, id);
    if (itr < 0) {
       return -1;
    }
 
-   int code_size = ctx.db_get_i64(itr, &code_buffer[1], sizeof(code_buffer));
+   int code_size = ctx.db_get_i64(itr, code_buffer, sizeof(code_buffer));
    if (code_size <= 0) {
       return -1;
    }
@@ -218,8 +219,8 @@ int wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint6
    string code(code_buffer+1, (code_size-1));
 
    auto code_id = fc::sha256::hash(code.c_str(), (uint32_t)code.length());
-   vm_wasm::get().get_module(code_id, code)->call(func, args, ctx);
-   return 1;
-
+   uint64_t ret =  vm_wasm::get().get_module(code_id, code)->call(func, args, ctx);
+   wlog("call return ${n1}",  ("n1", ret));
+   return ret;
 }
 }}

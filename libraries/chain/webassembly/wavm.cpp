@@ -42,19 +42,19 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
          //_instance is deleted via WAVM's object garbage collection when wavm_rutime is deleted
       }
 
-      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
+      uint64_t call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
          vector<Value> args;
          for(auto& arg: _args) {
             args.push_back(Value(uint64_t(arg)));
          }
-         call(entry_point, args, context);
+         return call(entry_point, args, context);
       }
    private:
-      void call(const string &entry_point, const vector <Value> &args, apply_context &context) {
+      uint64_t call(const string &entry_point, const vector <Value> &args, apply_context &context) {
          try {
             FunctionInstance* call = asFunctionNullable(getInstanceExport(_instance,entry_point));
             if( !call )
-               return;
+               return 0;
 
             FC_ASSERT( getFunctionType(call)->parameters.size() == args.size() );
 
@@ -75,7 +75,7 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
 
             resetGlobalInstances(_instance);
             runInstanceStartFunc(_instance);
-            Runtime::invokeFunction(call,args);
+            return Runtime::invokeFunction(call,args).u64;
          } catch( const wasm_exit& e ) {
          } catch( const Runtime::Exception& e ) {
              FC_THROW_EXCEPTION(wasm_execution_error,

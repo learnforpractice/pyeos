@@ -2,7 +2,7 @@
 #include <eosio/chain/apply_context.hpp>
 
 #include <wasm-binary.h>
-
+#include <wasm-type.h>
 
 namespace eosio { namespace chain { namespace webassembly { namespace binaryen {
 
@@ -28,12 +28,12 @@ class binaryen_instantiated_module : public wasm_instantiated_module_interface {
          call("apply", args, context);
       }
       
-      void call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
+      uint64_t call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
          LiteralList args;
          for(auto& arg: _args) {
             args.push_back(Literal(uint64_t(arg)));
          }
-         call(entry_point, args, context);
+         return call(entry_point, args, context);
       }
    private:
       linear_memory_type&        _shared_linear_memory;      
@@ -42,7 +42,7 @@ class binaryen_instantiated_module : public wasm_instantiated_module_interface {
       import_lut_type            _import_lut;
       unique_ptr<Module>          _module;
 
-      void call(const string& entry_point, LiteralList& args, apply_context& context){
+      uint64_t call(const string& entry_point, LiteralList& args, apply_context& context) {
          const unsigned initial_memory_size = _module->memory.initial*Memory::kPageSize;
          interpreter_interface local_interface(_shared_linear_memory, _table, _import_lut, initial_memory_size, context);
 
@@ -53,7 +53,11 @@ class binaryen_instantiated_module : public wasm_instantiated_module_interface {
          
          //be aware that construction of the ModuleInstance implictly fires the start function
          ModuleInstance instance(*_module.get(), &local_interface);
-         instance.callExport(Name(entry_point), args);
+         Literal ret = instance.callExport(Name(entry_point), args);
+         if (ret.type == wasm::none) {
+            return -1;
+         }
+         return ret.getBits();
       }
 };
 

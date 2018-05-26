@@ -14,6 +14,9 @@ cdef extern from "<fc/log/logger.hpp>":
     void ilog(char* log)
     void elog(char* log)
 
+cdef extern from "<fc/crypto/xxhash.h>":
+    uint64_t XXH64(const char *data, size_t length, uint64_t seed);
+
 cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
 
@@ -60,7 +63,10 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int db_idx_double_end( uint64_t code, uint64_t scope, uint64_t table )
     int db_idx_double_next( int iterator, uint64_t& primary  )
     int db_idx_double_previous( int iterator, uint64_t& primary )
-    
+
+cdef extern from "eoslib_.hpp" namespace "eosio::chain":
+    uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args, vector[char]& result);
+
 '''
 int db_idx128_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint128_t& secondary, uint64_t& primary )
 int db_idx128_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint128_t& secondary, uint64_t primary )
@@ -155,3 +161,22 @@ def db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t i
 
 def db_end_i64( uint64_t code, uint64_t scope, uint64_t table ):
     return db_end_i64_( code, scope, table )
+
+def wasm_call2(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args):
+    cdef vector[char] result
+    return wasm_call2_(receiver, file_name, func, args, result);
+
+def hash64(data, uint64_t seed = 0):
+    '''64 bit hash using xxhash
+
+    Args:
+        data (str|bytes): data to be hashed
+        seed (int): hash seed
+
+    Returns:
+        int: hash code in uint64_t
+    '''
+
+    return XXH64(data, len(data), seed)
+
+

@@ -8,6 +8,9 @@
     },{
       "name": "load",
       "type": "raw"
+    },{
+      "name": "callwasm",
+      "type": "raw"
     }
   ]
 }

@@ -36,7 +36,9 @@ def apply(receiver, code, action):
     elif action == N('sayhello'):
         import garden
         garden.play()
-
+    elif action == N('callwasm'):
+        ret = wasm_call2(code, 'math.wast', 'add', [1, 2])
+        print('wasm_call2 return', ret)
 
 
 
