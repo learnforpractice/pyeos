@@ -58,6 +58,9 @@ def deploy_mpy():
         src_id = eosapi.hash64(file_name, 0)
         itr = db.find_i64(code, code, code, src_id)
         if itr >= 0:
+            #Something went wrong in mp_compile.
+            #Generating different bytecode each time with the same source code, walkaround this problem for now
+            continue 
             old_src = db.get_i64(itr)
             if old_src[1:] == src_code:
                 continue

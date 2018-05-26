@@ -80,7 +80,7 @@ Beside that, PyEos will create four important accounts for you:
 eosio.bios, eosio.msig, eosio.system, eosio.token
 ```
 
-and publish their smart contract on the testing blockchain. 
+and publish their smart contract on thet testnet. 
 
 Although the above steps will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
 
@@ -136,7 +136,7 @@ There are a lot of examples in programs/pyeos/contracts. Some of them are still 
 
 # Smart Contract Debugging
 
-Python smart contract support source level debugging. Developers can debug their smart contract in Eclipse IDE with pydevd Eclipse pluging, other IDE such as Visual Studio Code may also supported, Please search for online resources to find out how to debug Python source remotely. for pydevd, there is a reference from here [manual_adv_remote_debugger](http://www.pydev.org/manual_adv_remote_debugger.html). After the environment has been successfully setting up, run the following command in PyEos console to enable debugging.
+Python smart contract support source level debugging. Developers can debug their smart contract in Eclipse IDE with pydevd Eclipse pluging, other IDE such as Visual Studio Code may also be supported, Please search for online resources to find out how to debug Python source remotely. for pydevd, there is a reference from here [manual_adv_remote_debugger](http://www.pydev.org/manual_adv_remote_debugger.html). After the environment has been successfully setting up, run the following command in PyEos console to enable debugging.
 
 ```
 debug.enable()
@@ -144,7 +144,7 @@ import pydevd
 pydevd.settrace(suspend=False)
 ```
 
-Set breakpoint at your python smart contract source code in Eclipse. If your Python smart contract source code does not placed in pyeos/contracts directory, them you need to run the following code to specify your source code directory and your smart contract source code file name must under directory with the same name.
+Set breakpoint at your python smart contract source code in Eclipse. If your Python smart contract source code does not placed in pyeos/contracts directory, them you need to run the following code to specify your source code directory and your smart contract source code file must under directory with the same name.
 
 ```
  sys.path.append(<folder where source code directory in>)
@@ -160,7 +160,7 @@ t.test()
 Smart contract execution will be stopped when the code at the line of breakpoint is being executed.
 
 
-To disable debugging, run the following command.
+To disable debugging, run the following code.
 
 ```
 debug.disable()
@@ -450,7 +450,7 @@ r
 
 ...
 
-#### eosapi.push_message
+#### eosapi.push_action
 
 ...
 
