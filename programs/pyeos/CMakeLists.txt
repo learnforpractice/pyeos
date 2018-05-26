@@ -88,7 +88,7 @@ target_link_libraries( pyeos-shared appbase chain_api_plugin history_api_plugin 
 endif( APPLE )
 
 target_include_directories( pyeos-shared 
-                              PRIVATE ${CPP_ETHEREUM_DIR}
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/ethereum
                               PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include

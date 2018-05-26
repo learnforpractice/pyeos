@@ -608,7 +608,9 @@ class db_api {
 } } // namespace eosio::chain
 
 //FC_REFLECT(eosio::chain::apply_context::apply_results, (applied_actions)(deferred_transaction_requests)(deferred_transactions_count))
+extern "C" {
 
+void db_api_remove_i64(int itr);
 int db_api_get_i64( int itr, char* buffer, size_t buffer_size );
 int db_api_next_i64( int itr, uint64_t* primary );
 int db_api_previous_i64( int itr, uint64_t* primary );
@@ -616,3 +618,5 @@ int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id 
 int db_api_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_api_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table );
+
+}

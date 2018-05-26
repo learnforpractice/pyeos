@@ -399,11 +399,11 @@ using namespace eosio::chain;
 extern "C" {
 
 int mp_action_size() {
-   return eosio::chain::db_api::get().get_action_object().data.size();
+   return db_api::get().get_action_object().data.size();
 }
 
 int mp_read_action(char* buf, size_t size) {
-   const auto& data = eosio::chain::db_api::get().get_action_object().data;
+   const auto& data = db_api::get().get_action_object().data;
    if (size > data.size()) {
       size = data.size();
    }
@@ -412,7 +412,7 @@ int mp_read_action(char* buf, size_t size) {
 }
 
 int mp_is_account(uint64_t account) {
-   eosio::chain::account_name _account(account);
+   account_name _account(account);
    return eosio::chain::db_api::get().is_account(_account);
 }
 
@@ -421,11 +421,12 @@ uint64_t mp_get_receiver() {
 }
 
 void mp_db_get_table_i64( int itr, uint64_t *code, uint64_t *scope, uint64_t *payer, uint64_t *table, uint64_t *id) {
-   eosio::chain::db_api::get().db_get_table_i64( itr, *code, *scope, *payer, *table, *id );
+   db_api::get().db_get_table_i64( itr, *code, *scope, *payer, *table, *id );
 }
 
+void db_api_remove_i64(int itr) {
+   db_api::get().db_remove_i64( itr );
 }
-
 
 int db_api_get_i64( int itr, char* buffer, size_t buffer_size ) {
    return db_api::get().db_get_i64(itr, buffer, buffer_size);
@@ -454,5 +455,9 @@ int db_api_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64
 int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_api::get().db_end_i64(code, scope, table);
 }
+
+}
+
+
 
 

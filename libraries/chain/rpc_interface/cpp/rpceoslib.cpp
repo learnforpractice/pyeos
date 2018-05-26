@@ -8,7 +8,6 @@
 
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/lockfree/spsc_queue.hpp>
 
 #include <fc/log/logger.hpp>
 #include "../../micropython/db_api.hpp"
