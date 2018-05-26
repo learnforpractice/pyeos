@@ -43,8 +43,8 @@ option(HUNTER_RUN_UPLOAD "Upload binaries to the cache server" ${run_upload})
 
 include(HunterGate)
 HunterGate(
-    URL "https://github.com/learnforpractice/hunter/archive/v0.20.27.2.tar.gz"
-    SHA1 "a8829718f514ba870f8be876ed508638c2e9cac7"
+    URL "https://github.com/learnforpractice/hunter/archive/v0.20.27.3.tar.gz"
+    SHA1 "86b532917510ca7bcf7805e987d0cadfe0dca7a1"
     LOCAL
 )
 # Defines EOS library target.
