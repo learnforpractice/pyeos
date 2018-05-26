@@ -73,6 +73,8 @@ void print(const char * str, size_t len) {
 typedef struct eosapi* (*fn_get_eosapi)();
 static fn_get_eosapi get_eosapi = 0;
 
+typedef void (*fn_set_max_execution_time)(int);
+
 extern "C" void set_get_eosapi_func(fn_get_eosapi fn) {
    get_eosapi = fn;
 }
@@ -115,6 +117,9 @@ mpapi& get_mpapi() {
    fn_mp_obtain_mpapi mp_obtain_mpapi = (fn_mp_obtain_mpapi)dlsym(handle, "mp_obtain_mpapi");
 
    fn_main_micropython main_micropython = (fn_main_micropython)dlsym(handle, "main_micropython");
+
+   fn_set_max_execution_time set_time = (fn_set_max_execution_time)dlsym(handle, "set_max_execution_time");
+   set_time(5000);
 
    struct mpapi* api = new mpapi();
    api->handle = handle;
