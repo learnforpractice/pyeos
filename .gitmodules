@@ -41,3 +41,6 @@
 [submodule "programs/goeos/src/github.com/kardianos/osext"]
 	path = programs/goeos/src/github.com/kardianos/osext
 	url = https://github.com/kardianos/osext
+[submodule "libraries/chainbase"]
+	path = libraries/chainbase
+	url = https://github.com/learnforpractice/chainbase
