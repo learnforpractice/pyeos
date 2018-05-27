@@ -177,6 +177,7 @@ def init_wallet():
     wallet.open('mywallet')
     psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
     wallet.unlock('mywallet',psw)
+    wallet.set_timeout(60*60*24)
 
 def init():
     init_wallet()

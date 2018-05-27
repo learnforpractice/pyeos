@@ -136,23 +136,9 @@ vector<uint8_t> assemble_wast(const std::string& wast) {
 }
 
 read_only::get_info_results get_info() {
-   auto& db = get_db();
-   const auto& rm = db.get_resource_limits_manager();
-   return {
-      eosio::utilities::common::itoh(static_cast<uint32_t>(app().version())),
-      db.head_block_num(),
-      db.last_irreversible_block_num(),
-      db.last_irreversible_block_id(),
-      db.head_block_id(),
-      db.head_block_time(),
-      db.head_block_producer(),
-      rm.get_virtual_block_cpu_limit(),
-      rm.get_virtual_block_net_limit(),
-      rm.get_block_cpu_limit(),
-      rm.get_block_net_limit()
-      //std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string(),
-      //__builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0
-   };
+   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   eosio::chain_apis::read_only::get_info_params params = {};
+   return ro_api.get_info(params);
 }
 
 string generate_nonce_value() {
@@ -307,7 +293,7 @@ PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key) {
       signed_transaction trx = python::json::from_string(trx_json_to_sign).as<signed_transaction>();
 
       auto priv_key = fc::crypto::private_key::regenerate(*utilities::wif_to_key(str_private_key));
-      trx.sign(priv_key, chain_id_type{});
+      trx.sign(priv_key, get_info().chain_id);
       return python::json::to_string(fc::variant(trx));
 
    } catch (fc::assert_exception& e) {
@@ -349,7 +335,7 @@ PyObject* push_raw_transaction_(string& signed_trx) {
 }
 
 int produce_block_() {
-   return app().get_plugin<producer_plugin>().produce_block();
+//   return app().get_plugin<producer_plugin>().produce_block();
 }
 
 int produce_block_start_() {

@@ -9,8 +9,6 @@
 
 void sign_transaction(eosio::chain::signed_transaction &trx);
 
-int set_timeout_(int secs);
-
 /*
  string sign_transaction(txn,keys,id){
  #    const chain::signed_transaction& txn, const flat_set<public_key_type>&
@@ -22,7 +20,7 @@ PyObject* wallet_create_(std::string &name);
 PyObject* wallet_open_(std::string &name);
 PyObject* wallet_save_(std::string& name);
 
-PyObject* wallet_set_timeout_(int secs);
+PyObject* wallet_set_timeout_(uint64_t secs);
 PyObject* wallet_list_wallets_();
 PyObject* wallet_list_keys_();
 PyObject* wallet_get_public_keys_();

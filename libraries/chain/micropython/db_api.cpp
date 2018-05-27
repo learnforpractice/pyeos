@@ -31,7 +31,7 @@ namespace eosio { namespace chain {
 db_api *db_api::_instance = 0;
 
 db_api::db_api(const action& a)
-: db(fc::path("data-dir/shared_mem"), chainbase::database::read_only, config::default_shared_memory_size),
+: db(fc::path("data-dir/state"), chainbase::database::read_only, config::default_state_size, true),
  act(a)
 {
    db.add_index<account_index>();

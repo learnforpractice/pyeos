@@ -20,17 +20,15 @@ def init(func):
 
 @init
 def test(name='mike'):
-    with producer:
-        r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
-        assert r
+    r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
+    assert r
 #    print(eosapi.JsonStruct(r[0]))
 #    eosapi.produce_block()
 
 @init
 def play():
-    with producer:
-        r = eosapi.push_action('hello', 'play', '', {'hello':'active'})
-        assert r
+    r = eosapi.push_action('hello', 'play', '', {'hello':'active'})
+    assert r
 
 @init
 def test2(count=100):
@@ -42,7 +40,6 @@ def test2(count=100):
     ret, cost = eosapi.push_actions(actions, True)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-    eosapi.produce_block()
 
 @init
 def deploy_mpy():
@@ -60,5 +57,3 @@ def deploy_mpy():
     print('++++++++++++++++deply:', file_name)
     r = eosapi.push_action('kitties','deploy',msg,{'kitties':'active'})
     assert r
-
-    producer.produce_block()

@@ -32,7 +32,7 @@ namespace chainbase {
       uint32_t                boost_version;
    };
 
-   database::database(const bfs::path& dir, open_flags flags, uint64_t shared_file_size) {
+   database::database(const bfs::path& dir, open_flags flags, uint64_t shared_file_size, bool allow_dirty ) {
       bool write = flags & database::read_write;
 
       if (!bfs::exists(dir)) {
@@ -99,15 +99,27 @@ namespace chainbase {
          _rw_manager = _meta->find_or_construct< read_write_mutex_manager >( "rw_manager" )();
       }
 
+      bool* db_is_dirty   = nullptr;
+      bool* meta_is_dirty = nullptr;
+
       if( write )
       {
-         bool* db_is_dirty = _segment->get_segment_manager()->find_or_construct<bool>(_db_dirty_flag_string)(false);
-         if(*db_is_dirty)
-            BOOST_THROW_EXCEPTION( std::runtime_error( "database dirty flag set (likely due to unclean shutdown) replay or resync required" ) );
-         bool* meta_is_dirty = _meta->get_segment_manager()->find_or_construct<bool>(_db_dirty_flag_string)(false);
-         if(*meta_is_dirty)
-            BOOST_THROW_EXCEPTION( std::runtime_error( "database metadata dirty flag set (likely due to unclean shutdown) replay or resync required" ) );
+         db_is_dirty = _segment->get_segment_manager()->find_or_construct<bool>(_db_dirty_flag_string)(false);
+         meta_is_dirty = _meta->get_segment_manager()->find_or_construct<bool>(_db_dirty_flag_string)(false);
+      } else {
+         db_is_dirty = _segment->get_segment_manager()->find_no_lock<bool>(_db_dirty_flag_string).first;
+         meta_is_dirty = _meta->get_segment_manager()->find_no_lock<bool>(_db_dirty_flag_string).first;
+      }
 
+      if( db_is_dirty == nullptr || meta_is_dirty == nullptr )
+         BOOST_THROW_EXCEPTION( std::runtime_error( "could not find dirty flag in shared memory" ) );
+
+      if( !allow_dirty && *db_is_dirty )
+         throw std::runtime_error( "database dirty flag set" );
+      if( !allow_dirty && *meta_is_dirty )
+         throw std::runtime_error( "database metadata dirty flag set" );
+
+      if( write ) {
          _flock = bip::file_lock( abs_path.generic_string().c_str() );
          if( !_flock.try_lock() )
             BOOST_THROW_EXCEPTION( std::runtime_error( "could not gain write access to the shared memory file" ) );
@@ -209,5 +221,3 @@ namespace chainbase {
    }
 
 }  // namespace chainbase
-
-

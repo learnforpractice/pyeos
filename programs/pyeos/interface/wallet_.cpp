@@ -31,6 +31,7 @@ wallet_manager& wm() {
 void sign_transaction(signed_transaction& trx) {
    const auto& public_keys = wm().get_public_keys();
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+
    eosio::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
    eosio::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
 
@@ -38,7 +39,9 @@ void sign_transaction(signed_transaction& trx) {
       wlog(string(key));
    }
 
-   trx = wm().sign_transaction(trx, required_keys.required_keys, chain_id_type{});
+   eosio::chain_apis::read_only::get_info_params _params = {};
+   auto info = ro_api.get_info(_params);
+   trx = wm().sign_transaction(trx, required_keys.required_keys, info.chain_id);
 }
 
 PyObject* sign_transaction_(void *signed_trx) {
@@ -97,7 +100,7 @@ PyObject* wallet_set_dir_(std::string& path_name) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_set_timeout_(int secs) {
+PyObject* wallet_set_timeout_(uint64_t secs) {
    try {
       wm().set_timeout(secs);
    } catch (fc::exception& ex) {
