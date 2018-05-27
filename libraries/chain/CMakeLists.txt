@@ -4,12 +4,6 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.h
 find_package(LevelDB)
 
 set(PYTHON3 "${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
- 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/python/eoslib.pyx
-)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.wrap.cpp
@@ -78,8 +72,6 @@ add_library( eosio_chain
               rpc_interface/cpp/RpcService_types.cpp
               rpc_interface/cpp/rpceoslib.cpp
 
-              python/eoslib.wrap.cpp
-              python/eoslib_.cpp
              ${HEADERS}
              )
 

@@ -113,5 +113,6 @@ def load_all():
 
 @init
 def call_wasm():
+    deploy_wast()
     eosapi.push_action('backyard', 'callwasm', b'' ,{'backyard':'active'})
     

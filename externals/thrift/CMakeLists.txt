@@ -174,6 +174,12 @@ else()
     TARGET_LINK_LIBRARIES_THRIFT(thrift ${SYSLIBS})
 endif()
 
+if(APPLE)
+else(APPLE)
+   target_compile_options(thrift_static PRIVATE -DSTRERROR_R_CHAR_P)
+endif(APPLE)
+
+
 if(WITH_LIBEVENT)
     find_package(Libevent REQUIRED)  # Libevent comes with CMake support form upstream
     include_directories(SYSTEM ${LIBEVENT_INCLUDE_DIRS})

@@ -60,6 +60,11 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/db.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx
+)
 
 add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
@@ -70,7 +75,12 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/db.wrap.cpp
-    wrap/debug.wrap.cpp)
+    wrap/debug.wrap.cpp
+
+    debugging/eoslib.wrap.cpp
+    debugging/eoslib_.cpp
+
+    )
 
 
 if( APPLE )

@@ -1,7 +1,8 @@
+#include "../debugging/eoslib_.hpp"
+
 #include "../micropython/mpeoslib.h"
 
 #include <eosio/chain/name.hpp>
-#include "eoslib_.hpp"
 
 uint64_t s2n_(const char* str) {
    return string_to_uint64_(str);
