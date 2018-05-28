@@ -674,22 +674,6 @@ def set_evm_contract(eth_address, sol_bin, sign=True):
         sol_bin = sol_bin[2:]
     return set_evm_contract_(eth_address, sol_bin, sign)
 
-def quit_app():
-    quit_app_()
-
-exit_by_signal_handler = False
-
-def signal_handler(signal, frame):
-    exit()
-
 cdef extern void py_exit() with gil:
     exit()
-
-def register_signal_handler():
-    signal.signal(signal.SIGINT, signal_handler)
-
-def on_python_exit():
-    quit_app_()
-
-atexit.register(on_python_exit)
 

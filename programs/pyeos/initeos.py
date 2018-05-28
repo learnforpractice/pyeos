@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import imp
+import pickle
 import traceback
 
 import wallet
@@ -145,17 +146,51 @@ if not hasattr(sys, 'argv'):
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
 
+def init_wallet():
+    psw = None
+    if not os.path.exists('data-dir/mywallet.wallet'):
+        psw = wallet.create('mywallet')
+        print('wallet password:', psw)
+
+        with open('data-dir/data.pkl', 'wb') as f:
+            print('test wallet password save to data-dir/data.pkl')
+            pickle.dump(psw, f)
+
+    wallet.open('mywallet')
+    if not psw:
+        with open('data-dir/data.pkl', 'rb') as f:
+            psw = pickle.load(f)
+    wallet.unlock('mywallet',psw)
+    wallet.set_timeout(60*60*24)
+
+
 def preinit():
+    print('+++++++++++Initialize testnet.')
+
+    if os.path.exists('config-dir/.preinit'):
+        return
+
+    if not os.path.exists('config-dir'):
+        print('Creating config-dir')
+        os.mkdir('config-dir')
+
+    with open('config-dir/.preinit', 'w') as f:
+        pass
+
     config_file = 'config-dir/config.ini'
     genesis_file = 'config-dir/genesis.json'
 
     if not os.path.exists(config_file):
+        print('Initialize ', config_file)
         with open(config_file, 'w') as f:
             f.write(config)
 
     if not os.path.exists(genesis_file):
+        print('Initialize ', genesis_file)
         with open(genesis_file, 'w') as f:
             f.write(genesis)
+    print('Initialize finished, please restart pyeos')
+    sys.exit(0)
 
 from apitest import t as at
 from cryptokitties import t as kt
@@ -168,16 +203,6 @@ from rpctest import t as rt
 from vote import t as vt
 from simpleauction import t as st
 from lab import t as lt
-
-def init_wallet():
-    if not os.path.exists('data-dir/mywallet.wallet'):
-        psw = wallet.create('mywallet')
-        print('wallet password:', psw)
-
-    wallet.open('mywallet')
-    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
-    wallet.unlock('mywallet',psw)
-    wallet.set_timeout(60*60*24)
 
 def init():
     init_wallet()
@@ -192,6 +217,7 @@ def init():
     exist_priv_keys = keys.values()
     for priv_key in priv_keys:
         if not priv_key in exist_priv_keys:
+            print('import key:', priv_key)
             wallet.import_key('mywallet', priv_key)
 
     if eosapi.is_replay():
@@ -255,6 +281,6 @@ def init():
     t.deploy_mpy()
     #load common libraries
 #    t.load_all()
-
+def start_console():
     console = PyEosConsole(locals = globals())
     console.interact(banner='Welcome to PyEos')

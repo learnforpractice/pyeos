@@ -49,7 +49,6 @@ using namespace eosio::utilities;
 using namespace eosio::wallet;
 using namespace eosio::chain_apis;
 
-void quit_app_();
 bool app_isshutdown_();
 uint32_t now2_();
 

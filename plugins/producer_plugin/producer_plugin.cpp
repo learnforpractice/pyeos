@@ -431,6 +431,7 @@ if( options.count(name) ) { \
 
 void producer_plugin::plugin_initialize(const boost::program_options::variables_map& options)
 { try {
+   wlog("++++++++++++producer_plugin::plugin_initialize");
    my->_options = &options;
    LOAD_VALUE_SET(options, "producer-name", my->_producers, types::account_name)
 

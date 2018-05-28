@@ -240,15 +240,12 @@ bool application::interactive_mode() const {
 }
 
 void application::exec() {
-   if (app().interactive_mode()) {
 
-   } else {
    std::shared_ptr<boost::asio::signal_set> sigint_set(new boost::asio::signal_set(*io_serv, SIGINT));
    sigint_set->async_wait([sigint_set,this](const boost::system::error_code& err, int num) {
      quit();
      sigint_set->cancel();
    });
-   }
 
    std::shared_ptr<boost::asio::signal_set> sigterm_set(new boost::asio::signal_set(*io_serv, SIGTERM));
    sigterm_set->async_wait([sigterm_set,this](const boost::system::error_code& err, int num) {

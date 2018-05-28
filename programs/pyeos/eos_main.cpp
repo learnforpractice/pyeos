@@ -17,6 +17,10 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <Python.h>
 
 using namespace appbase;
@@ -24,31 +28,16 @@ using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
-static bool rpc_server = false;
-static bool rpc_client = false;
 static bool eos_started = false;
 
-//rpc_interface.cpp
+static int g_argc = 0;
+static char** g_argv = NULL;
 
-bool is_init_finished() {
-   return init_finished;
-}
-
-//eosapi_.cpp
-int produce_block_();
-
-void quit_app_() {
-   if (eos_started) {
-      produce_block_();
-      app().quit();
-      while (!shutdown_finished) {
-         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-      }
-   }
-}
-
+//eosapi.pyx
+void py_exit();
 
 extern "C" {
+   void init_api();
    void PyInit_eosapi();
    PyObject* PyInit_wallet();
    PyObject* PyInit_eoslib();
@@ -57,15 +46,11 @@ extern "C" {
    PyObject* PyInit_db();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
-
-   int main_micropython(int argc, char **argv);
 }
 
-static int g_argc = 0;
-static char** g_argv = NULL;
-
-
-typedef void (*fn_init)();
+bool is_init_finished() {
+   return init_finished;
+}
 
 void start_eos() {
    try {
@@ -97,9 +82,8 @@ void start_eos() {
    }
    init_finished = true;
    shutdown_finished = true;
+   py_exit();
 }
-
-extern "C" void init_api();
 
 void init_console() {
    init_api();
@@ -125,84 +109,40 @@ void init_console() {
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import eoslib;");
-   //   PyRun_SimpleString("import util;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
-   PyRun_SimpleString("eosapi.register_signal_handler()");
    PyRun_SimpleString("import initeos;initeos.preinit()");
 
-}
-
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-void py_exit();
-void my_handler(int s){
-   printf("Caught signal %d, exiting... \n",s);
-   py_exit();
-}
-
-int install_ctrl_c_handler()
-{
-   struct sigaction sigIntHandler;
-
-   sigIntHandler.sa_handler = my_handler;
-   sigemptyset(&sigIntHandler.sa_mask);
-   sigIntHandler.sa_flags = 0;
-
-   sigaction(SIGINT, &sigIntHandler, NULL);
-   return 0;
-}
-
-void interactive_console() {
-
-   while (!init_finished) {
-         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
-
-   if (shutdown_finished) {
-      return;
-   }
-
-   PyRun_SimpleString("from initeos import *");
-   PyRun_SimpleString("init()");
-
-   if (true) {//(app().interactive_mode()) {
-      ilog("Starting interactive Python.");
-//      PyRun_SimpleString("eosapi.register_signal_handler()");
-      PyRun_InteractiveLoop(stdin, "<stdin>");
-      Py_Finalize();
-   } else {
-      while (!shutdown_finished) {
-         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-      }
-   }
-
-}
-
-typedef void (*fn_start_eos)();
-typedef void (*fn_interactive_console)();
-
-extern "C" void* micropy_load(const char *mod_name, const char *data, size_t len);
-void init() {
-   boost::thread eos( start_eos );
-//   boost::thread console( interactive_console );
-   wlog("+++++++=start console");
-   interactive_console();
 }
 
 extern "C" int eos_main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
-   install_ctrl_c_handler();
-
    init_console();
 
    boost::thread t( start_eos );
-   interactive_console();
+
+   while (!init_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   }
+
+   //print help
+   if (shutdown_finished) {
+      return 0;
+   }
+
+   PyRun_SimpleString("import initeos");
+   PyRun_SimpleString("initeos.init()");
+
+   if (app().interactive_mode()) {
+      PyRun_SimpleString("initeos.start_console()");
+   } else {
+      while (!shutdown_finished) {
+         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      }
+   }
+
    return 0;
 }
 
