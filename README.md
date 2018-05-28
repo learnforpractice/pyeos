@@ -55,16 +55,9 @@ If it's the first time you start PyEos, PyEos will create a testing wallet for y
 wallet password: PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ
 ```
 
-Replace the password in programs/pyeos/initeos.py as shown below.
+Since it's for testing only, password will save to data-dir/data.pkl, So next time you start pyeos for testing, pyeos will unlock wallet for you.
 
-```
-def init():
-    psw = 'PW5K87AKbRvFFMJJm4dU7Zco4fi6pQtygEU4iyajwyTvmELUDnFBK'
-```
-
-So the next time you start PyEos, wallet will be opened for you, and PyEos is ready to run the test.
-
-Also PyEos will import three testing private key to the wallet, which is useful for testing.
+Also PyEos will import three private key to the wallet, which is useful for testing.
 
 ```
 '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
@@ -80,7 +73,7 @@ Beside that, PyEos will create four important accounts for you:
 eosio.bios, eosio.msig, eosio.system, eosio.token
 ```
 
-and publish their smart contract on thet testnet. 
+and publish their smart contract on testnet. 
 
 Although the above steps will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
 
@@ -95,8 +88,8 @@ sketch.build('hello', 'helloworld', 'py')
 That will create a helloworld directory under your current directory with hello as the testing account name. There are three file generated in the directory:
 
 ```
-hello.py
-hello.abi
+helloworld.py
+helloworld.abi
 t.py
 ```
 
@@ -105,7 +98,7 @@ Which hello.py is the Python smart contract source code, hello.abi is the ABI(Ap
 In addition, sketch can also create a wasm smart contract project for you, just type the following code in PyEos console, and the testing process has no difference with Python smart contract.
 
 ```
-sketch.build('hello', 'helloworld', 'cpp')
+sketch.build('helloworld', 'helloworld', 'cpp')
 ```
 
 ### Testing
@@ -164,7 +157,7 @@ To disable debugging, run the following code.
 debug.disable()
 ```
 
-![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/wrap/debugging.png)
+![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/debugging/debugging.png)
 
 
 <a name="pyeosapioverview"></a>
