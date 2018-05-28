@@ -213,10 +213,25 @@ abi_def eosio_contract_abi(const abi_def& eosio_system_abi)
       }
    });
 
+   eos_abi.structs.emplace_back( struct_def {
+      "lockcode", "", {
+         {"account", "account_name"}
+      }
+   });
+
+   eos_abi.structs.emplace_back( struct_def {
+      "unlockcode", "", {
+         {"unlocker", "account_name"},
+         {"account", "account_name"}
+      }
+   });
+
    // TODO add ricardian contracts
    eos_abi.actions.push_back( action_def{name("newaccount"), "newaccount",""} );
    eos_abi.actions.push_back( action_def{name("setcode"), "setcode",""} );
    eos_abi.actions.push_back( action_def{name("setabi"), "setabi",""} );
+   eos_abi.actions.push_back( action_def{name("lockcode"), "lockcode",""} );
+   eos_abi.actions.push_back( action_def{name("unlockcode"), "unlockcode",""} );
    eos_abi.actions.push_back( action_def{name("updateauth"), "updateauth",""} );
    eos_abi.actions.push_back( action_def{name("deleteauth"), "deleteauth",""} );
    eos_abi.actions.push_back( action_def{name("linkauth"), "linkauth",""} );

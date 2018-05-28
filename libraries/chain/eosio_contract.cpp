@@ -409,9 +409,11 @@ void apply_eosio_updateauth(apply_context& context) {
 
    auto update = context.act.data_as<updateauth>();
    context.require_authorization(update.account); // only here to mark the single authority on this action as used
+   check_account_lock_status( context, update.account );
 
    auto& authorization = context.control.get_mutable_authorization_manager();
    auto& db = context.db;
+
 
    EOS_ASSERT(!update.permission.empty(), action_validate_exception, "Cannot create authority with empty name");
    EOS_ASSERT( update.permission.to_string().find( "eosio." ) != 0, action_validate_exception,
@@ -474,6 +476,7 @@ void apply_eosio_deleteauth(apply_context& context) {
 
    auto remove = context.act.data_as<deleteauth>();
    context.require_authorization(remove.account); // only here to mark the single authority on this action as used
+   check_account_lock_status( context, remove.account );
 
    EOS_ASSERT(remove.permission != config::active_name, action_validate_exception, "Cannot delete active authority");
    EOS_ASSERT(remove.permission != config::owner_name, action_validate_exception, "Cannot delete owner authority");
@@ -507,6 +510,7 @@ void apply_eosio_linkauth(apply_context& context) {
       EOS_ASSERT(!requirement.requirement.empty(), action_validate_exception, "Required permission cannot be empty");
 
       context.require_authorization(requirement.account); // only here to mark the single authority on this action as used
+      check_account_lock_status( context, requirement.account );
 
       auto& db = context.db;
       const auto *account = db.find<account_object, by_name>(requirement.account);
@@ -554,6 +558,7 @@ void apply_eosio_unlinkauth(apply_context& context) {
    auto unlink = context.act.data_as<unlinkauth>();
 
    context.require_authorization(unlink.account); // only here to mark the single authority on this action as used
+   check_account_lock_status( context, unlink.account );
 
    auto link_key = boost::make_tuple(unlink.account, unlink.code, unlink.type);
    auto link = db.find<permission_link_object, by_action_name>(link_key);

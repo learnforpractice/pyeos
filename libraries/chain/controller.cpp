@@ -114,6 +114,8 @@ struct controller_impl {
    SET_APP_HANDLER( eosio, eosio, newaccount );
    SET_APP_HANDLER( eosio, eosio, setcode );
    SET_APP_HANDLER( eosio, eosio, setabi );
+   SET_APP_HANDLER( eosio, eosio, lockcode );
+   SET_APP_HANDLER( eosio, eosio, unlockcode );
    SET_APP_HANDLER( eosio, eosio, updateauth );
    SET_APP_HANDLER( eosio, eosio, deleteauth );
    SET_APP_HANDLER( eosio, eosio, linkauth );
