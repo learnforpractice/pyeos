@@ -559,7 +559,7 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   FC_ASSERT( table_obj.code == receiver, "db access violation" );
+   FC_ASSERT( table_obj.code == get_receiver(), "db access violation" );
 
 //   require_write_lock( table_obj.scope );
 
@@ -591,7 +591,7 @@ void apply_context::db_remove_i64( int iterator ) {
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   FC_ASSERT( table_obj.code == receiver, "db access violation" );
+   FC_ASSERT( table_obj.code == get_receiver(), "db access violation" );
 
 //   require_write_lock( table_obj.scope );
 

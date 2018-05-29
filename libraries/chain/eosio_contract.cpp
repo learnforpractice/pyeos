@@ -249,7 +249,6 @@ void apply_eosio_setcode_evm(apply_context& context) {
    FC_ASSERT( act.vmtype == 2);
    FC_ASSERT( act.vmversion == 0 );
 
-   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
 
    const auto& account = db.get<account_object,by_name>(act.account);
 
@@ -264,6 +263,8 @@ void apply_eosio_setcode_evm(apply_context& context) {
    evm_interface::get().run_code(context, code, args, output_code);
    FC_ASSERT(output_code.size() > 0, "evm return empty code");
 
+   auto code_id = fc::sha256::hash( output_code.data(), (uint32_t)output_code.size() );
+
    FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
 //   wlog( "set code: ${size}", ("size",act.code.size()));
    db.modify( account, [&]( auto& a ) {
@@ -272,9 +273,9 @@ void apply_eosio_setcode_evm(apply_context& context) {
       a.vm_type = act.vmtype;
       a.last_code_update = context.control.pending_block_time();
       a.code_version = code_id;
-      a.code.resize( code_size );
-      if( code_size > 0 )
-         memcpy( a.code.data(), act.code.data(), code_size );
+      a.code.resize( output_code.size() );
+      if( output_code.size() > 0 )
+         memcpy( a.code.data(), output_code.data(), output_code.size() );
 
    });
 

@@ -340,8 +340,10 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 		}
 	} catch (const fc::exception& e) {
 		wlog("exception thrown while call db_store_i64 ${e}", ("e",e.to_detail_string()));
+	} catch (std::exception& e) {
+      wlog("exception thrown while call db_store_i64 ${e}", ("e",e.what()));
 	} catch (...) {
-		wlog("uncaught exception.");
+      wlog("unknown exception.");
 	}
 }
 

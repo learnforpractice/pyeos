@@ -1,3 +1,4 @@
+import os
 import json
 import web3
 
@@ -141,20 +142,20 @@ def call_contract(contract_interface):
     # Contract instance in concise mode
     contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
 
-    with producer:
-    #    r = contract_instance.getValue(transact={'from': address})
-    #    r = contract_instance.getValue(call={'from': address})
+
+#    r = contract_instance.getValue(transact={'from': address})
+#    r = contract_instance.getValue(call={'from': address})
+    if 0:
         r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
 
-    with producer:
-        address = eosapi.eos_name_to_eth_address('evm')
-        r = contract_instance.setValue(119000, transact={'from': contract_address})
-        print('++++++++++++setValue:', r)
+    address = eosapi.eos_name_to_eth_address('evm')
+    r = contract_instance.setValue(119000, transact={'from': contract_address})
+    print('++++++++++++setValue:', r)
 
-    with producer:
-    #    r = contract_instance.getValue(transact={'from': address})
-    #    r = contract_instance.getValue(call={'from': address})
+#    r = contract_instance.getValue(transact={'from': address})
+#    r = contract_instance.getValue(call={'from': address})
+    if 0:
         r = contract_instance.getValue(transact={'from': contract_address})
         print('++++++++++getValue:', r)
 
@@ -190,7 +191,8 @@ contract_source_code = '''
 @init
 def test():
     main_class = '<stdin>:Greeter'
-    with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
+    greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
+    with open(greeter, 'r') as f:
         contract_source_code = f.read()
         contract_interface = compile(contract_source_code, main_class)
         deploy(contract_interface)
@@ -198,9 +200,6 @@ def test():
 
 @init
 def test2():
-    import pydevd
-    pydevd.settrace(suspend=False)
-
     main_class = '<stdin>:Greeter'
     with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
         contract_source_code = f.read()

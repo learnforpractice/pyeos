@@ -219,13 +219,13 @@ bool EosExecutive::create(Address const& _txSender, u256 const& _endowment, u256
 bool EosExecutive::createOpcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin)
 {
     u256 nonce = m_s.getNonce(_sender);
-    m_newAddress = right160(sha3(rlpList(_sender, nonce)));
+    m_newAddress = _sender;//right160(sha3(rlpList(_sender, nonce)));
     return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin);
 }
 
 bool EosExecutive::create2Opcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, u256 const& _salt)
 {
-    m_newAddress = right160(sha3(_sender.asBytes() + toBigEndian(_salt) + sha3(_init).asBytes()));
+    m_newAddress = _sender;//right160(sha3(_sender.asBytes() + toBigEndian(_salt) + sha3(_init).asBytes()));
     return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin);
 }
 
@@ -242,7 +242,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
     // we delete it explicitly if we decide we need to revert.
 
     m_gas = _gas;
-    bool accountAlreadyExist = (m_s.addressHasCode(m_newAddress) || m_s.getNonce(m_newAddress) > 0);
+    bool accountAlreadyExist = false;//(m_s.addressHasCode(m_newAddress) || m_s.getNonce(m_newAddress) > 0);
     if (accountAlreadyExist)
     {
         LOG(m_detailsLogger) << "Address already used: " << m_newAddress;

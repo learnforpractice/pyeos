@@ -104,12 +104,12 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    if (code.empty()) { //setcode
       auto act = context.act.data_as<eosio::chain::setcode>();
       memcpy(contractDestination.data(), &act.account.value, sizeof(act.account.value));
-      sender = contractDestination;
       ilog( "+++++++++++++act.account:${n}", ("n", act.account.to_string()) );
    } else {
-      memcpy(contractDestination.data(), &context.receiver.value, sizeof(context.receiver.value));
-      sender = contractDestination;
+      memcpy(contractDestination.data(), &context.act.account.value, sizeof(context.act.account.value));
+      ilog( "+++++++++++++context.act.account:${n}", ("n", context.act.account.to_string()) );
    }
+   sender = contractDestination;
 
    ilog( "+++++++++++++receiver:${n}", ("n", context.receiver.to_string()) );
    ilog( "+++++++++++++account:${n}", ("n", context.act.account.to_string()) );
@@ -131,7 +131,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    blockHeader.setTimestamp(0);
 
 
-   Address origin = Address(69);
+   Address origin = contractDestination;//Address(69);
 
 
    EosState state;

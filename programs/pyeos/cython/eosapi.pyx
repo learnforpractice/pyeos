@@ -622,6 +622,10 @@ def push_evm_action(eth_address, args, permissions: Dict, sign=True):
         key = convert_from_eth_address(key)
         pers.append([N(key), N(value)])
 
+    if args[:2] == '0x':
+        args = bytes.fromhex(args[2:])
+    else:
+        args = bytes.fromhex(args)
     act = [s2n(contract_), N('call'), pers, args]
     outputs, cost_time = push_transactions([[act]], sign)
     if outputs:

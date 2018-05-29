@@ -226,7 +226,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
          auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
 
-         fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
+         fc::variant pretty_output = fc::variant(*trx_trace_ptr);//ctrl.to_variant_with_abi( *trx_trace_ptr );
          outputs.emplace_back(std::move(pretty_output));
       }
    } catch (fc::assert_exception& e) {

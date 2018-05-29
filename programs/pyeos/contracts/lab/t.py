@@ -1,8 +1,9 @@
 import os
 import sys
 import time
+import struct
 import eosapi
-
+from eosapi import N, push_transactions
 from common import prepare, producer, Sync
 
 def init(wasm=True):
@@ -50,3 +51,27 @@ def test2(count=100):
     eosapi.produce_block()
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
+def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
+    '''Set code and abi for the account
+
+    Args:
+        account (str)    : account name
+        src_file (str)   : source file path
+        abi_file (str)   : abi file path
+        vmtype            : virtual machine type, 0 for wasm, 1 for micropython, 2 for evm
+        sign    (bool)    : True to sign transaction
+
+    Returns:
+        JsonStruct|None: 
+    '''
+    account = eosapi.N(account)
+    code = struct.pack('QBB', account, vmtype, 0)
+
+    if vmtype == 0:
+        with open(src_file, 'rb') as f:
+            wasm = eosapi.wast2wasm(f.read())
+            code += eosapi.pack_bytes(wasm)
+
+    setcode = [N('eosio'), N('setcode'), [[account, N('active')]], code]
+
+    return push_transactions([[setcode]], sign, compress = True)
