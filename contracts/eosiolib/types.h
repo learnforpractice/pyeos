@@ -22,11 +22,21 @@ extern "C" {
 typedef uint64_t account_name;
 typedef uint64_t permission_name;
 typedef uint64_t table_name;
-typedef uint32_t time;
+
+#ifdef __WASM
+   typedef uint32_t time;
+#endif
+
 typedef uint64_t scope_name;
 typedef uint64_t action_name;
 
 typedef uint16_t weight_type;
+
+#ifndef __WASM
+   typedef __int128 int128_t ;
+   typedef unsigned __int128 uint128_t;
+#endif
+
 
 /* macro to align/overalign a type to ensure calls to intrinsics with pointers/references are properly aligned */
 #define ALIGNED(X) __attribute__ ((aligned (16))) X

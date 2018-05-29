@@ -10,9 +10,9 @@
 #include <string>
 
 namespace eosio {
-
+#ifdef __WASM
    static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
-
+#endif
    /**
     *  Prints string
     *  @brief Prints string
@@ -35,10 +35,11 @@ namespace eosio {
     * @brief Prints signed integer as a 64 bit signed integer
     * @param num to be printed
     */
+#ifdef __WASM
    inline void print( int num ) {
       printi(num);
    }
-
+#endif
    /**
     * Prints 32 bit signed integer
     * @brief Prints 32 bit signed integer as a 64 bit signed integer
@@ -63,10 +64,11 @@ namespace eosio {
     * @brief Prints unsigned integer as a 64 bit unsigned integer
     * @param num to be printed
     */
+#ifdef __WASM
    inline void print( unsigned int num ) {
       printui(num);
    }
-
+#endif
    /**
     * Prints 32 bit unsigned integer
     * @brief Prints 32 bit unsigned integer as a 64 bit unsigned integer
