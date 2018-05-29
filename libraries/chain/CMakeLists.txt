@@ -68,6 +68,7 @@ add_library( eosio_chain
               evm/EosExecutive.cpp
               evm/EosDB.cpp
               evm/EosExtVM.cpp
+
               micropython/db_api.cpp
               micropython/mpeoslib.cpp
               evm_interface.cpp
@@ -86,6 +87,7 @@ add_library( eosio_chain
 set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
 
 include_directories (${CPP_ETHEREUM_DIR})
+include_directories (${CPP_ETHEREUM_DIR}/libethereum)
 include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
 include_directories (${CPP_ETHEREUM_DIR}/utils)
 include_directories (jsoncpp/include)

@@ -1,10 +1,13 @@
 cmake_minimum_required( VERSION 3.5 )
-if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    # The default toolchain file configures compilers and build environment.
-    # This configuration is also used by hunter to build dependencies.
-    # CMake will cache this value, not need to explictly specify CACHE param.
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/libraries/ethereum/cmake/toolchain.cmake)
-endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/evmc/cmake/cable/bootstrap.cmake)
+include(CableBuildInfo)
+include(CableBuildType)
+include(CableToolchains)
+include(GNUInstallDirs)
+
+cable_configure_toolchain(DEFAULT cxx11)
+
 
 set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake" CACHE PATH "The path to the cmake directory")
 list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
@@ -14,10 +17,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
 
 set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
-
-# set cmake_policies
-include(EthPolicy)
-eth_policy()
 
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
@@ -43,8 +42,8 @@ option(HUNTER_RUN_UPLOAD "Upload binaries to the cache server" ${run_upload})
 
 include(HunterGate)
 HunterGate(
-    URL "https://github.com/learnforpractice/hunter/archive/v0.20.27.3.tar.gz"
-    SHA1 "86b532917510ca7bcf7805e987d0cadfe0dca7a1"
+    URL "https://github.com/learnforpractice/hunter/archive/v0.20.27.4.tar.gz"
+    SHA1 "882c17534196984878955f7d963b02ad7a41c0c4"
     LOCAL
 )
 # Defines EOS library target.
@@ -124,6 +123,9 @@ IF( WIN32 )
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries
 ENDIF(WIN32)
 
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+
 hunter_add_package(Boost COMPONENTS 
     thread
     date_time
@@ -137,9 +139,10 @@ hunter_add_package(Boost COMPONENTS
     context
     locale
     iostreams
-    fiber)
+    fiber
+    log)
     
-find_package(Boost REQUIRED COMPONENTS
+find_package(Boost CONFIG REQUIRED
     thread
     date_time
     filesystem
@@ -151,7 +154,9 @@ find_package(Boost REQUIRED COMPONENTS
     unit_test_framework
     context
     locale
-    iostreams)
+    iostreams
+    fiber
+    log)
 
 
 if( WIN32 )
