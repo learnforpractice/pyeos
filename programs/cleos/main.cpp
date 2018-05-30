@@ -1931,7 +1931,7 @@ int main( int argc, char** argv ) {
    abiSubcommand->set_callback(set_abi_callback);
 
 
-   auto setCodeSubcommand = setSubcommand->add_subcommand("code", localized("Create or update the contract on an account"));
+   auto setCodeSubcommand = setSubcommand->add_subcommand("setcode", localized("Create or update the contract on an account"));
    setCodeSubcommand->add_option("account", account, localized("The account to publish a contract for"))
                      ->required();
    setCodeSubcommand->add_option("wast-file", wastPath, localized("The file containing the contract WAST or WASM relative to contract-dir"));
@@ -1982,7 +1982,7 @@ int main( int argc, char** argv ) {
 
 
 
-   auto setAbiSubcommand = setSubcommand->add_subcommand("abi", localized("Create or update the contract on an account"));
+   auto setAbiSubcommand = setSubcommand->add_subcommand("setabi", localized("Create or update the contract on an account"));
    setAbiSubcommand->add_option("account", account, localized("The account to publish a contract for"))
                      ->required();
    setAbiSubcommand->add_option("abi-file,-a,--abi", abiPath, localized("The ABI for the contract relative to contract-dir"));

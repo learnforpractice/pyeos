@@ -12,6 +12,7 @@
 #include <eosio/chain/wast_to_wasm.hpp>
 #include <eosio/chain/contract_types.hpp>
 #include <eosio/history_plugin.hpp>
+#include <eosio/chain/plugin_interface.hpp>
 
 
 #include "fc/bitutil.hpp"
@@ -317,9 +318,15 @@ PyObject* push_raw_transaction_(string& signed_trx) {
       signed_transaction trx = python::json::from_string(signed_trx).as<signed_transaction>();
       packed_transaction::compression_type compression = packed_transaction::none;
 
-      auto params = fc::variant(packed_transaction(trx, compression)).get_object();
-      result = rw.push_transaction(params);
+      auto pt = packed_transaction(std::move(trx), compression);
+      auto mtrx = std::make_shared<transaction_metadata>(pt);
+
+      controller& ctrl = app().get_plugin<chain_plugin>().chain();
+      uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
+      auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
+
       success = true;
+
    } catch (fc::assert_exception& e) {
       elog(e.to_detail_string());
    } catch (fc::exception& e) {

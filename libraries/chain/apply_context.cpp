@@ -83,10 +83,15 @@ void apply_context::schedule() {
   if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
      return;
   }
+
+   if( control.is_producing_block() ) {
+      control.check_contract_list( receiver );
+   }
+
    if (a.vm_type == 0) {
-      try {
-         control.get_wasm_interface().apply(a.code_version, a.code, *this);
-      } catch ( const wasm_exit& ){}
+         try {
+            control.get_wasm_interface().apply(a.code_version, a.code, *this);
+         } catch ( const wasm_exit& ){}
    } else if (a.vm_type == 1) {
       if (py_debug_enabled_()) {
          contract_debug_apply(receiver.value, act.account.value, act.name.value);
@@ -152,8 +157,8 @@ static inline void print_debug(account_name receiver, const action_trace& ar) {
 }
 
 action_trace apply_context::exec_one()
-{   
-  current_context = this;
+{
+    current_context = this;
 
    auto start = fc::time_point::now();
 
@@ -162,12 +167,13 @@ action_trace apply_context::exec_one()
       const auto &a = control.get_account(receiver);
       privileged = a.privileged;
       auto native = control.find_apply_handler(receiver, act.account, act.name);
-//      ilog("exec_once receiver: ${n1} act.account: ${n2} act.name: ${n3}", ("n1",receiver.to_string())("n2",act.account.to_string())("n3",act.name.to_string()));
-
-      if (native) {
+      if( native ) {
+         if( control.is_producing_block() ) {
+            control.check_contract_list( receiver );
+         }
          (*native)(*this);
       } else {
-         schedule();
+        schedule();
 
       }
 
@@ -491,6 +497,8 @@ int apply_context::get_action( uint32_t type, uint32_t index, char* buffer, size
       act_ptr = &trx.actions[index];
    }
 
+   FC_ASSERT(act_ptr, "action is not found" );
+
    auto ps = fc::raw::pack_size( *act_ptr );
    if( ps <= buffer_size ) {
       fc::datastream<char*> ds(buffer, buffer_size);
@@ -527,6 +535,7 @@ name apply_context::get_receiver() {
   }
   return this->receiver;
 }
+
 
 int apply_context::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
 //   require_write_lock( scope );
