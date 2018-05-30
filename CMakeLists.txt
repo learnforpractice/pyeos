@@ -117,14 +117,12 @@ find_package( BZip2 )
 include(ProjectLibFF)
 
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
+set(Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
+
 IF( WIN32 )
   SET(BOOST_ROOT $ENV{BOOST_ROOT})
-  set(Boost_USE_MULTITHREADED ON)
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries
 ENDIF(WIN32)
-
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
 
 hunter_add_package(Boost COMPONENTS 
     thread
