@@ -308,7 +308,7 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 //	m_cache[_contract].setStorage(_key, _value);
 	uint64_t n = ((uint64_t*)_contract.data())[0];
 
-	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+//	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
 
 	dev::bytes key = dev::toBigEndian(_key);
 //FIXME: lost pricision
@@ -326,7 +326,7 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 				db_store_i64(n, n, n, id, (const char *)value.data(), value.size() );
 				return;
 			}
-			wlog("update value");
+			wlog("update value ${n}", ("n", _value.str()));
 			dev::bytes v(32+32);
 			int size = db_get_i64( itr, (char*)v.data(), v.size() );
 			assert(size == v.size());
@@ -352,7 +352,7 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 	uint64_t id = 0;
 	uint64_t n = ((uint64_t*)_id.data())[0];
 
-	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+//	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
 
 	dev::bytes value(32+32);
 	memset(value.data(), 0 ,value.size());

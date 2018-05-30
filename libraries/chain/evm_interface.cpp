@@ -177,6 +177,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    dev::bigint memTotal;
    auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, dev::bigint m, dev::bigint gasCost, dev::bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
 //      std::cout << "++++++gasCost: " << gasCost << "\n";
+#if 0
       if (mode == Mode::Statistics)
       {
          counts[(byte)inst].first++;
@@ -187,6 +188,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
       }
       else if (mode == Mode::Trace)
          st(step, PC, inst, m, gasCost, gas, evm, extVM);
+#endif
    };
 
    executive.initialize(t);
@@ -208,6 +210,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
    output.resize( res.output.size() );
    memcpy( output.data(), res.output.data(), res.output.size() );
 
+#if 0
    std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
    std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(seal->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
    std::cout << "res.output.size():" << res.output.size() << "\n";
@@ -222,6 +225,7 @@ bool eosio::chain::evm_interface::run_code(apply_context& context, bytes& code, 
       for (h256 const& t: l.topics)
          std::cout << "    " << t.hex() << "\n";
    }
+#endif
    return true;
 }
 
