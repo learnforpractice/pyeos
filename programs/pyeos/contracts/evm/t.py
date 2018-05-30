@@ -9,6 +9,7 @@ import eosapi
 import wallet
 import initeos
 from common import prepare, producer
+from eosapi import N
 
 producer = eosapi.Producer()
 
@@ -83,16 +84,6 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
             'Content-Type': 'application/json',
             'User-Agent': construct_user_agent(str(type(self))),
         }
-
-    def make_request(self, method, params):
-        print('++++make_request:', method, params)
-        if method == 'eth_sendTransaction':
-            if 'to' in params[0]:
-                r = eosapi.push_action(params[0]['to'], '', args, {params[0]['from']:'active'}, True)
-            else:
-                r = eosapi.set_evm_contract(params[0]['from'], params[0]['data'])
-            if r:
-                return {'result':str(r)}
 
 
 TEST = False
@@ -199,7 +190,19 @@ def test():
         call_contract(contract_interface)
 
 @init
-def test2():
+def test2(count=100):
+    actions = []
+    for i in range(count):
+        args = '55241077'
+        args += int.to_bytes(i, 32, 'big').hex()
+        args = bytes.fromhex(args)
+        act = [eosapi.s2n('evm'), N('call'), [[N('evm'), N('active')]], args]
+        actions.append(act)
+    outputs, cost_time = eosapi.push_transactions([actions], True)
+    print(1e6/(cost_time/count))
+
+@init
+def test3():
     main_class = '<stdin>:Greeter'
     with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
         contract_source_code = f.read()
@@ -209,7 +212,7 @@ def test2():
 
 
 @init
-def test3():
+def test4():
     main_class = '<stdin>:KittyCore'
     with open('../../programs/pyeos/contracts/evm/cryptokitties.sol', 'r') as f:
         contract_source_code = f.read()
