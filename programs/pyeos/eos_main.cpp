@@ -11,6 +11,7 @@
 #include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
 #include <eosio/history_api_plugin/history_api_plugin.hpp>
 
+#include "config.hpp"
 
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
@@ -38,8 +39,10 @@ void py_exit();
 
 extern "C" {
    void init_api();
-   void PyInit_eosapi();
+   PyObject* PyInit_eosapi();
    PyObject* PyInit_wallet();
+   PyObject* PyInit_net();
+
    PyObject* PyInit_eoslib();
 //only used in debug
    PyObject* PyInit_eoslib();
@@ -55,18 +58,17 @@ bool is_init_finished() {
 void start_eos() {
    try {
       eos_started = true;
-      app().register_plugin<net_plugin>();
-      app().register_plugin<chain_api_plugin>();
-      app().register_plugin<producer_plugin>();
+      app().set_version(eosio::nodeos::config::version);
       app().register_plugin<history_plugin>();
-      app().register_plugin<history_api_plugin>();
+      app().register_plugin<chain_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
 
-      if (!app().initialize<chain_plugin, http_plugin, net_plugin>(g_argc, g_argv)) {
+      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
       }
+
       app().startup();
       init_finished = true;
       app().exec();
@@ -96,6 +98,8 @@ void init_console() {
    PyRun_SimpleString("import readline");
    PyInit_wallet();
    PyInit_eosapi();
+   PyInit_net();
+
    PyInit_eoslib();
    PyInit_db();
    PyInit_debug();

@@ -40,15 +40,11 @@ producer-name = eosio
 private-key = ["EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV","5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"]
 
 
-# Load the block producer plugin, so you can produce blocks
 plugin = eosio::producer_plugin
-# Wallet plugin
 plugin = eosio::wallet_api_plugin
-# As well as API and HTTP plugins
 plugin = eosio::chain_api_plugin
-plugin = eosio::http_plugin
-plugin = eosio::history_plugin
 plugin = eosio::history_api_plugin
+
 '''
 
 genesis = '''
