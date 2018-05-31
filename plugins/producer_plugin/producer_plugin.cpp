@@ -866,6 +866,9 @@ void producer_plugin_impl::schedule_production_loop() {
    _timer.cancel();
    std::weak_ptr<producer_plugin_impl> weak_this = shared_from_this();
 
+   if (_manual_gen_block) {
+      return;
+   }
    auto result = start_block();
 
    if (result == start_block_result::failed) {

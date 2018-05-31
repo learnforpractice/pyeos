@@ -431,7 +431,7 @@ chain_apis::read_write chain_plugin::get_read_write_api() {
    return chain_apis::read_write(chain());
 }
 
-void chain_plugin::accept_block(const signed_block_ptr& block ) {
+void chain_plugin::accept_block(const signed_block_ptr block ) {
    my->incoming_block_sync_method(block);
 }
 

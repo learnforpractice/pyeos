@@ -104,6 +104,13 @@ cdef extern from "eosapi_.hpp":
     object sign_transaction_(string& trx_json_to_sign, string& str_private_key)
     object push_raw_transaction_(string& signed_trx)
 
+    string connect_(const string& host)
+    string disconnect_(const string& host)
+    object status_(const string& host);
+
+    object connections_()
+
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2

@@ -61,21 +61,31 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/net.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/net.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/net.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/net.pyx
+)
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx
 )
+
 
 add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
     interface/debug_.cpp
     interface/wasm_.cpp
+    interface/net_.cpp
+
     wrap/eosapi.wrap.cpp 
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/db.wrap.cpp
     wrap/debug.wrap.cpp
+    wrap/net.wrap.cpp
 
     debugging/eoslib.wrap.cpp
     debugging/eoslib_.cpp
@@ -109,12 +119,15 @@ target_include_directories( pyeos-shared
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/history_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/history_api_plugin/include
-                                  )
+                              PRIVATE ${CMAKE_BINARY_DIR}/programs/nodeos
+                           )
 
 
 add_executable(pyeos main.cpp)
 
 target_link_libraries( pyeos pyeos-shared )
+
+add_dependencies(pyeos nodeos)
 
 
 install( TARGETS

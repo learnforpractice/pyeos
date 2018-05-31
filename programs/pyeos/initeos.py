@@ -5,6 +5,7 @@ import imp
 import pickle
 import traceback
 
+import net
 import wallet
 import eosapi
 import debug
@@ -277,7 +278,7 @@ def init():
 
     from backyard import t
     t.deploy_mpy()
-    eosapi.connect('127.0.0.1:9001')
+    net.connect('127.0.0.1:9101')
     #load common libraries
 #    t.load_all()
 def start_console():
