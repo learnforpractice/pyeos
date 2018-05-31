@@ -145,9 +145,10 @@ if not hasattr(sys, 'argv'):
 
 key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
 key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+psw = None
 
 def init_wallet():
-    psw = None
+    global psw
     if not os.path.exists('data-dir/mywallet.wallet'):
         psw = wallet.create('mywallet')
         print('wallet password:', psw)
@@ -213,7 +214,7 @@ def init():
                     '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'
                 ]
     
-    keys = wallet.list_keys()
+    keys = wallet.list_keys('mywallet', psw)
     exist_priv_keys = keys.values()
     for priv_key in priv_keys:
         if not priv_key in exist_priv_keys:

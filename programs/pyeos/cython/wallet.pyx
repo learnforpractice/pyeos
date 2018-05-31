@@ -22,7 +22,7 @@ cdef extern from "wallet_.h":
     object wallet_set_dir_(string& path_name);
     object wallet_set_timeout_(int secs);
     object wallet_list_wallets_();
-    object wallet_list_keys_();
+    object wallet_list_keys_(const string& name, const string& pw);
     object wallet_get_public_keys_();
     object wallet_lock_all_();
     object wallet_lock_(string& name);
@@ -50,8 +50,8 @@ def set_timeout(secs) -> bool:
 def list_wallets() -> List[bytes]:
     return wallet_list_wallets_();
 
-def list_keys() -> Dict[str, str]:
-    return wallet_list_keys_();
+def list_keys(string& name, string& psw) -> Dict[str, str]:
+    return wallet_list_keys_(name, psw);
 
 def get_public_keys():
     return wallet_get_public_keys_();

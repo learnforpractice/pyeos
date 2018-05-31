@@ -133,10 +133,10 @@ PyObject* wallet_list_wallets_() {
    return arr.get();
 }
 
-PyObject* wallet_list_keys_() {
+PyObject* wallet_list_keys_(const string& name, const string& pw) {
    PyDict results;
    try {
-      map<public_key_type, private_key_type> keys = wm().list_keys();
+      map<public_key_type, private_key_type> keys = wm().list_keys(name, pw);
       variant v;
       for (auto it = keys.begin(); it != keys.end(); it++) {
          //            to_variant(it.first,v);

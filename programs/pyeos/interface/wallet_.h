@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <eosio/chain/transaction.hpp>
+using namespace std;
 
 void sign_transaction(eosio::chain::signed_transaction &trx);
 
@@ -22,7 +23,7 @@ PyObject* wallet_save_(std::string& name);
 
 PyObject* wallet_set_timeout_(uint64_t secs);
 PyObject* wallet_list_wallets_();
-PyObject* wallet_list_keys_();
+PyObject* wallet_list_keys_(const std::string& name, const std::string& pw);
 PyObject* wallet_get_public_keys_();
 PyObject* wallet_lock_all_();
 PyObject* wallet_lock_(std::string &name);
