@@ -495,10 +495,13 @@ PyObject* get_account_(const char* _name) {
       return python::json::to_string(result);
 
    } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
+//      elog(ex.to_detail_string());
    } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
+//      elog(boost::diagnostic_information(ex));
+   } catch (...) {
+
    }
+
    return py_new_none();
 }
 
