@@ -51,6 +51,7 @@ using namespace eosio::chain;
 
 static struct mpapi s_mpapi;
 static struct eosapi s_eosapi;
+extern "C" void init_eosapi();
 
 std::map<std::thread::id, struct mpapi*> api_map;
 
@@ -135,6 +136,7 @@ mpapi& get_mpapi() {
    if (get_eosapi) {
       _api = get_eosapi();
    } else {
+      init_eosapi();
       _api = &s_eosapi;
    }
    api->_eosapi = _api;
