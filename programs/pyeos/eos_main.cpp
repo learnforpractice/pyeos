@@ -133,7 +133,7 @@ extern "C" int eos_main(int argc, char** argv) {
    }
 
    PyRun_SimpleString("import initeos");
-   PyRun_SimpleString("initeos.init()");
+//   PyRun_SimpleString("initeos.init()");
 
    if (app().interactive_mode()) {
       PyRun_SimpleString("initeos.start_console()");

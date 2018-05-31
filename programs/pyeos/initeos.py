@@ -52,30 +52,26 @@ plugin = eosio::history_api_plugin
 
 genesis = '''
 {
-  "initial_timestamp": "2018-03-01T12:00:00.000",
-  "initial_key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+  "initial_timestamp": "2018-03-02T12:00:00.000",
+  "initial_key": "EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr",
   "initial_configuration": {
-    "base_per_transaction_net_usage": 100,
-    "base_per_transaction_cpu_usage": 500,
-    "base_per_action_cpu_usage": 1000,
-    "base_setcode_cpu_usage": 2097152,
-    "per_signature_cpu_usage": 100000,
-    "per_lock_net_usage": 32,
-    "context_free_discount_cpu_usage_num": 20,
-    "context_free_discount_cpu_usage_den": 100,
-    "max_transaction_cpu_usage": 10485760,
-    "max_transaction_net_usage": 104857,
-    "max_block_cpu_usage": 104857600,
-    "target_block_cpu_usage_pct": 1000,
     "max_block_net_usage": 1048576,
     "target_block_net_usage_pct": 1000,
+    "max_transaction_net_usage": 524288,
+    "base_per_transaction_net_usage": 12,
+    "net_usage_leeway": 500,
+    "context_free_discount_net_usage_num": 20,
+    "context_free_discount_net_usage_den": 100,
+    "max_block_cpu_usage": 100000,
+    "target_block_cpu_usage_pct": 500,
+    "max_transaction_cpu_usage": 50000,
+    "min_transaction_cpu_usage": 100,
     "max_transaction_lifetime": 3600,
-    "max_transaction_exec_time": 0,
-    "max_authority_depth": 6,
-    "max_inline_depth": 4,
+    "deferred_trx_expiration_window": 600,
+    "max_transaction_delay": 3888000,
     "max_inline_action_size": 4096,
-    "max_generated_transaction_count": 16
-    "max-transaction-time": 1000
+    "max_inline_action_depth": 4,
+    "max_authority_depth": 6
   },
   "initial_chain_id": "0000000000000000000000000000000000000000000000000000000000000000"
 }
@@ -181,15 +177,15 @@ def preinit():
     config_file = 'config-dir/config.ini'
     genesis_file = 'config-dir/genesis.json'
 
-    if not os.path.exists(config_file):
-        print('Initialize ', config_file)
-        with open(config_file, 'w') as f:
-            f.write(config)
 
-    if not os.path.exists(genesis_file):
-        print('Initialize ', genesis_file)
-        with open(genesis_file, 'w') as f:
-            f.write(genesis)
+    print('Initialize ', config_file)
+    with open(config_file, 'w') as f:
+        f.write(config)
+
+    print('Initialize ', genesis_file)
+    with open(genesis_file, 'w') as f:
+        f.write(genesis)
+
     print('Initialize finished, please restart pyeos')
     sys.exit(0)
 
@@ -211,7 +207,8 @@ def init():
     priv_keys = [   
                     '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
                     '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
-                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'
+                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
+                    '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
                 ]
     
     keys = wallet.list_keys('mywallet', psw)
@@ -280,6 +277,7 @@ def init():
 
     from backyard import t
     t.deploy_mpy()
+    eosapi.connect('127.0.0.1:9001')
     #load common libraries
 #    t.load_all()
 def start_console():
