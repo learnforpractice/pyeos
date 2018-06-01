@@ -165,13 +165,6 @@ def eth_address_to_eos_name(string addr):
 def toobject(bstr):
     return JsonStruct(bstr)
 
-def tobytes(ustr):
-    if isinstance(ustr, bytes):
-        return ustr
-    if isinstance(ustr, str):
-        ustr = bytes(ustr, 'utf8')
-    return ustr
-
 def now():
     return now2_()
 
@@ -213,34 +206,16 @@ def get_accounts(public_key):
         public_key = bytes(public_key, 'utf8')
     return get_accounts_(public_key)
 
-def get_currency_balance(string _code, string _account, string _symbol = ''):
+def get_currency_balance(string& _code, string& _account, string& _symbol = 'EOS'):
     return get_currency_balance_(_code, _account, _symbol)
 
-'''
-def get_controlled_accounts(account_name) -> List[str]:
-    if isinstance(account_name, str):
-        account_name = bytes(account_name, 'utf8')
-
-    return get_controlled_accounts_(account_name);
-'''
+def get_balance(account):
+    ret = get_currency_balance('eosio.token', account, 'EOS')
+    if ret:
+        return float(ret[0].split(' ')[0])
+    return 0.0
 
 def create_account(creator, newaccount, owner_key, active_key, sign=True):
-    if isinstance(creator, str):
-        creator = bytes(creator, 'utf8')
-    
-    if isinstance(newaccount, str):
-        newaccount = bytes(newaccount, 'utf8')
-    
-    if isinstance(owner_key, str):
-        owner_key = bytes(owner_key, 'utf8')
-    
-    if isinstance(active_key, str):
-        active_key = bytes(active_key, 'utf8')
-    if sign:
-        sign = 1
-    else:
-        sign = 0
-
     result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
     if result:
         return JsonStruct(result[0])

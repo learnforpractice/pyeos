@@ -536,7 +536,6 @@ PyObject* get_accounts_(char* public_key) {
 }
 
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol) {
-//   using namespace native::eosio;
    PyArray arr;
    PyDict dict;
 
@@ -545,31 +544,6 @@ PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol
    eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
    auto result = ro_api.get_currency_balance(params);
    return python::json::to_string(result);
-}
-
-
-PyObject* get_controlled_accounts_(const char* account_name) {
-   PyArray arr;
-   #if 0
-   try {
-      if (account_name == NULL) {
-         return arr.get();
-      }
-      auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-      eosio::account_history_apis::read_only::get_controlled_accounts_params params = {
-            chain::name(account_name).value
-      };
-      eosio::account_history_apis::read_only::get_controlled_accounts_results
-          results = ro_api.get_controlled_accounts(params);
-      for (auto it = results.controlled_accounts.begin();
-           it != results.controlled_accounts.end(); it++) {
-         arr.append(string(*it));
-      }
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   }
-   #endif
-   return arr.get();
 }
 
 PyObject* get_actions_(uint64_t account, int pos, int offset) {
@@ -756,10 +730,6 @@ void fc_pack_updateauth(string& _account, string& _permission, string& _parent, 
    eosio::chain::updateauth _updateauth = {_account, _permission, _parent, auth};
    vector<char> v = fc::raw::pack(_updateauth);
    result = string(v.data(), v.size());
-}
-
-void py_raise_error(const char* error) {
-   PyErr_SetString(PyExc_RuntimeError, error);
 }
 
 void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
