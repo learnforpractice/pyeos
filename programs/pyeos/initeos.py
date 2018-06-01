@@ -197,38 +197,9 @@ from rpctest import t as rt
 from vote import t as vt
 from simpleauction import t as st
 from lab import t as lt
+from biosboot import t as bb
 
-def init():
-    init_wallet()
-
-    priv_keys = [   
-                    '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
-                    '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
-                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
-                    '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
-                ]
-    
-    keys = wallet.list_keys('mywallet', psw)
-    exist_priv_keys = keys.values()
-    for priv_key in priv_keys:
-        if not priv_key in exist_priv_keys:
-            print('import key:', priv_key)
-            wallet.import_key('mywallet', priv_key)
-
-    if eosapi.is_replay():
-        return
-
-    src_dir = os.path.dirname(os.path.abspath(__file__))
-
-    '''
-    r = eosapi.push_action('eosio.token', 'create', {"to":"eosio", "quantity":"10000.0000 EOS", "memo":""},{'eosio':'active'})
-    r = eosapi.push_action('eosio.token','issue',{"to":"hello","quantity":"1000.0000 EOS","memo":""},{'hello':'active'})
-    assert r
-    msg = {"from":"eosio", "to":"hello", "quantity":"25.0000 EOS", "memo":"m"}
-    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
-    assert r
-    '''
-
+def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
     for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
@@ -264,13 +235,36 @@ def init():
             if account == 'eosio.token':
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
                 with producer:
-                    msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS"}
+                    msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
                     r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
                     assert r
                     r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
                     assert r
                     msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
                     r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
+                    
+def init():
+
+    priv_keys = [   
+                    '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
+                    '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
+                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
+                    '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
+                ]
+    
+    keys = wallet.list_keys('mywallet', psw)
+    exist_priv_keys = keys.values()
+    for priv_key in priv_keys:
+        if not priv_key in exist_priv_keys:
+            print('import key:', priv_key)
+            wallet.import_key('mywallet', priv_key)
+
+    if eosapi.is_replay():
+        return
+
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+
+    publish_system_contract()
 
     from backyard import t
     t.deploy_mpy()
@@ -278,5 +272,6 @@ def init():
     #load common libraries
 #    t.load_all()
 def start_console():
+    init_wallet()
     console = PyEosConsole(locals = globals())
     console.interact(banner='Welcome to PyEos')
