@@ -73,9 +73,7 @@ void init() {
       return;
    }
    wlog("Execute script");
-   get_mpapi().enable_set_global(1);
    get_mpapi().execute_from_str(init_mp);
-   get_mpapi().enable_set_global(0);
    get_mpapi().init = 1;
 }
 
@@ -133,11 +131,12 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    }
 //   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
    mp_obj_t obj = nullptr;
+   mp_raw_code_t* raw_code = nullptr;
    get_mpapi().execution_start();
    if (code.data()[0] == 0) {//py
       obj = get_mpapi().micropy_load_from_py(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
    } else if (code.data()[0] == 1) {//mpy
-      obj = get_mpapi().micropy_load_from_mpy(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+      obj = get_mpapi().micropy_load_from_mpy(name(_account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1, &raw_code);
    } else {
       FC_ASSERT(false, "unknown micropython code!");
    }
@@ -155,6 +154,7 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
       }
       py_module* mod = new py_module();
       mod->obj = obj;
+      mod->raw_code = raw_code;
       mod->hash = fc::sha256::hash( code.data(), code.size() );
       pymodules[_account] = mod;
    } else {
@@ -168,6 +168,7 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
 
    try {
       mp_obj_t obj = nullptr;
+      mp_raw_code_t* raw_code = nullptr;
       nlr_buf_t nlr;
 
       std::thread::id this_id = std::this_thread::get_id();
@@ -182,11 +183,12 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
       auto itr = pymodules.find(receiver);
       if (itr != pymodules.end()) {
          obj = itr->second->obj;
+         raw_code = itr->second->raw_code;
       } else {
          if (code.data()[0] == 0) {//py
             obj = get_mpapi().micropy_load_from_py(account_name(account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
          } else if (code.data()[0] == 1) {//mpy
-            obj = get_mpapi().micropy_load_from_mpy(account_name(account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1);
+            obj = get_mpapi().micropy_load_from_mpy(account_name(account).to_string().c_str(), (const char*)&code.data()[1], code.size()-1, &raw_code);
          } else {
             FC_ASSERT(false, "unknown micropython code!");
          }
@@ -194,13 +196,14 @@ void micropython_interface::apply(uint64_t receiver, uint64_t account, uint64_t 
          if (obj != NULL) {
             py_module* mod = new py_module();
             mod->obj = obj;
+            mod->raw_code = raw_code;
             mod->hash = fc::sha256::hash( code.data(), code.size() );
             pymodules[account] = mod;
          }
       }
       mp_obj_t ret = 0;
       if (obj) {
-         ret = get_mpapi().micropy_call_3(obj, "apply", receiver, account, act);
+         ret = get_mpapi().micropy_call_3(obj, raw_code, "apply", receiver, account, act);
       }
       uint64_t execution_time = get_mpapi().get_execution_time();
       if (execution_time > 1000) {

@@ -21,6 +21,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/parse.h"
+#include "py/emitglue.h"
 
 typedef __uint128_t uint128_t;
 
@@ -304,10 +305,10 @@ struct mpapi {
    mp_obj_t (*mp_obj_new_bytes)(const byte* data, size_t len);
 
    mp_obj_t (*micropy_load_from_py)(const char *mod_name, const char *data, size_t len);
-   mp_obj_t (*micropy_load_from_mpy)(const char *mod_name, const char *data, size_t len);
+   mp_obj_t (*micropy_load_from_mpy)(const char *mod_name, const char *data, size_t len, mp_raw_code_t** raw_code);
    mp_obj_t (*micropy_call_0)(mp_obj_t module_obj, const char *func);
    mp_obj_t (*micropy_call_2)(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
-   mp_obj_t (*micropy_call_3)(mp_obj_t module_obj, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
+   mp_obj_t (*micropy_call_3)(mp_obj_t module_obj, mp_raw_code_t* raw_code, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
 
    void* (*execute_from_str)(const char *str);
 
@@ -324,7 +325,6 @@ struct mpapi {
    int (*compile_and_save_to_buffer)(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
    void (*set_debug_mode)(int mode);
    void (*set_printer)(fn_printer _printer);
-   void (*enable_set_global)(int enable);
 };
 
 

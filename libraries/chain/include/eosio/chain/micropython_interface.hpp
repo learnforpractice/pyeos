@@ -51,6 +51,7 @@ public:
 private:
    struct py_module {
       void* obj;
+      mp_raw_code_t* raw_code;
       fc::sha256 hash;
    };
 
