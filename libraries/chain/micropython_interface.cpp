@@ -73,7 +73,9 @@ void init() {
       return;
    }
    wlog("Execute script");
+   get_mpapi().enable_set_global(1);
    get_mpapi().execute_from_str(init_mp);
+   get_mpapi().enable_set_global(0);
    get_mpapi().init = 1;
 }
 
