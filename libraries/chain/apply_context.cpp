@@ -638,6 +638,12 @@ int apply_context::db_get_i64_ex( int iterator, uint64_t& primary, char* buffer,
    return obj.value.size();
 }
 
+const char* apply_context::db_get_i64_exex( int itr, size_t* buffer_size ) {
+   const key_value_object& obj = keyval_cache.get( itr );
+   *buffer_size = obj.value.size();
+   return obj.value.data();
+}
+
 int apply_context::db_next_i64( int iterator, uint64_t& primary ) {
    if( iterator < -1 ) return -1; // cannot increment past end iterator of table
 

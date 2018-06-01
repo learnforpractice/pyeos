@@ -22,9 +22,6 @@
 #include "micropython/mpeoslib.h"
 #include "rpc_interface/rpc_interface.hpp"
 
-
-struct mpapi& get_mpapi();
-
 #if 0
 extern "C" void print_time() {
    ilog("fc::time_point::microseconds() ${n}", ("n", fc::time_point::now()));

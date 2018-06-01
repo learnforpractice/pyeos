@@ -715,6 +715,9 @@ int db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size 
    return ctx().db_get_i64_ex( itr, *primary, buffer, buffer_size );
 }
 
+const char* db_get_i64_exex( int itr, size_t* buffer_size ) {
+   return ctx().db_get_i64_exex( itr,  buffer_size);
+}
 
 int db_next_i64( int itr, uint64_t* primary ) {
    return ctx().db_next_i64(itr, *primary);
@@ -1263,8 +1266,11 @@ void init_eosapi() {
    s_eosapi.db_store_i64 = db_store_i64;
    s_eosapi.db_update_i64 = db_update_i64;
    s_eosapi.db_remove_i64 = db_remove_i64;
+
    s_eosapi.db_get_i64 = db_get_i64;
    s_eosapi.db_get_i64_ex = db_get_i64_ex;
+   s_eosapi.db_get_i64_exex = db_get_i64_exex;
+
    s_eosapi.db_next_i64 = db_next_i64;
    s_eosapi.db_previous_i64 = db_previous_i64;
    s_eosapi.db_find_i64 = db_find_i64;
