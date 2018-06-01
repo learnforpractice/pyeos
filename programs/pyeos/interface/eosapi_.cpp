@@ -4,6 +4,7 @@
 
 #include <fc/time.hpp>
 #include <fc/io/raw.hpp>
+#include <fc/exception/exception.hpp>
 
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
@@ -757,10 +758,17 @@ void fc_pack_updateauth(string& _account, string& _permission, string& _parent, 
    result = string(v.data(), v.size());
 }
 
+void py_raise_error(const char* error) {
+   PyErr_SetString(PyExc_RuntimeError, error);
+}
+
 void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
    auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
    eosio::chain_apis::read_only::abi_json_to_bin_params params;
    params = {code, action, fc::json::from_string(json)};
-   auto result = ro_api.abi_json_to_bin(params);
-   bin = string(result.binargs.data(), result.binargs.size());
+   try {
+      auto result = ro_api.abi_json_to_bin(params);
+      bin = string(result.binargs.data(), result.binargs.size());
+   } FC_LOG_AND_DROP();
 }
+

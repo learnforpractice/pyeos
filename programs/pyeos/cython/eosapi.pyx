@@ -97,7 +97,7 @@ cdef extern from "eosapi_.hpp":
 
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
-    void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin)
+    void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin) except +
 
 
     object gen_transaction_(vector[action]& v, int expiration)
@@ -463,7 +463,8 @@ def pack_args(code, action, args):
         action = N(action)
 
     fc_pack_args(code, action, args, bin)
-
+    if bin.empty():
+        raise Exception('error ocurred in fc_pack_args')
     return <bytes>bin
 
 
@@ -687,4 +688,5 @@ def set_evm_contract(eth_address, sol_bin, sign=True):
 
 cdef extern void py_exit() with gil:
     exit()
+
 
