@@ -215,6 +215,10 @@ def get_balance(account):
         return float(ret[0].split(' ')[0])
     return 0.0
 
+def transfer(_from, _to, _amount, _memo=''):
+    args = {"from":_from, "to":_to, "quantity":'%.4f EOS'%(_amount,), "memo":_memo}
+    return push_action('eosio.token', 'transfer', args, {'eosio':'active'})
+
 def create_account(creator, newaccount, owner_key, active_key, sign=True):
     result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
     if result:
@@ -571,7 +575,10 @@ def push_action(string& contract, string& action, args, permissions: Dict, sign=
     act = [_contract, _action, pers, args]
     outputs, cost_time = push_transactions([[act]], sign)
     if outputs:
-        return (outputs[0], cost_time)
+        if outputs[0]['except']:
+            raise Exception(outputs[0]['except'])
+        outputs[0]['cost'] = cost_time
+        return outputs[0]
     return None
 
 def push_actions(actions, sign=True):
@@ -648,7 +655,13 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     setabi = pack_setabi(abi_file, account)
     setabi = [N('eosio'), N('setabi'), [[account, N('active')]], setabi]
 
-    return push_transactions([[setcode, setabi]], sign, compress = True)
+    ret, cost = push_transactions([[setcode, setabi]], sign, compress = True)
+    if ret:
+        if ret[0]['except']:
+            raise Exception(ret[0]['except'])
+        ret[0]['cost'] = cost
+        return ret[0]
+    return None
 
 def set_evm_contract(eth_address, sol_bin, sign=True):
     ilog("set_evm_contract.....");
