@@ -5,6 +5,7 @@ import imp
 import pickle
 import traceback
 
+import db
 import net
 import wallet
 import eosapi

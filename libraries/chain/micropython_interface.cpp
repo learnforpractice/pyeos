@@ -64,7 +64,7 @@ void init() {
    if (get_mpapi().init) {
       return;
    }
-   wlog("initialize common library.");
+   wlog("Initialize common library.");
 
    uint64_t hash = XXH64("asset.mpy", strlen("asset.mpy"), 0);
 
@@ -72,6 +72,7 @@ void init() {
    if (itr < 0) {
       return;
    }
+   wlog("Execute script");
    get_mpapi().execute_from_str(init_mp);
    get_mpapi().init = 1;
 }
