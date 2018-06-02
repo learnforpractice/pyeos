@@ -102,6 +102,7 @@ set( fc_sources
      src/network/resolve.cpp
      src/network/udp_socket.cpp
      src/network/url.cpp
+     src/network/http/http_client.cpp
      src/compress/smaz.cpp
      src/compress/zlib.cpp
      src/crypto/xxhash.c

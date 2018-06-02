@@ -100,7 +100,7 @@ namespace eosiosystem {
       bytes packed_schedule = pack(producers);
 
       if( set_proposed_producers( packed_schedule.data(),  packed_schedule.size() ) >= 0 ) {
-         _gstate.last_producer_schedule_size = top_producers.size();
+         _gstate.last_producer_schedule_size = static_cast<decltype(_gstate.last_producer_schedule_size)>( top_producers.size() );
       }
    }
 
@@ -126,12 +126,11 @@ namespace eosiosystem {
     *  If voting for a proxy, the producer votes will not change until the proxy updates their own vote.
     */
    void system_contract::voteproducer( const account_name voter_name, const account_name proxy, const std::vector<account_name>& producers ) {
+      require_auth( voter_name );
       update_votes( voter_name, proxy, producers, true );
    }
 
    void system_contract::update_votes( const account_name voter_name, const account_name proxy, const std::vector<account_name>& producers, bool voting ) {
-      require_auth( voter_name );
-
       //validate input
       if ( proxy ) {
          eosio_assert( producers.size() == 0, "cannot vote for producers and proxy at same time" );

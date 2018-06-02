@@ -589,7 +589,7 @@ BOOST_FIXTURE_TEST_CASE(cpu_usage_tests, tester ) try {
 
 // test weighted cpu limit
 BOOST_FIXTURE_TEST_CASE(weighted_cpu_limit_tests, tester ) try {
-#warning This test does not appear to be very robust.
+// TODO Increase the robustness of this test.
    resource_limits_manager mgr = control->get_mutable_resource_limits_manager();
    create_accounts( {N(f_tests)} );
    create_accounts( {N(acc2)} );
@@ -1558,6 +1558,37 @@ BOOST_FIXTURE_TEST_CASE( protect_injected, TESTER ) try {
    produce_blocks(1);
 } FC_LOG_AND_RETHROW()
 
+BOOST_FIXTURE_TEST_CASE( mem_growth_memset, TESTER ) try {
+   produce_blocks(2);
+
+   create_accounts( {N(grower)} );
+   produce_block();
+
+   action act;
+   act.account = N(grower);
+   act.name = N();
+   act.authorization = vector<permission_level>{{N(grower),config::active_name}};
+
+   set_code(N(grower), memory_growth_memset_store);
+   {
+      signed_transaction trx;
+      trx.actions.push_back(act);
+      set_transaction_headers(trx);
+      trx.sign(get_private_key( N(grower), "active" ), control->get_chain_id());
+      push_transaction(trx);
+   }
+
+   produce_blocks(1);
+   set_code(N(grower), memory_growth_memset_test);
+   {
+      signed_transaction trx;
+      trx.actions.push_back(act);
+      set_transaction_headers(trx);
+      trx.sign(get_private_key( N(grower), "active" ), control->get_chain_id());
+      push_transaction(trx);
+   }
+} FC_LOG_AND_RETHROW()
+
 INCBIN(fuzz1, "fuzz1.wasm");
 INCBIN(fuzz2, "fuzz2.wasm");
 INCBIN(fuzz3, "fuzz3.wasm");
@@ -1713,7 +1744,7 @@ BOOST_FIXTURE_TEST_CASE( fuzz, TESTER ) try {
 } FC_LOG_AND_RETHROW()
 
 
-#warning restore net_usage_tests
+// TODO: restore net_usage_tests
 #if 0
 BOOST_FIXTURE_TEST_CASE(net_usage_tests, tester ) try {
    int count = 0;

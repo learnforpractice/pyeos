@@ -40,3 +40,6 @@
 [submodule "libraries/chainbase"]
 	path = libraries/chainbase
 	url = https://github.com/learnforpractice/chainbase
+[submodule "libraries/appbase"]
+	path = libraries/appbase
+	url = https://github.com/learnforpractice/appbase
