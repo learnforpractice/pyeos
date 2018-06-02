@@ -158,6 +158,19 @@ def init_wallet():
     wallet.unlock('mywallet',psw)
     wallet.set_timeout(60*60*24)
 
+    priv_keys = [   
+                    '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
+                    '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
+                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
+                    '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
+                ]
+    
+    keys = wallet.list_keys('mywallet', psw)
+    exist_priv_keys = keys.values()
+    for priv_key in priv_keys:
+        if not priv_key in exist_priv_keys:
+            print('import key:', priv_key)
+            wallet.import_key('mywallet', priv_key)
 
 def preinit():
     print('+++++++++++Initialize testnet.')
@@ -241,25 +254,10 @@ def publish_system_contract():
                     assert r
                     r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
                     assert r
-                    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
-                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
-                    
+#                    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
+#                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
+
 def init():
-
-    priv_keys = [   
-                    '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
-                    '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
-                    '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
-                    '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
-                ]
-    
-    keys = wallet.list_keys('mywallet', psw)
-    exist_priv_keys = keys.values()
-    for priv_key in priv_keys:
-        if not priv_key in exist_priv_keys:
-            print('import key:', priv_key)
-            wallet.import_key('mywallet', priv_key)
-
     if eosapi.is_replay():
         return
 
