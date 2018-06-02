@@ -25,7 +25,7 @@ def test(name=None):
         r = eosapi.push_action('backyard','sayhello',name,{'backyard':'active'})
         assert r
 
-libs = ('asset.py', 'token.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')
+libs = ('asset.py', 'token.py', 'cache.py', 'garden.py', 'solidity.py') #'storage.py',
 
 @init
 def deploy():

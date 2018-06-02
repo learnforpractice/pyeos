@@ -1473,19 +1473,21 @@ const action_object& controller::get_action_object() const{
 
 void controller::set_action_object(const account_name& receiver, const action& act) {
    const action_object& _act_obj = get_action_object();
-   db().modify(_act_obj, [&](action_object& act_obj) {
-      act_obj.receiver = receiver;
-      act_obj.account = act.account;
-      act_obj.name = act.name;
+   try {
+      db().modify(_act_obj, [&](action_object& act_obj) {
+         act_obj.receiver = receiver;
+         act_obj.account = act.account;
+         act_obj.name = act.name;
 
-      act_obj.authorization.resize(0);
-      act_obj.authorization.resize(act.authorization.size());
-      memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
+         act_obj.authorization.resize(0);
+         act_obj.authorization.resize(act.authorization.size());
+         memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
 
-      act_obj.data.resize(0);
-      act_obj.data.resize(act.data.size());
-      memcpy(act_obj.data.data(), act.data.data(), act.data.size());
-   });
+         act_obj.data.resize(0);
+         act_obj.data.resize(act.data.size());
+         memcpy(act_obj.data.data(), act.data.data(), act.data.size());
+      });
+   } FC_LOG_AND_DROP();
 }
 
 bool controller::is_known_unexpired_transaction( const transaction_id_type& id) const {
