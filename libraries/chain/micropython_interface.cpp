@@ -51,10 +51,13 @@ micropython_interface& micropython_interface::get() {
    return *python;
 }
 
+// 'storage.py'
 const char * init_mp = "" \
-"libs = ('asset.py', 'token.py', 'cache.py', 'storage.py', 'garden.py', 'solidity.py')\n" \
+"libs = ('asset.py', 'token.py', 'cache.py', 'garden.py', 'solidity.py')\n" \
 "for lib in libs:\n" \
-"    __import__('backyard.'+lib[:-3])\n"
+"    mod = 'backyard.'+lib[:-3]\n" \
+"    print(mod)\n"
+"    __import__(mod)\n"
 ;
 
 void init() {
@@ -63,7 +66,7 @@ void init() {
    }
    wlog("Initialize common library.");
 
-   uint64_t hash = XXH64("asset.mpy", strlen("asset.mpy"), 0);
+   uint64_t hash = XXH64("solidity.mpy", strlen("solidity.mpy"), 0);
 
    int itr = db_api::get().db_find_i64(N(backyard), N(backyard), N(backyard), hash);
    if (itr < 0) {

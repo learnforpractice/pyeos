@@ -230,8 +230,11 @@ struct eosapi {
    int (*db_store_i64)( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
    void (*db_update_i64)( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
    void (*db_remove_i64)( int itr );
+
    int (*db_get_i64)( int itr, char* buffer, size_t buffer_size );
    int (*db_get_i64_ex)( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
+   const char* (*db_get_i64_exex)( int itr, size_t* buffer_size );
+
    int (*db_next_i64)( int itr, uint64_t* primary );
    int (*db_previous_i64)( int itr, uint64_t* primary );
    int (*db_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
