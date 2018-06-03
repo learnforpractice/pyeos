@@ -62,6 +62,7 @@ void start_eos() {
       app().register_plugin<history_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
+      app().register_plugin<history_api_plugin>();
 
       if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
          init_finished = true;
