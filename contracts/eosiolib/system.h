@@ -3,6 +3,7 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
+
 #include <eosiolib/types.h>
 
 extern "C" {
@@ -67,9 +68,13 @@ extern "C" {
     *  @brief Get time (rounded down to the nearest second) of the current block (i.e. the block including this action)
     *  @return time in seconds from 1970 of the current block
     */
+#ifdef __WASM
    uint32_t  now() {
       return (uint32_t)( current_time() / 1000000 );
    }
+#else
+   uint32_t  now();
+ #endif
    ///@ } systemcapi
 
 

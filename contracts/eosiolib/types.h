@@ -4,8 +4,13 @@
  */
 #pragma once
 
+#define time __time
+
 #include <stdint.h>
 #include <wchar.h>
+
+#undef time
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,9 +28,8 @@ typedef uint64_t account_name;
 typedef uint64_t permission_name;
 typedef uint64_t table_name;
 
-#ifdef __WASM
-   typedef uint32_t time;
-#endif
+
+typedef uint32_t time;
 
 typedef uint64_t scope_name;
 typedef uint64_t action_name;
@@ -49,6 +53,7 @@ struct signature {
    uint8_t data[66];
 };
 
+#ifdef __WASM
 struct ALIGNED(checksum256) {
    uint8_t hash[32];
 };
@@ -60,6 +65,20 @@ struct ALIGNED(checksum160) {
 struct ALIGNED(checksum512) {
    uint8_t hash[64];
 };
+#else
+struct checksum256 {
+   uint8_t hash[32];
+};
+
+struct checksum160 {
+   uint8_t hash[20];
+};
+
+struct checksum512 {
+   uint8_t hash[64];
+};
+
+#endif
 
 typedef struct checksum256 transaction_id_type;
 typedef struct checksum256 block_id_type;
