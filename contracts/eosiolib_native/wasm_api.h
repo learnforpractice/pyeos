@@ -160,6 +160,9 @@ struct wasm_api {
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 };
 
+void register_wasm_api(struct wasm_api* api);
+struct wasm_api* get_wasm_api();
+
 #ifdef __cplusplus
 }
 #endif

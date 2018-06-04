@@ -23,7 +23,6 @@
 #include <boost/bind.hpp>
 #include <fstream>
 
-#include "wasm_api.hpp"
 
 #include <dlfcn.h>
 
@@ -42,6 +41,8 @@ typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
 namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
+
+   void register_wasm_api(void* handle);
 
    wasm_interface::wasm_interface(vm_type vm) : my( new wasm_interface_impl(vm) ) {}
 
@@ -80,17 +81,18 @@ namespace eosio { namespace chain {
          string contract_path = "../contracts/";
          if (_name == "eosio") {
             contract_path += "eosio.system/libeosiosystemd.dylib";
-         } else if (_name == "eosio.token"){
+         } else if (_name == "eosio.token") {
             contract_path += "eosio.token/libeosiotokend.dylib";
-         } else if (_name == "eosio.bios"){
+         } else if (_name == "eosio.bios") {
             contract_path += "eosio.bios/libeosiobiosd.dylib";
-         } else if (_name == "eosio.msig"){
+         } else if (_name == "eosio.msig") {
             contract_path += "eosio.msig/libeosiomsigd.dylib";
          }
 
          void *handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
          if (handle) {
             fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+            register_wasm_api(handle);
             _apply(context.receiver, context.act.account, context.act.name);
          } else {
             wlog("load lib failed");
@@ -1968,6 +1970,10 @@ void eosio_assert( bool condition) {
    eosio_assert_( condition, null_terminated_ptr((char*)"") );
 }
 
+static inline apply_context& ctx() {
+   return apply_context::ctx();
+}
+
 #include "eosiolib_native/action.cpp"
 #include "eosiolib_native/chain.cpp"
 #include "eosiolib_native/crypto.cpp"
@@ -2119,8 +2125,11 @@ static struct wasm_api _wasm_api = {
    .get_context_free_data = get_context_free_data,
 };
 
-void register_wasm_api(struct wasm_api* api) {
-   *api = _wasm_api;
+typedef void (*fn_register_wasm_api)(struct wasm_api* api);
+
+void register_wasm_api(void* handle) {
+   fn_register_wasm_api _register_wasm_api = (fn_register_wasm_api)dlsym(handle, "register_wasm_api");
+   _register_wasm_api(&_wasm_api);
 }
 
 } } /// eosio::chain

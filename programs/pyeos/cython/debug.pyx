@@ -21,18 +21,22 @@ cdef extern from "../interface/debug_.hpp":
     void py_debug_enable_(int enable);
     bool py_debug_enabled_();
 
+    void wasm_debug_enable_(int enable)
+    bool wasm_debug_enabled_()
+
 cdef extern from "py/gc.h":
     ctypedef int size_t 
     cdef struct gc_info_t:
-        size_t total;
-        size_t used;
-        size_t free;
-        size_t max_free;
-        size_t num_1block;
-        size_t num_2block;
-        size_t max_block;
-    void gc_info(gc_info_t *info);
-    void gc_dump_info();
+        size_t total
+        size_t used
+        size_t free
+        size_t max_free
+        size_t num_1block
+        size_t num_2block
+        size_t max_block
+
+    void gc_info(gc_info_t *info)
+    void gc_dump_info()
     void gc_collect()
 
 def eval(const char* code):
@@ -62,4 +66,12 @@ def disable():
 def is_enabled():
     return py_debug_enabled_()
 
+def enable_wasm_debug():
+    wasm_debug_enable_(1)
+
+def disable_wasm_debug():
+    wasm_debug_enable_(0)
+
+def is_wasm_debug_enabled():
+    return wasm_debug_enabled_()
 
