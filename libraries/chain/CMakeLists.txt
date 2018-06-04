@@ -105,7 +105,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared eosiosystem eosiotoken
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared
         binaryen softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #micropython compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
@@ -120,6 +120,7 @@ target_include_directories( eosio_chain
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                            PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod

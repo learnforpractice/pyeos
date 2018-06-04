@@ -12,7 +12,7 @@ system.cpp
 transaction.cpp
 ) #exchange_state.cpp
 
-target_link_libraries( eosiolib_native PRIVATE )
+target_link_libraries( eosiolib_native PRIVATE eosio_chain )
 
 target_include_directories(eosiolib_native PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

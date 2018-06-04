@@ -37,13 +37,3 @@ namespace eosio {
 
 } /// namespace eosio
 
-#include "wasm_api.h"
-static struct wasm_api s_api;
-extern "C" void register_wasm_api(struct wasm_api* api) {
-   s_api = *api;
-}
-
-extern "C" struct wasm_api* get_wasm_api() {
-   return &s_api;
-}
-

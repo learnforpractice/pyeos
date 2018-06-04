@@ -23,6 +23,22 @@
 #include <boost/bind.hpp>
 #include <fstream>
 
+#include "wasm_api.hpp"
+
+#include <dlfcn.h>
+
+static bool _wasm_debug_enable = 0;
+
+void wasm_debug_enable_(int enable) {
+   _wasm_debug_enable = enable;
+}
+
+bool wasm_debug_enabled_() {
+   return _wasm_debug_enable;
+}
+
+typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+
 namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
@@ -59,7 +75,30 @@ namespace eosio { namespace chain {
    }
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
-      my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
+      if (wasm_debug_enabled_()) {
+         string _name = context.act.account.to_string();
+         string contract_path = "../contracts/";
+         if (_name == "eosio") {
+            contract_path += "eosio.system/libeosiosystemd.dylib";
+         } else if (_name == "eosio.token"){
+            contract_path += "eosio.token/libeosiotokend.dylib";
+         } else if (_name == "eosio.bios"){
+            contract_path += "eosio.bios/libeosiobiosd.dylib";
+         } else if (_name == "eosio.msig"){
+            contract_path += "eosio.msig/libeosiomsigd.dylib";
+         }
+
+         void *handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+         if (handle) {
+            fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+            _apply(context.receiver, context.act.account, context.act.name);
+         } else {
+            wlog("load lib failed");
+            my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
+         }
+      } else {
+         my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
+      }
    }
 
    wasm_instantiated_module_interface::~wasm_instantiated_module_interface() {}
@@ -1915,6 +1954,173 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    else
       in.setstate(std::ios_base::failbit);
    return in;
+}
+
+void eosio_assert_( bool condition, null_terminated_ptr msg ) {
+   if( BOOST_UNLIKELY( !condition ) ) {
+      std::string message( msg );
+      edump((message));
+      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
+   }
+}
+
+void eosio_assert( bool condition) {
+   eosio_assert_( condition, null_terminated_ptr((char*)"") );
+}
+
+#include "eosiolib_native/action.cpp"
+#include "eosiolib_native/chain.cpp"
+#include "eosiolib_native/crypto.cpp"
+#include "eosiolib_native/db.cpp"
+#include "eosiolib_native/privileged.cpp"
+#include "eosiolib_native/system.cpp"
+#include "eosiolib_native/transaction.cpp"
+#include "eosiolib_native/print.cpp"
+#include "eosiolib_native/permission.cpp"
+
+#include "eosiolib_native/wasm_api.h"
+
+static struct wasm_api _wasm_api = {
+   .read_action_data = read_action_data,
+
+   .action_data_size = action_data_size,
+   .require_recipient = require_recipient,
+   .require_auth = require_auth,
+   .require_auth2 = require_auth2,
+   .has_auth = has_auth,
+   .is_account = is_account,
+
+   .send_inline = send_inline,
+   .send_context_free_inline = send_context_free_inline,
+   .publication_time = publication_time,
+
+   .current_receiver = current_receiver,
+   .get_active_producers = get_active_producers,
+   .assert_sha256 = assert_sha256,
+   .assert_sha1 = assert_sha1,
+   .assert_sha512 = assert_sha512,
+   .assert_ripemd160 = assert_ripemd160,
+   .sha256 = sha256,
+   .sha1 = sha1,
+   .sha512 = sha512,
+   .ripemd160 = ripemd160,
+   .recover_key = recover_key,
+   .assert_recover_key = assert_recover_key,
+   .db_store_i64 = db_store_i64,
+   .db_update_i64 = db_update_i64,
+   .db_remove_i64 = db_remove_i64,
+   .db_get_i64 = db_get_i64,
+   .db_next_i64 = db_next_i64,
+
+   .db_previous_i64 = db_previous_i64,
+   .db_find_i64 = db_find_i64,
+   .db_lowerbound_i64 = db_lowerbound_i64,
+
+   .db_upperbound_i64 = db_upperbound_i64,
+   .db_end_i64 = db_end_i64,
+   .db_idx64_store = db_idx64_store,
+   .db_idx64_update = db_idx64_update,
+
+   .db_idx64_remove = db_idx64_remove,
+   .db_idx64_next = db_idx64_next,
+   .db_idx64_previous = db_idx64_previous,
+   .db_idx64_find_primary = db_idx64_find_primary,
+   .db_idx64_find_secondary = db_idx64_find_secondary,
+   .db_idx64_lowerbound = db_idx64_lowerbound,
+   .db_idx64_upperbound = db_idx64_upperbound,
+   .db_idx64_end = db_idx64_end,
+   .db_idx128_store = db_idx128_store,
+
+   .db_idx128_update = db_idx128_update,
+   .db_idx128_remove = db_idx128_remove,
+   .db_idx128_next = db_idx128_next,
+   .db_idx128_previous = db_idx128_previous,
+   .db_idx128_find_primary = db_idx128_find_primary,
+   .db_idx128_find_secondary = db_idx128_find_secondary,
+   .db_idx128_lowerbound = db_idx128_lowerbound,
+   .db_idx128_upperbound = db_idx128_upperbound,
+
+   .db_idx128_end = db_idx128_end,
+   .db_idx256_store = db_idx256_store,
+   .db_idx256_update = db_idx256_update,
+   .db_idx256_remove = db_idx256_remove,
+   .db_idx256_next = db_idx256_next,
+
+   .db_idx256_previous = db_idx256_previous,
+   .db_idx256_find_primary = db_idx256_find_primary,
+   .db_idx256_find_secondary = db_idx256_find_secondary,
+   .db_idx256_lowerbound = db_idx256_lowerbound,
+   .db_idx256_upperbound = db_idx256_upperbound,
+   .db_idx256_end = db_idx256_end,
+   .db_idx_double_store = db_idx_double_store,
+   .db_idx_double_update = db_idx_double_update,
+   .db_idx_double_remove = db_idx_double_remove,
+   .db_idx_double_next = db_idx_double_next,
+   .db_idx_double_previous = db_idx_double_previous,
+   .db_idx_double_find_primary = db_idx_double_find_primary,
+   .db_idx_double_find_secondary = db_idx_double_find_secondary,
+   .db_idx_double_lowerbound = db_idx_double_lowerbound,
+   .db_idx_double_upperbound = db_idx_double_upperbound,
+   .db_idx_double_end = db_idx_double_end,
+   .db_idx_long_double_store = db_idx_long_double_store,
+   .db_idx_long_double_update = db_idx_long_double_update,
+   .db_idx_long_double_remove = db_idx_long_double_remove,
+   .db_idx_long_double_next = db_idx_long_double_next,
+   .db_idx_long_double_previous = db_idx_long_double_previous,
+   .db_idx_long_double_find_primary = db_idx_long_double_find_primary,
+   .db_idx_long_double_find_secondary = db_idx_long_double_find_secondary,
+   .db_idx_long_double_lowerbound = db_idx_long_double_lowerbound,
+   .db_idx_long_double_upperbound = db_idx_long_double_upperbound,
+   .db_idx_long_double_end = db_idx_long_double_end,
+
+   .check_transaction_authorization = check_transaction_authorization,
+   .check_permission_authorization = check_permission_authorization,
+   .get_permission_last_used = get_permission_last_used,
+   .get_account_creation_time = get_account_creation_time,
+
+
+
+   .prints = prints,
+   .prints_l = prints_l,
+   .printi = printi,
+   .printui = printui,
+   .printi128 = printi128,
+   .printui128 = printui128,
+   .printsf = printsf,
+   .printdf = printdf,
+   .printqf = printqf,
+   .printn = printn,
+   .printhex = printhex,
+
+   .set_resource_limits = set_resource_limits,
+   .set_proposed_producers = set_proposed_producers,
+   .is_privileged = is_privileged,
+   .set_privileged = set_privileged,
+   .set_blockchain_parameters_packed = set_blockchain_parameters_packed,
+   .get_blockchain_parameters_packed = get_blockchain_parameters_packed,
+   .activate_feature = activate_feature,
+
+   .eosio_assert = eosio_assert,
+   .eosio_assert_message = eosio_assert_message,
+   .eosio_assert_code = eosio_assert_code,
+   .eosio_exit = eosio_exit,
+   .current_time = current_time,
+   .now = now,
+
+   .send_deferred = send_deferred,
+   .cancel_deferred = cancel_deferred,
+   .read_transaction = read_transaction,
+   .transaction_size = transaction_size,
+
+   .tapos_block_num = tapos_block_num,
+   .tapos_block_prefix = tapos_block_prefix,
+   .expiration = expiration,
+   .get_action = get_action,
+   .get_context_free_data = get_context_free_data,
+};
+
+void register_wasm_api(struct wasm_api* api) {
+   *api = _wasm_api;
 }
 
 } } /// eosio::chain

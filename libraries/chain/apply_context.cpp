@@ -36,6 +36,7 @@ extern "C" {
 using boost::container::flat_set;
 
 static bool _py_debug_enable = 0;
+
 void py_debug_enable_(int enable) {
    _py_debug_enable = enable;
 }

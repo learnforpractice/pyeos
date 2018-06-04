@@ -15,3 +15,5 @@ struct mpapi& get_mpapi();
 void py_debug_enable_(int enable);
 bool py_debug_enabled_();
 
+void wasm_debug_enable_(int enable);
+bool wasm_debug_enabled_();
