@@ -90,9 +90,19 @@ def create_tokens():
 
     total_allocation = allocate_funds()
 
-    r, cost = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":int_to_currency(total_allocation),"memo":""},{'eosio':'active'})
+    r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":int_to_currency(total_allocation),"memo":""},{'eosio':'active'})
     assert r
 
+def set_sys_contract():
+    if not eosapi.get_code('eosio')[0]:
+        contracts_path = os.path.join(os.getcwd(), '..', 'contracts', 'eosio.system', 'eosio.system')
+        wast = contracts_path + '.wast'
+        abi = contracts_path + '.abi'
+        r = eosapi.set_contract('eosio', wast, abi, 0)
+        assert r and not r['except']
+
+    r = eosapi.push_action('eosio','setpriv',{'account':'eosio.msig', 'is_priv':1},{'eosio':'active'})
+    assert r
 
 def all():
     create_accounts()

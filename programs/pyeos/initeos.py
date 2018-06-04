@@ -164,7 +164,7 @@ def init_wallet():
                     '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
                     '5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p'
                 ]
-    
+
     keys = wallet.list_keys('mywallet', psw)
     exist_priv_keys = keys.values()
     for priv_key in priv_keys:
@@ -216,7 +216,8 @@ from biosboot import t as bb
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
-    for account in ['eosio.bios', 'eosio.msig', 'eosio.system', 'eosio.token']:
+    accounts_map = {'eosio.bios':'eosio.bios', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system', 'eosio.token':'eosio.token'}
+    for account in accounts_map:
         print('account', account)
         if not eosapi.get_account(account):
             with producer:
@@ -227,12 +228,13 @@ def publish_system_contract():
         if old_code:
             old_code = old_code[0]
         need_update = not old_code
+
+        _path = os.path.join(contracts_path, accounts_map[account], accounts_map[account])
         if old_code:
             print('+++++++++old_code[:4]', old_code[:4])
             if old_code[:4] != b'\x00asm':
                 old_code = eosapi.wast2wasm(old_code)
-
-            wast = os.path.join(contracts_path, account, account+'.wast')
+            wast = _path + '.wast'
             code = open(wast, 'rb').read()
             code = eosapi.wast2wasm(code)
 
@@ -241,8 +243,8 @@ def publish_system_contract():
                 need_update = False
         if need_update:
             print('+++++++++code update', account)
-            wast = os.path.join(contracts_path, account, account+'.wast')
-            abi = os.path.join(contracts_path, account, account+'.abi')
+            wast = _path + '.wast'
+            abi = _path + '.abi'
             with producer:
                 r = eosapi.set_contract(account, wast, abi, 0)
 
@@ -267,7 +269,7 @@ def init():
 
     from backyard import t
     t.deploy_mpy()
-    net.connect('127.0.0.1:9101')
+#    net.connect('127.0.0.1:9101')
     #load common libraries
 #    t.load_all()
 def start_console():
