@@ -64,7 +64,7 @@ namespace eosio { namespace chain {
 
          //Calls apply or error on a given code
          void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
-
+         bool apply_native(apply_context& ctx);
       private:
          unique_ptr<struct wasm_interface_impl> my;
          friend class eosio::chain::webassembly::common::intrinsics_accessor;

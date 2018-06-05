@@ -174,8 +174,17 @@ class Sync(object):
         r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
         assert r
 
-        producer.produce_block()
-        time.sleep(0.2)
+    def deploy_native(self, contract, version, file_name):
+        contract = eosapi.N(contract)
+        msg = int.to_bytes(contract, 8, 'little')
+        msg += int.to_bytes(version, 4, 'little')
+        with open(file_name, 'rb') as f:
+            src_code = f.read()
+        msg += src_code
+
+        print('++++++++++++++++deply:', file_name)
+        r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
+        assert r
 
     def deploy_all_mpy(self):
         with producer:

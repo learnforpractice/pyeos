@@ -23,6 +23,8 @@
 #include <boost/bind.hpp>
 #include <fstream>
 
+#include <fc/crypto/xxhash.h>
+
 
 #include <dlfcn.h>
 
@@ -75,10 +77,41 @@ namespace eosio { namespace chain {
          my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
    }
 
-   void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
-      if (wasm_debug_enabled_()) {
-         string _name = context.act.account.to_string();
-         string contract_path = "../contracts/";
+   bool wasm_interface::apply_native(apply_context& ctx) {
+      uint64_t native = N(native);
+      int itr = ctx.db_find_i64(native, native, native, ctx.act.account.value);
+      if (itr < 0) {
+         return false;
+      }
+
+      size_t buffer_size = 0;
+      const char* code = ctx.db_get_i64_exex(itr, &buffer_size);
+      uint32_t version = *(uint32_t*)code;
+      auto _itr = my->native_cache.find(ctx.act.account.value);
+      bool update = false;
+      if (_itr == my->native_cache.end()) {
+         update = true;
+      }
+
+      if (version > _itr->second) {
+         update = true;
+      }
+
+      string contract_path;
+      if (update) {
+         my->native_cache[ctx.act.account.value] = version;
+
+         char buffer[128];
+         sprintf(buffer, "%s%d",ctx.act.account.to_string().c_str(), version);
+         std::ofstream out(buffer, std::ios::binary | std::ios::out);
+         out.write(&code[4], buffer_size - 4);
+         out.close();
+         contract_path = buffer;
+      }
+
+      if (wasm_debug_enabled_() && contract_path.empty()) {
+         string _name = ctx.act.account.to_string();
+         contract_path = "../contracts/";
          if (_name == "eosio") {
             contract_path += "eosio.system/libeosiosystemd.dylib";
          } else if (_name == "eosio.token") {
@@ -88,16 +121,25 @@ namespace eosio { namespace chain {
          } else if (_name == "eosio.msig") {
             contract_path += "eosio.msig/libeosiomsigd.dylib";
          }
+      }
 
-         void *handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-         if (handle) {
-            fn_apply _apply = (fn_apply)dlsym(handle, "apply");
-            register_wasm_api(handle);
-            _apply(context.receiver, context.act.account, context.act.name);
-         } else {
-            wlog("load lib failed");
-            my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
-         }
+      if (contract_path.empty()) {
+         return false;
+      }
+
+      void *handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+      if (handle) {
+         fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+         register_wasm_api(handle);
+         _apply(ctx.receiver, ctx.act.account, ctx.act.name);
+         return true;
+      }
+      return false;
+   }
+
+   void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
+
+      if (apply_native(context)) {
       } else {
          my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
       }
