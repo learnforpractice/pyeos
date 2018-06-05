@@ -20,7 +20,10 @@ using namespace IR;
 using namespace Runtime;
 
 namespace eosio { namespace chain {
-
+   struct native_code_cache {
+      uint32_t version;
+      void *handle;
+   };
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
          if(vm == wasm_interface::vm_type::wavm)
@@ -89,7 +92,7 @@ namespace eosio { namespace chain {
       }
 
       std::unique_ptr<wasm_runtime_interface> runtime_interface;
-      map<uint64_t, uint32_t> native_cache;
+      map<uint64_t, struct native_code_cache*> native_cache;
       map<digest_type, std::unique_ptr<wasm_instantiated_module_interface>> instantiation_cache;
    };
 

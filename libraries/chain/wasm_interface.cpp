@@ -91,21 +91,25 @@ namespace eosio { namespace chain {
       bool update = false;
       if (_itr == my->native_cache.end()) {
          update = true;
-      }
-
-      if (version > _itr->second) {
-         update = true;
+      } else {
+         if (version > _itr->second->version) {
+            update = true;
+         }
       }
 
       string contract_path;
       if (update) {
-         my->native_cache[ctx.act.account.value] = version;
-
          char buffer[128];
          sprintf(buffer, "%s%d",ctx.act.account.to_string().c_str(), version);
-         std::ofstream out(buffer, std::ios::binary | std::ios::out);
-         out.write(&code[4], buffer_size - 4);
-         out.close();
+
+         struct stat _s;
+         if (stat(buffer, &_s) == 0) {
+            //
+         } else {
+            std::ofstream out(buffer, std::ios::binary | std::ios::out);
+            out.write(&code[4], buffer_size - 4);
+            out.close();
+         }
          contract_path = buffer;
       }
 
@@ -123,18 +127,23 @@ namespace eosio { namespace chain {
          }
       }
 
-      if (contract_path.empty()) {
-         return false;
-      }
-
-      void *handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-      if (handle) {
-         fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+      void *handle;
+      if (_itr == my->native_cache.end() || update) {
+         handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+         if (!handle) {
+            return false;
+         }
          register_wasm_api(handle);
-         _apply(ctx.receiver, ctx.act.account, ctx.act.name);
-         return true;
+         native_code_cache* c = new native_code_cache();
+         c->version = version;
+         c->handle = handle;
+         my->native_cache[ctx.act.account.value] = c;
+      } else {
+         handle = _itr->second->handle;
       }
-      return false;
+      fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+      _apply(ctx.receiver, ctx.act.account, ctx.act.name);
+      return true;
    }
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
