@@ -79,26 +79,21 @@ namespace eosio { namespace chain {
 
    bool wasm_interface::apply_native(apply_context& ctx) {
       uint64_t native = N(native);
-      int itr = ctx.db_find_i64(native, native, native, ctx.act.account.value);
-      if (itr < 0) {
-         return false;
-      }
-
-      size_t buffer_size = 0;
-      const char* code = ctx.db_get_i64_exex(itr, &buffer_size);
-      uint32_t version = *(uint32_t*)code;
+      void *handle;
       auto _itr = my->native_cache.find(ctx.act.account.value);
-      bool update = false;
-      if (_itr == my->native_cache.end()) {
-         update = true;
-      } else {
-         if (version > _itr->second->version) {
-            update = true;
-         }
-      }
 
-      string contract_path;
-      if (update) {
+      if (_itr == my->native_cache.end()) {
+         int itr = ctx.db_find_i64(native, native, native, ctx.act.account.value);
+         if (itr < 0) {
+            return false;
+         }
+
+         size_t buffer_size = 0;
+         const char* code = ctx.db_get_i64_exex(itr, &buffer_size);
+         uint32_t version = *(uint32_t*)code;
+
+         string contract_path;
+
          char buffer[128];
          sprintf(buffer, "%s%d",ctx.act.account.to_string().c_str(), version);
 
@@ -111,24 +106,21 @@ namespace eosio { namespace chain {
             out.close();
          }
          contract_path = buffer;
-      }
 
-      if (wasm_debug_enabled_() && contract_path.empty()) {
-         string _name = ctx.act.account.to_string();
-         contract_path = "../contracts/";
-         if (_name == "eosio") {
-            contract_path += "eosio.system/libeosiosystemd.dylib";
-         } else if (_name == "eosio.token") {
-            contract_path += "eosio.token/libeosiotokend.dylib";
-         } else if (_name == "eosio.bios") {
-            contract_path += "eosio.bios/libeosiobiosd.dylib";
-         } else if (_name == "eosio.msig") {
-            contract_path += "eosio.msig/libeosiomsigd.dylib";
+         if (wasm_debug_enabled_() && contract_path.empty()) {
+            string _name = ctx.act.account.to_string();
+            contract_path = "../contracts/";
+            if (_name == "eosio") {
+               contract_path += "eosio.system/libeosiosystemd.dylib";
+            } else if (_name == "eosio.token") {
+               contract_path += "eosio.token/libeosiotokend.dylib";
+            } else if (_name == "eosio.bios") {
+               contract_path += "eosio.bios/libeosiobiosd.dylib";
+            } else if (_name == "eosio.msig") {
+               contract_path += "eosio.msig/libeosiomsigd.dylib";
+            }
          }
-      }
 
-      void *handle;
-      if (_itr == my->native_cache.end() || update) {
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
          if (!handle) {
             return false;
@@ -138,9 +130,11 @@ namespace eosio { namespace chain {
          c->version = version;
          c->handle = handle;
          my->native_cache[ctx.act.account.value] = c;
+
       } else {
          handle = _itr->second->handle;
       }
+
       fn_apply _apply = (fn_apply)dlsym(handle, "apply");
       _apply(ctx.receiver, ctx.act.account, ctx.act.name);
       return true;
