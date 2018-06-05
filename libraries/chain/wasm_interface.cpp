@@ -126,11 +126,10 @@ namespace eosio { namespace chain {
             return false;
          }
          register_wasm_api(handle);
-         native_code_cache* c = new native_code_cache();
-         c->version = version;
-         c->handle = handle;
-         my->native_cache[ctx.act.account.value] = c;
-
+         std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
+         _cache->version = version;
+         _cache->handle = handle;
+         my->native_cache.emplace(ctx.act.account.value, std::move(_cache));
       } else {
          handle = _itr->second->handle;
       }
