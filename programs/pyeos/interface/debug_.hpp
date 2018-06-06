@@ -2,6 +2,8 @@
 #include <string>
 #include <micropython/mpeoslib.h>
 
+using namespace std;
+
 void debug_test();
 
 void set_debug_mode(int mode);
@@ -17,3 +19,10 @@ bool py_debug_enabled_();
 
 void wasm_debug_enable_(int enable);
 bool wasm_debug_enabled_();
+
+void set_debug_contract_(string& _account, string& path);
+
+int mp_is_account2(string& account);
+
+void wasm_enable_native_contract_(bool b);
+bool wasm_is_native_contract_enabled_();

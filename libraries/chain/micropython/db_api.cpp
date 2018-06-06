@@ -275,6 +275,12 @@ int db_api::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
    return obj.value.size();
 }
 
+const char* db_api::db_get_i64_exex( int itr, size_t* buffer_size ) {
+   const key_value_object& obj = keyval_cache.get( itr );
+   *buffer_size = obj.value.size();
+   return obj.value.data();
+}
+
 int db_api::db_next_i64( int iterator, uint64_t& primary ) {
    if( iterator < -1 ) return -1; // cannot increment past end iterator of table
 
@@ -395,6 +401,11 @@ bool db_api::is_in_whitelist(uint64_t account) {
 } } /// eosio::chain
 
 using namespace eosio::chain;
+
+int mp_is_account2(string& account) {
+   account_name _account(account);
+   return eosio::chain::db_api::get().is_account(_account);
+}
 
 extern "C" {
 

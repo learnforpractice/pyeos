@@ -1,6 +1,8 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 from libcpp.string cimport string
 from libcpp cimport bool
+from eostypes_ cimport * 
+import os
 
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
     void* execute_from_str(const char* str);
@@ -14,7 +16,7 @@ cdef extern from "../interface/debug_.hpp":
         void (*set_debug_mode)(int mode)
 
     void debug_test();
-    
+
     void run_code_(string code)
     mpapi& get_mpapi();
 
@@ -23,6 +25,13 @@ cdef extern from "../interface/debug_.hpp":
 
     void wasm_debug_enable_(int enable)
     bool wasm_debug_enabled_()
+
+    void set_debug_contract_(string& _account, string& path)
+    int mp_is_account2(string& account)
+
+    void wasm_enable_native_contract_(bool b);
+    bool wasm_is_native_contract_enabled_();
+
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -74,4 +83,19 @@ def disable_wasm_debug():
 
 def is_wasm_debug_enabled():
     return wasm_debug_enabled_()
+
+def set_debug_contract(_account, path):
+    if _account or path:
+        if not os.path.exists(path):
+            raise Exception(path + " not exists")
+        if not mp_is_account2(_account):
+            raise Exception(path + " not exists")
+    set_debug_contract_(_account, path)
+
+def wasm_enable_native_contract(b):
+    wasm_enable_native_contract_(b);
+
+def wasm_is_native_contract_enabled():
+    return wasm_is_native_contract_enabled_();
+
 

@@ -535,6 +535,8 @@ class db_api {
       void db_remove_i64( int iterator );
 
       int  db_get_i64( int iterator, char* buffer, size_t buffer_size );
+      const char* db_get_i64_exex( int itr, size_t* buffer_size );
+
       int  db_next_i64( int iterator, uint64_t& primary );
       int  db_previous_i64( int iterator, uint64_t& primary );
       int  db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );

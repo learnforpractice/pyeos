@@ -48,11 +48,11 @@ cdef extern from "eosapi_.hpp":
 
     void quit_app_()
     uint32_t now2_()
-    int produce_block_();
-    int produce_block_start_();
-    int produce_block_end_();
+    int produce_block_()
+    int produce_block_start_()
+    int produce_block_end_()
 
-    object get_info_ ()
+    object get_info_()
     object get_block_(char* num_or_id)
     object get_account_(char* name)
     object get_accounts_(char* public_key)
@@ -61,42 +61,42 @@ cdef extern from "eosapi_.hpp":
     object create_key_()
     object get_public_key_(string& wif_key)
 
-    object get_actions_(uint64_t account, int pos, int offset);
-    object get_transaction_(string& id);
+    object get_actions_(uint64_t account, int pos, int offset)
+    object get_transaction_(string& id)
 
-    object set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
+    object set_evm_contract_(string& eth_address, string& sol_bin, bool sign)
 
-    int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type);
-    int get_table_(string& scope, string& code, string& table, string& result);
+    int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type)
+    int get_table_(string& scope, string& code, string& table, string& result)
 
     object get_currency_balance_(string& _code, string& _account, string& _symbol)
 
-    int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+    int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size)
 
     void wast2wasm_( string& wast ,string& result)
-    bool is_replay_();
+    bool is_replay_()
 
-    void pack_bytes_(string& _in, string& out);
-    void unpack_bytes_(string& _in, string& out);
+    void pack_bytes_(string& _in, string& out)
+    void unpack_bytes_(string& _in, string& out)
 
     cdef cppclass permission_level:
         permission_level()
-        uint64_t    actor;
-        uint64_t permission;
+        uint64_t    actor
+        uint64_t permission
 
     cdef cppclass action:
         action()
-        uint64_t                    account;
-        uint64_t                    name;
-        vector[permission_level]    authorization;
-        vector[char]                data;
+        uint64_t                    account
+        uint64_t                    name
+        vector[permission_level]    authorization
+        vector[char]                data
 
     object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async, bool _compress)
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
-    void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
+    void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result)
     void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin) except +
 
 
@@ -664,7 +664,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     return None
 
 def set_evm_contract(eth_address, sol_bin, sign=True):
-    ilog("set_evm_contract.....");
+    ilog("set_evm_contract.....")
 
     if sign:
         sign = 1

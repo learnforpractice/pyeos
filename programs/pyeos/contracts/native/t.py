@@ -33,22 +33,25 @@ def test(msg='hello,world'):
         assert r
 
 @init()
-def deploy(debug=True):
+def deploy(debug=False):
     sync = Sync('native', _dir=os.path.dirname(__file__), _ignore=['t.py', 'native.py'])
     if debug:
-        sync.deploy_native('eosio.token', 0, '../contracts/eosio.token/libeosiotokend.dylib')
+        sync.deploy_native('eosio.token', 0, '../../build-debug/contracts/eosio.token/libeosiotokend.dylib')
     else:
-        sync.deploy_native('eosio.token', 0, '../contracts/eosio.token/libeosiotoken.dylib')
+        sync.deploy_native('eosio.token', 0, '../../build/contracts/eosio.token/libeosiotoken.dylib')
 
 @init()
 def test2(count=100):
     actions = []
-
     for i in range(count):
-        action = ['eosio.token', 'issue', {'eosio':'active'}, {"to":"eosio","quantity":"0.0100 EOS","memo":""}]
-        actions.append(action)
+#        action = ['eosio.token', 'issue', {'eosio':'active'}, {"to":"eosio","quantity":"0.0100 EOS","memo":""}]
+#        actions.append(action)
+
 #        msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
 #        action = ['eosio.token', 'create', {'eosio.token':'active'}, msg]
+
+        msg = {"from":"eosio", "to":"hello", "quantity":"0.0001 EOS", "memo":"m"}
+        action = ['eosio.token', 'transfer', {'eosio':'active'}, msg]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)
