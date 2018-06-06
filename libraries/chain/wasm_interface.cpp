@@ -25,9 +25,6 @@
 
 #include <fc/crypto/xxhash.h>
 
-#include <dlfcn.h>
-#include "micropython/db_api.hpp"
-
 static bool _wasm_debug_enable = 0;
 static bool _enable_native_contract = true;
 
@@ -55,8 +52,6 @@ void set_debug_contract_(string& _account, string& path) {
    debug_contract_path = path;
 }
 
-typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
-
 namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
@@ -64,7 +59,6 @@ namespace eosio { namespace chain {
    void register_wasm_api(void* handle);
 
    wasm_interface::wasm_interface(vm_type vm) : my( new wasm_interface_impl(vm) ) {
-      init_native_contract();
    }
 
    wasm_interface::~wasm_interface() {}
@@ -96,65 +90,17 @@ namespace eosio { namespace chain {
          my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
    }
 
-   void wasm_interface::init_native_contract() {
-      uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
-      for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
-         load_native_contract(native_account[i]);
-      }
-   }
-
-   void* wasm_interface::load_native_contract(uint64_t _account) {
-      string contract_path;
-      uint64_t native = N(native);
-      void *handle = nullptr;
-
-      int itr = db_api::get().db_find_i64(native, native, native, _account);
-      if (itr < 0) {
-         return nullptr;
-      }
-
-      size_t buffer_size = 0;
-      const char* code = db_api::get().db_get_i64_exex(itr, &buffer_size);
-      uint32_t version = *(uint32_t*)code;
-
-      char buffer[128];
-      sprintf(buffer, "%s.%d",name(_account).to_string().c_str(), version);
-
-      wlog("loading native contract:\t ${n}", ("n", buffer));
-
-      struct stat _s;
-      if (stat(buffer, &_s) == 0) {
-         //
-      } else {
-         std::ofstream out(buffer, std::ios::binary | std::ios::out);
-         out.write(&code[4], buffer_size - 4);
-         out.close();
-      }
-      contract_path = buffer;
-
-      handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-      if (!handle) {
-         return nullptr;
-      }
-      register_wasm_api(handle);
-      std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
-      _cache->version = version;
-      _cache->handle = handle;
-//      my->native_cache.emplace(_account, std::move(_cache));
-      my->native_cache[_account] =  std::move(_cache);
-      return handle;
-   }
-
    bool wasm_interface::apply_native(apply_context& ctx) {
       string contract_path;
       uint64_t native = N(native);
-      void *handle;
+      fn_apply _apply = nullptr;
 
       if (!_enable_native_contract) {
          return false;
       }
 
       if (debug_account == ctx.act.account.value) {
+         void *handle;
          contract_path = debug_contract_path;
 
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
@@ -167,8 +113,8 @@ namespace eosio { namespace chain {
 
       auto itr = my->native_cache.find(ctx.act.account.value);
       if (itr == my->native_cache.end()) {
-         handle = load_native_contract(ctx.act.account.value);
-         if (!handle) {
+         _apply = my->load_native_contract(ctx.act.account.value);
+         if (!_apply) {
             return false;
          }
       } else {
@@ -182,13 +128,15 @@ namespace eosio { namespace chain {
          uint32_t version = *(uint32_t*)code;
          if (version > itr->second->version) {
              wlog("reloading native contract ${n} ${n2} ${n3}", ("n", ctx.act.account.to_string())("n2", version)("n3",itr->second->version));
-            handle = load_native_contract(ctx.act.account.value);
+            _apply = my->load_native_contract(ctx.act.account.value);
+            if (!_apply) {
+               return false;
+            }
          } else {
-            handle = itr->second->handle;
+            _apply = itr->second->apply;
          }
       }
 
-      fn_apply _apply = (fn_apply)dlsym(handle, "apply");
       _apply(ctx.receiver, ctx.act.account, ctx.act.name);
       return true;
    }

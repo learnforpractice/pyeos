@@ -14,16 +14,25 @@
 #include "WAST/WAST.h"
 #include "IR/Validate.h"
 
+#include <dlfcn.h>
+
+#include "micropython/db_api.hpp"
+
 using namespace fc;
 using namespace eosio::chain::webassembly;
 using namespace IR;
 using namespace Runtime;
 
 namespace eosio { namespace chain {
+   void register_wasm_api(void* handle);
+   typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+
    struct native_code_cache {
-      uint32_t version;
-      void *handle;
+         uint32_t version;
+         void *handle;
+         fn_apply apply;
    };
+
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
          if(vm == wasm_interface::vm_type::wavm)
@@ -32,6 +41,7 @@ namespace eosio { namespace chain {
             runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
          else
             FC_THROW("wasm_interface_impl fall through");
+         init_native_contract();
       }
 
       std::vector<uint8_t> parse_initial_memory(const Module& module) {
@@ -89,6 +99,58 @@ namespace eosio { namespace chain {
             it = instantiation_cache.emplace(code_id, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
          }
          return it->second;
+      }
+
+      void init_native_contract() {
+         uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
+         for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
+            load_native_contract(native_account[i]);
+         }
+      }
+
+      fn_apply load_native_contract(uint64_t _account) {
+         string contract_path;
+         uint64_t native = N(native);
+         void *handle = nullptr;
+
+         int itr = db_api::get().db_find_i64(native, native, native, _account);
+         if (itr < 0) {
+            return nullptr;
+         }
+
+         size_t buffer_size = 0;
+         const char* code = db_api::get().db_get_i64_exex(itr, &buffer_size);
+         uint32_t version = *(uint32_t*)code;
+
+         char buffer[128];
+         sprintf(buffer, "%s.%d",name(_account).to_string().c_str(), version);
+
+         wlog("loading native contract:\t ${n}", ("n", buffer));
+
+         struct stat _s;
+         if (stat(buffer, &_s) == 0) {
+            //
+         } else {
+            std::ofstream out(buffer, std::ios::binary | std::ios::out);
+            out.write(&code[4], buffer_size - 4);
+            out.close();
+         }
+         contract_path = buffer;
+
+         handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+         if (!handle) {
+            return nullptr;
+         }
+         register_wasm_api(handle);
+         fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+
+         std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
+         _cache->version = version;
+         _cache->handle = handle;
+         _cache->apply = _apply;
+   //      native_cache.emplace(_account, std::move(_cache));
+         native_cache[_account] =  std::move(_cache);
+         return _apply;
       }
 
       std::unique_ptr<wasm_runtime_interface> runtime_interface;
