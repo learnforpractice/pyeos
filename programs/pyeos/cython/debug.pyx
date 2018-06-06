@@ -98,5 +98,6 @@ def wasm_enable_native_contract(b):
 
 def wasm_is_native_contract_enabled():
     return wasm_is_native_contract_enabled_();
+
 def mp_set_max_execution_time(_max):
     mp_set_max_execution_time_(_max)

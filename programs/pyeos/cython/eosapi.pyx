@@ -217,7 +217,10 @@ def get_balance(account):
 
 def transfer(_from, _to, _amount, _memo=''):
     args = {"from":_from, "to":_to, "quantity":'%.4f EOS'%(_amount,), "memo":_memo}
-    return push_action('eosio.token', 'transfer', args, {'eosio':'active'})
+    r = push_action('eosio.token', 'transfer', args, {_from:'active'})
+    if r and not r['except']:
+        return True
+    return False
 
 def create_account(creator, newaccount, owner_key, active_key, sign=True):
     result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
