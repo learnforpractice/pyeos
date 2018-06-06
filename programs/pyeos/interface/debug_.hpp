@@ -29,3 +29,6 @@ bool wasm_is_native_contract_enabled_();
 
 //mpeoslib.cpp
 void mp_set_max_execution_time_(int _max);
+
+//application.cpp
+void app_set_debug_mode_(bool d);

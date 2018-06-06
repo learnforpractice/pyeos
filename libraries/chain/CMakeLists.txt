@@ -115,9 +115,11 @@ target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wav
 add_dependencies(eosio_chain micropython)
 
 target_include_directories( eosio_chain
-                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
-                                   "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
-                                   "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
+                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                            PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
+                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
+                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts

@@ -136,14 +136,23 @@ void resource_limits_manager::add_transaction_usage(const flat_set<account_name>
          uint128_t all_user_weight = state.total_net_weight;
 
          auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight;
+         if (appbase::app().debug_mode()) {
+            if (net_used_in_window <= max_user_use_in_window) {
 
-         EOS_ASSERT( net_used_in_window <= max_user_use_in_window,
-                     tx_net_usage_exceeded,
-                     "authorizing account '${n}' has insufficient net resources for this transaction",
-                     ("n", name(a))
-                     ("net_used_in_window",net_used_in_window)
-                     ("max_user_use_in_window",max_user_use_in_window) );
-
+            } else {
+               wlog("authorizing account '${n}' has insufficient net resources for this transaction",
+               ("n", name(a))
+               ("net_used_in_window",net_used_in_window)
+               ("max_user_use_in_window",max_user_use_in_window) );
+            }
+         } else {
+            EOS_ASSERT( net_used_in_window <= max_user_use_in_window,
+                        tx_net_usage_exceeded,
+                        "authorizing account '${n}' has insufficient net resources for this transaction",
+                        ("n", name(a))
+                        ("net_used_in_window",net_used_in_window)
+                        ("max_user_use_in_window",max_user_use_in_window) );
+         }
       }
    }
 

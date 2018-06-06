@@ -34,6 +34,8 @@ cdef extern from "../interface/debug_.hpp":
 
     void mp_set_max_execution_time_(int _max)
 
+    void app_set_debug_mode_(bool d)
+
 cdef extern from "py/gc.h":
     ctypedef int size_t 
     cdef struct gc_info_t:
@@ -101,3 +103,7 @@ def wasm_is_native_contract_enabled():
 
 def mp_set_max_execution_time(_max):
     mp_set_max_execution_time_(_max)
+
+def app_set_debug_mode(d):
+    app_set_debug_mode_(d)
+
