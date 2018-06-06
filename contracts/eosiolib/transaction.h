@@ -2,10 +2,17 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
+
 #include <eosiolib/types.h>
 
+#ifndef __TRANSACTION_H_
+#define __TRANSACTION_H_
+
+
+#ifdef __cplusplus
 extern "C" {
+#endif
+
    /**
     * @defgroup transactionapi transaction API
     * @ingroup contractdev
@@ -51,6 +58,7 @@ extern "C" {
     * contract account for future use.
     */
 
+#ifdef __cplusplus
    /**
     * @defgroup transactioncapi Transaction C API
     * @ingroup transactionapi
@@ -65,6 +73,10 @@ extern "C" {
     * @return 1 if transaction was canceled, 0 if transaction was not found
     */
    int cancel_deferred(const uint128_t& sender_id);
+#else
+      void send_deferred(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing = 0);
+      int cancel_deferred(const uint128_t* sender_id);
+#endif
 
    /**
     * access a copy of the currently executing transaction
@@ -116,4 +128,9 @@ extern "C" {
    int get_context_free_data( uint32_t index, char* buff, size_t size );
 
    ///@ } transactioncapi
+#ifdef __cplusplus
 }
+#endif
+
+
+#endif //

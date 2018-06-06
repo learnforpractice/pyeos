@@ -11,7 +11,7 @@ extern "C" {
 #include <eosiolib/db.h>
 #include <eosiolib/permission.h>
 
-struct wasm_api {
+struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
    uint32_t (*action_data_size)();
    void (*require_recipient)( account_name name );
@@ -25,17 +25,17 @@ struct wasm_api {
    account_name (*current_receiver)();
    uint32_t (*get_active_producers)( account_name* producers, uint32_t datalen );
 
-   void (*assert_sha256)( char* data, uint32_t length, const checksum256* hash );
-   void (*assert_sha1)( char* data, uint32_t length, const checksum160* hash );
+   void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
+   void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );
 
-   void (*assert_sha512)( char* data, uint32_t length, const checksum512* hash );
-   void (*assert_ripemd160)( char* data, uint32_t length, const checksum160* hash );
-   void (*sha256)( char* data, uint32_t length, checksum256* hash );
-   void (*sha1)( char* data, uint32_t length, checksum160* hash );
-   void (*sha512)( char* data, uint32_t length, checksum512* hash );
-   void (*ripemd160)( char* data, uint32_t length, checksum160* hash );
-   int (*recover_key)( const checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
-   void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+   void (*assert_sha512)( char* data, uint32_t length, const struct checksum512* hash );
+   void (*assert_ripemd160)( char* data, uint32_t length, const struct checksum160* hash );
+   void (*sha256)( char* data, uint32_t length, struct checksum256* hash );
+   void (*sha1)( char* data, uint32_t length, struct checksum160* hash );
+   void (*sha512)( char* data, uint32_t length, struct checksum512* hash );
+   void (*ripemd160)( char* data, uint32_t length, struct checksum160* hash );
+   int (*recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
+   void (*assert_recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 
 
 
@@ -148,9 +148,14 @@ struct wasm_api {
    void (*eosio_exit)( int32_t code );
    uint64_t  (*current_time)();
    uint32_t  (*now)();
-
+#ifdef __cplusplus
    void (*send_deferred)(const uint128_t& sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t& sender_id);
+#else
+   void (*send_deferred)(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+   int (*cancel_deferred)(const uint128_t* sender_id);
+#endif
+
    size_t (*read_transaction)(char *buffer, size_t size);
    size_t (*transaction_size)();
    int (*tapos_block_num)();
@@ -160,8 +165,8 @@ struct wasm_api {
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 };
 
-void register_wasm_api(struct wasm_api* api);
-struct wasm_api* get_wasm_api();
+void register_vm_api(struct vm_api* api);
+struct vm_api* get_vm_api();
 
 #ifdef __cplusplus
 }

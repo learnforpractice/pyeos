@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-struct wasm_api {
+struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
    uint32_t (*action_data_size)();
    void (*require_recipient)( account_name name );
@@ -153,6 +153,9 @@ struct wasm_api {
    int (*get_action)( uint32_t type, uint32_t index, char* buff, size_t size );
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 };
+
+void register_vm_api(struct vm_api* api);
+struct vm_api* get_vm_api();
 
 #ifdef __cplusplus
 }

@@ -2,9 +2,11 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 
 #include <eosiolib/types.h>
+
+#ifndef __PRINT_H_
+#define __PRINT_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,3 +159,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

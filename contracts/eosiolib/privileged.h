@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __PRIVILEGED_H_
+#define __PRIVILEGED_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,4 +48,6 @@ extern "C" {
    ///@ } privilegedcapi
 #ifdef __cplusplus
 }
+#endif
+
 #endif

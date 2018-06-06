@@ -2,7 +2,6 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 
 #define time __time
 
@@ -11,9 +10,18 @@
 
 #undef time
 
+#ifndef __TYPES_H___
+#define __TYPES_H___
+
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef __cplusplus
+#ifndef bool
+typedef char bool;
+#endif
 #endif
 
 /**
@@ -92,3 +100,5 @@ struct account_permission {
 } /// extern "C"
 #endif
 /// @}
+
+#endif

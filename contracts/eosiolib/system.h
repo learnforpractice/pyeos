@@ -2,11 +2,16 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 
 #include <eosiolib/types.h>
 
+#ifndef __SYSTEM_H_
+#define __SYSTEM_H_
+
+
+#ifdef __cplusplus
 extern "C" {
+#endif
 
    /**
     * @defgroup systemapi System API
@@ -53,8 +58,11 @@ extern "C" {
     * This method will abort execution of wasm without failing the contract. This
     * is used to bypass all cleanup / destructors that would normally be called.
     */
+#ifdef __WASM
    [[noreturn]] void  eosio_exit( int32_t code );
-
+#else
+   void  eosio_exit( int32_t code );
+#endif
 
    /**
     *  Returns the time in microseconds from 1970 of the current block
@@ -77,5 +85,9 @@ extern "C" {
  #endif
    ///@ } systemcapi
 
-
+#ifdef __cplusplus
 }
+#endif
+
+
+#endif //

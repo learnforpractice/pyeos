@@ -3,10 +3,17 @@
  *  @copyright defined in eos/LICENSE.txt
  *  @brief Defines C API for interfacing with blockchain database
  */
-#pragma once
 
 #include <eosiolib/types.h>
+
+#ifndef __DB_H_
+#define __DB_H_
+
+#ifdef __cplusplus
 extern "C" {
+#endif
+
+
 /**
  *  @defgroup database Database API
  *  @brief APIs that store and retreive data on the blockchain
@@ -110,4 +117,8 @@ int32_t db_idx_long_double_lowerbound(account_name code, account_name scope, tab
 int32_t db_idx_long_double_upperbound(account_name code, account_name scope, table_name table, long double* secondary, uint64_t* primary);
 int32_t db_idx_long_double_end(account_name code, account_name scope, table_name table);
 
+#ifdef __cplusplus
 }
+#endif
+
+#endif //__DB_H_

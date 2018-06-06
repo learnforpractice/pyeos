@@ -24,7 +24,7 @@ using namespace IR;
 using namespace Runtime;
 
 namespace eosio { namespace chain {
-   void register_wasm_api(void* handle);
+   void register_vm_api(void* handle);
    typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
 
    struct native_code_cache {
@@ -141,7 +141,7 @@ namespace eosio { namespace chain {
          if (!handle) {
             return nullptr;
          }
-         register_wasm_api(handle);
+         register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 
          std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();

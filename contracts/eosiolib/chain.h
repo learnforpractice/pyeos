@@ -2,9 +2,11 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 
 #include <eosiolib/types.h>
+
+#ifndef __CHAIN_H_
+#define __CHAIN_H_
 
 /**
  *  @defgroup chainapi Chain API
@@ -19,7 +21,10 @@
  *  @{
  */
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
    /**
     * Return the set of active producers
     * @param producers - a pointer to an buffer of account_names
@@ -36,4 +41,9 @@ extern "C" {
    uint32_t get_active_producers( account_name* producers, uint32_t datalen );
 
    ///@ } chaincapi
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif //__CHAIN_H_

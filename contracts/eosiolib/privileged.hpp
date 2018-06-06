@@ -1,7 +1,8 @@
 #pragma once
+
+#include "types.h"
 #include "privileged.h"
 #include "serialize.hpp"
-#include "types.h"
 
 namespace eosio {
 

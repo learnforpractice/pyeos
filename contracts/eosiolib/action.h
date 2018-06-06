@@ -2,10 +2,15 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 #include <eosiolib/system.h>
 
+#ifndef __ACTION_H_
+#define __ACTION_H_
+
+#ifdef __cplusplus
 extern "C" {
+#endif
+
    /**
     * @defgroup actionapi Action API
     * @ingroup contractdev
@@ -150,4 +155,9 @@ extern "C" {
     */
    account_name current_receiver();
    ///@ } actioncapi
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif

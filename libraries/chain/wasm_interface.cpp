@@ -56,7 +56,7 @@ namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
 
-   void register_wasm_api(void* handle);
+   void register_vm_api(void* handle);
 
    wasm_interface::wasm_interface(vm_type vm) : my( new wasm_interface_impl(vm) ) {
    }
@@ -105,7 +105,7 @@ namespace eosio { namespace chain {
 
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
          FC_ASSERT(handle, "open dll failed");
-         register_wasm_api(handle);
+         register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
          _apply(ctx.receiver, ctx.act.account, ctx.act.name);
          return true;
@@ -2030,9 +2030,9 @@ static inline apply_context& ctx() {
 #include "eosiolib_native/print.cpp"
 #include "eosiolib_native/permission.cpp"
 
-#include "eosiolib_native/wasm_api.h"
+#include "eosiolib_native/vm_api.h"
 
-static struct wasm_api _wasm_api = {
+static struct vm_api _vm_api = {
    .read_action_data = read_action_data,
 
    .action_data_size = action_data_size,
@@ -2171,11 +2171,11 @@ static struct wasm_api _wasm_api = {
    .get_context_free_data = get_context_free_data,
 };
 
-typedef void (*fn_register_wasm_api)(struct wasm_api* api);
+typedef void (*fn_register_vm_api)(struct vm_api* api);
 
-void register_wasm_api(void* handle) {
-   fn_register_wasm_api _register_wasm_api = (fn_register_wasm_api)dlsym(handle, "register_wasm_api");
-   _register_wasm_api(&_wasm_api);
+void register_vm_api(void* handle) {
+   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "register_vm_api");
+   _register_vm_api(&_vm_api);
 }
 
 } } /// eosio::chain
