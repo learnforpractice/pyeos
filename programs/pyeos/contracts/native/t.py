@@ -29,8 +29,9 @@ def init(wasm=False):
 @init()
 def test(msg='hello,world'):
     with producer:
-        r = eosapi.push_action('native', 'sayhello', msg, {'native':'active'})
-        print(r)
+        msg = {"from":"eosio", "to":"hello", "quantity":"0.0001 EOS", "memo":"m"}
+        r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
+#        print(r)
         assert r
 
 @init()

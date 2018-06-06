@@ -140,7 +140,8 @@ namespace eosio { namespace chain {
       std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
       _cache->version = version;
       _cache->handle = handle;
-      my->native_cache.emplace(_account, std::move(_cache));
+//      my->native_cache.emplace(_account, std::move(_cache));
+      my->native_cache[_account] =  std::move(_cache);
       return handle;
    }
 
@@ -152,6 +153,7 @@ namespace eosio { namespace chain {
       if (!_enable_native_contract) {
          return false;
       }
+
       if (debug_account == ctx.act.account.value) {
          contract_path = debug_contract_path;
 
@@ -163,14 +165,27 @@ namespace eosio { namespace chain {
          return true;
       }
 
-      auto _itr = my->native_cache.find(ctx.act.account.value);
-      if (_itr == my->native_cache.end()) {
+      auto itr = my->native_cache.find(ctx.act.account.value);
+      if (itr == my->native_cache.end()) {
          handle = load_native_contract(ctx.act.account.value);
          if (!handle) {
             return false;
          }
       } else {
-         handle = _itr->second->handle;
+         int _itr = db_api::get().db_find_i64(native, native, native, ctx.act.account.value);
+         if (_itr < 0) {
+            return false;
+         }
+
+         size_t buffer_size = 0;
+         const char* code = db_api::get().db_get_i64_exex(_itr, &buffer_size);
+         uint32_t version = *(uint32_t*)code;
+         if (version > itr->second->version) {
+             wlog("reloading native contract ${n} ${n2} ${n3}", ("n", ctx.act.account.to_string())("n2", version)("n3",itr->second->version));
+            handle = load_native_contract(ctx.act.account.value);
+         } else {
+            handle = itr->second->handle;
+         }
       }
 
       fn_apply _apply = (fn_apply)dlsym(handle, "apply");
