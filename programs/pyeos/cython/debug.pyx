@@ -29,9 +29,10 @@ cdef extern from "../interface/debug_.hpp":
     void set_debug_contract_(string& _account, string& path)
     int mp_is_account2(string& account)
 
-    void wasm_enable_native_contract_(bool b);
-    bool wasm_is_native_contract_enabled_();
+    void wasm_enable_native_contract_(bool b)
+    bool wasm_is_native_contract_enabled_()
 
+    void mp_set_max_execution_time_(int _max)
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -97,5 +98,5 @@ def wasm_enable_native_contract(b):
 
 def wasm_is_native_contract_enabled():
     return wasm_is_native_contract_enabled_();
-
-
+def mp_set_max_execution_time(_max):
+    mp_set_max_execution_time_(_max)

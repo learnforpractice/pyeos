@@ -7,11 +7,11 @@ add_wast_executable(TARGET eosio.token
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_library(eosiotoken SHARED eosio.token.cpp)
+add_library(eosio_token_native SHARED eosio.token.cpp)
 
-target_link_libraries(eosiotoken PRIVATE eosiolib_native)
+target_link_libraries(eosio_token_native PRIVATE eosiolib_native)
 
-target_include_directories(eosiotoken PRIVATE ${Boost_INCLUDE_DIR}
+target_include_directories(eosio_token_native PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/include/libc++/upstream/include
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/musl/include/musl/upstream/include

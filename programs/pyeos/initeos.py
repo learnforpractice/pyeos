@@ -213,6 +213,8 @@ from simpleauction import t as st
 from lab import t as lt
 from biosboot import t as bb
 
+from native import t as nt
+
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())

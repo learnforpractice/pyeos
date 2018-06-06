@@ -26,3 +26,6 @@ int mp_is_account2(string& account);
 
 void wasm_enable_native_contract_(bool b);
 bool wasm_is_native_contract_enabled_();
+
+//mpeoslib.cpp
+void mp_set_max_execution_time_(int _max);

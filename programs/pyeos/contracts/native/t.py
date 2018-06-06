@@ -2,6 +2,7 @@ import os
 import time
 import struct
 
+import debug
 import wallet
 import eosapi
 import initeos
@@ -33,12 +34,22 @@ def test(msg='hello,world'):
         assert r
 
 @init()
-def deploy(debug=False):
+def deploy(d=True):
     sync = Sync('native', _dir=os.path.dirname(__file__), _ignore=['t.py', 'native.py'])
-    if debug:
-        sync.deploy_native('eosio.token', 0, '../../build-debug/contracts/eosio.token/libeosiotokend.dylib')
-    else:
-        sync.deploy_native('eosio.token', 0, '../../build/contracts/eosio.token/libeosiotoken.dylib')
+    aa = [ ['eosio.bios','eosio.bios', 'eosio_bios_native'],
+          ['eosio.msig','eosio.msig', 'eosio_msig_native'],
+          ['eosio.token','eosio.token', 'eosio_token_native'],
+          ['eosio','eosio.system', 'eosio_system_native'],
+          ['exchange','exchange', 'exchange_native'] 
+        ]
+
+    debug.mp_set_max_execution_time(1000_000)
+
+    for a in aa:
+        if d:
+            sync.deploy_native(a[0], 0, '../../build-debug/contracts/{0}/lib{1}d.dylib'.format(a[1], a[2]))
+        else:
+            sync.deploy_native(a[0], 0, '../../build/contracts/{0}/lib{1}.dylib'.format(a[1], a[2]))
 
 @init()
 def test2(count=100):

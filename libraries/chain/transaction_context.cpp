@@ -6,6 +6,7 @@
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
+#include <appbase/application.hpp>
 
 namespace eosio { namespace chain {
 
@@ -273,9 +274,14 @@ namespace eosio { namespace chain {
                        "not enough space left in block: ${net_usage} > ${net_limit}",
                        ("net_usage", net_usage)("net_limit", eager_net_limit) );
          } else {
-            EOS_THROW( tx_net_usage_exceeded,
-                       "net usage of transaction is too high: ${net_usage} > ${net_limit}",
-                       ("net_usage", net_usage)("net_limit", eager_net_limit) );
+            if (appbase::app().debug_mode()) {
+               wlog("net usage of transaction is too high: ${net_usage} > ${net_limit}",
+                          ("net_usage", net_usage)("net_limit", eager_net_limit) );
+            } else {
+               EOS_THROW( tx_net_usage_exceeded,
+                          "net usage of transaction is too high: ${net_usage} > ${net_limit}",
+                          ("net_usage", net_usage)("net_limit", eager_net_limit) );
+            }
          }
       }
    }

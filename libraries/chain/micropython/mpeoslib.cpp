@@ -70,7 +70,6 @@ void print(const char * str, size_t len) {
 }
 
 //mpeoslib.c
-
 typedef struct eosapi* (*fn_get_eosapi)();
 static fn_get_eosapi get_eosapi = 0;
 
@@ -145,6 +144,12 @@ mpapi& get_mpapi() {
 
    return *api;
 }
+
+void mp_set_max_execution_time_(int _max) {
+   fn_set_max_execution_time set_time = (fn_set_max_execution_time)dlsym(get_mpapi().handle, "set_max_execution_time");
+   set_time(_max);
+}
+
 
 extern "C" {
 //typedef long long int64_t;

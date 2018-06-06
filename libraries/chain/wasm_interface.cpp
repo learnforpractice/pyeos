@@ -97,7 +97,7 @@ namespace eosio { namespace chain {
    }
 
    void wasm_interface::init_native_contract() {
-      uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/};
+      uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
       for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
          load_native_contract(native_account[i]);
       }
@@ -118,7 +118,9 @@ namespace eosio { namespace chain {
       uint32_t version = *(uint32_t*)code;
 
       char buffer[128];
-      sprintf(buffer, "%s%d",name(_account).to_string().c_str(), version);
+      sprintf(buffer, "%s.%d",name(_account).to_string().c_str(), version);
+
+      wlog("loading native contract:\t ${n}", ("n", buffer));
 
       struct stat _s;
       if (stat(buffer, &_s) == 0) {
