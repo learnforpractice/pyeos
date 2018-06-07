@@ -81,6 +81,8 @@ add_library( eosio_chain
               rpc_interface/cpp/RpcService_types.cpp
               rpc_interface/cpp/rpceoslib.cpp
 
+              vm_manager.cpp
+
              ${HEADERS}
              )
 

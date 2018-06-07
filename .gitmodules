@@ -9,8 +9,8 @@
        path = libraries/ethereum
        url = https://github.com/learnforpractice/cpp-ethereum
        branch = develop-eos
-[submodule "libraries/micropython"]
-	path = libraries/micropython
+[submodule "libraries/vm_py"]
+	path = libraries/vm_py
 	url = https://github.com/learnforpractice/micropython
 	branch = master
 [submodule "contracts/musl/upstream"]
