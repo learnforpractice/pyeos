@@ -118,24 +118,24 @@ namespace eosio { namespace chain {
             return nullptr;
          }
 
-         size_t buffer_size = 0;
-         const char* code = db_api::get().db_get_i64_exex(itr, &buffer_size);
+         size_t native_size = 0;
+         const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
          uint32_t version = *(uint32_t*)code;
 
-         char buffer[128];
-         sprintf(buffer, "%s.%d",name(_account).to_string().c_str(), version);
+         char native_path[128];
+         sprintf(native_path, "%s.%d",name(_account).to_string().c_str(), version);
 
-         wlog("loading native contract:\t ${n}", ("n", buffer));
+         wlog("loading native contract:\t ${n}", ("n", native_path));
 
          struct stat _s;
-         if (stat(buffer, &_s) == 0) {
+         if (stat(native_path, &_s) == 0) {
             //
          } else {
-            std::ofstream out(buffer, std::ios::binary | std::ios::out);
-            out.write(&code[4], buffer_size - 4);
+            std::ofstream out(native_path, std::ios::binary | std::ios::out);
+            out.write(&code[4], native_size - 4);
             out.close();
          }
-         contract_path = buffer;
+         contract_path = native_path;
 
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
          if (!handle) {
