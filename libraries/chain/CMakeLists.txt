@@ -110,11 +110,11 @@ endif()
 target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared
         binaryen softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
 
-#micropython compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
-#but there are header files depend on micropython, 
-#and this header files are generated during the build of micropython, 
-#so let micropython built before eosio_chain
-add_dependencies(eosio_chain micropython)
+#vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
+#but there are header files depend on vm_py, 
+#and this header files are generated during the build of vm_py, 
+#so let vm_py built before eosio_chain
+add_dependencies(eosio_chain vm_py)
 
 target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -125,11 +125,11 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/py
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/extmod
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/micropython/ports/unix/build
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/extmod
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PRIVATE ${LevelDB_INCLUDE}
                             PRIVATE ${CPP_ETHEREUM_DIR}

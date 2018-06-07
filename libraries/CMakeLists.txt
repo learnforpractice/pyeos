@@ -1,6 +1,9 @@
 add_subdirectory( python )
 #add_subdirectory( python-single-thread )
-add_subdirectory( micropython )
+add_subdirectory( vm_py )
+add_subdirectory( vm_wasm )
+add_subdirectory( vm_eth )
+
 add_subdirectory( builtins )
 add_subdirectory( softfloat )
 add_subdirectory( chainbase )
