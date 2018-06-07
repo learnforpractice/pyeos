@@ -63,6 +63,11 @@ namespace eosio { namespace chain {
 
    wasm_interface::~wasm_interface() {}
 
+   bool wasm_interface::init() {
+      my->init_native_contract();
+      return true;
+   }
+
    void wasm_interface::validate(const bytes& code) {
       Module module;
       try {

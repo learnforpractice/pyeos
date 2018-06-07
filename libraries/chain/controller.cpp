@@ -1149,6 +1149,7 @@ void controller::startup() {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
    my->init();
+   get_wasm_interface().init();
 }
 
 chainbase::database& controller::db()const { return my->db; }

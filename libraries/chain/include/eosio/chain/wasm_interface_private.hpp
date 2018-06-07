@@ -41,7 +41,7 @@ namespace eosio { namespace chain {
             runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
          else
             FC_THROW("wasm_interface_impl fall through");
-         init_native_contract();
+         //init_native_contract();
       }
 
       std::vector<uint8_t> parse_initial_memory(const Module& module) {
