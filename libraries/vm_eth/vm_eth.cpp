@@ -10,11 +10,13 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-void setcode(uint64_t account) {
-   printf("+++++vm_eth: setcode");
+int setcode(uint64_t account) {
+   printf("+++++vm_eth: setcode\n");
+   return 0;
 }
 
-void apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   printf("+++++vm_eth: apply");
+int apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   printf("+++++vm_eth: apply\n");
+   return 0;
 }
 

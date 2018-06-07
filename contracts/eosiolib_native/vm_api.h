@@ -168,6 +168,9 @@ struct vm_api {
 void register_vm_api(struct vm_api* api);
 struct vm_api* get_vm_api();
 
+int setcode(uint64_t account);
+int apply(uint64_t receiver, uint64_t account, uint64_t act);
+
 #ifdef __cplusplus
 }
 #endif
