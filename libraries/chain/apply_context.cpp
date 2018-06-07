@@ -15,6 +15,8 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include "vm_manager.hpp"
+
 #include "micropython/db_api.hpp"
 #include "micropython/mpeoslib.h"
 #include "rpc_interface/rpc_interface.hpp"
@@ -88,6 +90,8 @@ void apply_context::schedule() {
    if( control.is_producing_block() ) {
       control.check_contract_list( receiver );
    }
+
+   vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
 
    if (a.vm_type == 0) {
          try {

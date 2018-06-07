@@ -11,23 +11,30 @@ vm_manager& vm_manager::get() {
 }
 
 vm_manager::vm_manager() {
-   char* dl_path;
+   const char* vm_libs_path[] = {
 #ifdef DEBUG
-   dl_path = "../libraries/micropython/libmicropython-1d.dylib";
-//   sprintf(dl_path, "../libraries/micropython/libmicropython-1d.dylib", counter);
+   "../libraries/vm_py/libvm_py-1d.dylib",
+   "../libraries/vm_wasm/libvm_wasmd.dylib",
+   "../libraries/vm_eth/libvm_ethd.dylib",
 #else
-   dl_path = "../libraries/micropython/libmicropython-1.dylib";
-//   sprintf(dl_path, "../libraries/micropython/libmicropython-1.dylib", counter);
+   "../libraries/vm_py/libvm_py.dylib",
+   "../libraries/vm_wasm/libvm_wasm.dylib",
+   "../libraries/vm_eth/libvm_eth.dylib",
 #endif
-   void *handle = dlopen(dl_path, RTLD_LAZY | RTLD_LOCAL);
-   fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
-   fn_apply apply = (fn_apply)dlsym(handle, "apply");
+   };
 
-   std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
-   calls->handle = handle;
-   calls->setcode = setcode;
-   calls->apply = apply;
-   vm_map[1] = std::move(calls);
+   int vm_types[] = {0, 1, 2};
+   for (int i=0;i<3;i++) {
+      void *handle = dlopen(vm_libs_path[i], RTLD_LAZY | RTLD_LOCAL);
+      fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
+      fn_apply apply = (fn_apply)dlsym(handle, "apply");
+
+      std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
+      calls->handle = handle;
+      calls->setcode = setcode;
+      calls->apply = apply;
+      vm_map[vm_types[i]] = std::move(calls);
+   }
 }
 
 int vm_manager::setcode(int type, uint64_t account) {

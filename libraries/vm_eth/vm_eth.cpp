@@ -11,10 +11,10 @@ struct vm_api* get_vm_api() {
 }
 
 void setcode(uint64_t account) {
-   printf("+++++micropython: setcode");
+   printf("+++++vm_eth: setcode");
 }
 
 void apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   printf("+++++micropython: apply");
+   printf("+++++vm_eth: apply");
 }
 
