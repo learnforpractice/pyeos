@@ -19,9 +19,9 @@ def init(wasm=False):
     def init_decorator(func):
         def func_wrapper(*args, **kwargs):
             if wasm:
-                prepare('native', 'native.wast', 'native.abi', __file__)
+                prepare('vmstore', 'vmstore.wast', 'vmstore.abi', __file__)
             else:
-                prepare('native', 'native.py', 'native.abi', __file__)
+                prepare('vmstore', 'vmstore.py', 'vmstore.abi', __file__)
             return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
@@ -36,21 +36,21 @@ def test(msg='hello,world'):
 
 @init()
 def deploy(d=True):
-    sync = Sync('native', _dir=os.path.dirname(__file__), _ignore=['t.py', 'native.py'])
-    aa = [ ['eosio.bios',   0,   'eosio.bios',      'eosio_bios_native'],
-          ['eosio.msig',    0,  'eosio.msig',       'eosio_msig_native'],
-          ['eosio.token',   0,  'eosio.token',      'eosio_token_native'],
-          ['eosio',         0,  'eosio.system',     'eosio_system_native'],
-          ['exchange',      0,  'exchange',         'exchange_native'] 
+    sync = Sync('vmstore', _dir=os.path.dirname(__file__), _ignore=['t.py', 'vmstore.py'])
+
+    aa = [ #  name        type     version                  path
+            ['vm.wasm',    0,      8,   "../libraries/vm_wasm/libvm_wasmd.dylib"],
+            ['vm.py',      1,      8,     "../libraries/vm_py/libvm_py-1d.dylib"],
+            ['vm.eth',     2,      8,    "../libraries/vm_eth/libvm_ethd.dylib"],
         ]
 
     debug.mp_set_max_execution_time(1000_000)
 
     for a in aa:
         if d:
-            sync.deploy_native(a[0], a[1], '../../build-debug/contracts/{0}/lib{1}d.dylib'.format(a[2], a[3]))
+            sync.deploy_vm(*a)
         else:
-            sync.deploy_native(a[0], a[1], '../../build/contracts/{0}/lib{1}.dylib'.format(a[2], a[3]))
+            sync.deploy_vm(*a)
 
 @init()
 def test2(count=100):

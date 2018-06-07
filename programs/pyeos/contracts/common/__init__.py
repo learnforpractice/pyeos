@@ -174,6 +174,16 @@ class Sync(object):
         r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
         assert r
 
+    def deploy_all_mpy(self):
+        with producer:
+            files = os.listdir(self.src_dir)
+            for file_name in files:
+                if not file_name.endswith('.py'):
+                    continue
+                if file_name in self.ignore_files:
+                    continue
+                self.deploy_mpy(file_name)
+
     def deploy_native(self, contract, version, file_name):
         contract = eosapi.N(contract)
         msg = int.to_bytes(contract, 8, 'little')
@@ -186,13 +196,16 @@ class Sync(object):
         r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
         assert r
 
-    def deploy_all_mpy(self):
-        with producer:
-            files = os.listdir(self.src_dir)
-            for file_name in files:
-                if not file_name.endswith('.py'):
-                    continue
-                if file_name in self.ignore_files:
-                    continue
-                self.deploy_mpy(file_name)
+    def deploy_vm(self, vm_name, type, version, file_name):
+        vm_name = eosapi.N(vm_name)
+        msg = int.to_bytes(vm_name, 8, 'little')
+        msg += int.to_bytes(type, 4, 'little')
+        msg += int.to_bytes(version, 4, 'little')
+        with open(file_name, 'rb') as f:
+            src_code = f.read()
+        msg += src_code
+
+        print('++++++++++++++++deply:', file_name)
+        r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
+        assert r
 

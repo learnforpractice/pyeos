@@ -14,6 +14,7 @@ typedef int (*fn_setcode)(uint64_t account);
 typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
 
 struct vm_calls {
+   uint32_t version;
    void* handle;
    fn_setcode setcode;
    fn_apply apply;
@@ -25,6 +26,10 @@ public:
    static vm_manager& get();
    int setcode(int type, uint64_t account);
    int apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
+   int check_new_version(int vm_type, uint64_t vm_name);
+   int load_vm_default(int vm_type, const char* vm_path);
+   int load_vm(int vm_type, uint64_t vm_name);
+
 private:
    vm_manager();
    map<int, std::unique_ptr<vm_calls>> vm_map;

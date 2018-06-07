@@ -1,0 +1,10 @@
+{
+  "actions": [{
+      "name": "sayhello",
+      "type": "raw"
+    },{
+      "name": "deploy",
+      "type": "raw"
+    }
+  ]
+}

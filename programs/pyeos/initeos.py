@@ -208,12 +208,13 @@ from credit import t as ct2
 from hello import t as ht
 from backyard import t as bt
 from rpctest import t as rt
-from vote import t as vt
 from simpleauction import t as st
 from lab import t as lt
 from biosboot import t as bb
 
+from vote import t as vt2
 from native import t as nt
+from vmstore import t as vt
 
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
