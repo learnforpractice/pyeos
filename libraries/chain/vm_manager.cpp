@@ -14,7 +14,14 @@ vm_manager& vm_manager::get() {
    return *mngr;
 }
 
-vm_manager::vm_manager() {
+bool vm_manager::init() {
+   static bool init = false;
+   if (init) {
+      return true;
+   }
+
+   init = true;
+
    const char* vm_libs_path[] = {
 #ifdef DEBUG
    "../libraries/vm_wasm/libvm_wasmd.dylib",
@@ -33,6 +40,12 @@ vm_manager::vm_manager() {
       }
       load_vm_default(i, vm_libs_path[i]);
    }
+
+   return true;
+}
+
+vm_manager::vm_manager() {
+   init();
 }
 
 int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
@@ -98,7 +111,15 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    size_t native_size = 0;
    const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
+   if (native_size <= 8) {
+      return 0;
+   }
+
    uint32_t type = *(uint32_t*)code;
+   if (type != vm_type) {
+      return 0;
+   }
+
    uint32_t version = *(uint32_t*)&code[4];
 
    char vm_path[128];
