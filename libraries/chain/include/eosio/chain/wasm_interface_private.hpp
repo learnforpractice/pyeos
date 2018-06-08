@@ -23,6 +23,16 @@ using namespace eosio::chain::webassembly;
 using namespace IR;
 using namespace Runtime;
 
+#if defined(__APPLE__) && defined(__MACH__)
+   #define NATIVE_PLATFORM 1
+#elif defined(__linux__)
+   #define NATIVE_PLATFORM 2
+#elif defined(_WIN64)
+   #define NATIVE_PLATFORM 3
+#else
+   #error Not Supported Platform
+#endif
+
 namespace eosio { namespace chain {
    void register_vm_api(void* handle);
    typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
@@ -112,8 +122,11 @@ namespace eosio { namespace chain {
          string contract_path;
          uint64_t native = N(native);
          void *handle = nullptr;
+         char _name[64];
+         snprintf(_name, sizeof(_name), "%s.%d", name(_account).to_string().c_str(), NATIVE_PLATFORM);
+         uint64_t __account = NN(_name);
 
-         int itr = db_api::get().db_find_i64(native, native, native, _account);
+         int itr = db_api::get().db_find_i64(native, native, native, __account);
          if (itr < 0) {
             return nullptr;
          }
@@ -122,8 +135,8 @@ namespace eosio { namespace chain {
          const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
          uint32_t version = *(uint32_t*)code;
 
-         char native_path[128];
-         sprintf(native_path, "%s.%d",name(_account).to_string().c_str(), version);
+         char native_path[64];
+         sprintf(native_path, "%s.%d",name(__account).to_string().c_str(), version);
 
          wlog("loading native contract:\t ${n}", ("n", native_path));
 

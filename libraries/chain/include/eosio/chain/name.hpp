@@ -38,6 +38,7 @@ namespace eosio { namespace chain {
    }
 
 #define N(X) eosio::chain::string_to_name(#X)
+#define NN(X) eosio::chain::string_to_name(X)
 
    struct name {
       uint64_t value = 0;

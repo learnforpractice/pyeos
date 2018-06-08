@@ -4,7 +4,23 @@
 
 using namespace eosio::chain;
 
-static uint64_t vm_names[] = {N(vm.wasm), N(vm.py), N(vm.eth)};
+static uint64_t vm_names[] = {
+#if defined(__APPLE__) && defined(__MACH__)
+      N(vm.wasm.1),
+      N(vm.py.1),
+      N(vm.eth.1)
+#elif defined(__linux__)
+      N(vm.wasm.2),
+      N(vm.py.2),
+      N(vm.eth.2)
+#elif defined(_WIN64)
+      N(vm.wasm.3),
+      N(vm.py.3),
+      N(vm.eth.3)
+#else
+   #error Not Supported Platform
+#endif
+};
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;

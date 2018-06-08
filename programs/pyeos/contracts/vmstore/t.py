@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import struct
 
@@ -37,11 +38,16 @@ def test(msg='hello,world'):
 @init()
 def deploy(d=True):
     sync = Sync('vmstore', _dir=os.path.dirname(__file__), _ignore=['t.py', 'vmstore.py'])
+    
+    if sys.platform == 'darwin':
+        platform = '1'
+    else:
+        raise Exception("platform is not supported")
 
-    aa = [ #  name        type     version                  path
-            ['vm.wasm',    0,      8,   "../libraries/vm_wasm/libvm_wasmd.dylib"],
-            ['vm.py',      1,      8,     "../libraries/vm_py/libvm_py-1d.dylib"],
-            ['vm.eth',     2,      8,    "../libraries/vm_eth/libvm_ethd.dylib"],
+    aa = [ #  name                  type     version                   path
+            ['vm.wasm.'+platform,    0,         11,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
+            ['vm.py.'+platform,      1,         11,         "../libraries/vm_py/libvm_py-1d.dylib"],
+            ['vm.eth.'+platform,     2,         11,         "../libraries/vm_eth/libvm_ethd.dylib"],
         ]
 
     debug.mp_set_max_execution_time(1000_000)

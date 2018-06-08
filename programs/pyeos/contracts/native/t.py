@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import struct
 
@@ -36,12 +37,19 @@ def test(msg='hello,world'):
 
 @init()
 def deploy(d=True):
+    if sys.platform == 'darwin':
+        PLAT = '.1'
+    else:
+        raise Exception("platform is not supported")
+
     sync = Sync('native', _dir=os.path.dirname(__file__), _ignore=['t.py', 'native.py'])
-    aa = [ ['eosio.bios',   0,   'eosio.bios',      'eosio_bios_native'],
-          ['eosio.msig',    0,  'eosio.msig',       'eosio_msig_native'],
-          ['eosio.token',   0,  'eosio.token',      'eosio_token_native'],
-          ['eosio',         0,  'eosio.system',     'eosio_system_native'],
-          ['exchange',      0,  'exchange',         'exchange_native'] 
+    #         name            version        path                 native lib name
+    aa = [ 
+          ['eosio.bios'+PLAT,    1,       'eosio.bios',       'eosio_bios_native'],
+          ['eosio.msig'+PLAT,    1,       'eosio.msig',       'eosio_msig_native'],
+          ['eosio.token'+PLAT,   1,       'eosio.token',      'eosio_token_native'],
+          ['eosio'+PLAT,         1,       'eosio.system',     'eosio_system_native'],
+          ['exchange'+PLAT,      1,       'exchange',         'exchange_native'] 
         ]
 
     debug.mp_set_max_execution_time(1000_000)

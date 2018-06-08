@@ -123,7 +123,11 @@ namespace eosio { namespace chain {
             return false;
          }
       } else {
-         int _itr = db_api::get().db_find_i64(native, native, native, ctx.act.account.value);
+         char _name[64];
+         snprintf(_name, sizeof(_name), "%s.%d", ctx.act.account.to_string().c_str(), NATIVE_PLATFORM);
+         uint64_t __account = NN(_name);
+
+         int _itr = db_api::get().db_find_i64(native, native, native, __account);
          if (_itr < 0) {
             return false;
          }
