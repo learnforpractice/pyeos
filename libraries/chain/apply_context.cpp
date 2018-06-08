@@ -83,9 +83,9 @@ void apply_context::schedule() {
 
   control.set_action_object(get_receiver(), act);
 
-  if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
-     return;
-  }
+   if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
+      return;
+   }
 
    if( control.is_producing_block() ) {
       control.check_contract_list( receiver );
