@@ -85,10 +85,8 @@ class PyEosConsole(InteractiveConsole):
             if not hasattr(module, '__file__'):
                 continue
             if module.__file__.endswith('.py'):
-                dir_name = os.path.dirname(module.__file__)
-                cache_file = os.path.join(dir_name, '__pycache__', os.path.basename(module.__file__)[:-3]+'.cpython-36.pyc')
                 t1 = os.path.getmtime(module.__file__)
-                t2 = os.path.getmtime(cache_file)
+                t2 = os.path.getmtime(mod.__cached__)
                 if t1 > t2:
                     print('Reloading ', module.__file__)
                     imp.reload(module)
