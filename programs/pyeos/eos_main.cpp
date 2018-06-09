@@ -141,11 +141,14 @@ extern "C" int eos_main(int argc, char** argv) {
 //   PyRun_SimpleString("initeos.init()");
 
    if (app().interactive_mode()) {
-      PyRun_SimpleString("initeos.start_console()");
-   } else {
-      while (!shutdown_finished) {
-         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+      while(true) {
+         PyRun_SimpleString("initeos.start_console()");
       }
+      Py_Finalize();
+      appbase::app().quit();
+   }
+   while (!shutdown_finished) {
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
 
    return 0;
