@@ -10,8 +10,8 @@
 
 #undef time
 
-#ifndef __TYPES_H___
-#define __TYPES_H___
+#ifndef TYPES_H
+#define TYPES_H
 
 
 #ifdef __cplusplus

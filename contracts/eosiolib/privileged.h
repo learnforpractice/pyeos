@@ -1,5 +1,5 @@
-#ifndef __PRIVILEGED_H_
-#define __PRIVILEGED_H_
+#ifndef PRIVILEGED_H
+#define PRIVILEGED_H
 
 #ifdef __cplusplus
 extern "C" {

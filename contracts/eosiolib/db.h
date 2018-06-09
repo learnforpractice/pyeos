@@ -6,8 +6,8 @@
 
 #include <eosiolib/types.h>
 
-#ifndef __DB_H_
-#define __DB_H_
+#ifndef DB_H
+#define DB_H
 
 #ifdef __cplusplus
 extern "C" {

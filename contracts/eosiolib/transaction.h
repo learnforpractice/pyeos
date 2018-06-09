@@ -5,8 +5,8 @@
 
 #include <eosiolib/types.h>
 
-#ifndef __TRANSACTION_H_
-#define __TRANSACTION_H_
+#ifndef TRANSACTION_H
+#define TRANSACTION_H
 
 
 #ifdef __cplusplus

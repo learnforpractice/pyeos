@@ -5,8 +5,8 @@
 
 #include <eosiolib/system.h>
 
-#ifndef __COMPILER_BUILTINS_H_
-#define __COMPILER_BUILTINS_H_
+#ifndef COMPILER_BUILTINS_H
+#define COMPILER_BUILTINS_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,8 +5,8 @@
 
 #include <eosiolib/types.h>
 
-#ifndef __CHAIN_H_
-#define __CHAIN_H_
+#ifndef CHAIN_H
+#define CHAIN_H
 
 /**
  *  @defgroup chainapi Chain API

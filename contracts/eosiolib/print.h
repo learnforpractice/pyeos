@@ -5,8 +5,8 @@
 
 #include <eosiolib/types.h>
 
-#ifndef __PRINT_H_
-#define __PRINT_H_
+#ifndef PRINT_H
+#define PRINT_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -65,6 +65,7 @@ namespace eosio {
     * @ingroup types
     */
    #define N(X) ::eosio::string_to_name(#X)
+   #define NN(X) ::eosio::string_to_name(X)
 
 
    static constexpr uint64_t name_suffix( uint64_t n ) {

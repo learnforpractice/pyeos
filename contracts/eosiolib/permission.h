@@ -4,8 +4,8 @@
  */
 #include <eosiolib/types.h>
 
-#ifndef __PERMISSION_H_
-#define __PERMISSION_H_
+#ifndef PERMISSION_H
+#define PERMISSION_H
 
 #ifdef __cplusplus
 extern "C" {

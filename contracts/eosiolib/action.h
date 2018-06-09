@@ -4,8 +4,8 @@
  */
 #include <eosiolib/system.h>
 
-#ifndef __ACTION_H_
-#define __ACTION_H_
+#ifndef ACTION_H
+#define ACTION_H
 
 #ifdef __cplusplus
 extern "C" {

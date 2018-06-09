@@ -4,8 +4,8 @@
  */
 #include <eosiolib/types.h>
 
-#ifndef __CRYPTO_H_
-#define __CRYPTO_H_
+#ifndef CRYPTO_H
+#define CRYPTO_H
 
 #ifdef __cplusplus
 extern "C" {

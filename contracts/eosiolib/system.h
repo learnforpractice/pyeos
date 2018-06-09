@@ -5,9 +5,8 @@
 
 #include <eosiolib/types.h>
 
-#ifndef __SYSTEM_H_
-#define __SYSTEM_H_
-
+#ifndef SYSTEM_H
+#define SYSTEM_H
 
 #ifdef __cplusplus
 extern "C" {
