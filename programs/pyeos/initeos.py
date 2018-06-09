@@ -86,7 +86,7 @@ class PyEosConsole(InteractiveConsole):
                 continue
             if module.__file__.endswith('.py'):
                 t1 = os.path.getmtime(module.__file__)
-                t2 = os.path.getmtime(mod.__cached__)
+                t2 = os.path.getmtime(module.__cached__)
                 if t1 > t2:
                     print('Reloading ', module.__file__)
                     imp.reload(module)
