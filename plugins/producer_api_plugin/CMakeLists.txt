@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/producer_api_plugin/*.hpp")
-add_library( producer_api_plugin
+add_library( producer_api_plugin SHARED
              producer_api_plugin.cpp
              ${HEADERS} )
 

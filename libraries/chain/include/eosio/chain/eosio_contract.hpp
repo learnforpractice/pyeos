@@ -34,6 +34,8 @@ namespace eosio { namespace chain {
    void apply_eosio_unlockcode(apply_context&);
 
    void apply_eosio_canceldelay(apply_context&);
+
+   void apply_eosio_activate(apply_context& context);
    ///@}  end action handlers
 
 } } /// namespace eosio::chain

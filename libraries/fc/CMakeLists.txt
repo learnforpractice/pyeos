@@ -122,9 +122,9 @@ list(APPEND sources ${fc_headers})
 
 hunter_add_package(ZLIB)
 
-setup_library( fc SOURCES ${sources} LIBRARY_TYPE STATIC DONT_INSTALL_LIBRARY )
+setup_library( fc SOURCES ${sources} LIBRARY_TYPE SHARED DONT_INSTALL_LIBRARY )
 
-  
+
 IF(APPLE)
   # As of 10.10 yosemite, the OpenSSL static libraries shipped with os x have a dependency
   # on zlib, so any time you link in openssl you also need to link zlib.  .  We really want to detect whether openssl was configured with the --no-zlib
@@ -132,7 +132,7 @@ IF(APPLE)
   # just always try to link it in on mac.
   find_package( ZLIB REQUIRED )
 ELSE(APPLE)
-  find_package( ZLIB REQUIRED)
+  find_package( ZLIB REQUIRED )
 ENDIF(APPLE)
 
 if( ZLIB_FOUND )

@@ -128,6 +128,8 @@ struct controller_impl {
 
    SET_APP_HANDLER( eosio, eosio, canceldelay );
 
+   SET_APP_HANDLER( eosio, eosio, activate );
+
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);
                                  });

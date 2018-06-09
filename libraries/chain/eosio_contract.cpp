@@ -582,4 +582,9 @@ void apply_eosio_canceldelay(apply_context& context) {
    context.cancel_deferred_transaction(transaction_id_to_sender_id(trx_id), account_name());
 }
 
+void apply_eosio_activate(apply_context& context) {
+
+}
+
+
 } } // namespace eosio::chain

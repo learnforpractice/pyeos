@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/bnet_plugin/*.hpp")
-add_library( bnet_plugin
+add_library( bnet_plugin SHARED
              bnet_plugin.cpp
              ${HEADERS} )
 

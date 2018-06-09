@@ -85,11 +85,14 @@ class PyEosConsole(InteractiveConsole):
             if not hasattr(module, '__file__'):
                 continue
             if module.__file__.endswith('.py'):
-                t1 = os.path.getmtime(module.__file__)
-                t2 = os.path.getmtime(module.__cached__)
-                if t1 > t2:
-                    print('Reloading ', module.__file__)
-                    imp.reload(module)
+                try:
+                    t1 = os.path.getmtime(module.__file__)
+                    t2 = os.path.getmtime(module.__cached__)
+                    if t1 > t2:
+                        print('Reloading ', module.__file__)
+                        imp.reload(module)
+                except Exception as e:
+                    pass
 
     def interact(self, banner=None, exitmsg=None):
         try:

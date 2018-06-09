@@ -32,7 +32,7 @@ target_include_directories(nodeos PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if(UNIX)
   if(APPLE)
-    set(whole_archive_flag "-force_load")
+#    set(whole_archive_flag "-force_load")
     set(no_whole_archive_flag "")
   else()
     set(whole_archive_flag "--whole-archive")

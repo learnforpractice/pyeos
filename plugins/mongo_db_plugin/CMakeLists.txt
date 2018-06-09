@@ -1,6 +1,6 @@
 if(BUILD_MONGO_DB_PLUGIN)
   file(GLOB HEADERS "include/eosio/mongo_db_plugin/*.hpp")
-  add_library( mongo_db_plugin
+  add_library( mongo_db_plugin SHARED
                mongo_db_plugin.cpp
                ${HEADERS} )
 

@@ -23,7 +23,7 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
 
 ## SORT .cpp by most likely to change / break compile
-add_library( eosio_chain
+add_library( eosio_chain SHARED
              merkle.cpp
              name.cpp
              transaction.cpp
