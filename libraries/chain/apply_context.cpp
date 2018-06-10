@@ -173,13 +173,13 @@ action_trace apply_context::exec_one()
       privileged = a.privileged;
       auto native = control.find_apply_handler(receiver, act.account, act.name);
       if( native ) {
-         if( control.is_producing_block() ) {
+         if( trx_context.can_subjectively_fail && control.is_producing_block() ) {
             control.check_contract_list( receiver );
+            control.check_action_list( act.account, act.name );
          }
          (*native)(*this);
       } else {
         schedule();
-
       }
 
 
