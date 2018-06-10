@@ -157,12 +157,12 @@ namespace std {
 /**
  * Provide == for checksum256 in global namespace
  */
-bool operator==(const checksum256& lhs, const checksum256& rhs) {
+bool inline operator==(const checksum256& lhs, const checksum256& rhs) {
    return memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
 }
-bool operator==(const checksum160& lhs, const checksum160& rhs) {
+bool inline operator==(const checksum160& lhs, const checksum160& rhs) {
    return memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
 }
-bool operator!=(const checksum160& lhs, const checksum160& rhs) {
+bool inline operator!=(const checksum160& lhs, const checksum160& rhs) {
    return memcmp(&lhs, &rhs, sizeof(lhs)) != 0;
 }
