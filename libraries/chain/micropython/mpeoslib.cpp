@@ -95,15 +95,15 @@ mpapi& get_mpapi() {
 
 #ifdef __APPLE__
    #ifdef DEBUG
-      sprintf(buffer, "../libraries/micropython/libmicropython-%dd.dylib", counter);
+      sprintf(buffer, "../libraries/vm_py/libvm_py-%dd.dylib", counter);
    #else
-      sprintf(buffer, "../libraries/micropython/libmicropython-%d.dylib", counter);
+      sprintf(buffer, "../libraries/vm_py/libvm_py-%d.dylib", counter);
    #endif
 #else
    #ifdef DEBUG
-      sprintf(buffer, "../libraries/micropython/libmicropython-%dd.so", counter);
+      sprintf(buffer, "../libraries/vm_py/libvm_py-%dd.so", counter);
    #else
-      sprintf(buffer, "../libraries/micropython/libmicropython-%d.so", counter);
+      sprintf(buffer, "../libraries/vm_py/libvm_py-%d.so", counter);
    #endif
 #endif
 
