@@ -23,6 +23,8 @@
 
 #include <regex>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 using namespace eosio;
 using namespace eosio::chain;
 
