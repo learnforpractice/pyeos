@@ -42,6 +42,15 @@ def test2(count=100):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
+def test3(count=100):
+    actions = []
+    for i in range(count):
+        act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'hello,world%d'%(i,)]
+        actions.append([act])
+    r, cost_time = eosapi.push_transactions(actions, True)
+    print(1e6/(cost_time/count), cost_time)
+
+@init
 def deploy_mpy():
     src_dir = os.path.dirname(os.path.abspath(__file__))
     file_name = 'hello.py'

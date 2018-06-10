@@ -44,11 +44,19 @@ def deploy(d=True):
     else:
         raise Exception("platform is not supported")
 
-    aa = [ #  name                  type     version                   path
-            ['vm.wasm.'+platform,    0,         11,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
-            ['vm.py.'+platform,      1,         11,         "../libraries/vm_py/libvm_py-1d.dylib"],
-            ['vm.eth.'+platform,     2,         11,         "../libraries/vm_eth/libvm_ethd.dylib"],
-        ]
+    V = 14
+    if d:
+        aa = [ #  name                  type     version                   path
+                ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
+                ['vm.py.'+platform,      1,         V,         "../libraries/vm_py/libvm_py-1d.dylib"],
+                ['vm.eth.'+platform,     2,         V,         "../libraries/vm_eth/libvm_ethd.dylib"],
+            ]
+    else:
+        aa = [ #  name                  type     version                   path
+                ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasm.dylib"],
+                ['vm.py.'+platform,      1,         V,         "../libraries/vm_py/libvm_py-1.dylib"],
+                ['vm.eth.'+platform,     2,         V,         "../libraries/vm_eth/libvm_eth.dylib"],
+             ]
 
     debug.mp_set_max_execution_time(1000_000)
 
@@ -78,9 +86,8 @@ def test2(count=100):
 
 @init()
 def test3():
-    with producer:
-        msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
-        r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
-        print(r)
-        assert r
+    msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
+    r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
+    print(r)
+    assert r
 

@@ -33,16 +33,7 @@ def test(msg='hello,world', wasm=False):
         assert r
 
 @init()
-def test2(count=100):
-    actions = []
-    for i in range(count):
-        act = [N('storagetest'), N('sayhello'), [[N('storagetest'), N('active')]], b'hello,world%d'%(i,)]
-        actions.append([act])
-    cost_time = eosapi.push_transactions(actions, True)
-    print(1.0/(cost_time/1e6/100.0), cost_time)
-
-@init()
-def test3(count=1000):
+def test2(count=1000):
     actions = []
     for i in range(count):
         action = ['storagetest', 'sayhello', {'storagetest':'active'}, str(i)]
@@ -51,4 +42,12 @@ def test3(count=1000):
     ret, cost = eosapi.push_actions(actions, True)
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-    eosapi.produce_block()
+
+@init()
+def test3(count=100):
+    actions = []
+    for i in range(count):
+        act = [N('storagetest'), N('sayhello'), [[N('storagetest'), N('active')]], b'hello,world%d'%(i,)]
+        actions.append([act])
+    r, cost = eosapi.push_transactions(actions, True)
+    print('total cost time:%.3f s, cost per TS: %.3f ms, TS per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))

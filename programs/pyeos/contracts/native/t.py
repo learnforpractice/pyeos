@@ -44,12 +44,13 @@ def deploy(d=True):
 
     sync = Sync('native', _dir=os.path.dirname(__file__), _ignore=['t.py', 'native.py'])
     #         name            version        path                 native lib name
-    aa = [ 
-          ['eosio.bios'+PLAT,    1,       'eosio.bios',       'eosio_bios_native'],
-          ['eosio.msig'+PLAT,    1,       'eosio.msig',       'eosio_msig_native'],
-          ['eosio.token'+PLAT,   1,       'eosio.token',      'eosio_token_native'],
-          ['eosio'+PLAT,         1,       'eosio.system',     'eosio_system_native'],
-          ['exchange'+PLAT,      1,       'exchange',         'exchange_native'] 
+    V = 3
+    aa = [
+          ['eosio.bios'+PLAT,    V,       'eosio.bios',       'eosio_bios_native'],
+          ['eosio.msig'+PLAT,    V,       'eosio.msig',       'eosio_msig_native'],
+          ['eosio.token'+PLAT,   V,       'eosio.token',      'eosio_token_native'],
+          ['eosio'+PLAT,         V,       'eosio.system',     'eosio_system_native'],
+          ['exchange'+PLAT,      V,       'exchange',         'exchange_native'] 
         ]
 
     debug.mp_set_max_execution_time(1000_000)
@@ -70,7 +71,8 @@ def test2(count=100):
 #        msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
 #        action = ['eosio.token', 'create', {'eosio.token':'active'}, msg]
 
-        msg = {"from":"eosio", "to":"hello", "quantity":"0.0001 EOS", "memo":"m"}
+#hello is a micropython smart contract and transfer will call hello, so do no use hello as destination account.
+        msg = {"from":"eosio", "to":"eosio.token", "quantity":"0.0001 EOS", "memo":"m"}
         action = ['eosio.token', 'transfer', {'eosio':'active'}, msg]
         actions.append(action)
 
@@ -79,7 +81,19 @@ def test2(count=100):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init()
-def test3():
+def test3(count=100):
+    actions = []
+
+    for i in range(count):
+        msg = {"from":"eosio", "to":"eosio.token", "quantity":"0.0001 EOS", "memo":str(i)}
+        msg = eosapi.pack_args('eosio.token', 'transfer', msg)
+        act = [N('eosio.token'), N('transfer'), [[N('eosio'), N('active')]], msg]
+        actions.append([act])
+    r, cost = eosapi.push_transactions(actions, True)
+    print('total cost time:%.3f s, cost per TS: %.3f ms, TS per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init()
+def test4():
     with producer:
         msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
         r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
