@@ -114,3 +114,6 @@ PyObject* push_raw_transaction_(string& signed_trx);
 PyObject* get_actions_(uint64_t account, int pos, int offset);
 PyObject* get_transaction_(string& id);
 
+void n_to_symbol_(uint64_t n, string& out);
+uint64_t symbol_to_n_(string& n);
+

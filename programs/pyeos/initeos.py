@@ -88,11 +88,14 @@ class PyEosConsole(InteractiveConsole):
                 try:
                     t1 = os.path.getmtime(module.__file__)
                     t2 = os.path.getmtime(module.__cached__)
+                except Exception as e:
+                    continue
+                try:
                     if t1 > t2:
                         print('Reloading ', module.__file__)
                         imp.reload(module)
                 except Exception as e:
-                    pass
+                    traceback.print_exc()
 
     def interact(self, banner=None, exitmsg=None):
         try:
@@ -201,21 +204,24 @@ def preinit():
     print('Initialize finished, please restart pyeos')
     sys.exit(0)
 
-from apitest import t as at
-from cryptokitties import t as kt
-from currency import t as ct
-from counter import t as ct1
-from credit import t as ct2
-from hello import t as ht
-from backyard import t as bt
-from rpctest import t as rt
-from simpleauction import t as st
-from lab import t as lt
-from biosboot import t as bb
-
-from vote import t as vt2
-from native import t as nt
-from vmstore import t as vt
+try:
+    from apitest import t as at
+    from cryptokitties import t as kt
+    from currency import t as ct
+    from counter import t as ct1
+    from credit import t as ct2
+    from hello import t as ht
+    from backyard import t as bt
+    from rpctest import t as rt
+    from simpleauction import t as st
+    from lab import t as lt
+    from biosboot import t as bb
+    
+    from vote import t as vt2
+    from native import t as nt
+    from vmstore import t as vt
+except Exception as e:
+    traceback.print_exc()
 
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')

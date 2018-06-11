@@ -141,9 +141,10 @@ extern "C" int eos_main(int argc, char** argv) {
 //   PyRun_SimpleString("initeos.init()");
 
    if (app().interactive_mode()) {
-      while(true) {
+      for (int i=0;i<5;i++) {
          PyRun_SimpleString("initeos.start_console()");
       }
+      elog("too many errors ocurr, exiting...");
       Py_Finalize();
       appbase::app().quit();
    }

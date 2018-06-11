@@ -110,6 +110,8 @@ cdef extern from "eosapi_.hpp":
 
     object connections_()
 
+    void n_to_symbol_(uint64_t n, string& out)
+    uint64_t symbol_to_n_(string& n)
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -676,6 +678,17 @@ def set_evm_contract(eth_address, sol_bin, sign=True):
     if sol_bin[0:2] == '0x':
         sol_bin = sol_bin[2:]
     return set_evm_contract_(eth_address, sol_bin, sign)
+
+def n2symbol(uint64_t n):
+    cdef string out
+    n_to_symbol_(n, out)
+    return out
+
+def symbol2n(string& n):
+    return symbol_to_n_(n)
+
+def symbolprecision(n):
+    return n&0xff
 
 cdef extern void py_exit() with gil:
     exit()

@@ -1,6 +1,6 @@
 from eoslib import *
-code = N('native')
 def deploy(account, src_code):
+    code = N('native')
     print('++++++++++++deploy:account', account)
     itr = db_find_i64(code, code, code, account)
     if itr < 0:

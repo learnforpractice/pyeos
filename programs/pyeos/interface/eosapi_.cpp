@@ -14,7 +14,7 @@
 #include <eosio/chain/contract_types.hpp>
 #include <eosio/history_plugin.hpp>
 #include <eosio/chain/plugin_interface.hpp>
-
+#include <eosio/chain/symbol.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -743,4 +743,18 @@ void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
       bin = string(result.binargs.data(), result.binargs.size());
    } FC_LOG_AND_DROP();
 }
+
+void n_to_symbol_(uint64_t n, string& out) {
+   try {
+      out = eosio::chain::symbol(n).name();
+   } FC_LOG_AND_DROP();
+}
+
+uint64_t symbol_to_n_(string& n) {
+   try {
+      return eosio::chain::symbol::from_string(n).value();
+   } FC_LOG_AND_DROP();
+   return 0;
+}
+
 

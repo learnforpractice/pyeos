@@ -104,10 +104,53 @@ def set_sys_contract():
     r = eosapi.push_action('eosio','setpriv',{'account':'eosio.msig', 'is_priv':1},{'eosio':'active'})
     assert r
 
+def create_buyram():
+    args = {"payer": 'eosio', "receiver":'hello', "quant":"0.1000 EOS"}
+    r = eosapi.push_action('eosio','buyram', args,{'eosio':'active'})
+    print(r)
+
+def create_buyrambytes():
+    args = {"payer": 'eosio', "receiver": 'hello', "bytes": 1024*1024*1024}
+    r = eosapi.push_action('eosio','buyrambytes', args,{'eosio':'active'})
+    print(r)
+
+def create_staked_accounts(b, e):
+    b, e = 0, len(accounts)
+    args = object()
+    args.ram_funds = 0.1
+    args.min_stake = 0.9
+    args.max_unstaked = 10
+    
+    ramFunds = round(args.ram_funds * 10000)
+    configuredMinStake = round(args.min_stake * 10000)
+    maxUnstaked = round(args.max_unstaked * 10000)
+    for i in range(b, e):
+        a = accounts[i]
+        funds = a['funds']
+        print('#' * 80)
+        print('# %d/%d %s %s' % (i, e, a['name'], intToCurrency(funds)))
+        print('#' * 80)
+        if funds < ramFunds:
+            print('skipping %s: not enough funds to cover ram' % a['name'])
+            continue
+        minStake = min(funds - ramFunds, configuredMinStake)
+        unstaked = min(funds - ramFunds - minStake, maxUnstaked)
+        stake = funds - ramFunds - unstaked
+        stakeNet = round(stake / 2)
+        stakeCpu = stake - stakeNet
+        print('%s: total funds=%s, ram=%s, net=%s, cpu=%s, unstaked=%s' % (a['name'], intToCurrency(a['funds']), intToCurrency(ramFunds), intToCurrency(stakeNet), intToCurrency(stakeCpu), intToCurrency(unstaked)))
+        assert(funds == ramFunds + stakeNet + stakeCpu + unstaked)
+        
+        retry(args.cleos + 'system newaccount --transfer eosio %s %s --stake-net "%s" --stake-cpu "%s" --buy-ram "%s"   ' % 
+            (a['name'], a['pub'], intToCurrency(stakeNet), intToCurrency(stakeCpu), intToCurrency(ramFunds)))
+        if unstaked:
+            retry(args.cleos + 'transfer eosio %s "%s"' % (a['name'], intToCurrency(unstaked)))
+
 def all():
     create_accounts()
     create_sys_account()
     import_keys()
     allocate_funds()
     create_tokens()
+    set_sys_contract()
     
