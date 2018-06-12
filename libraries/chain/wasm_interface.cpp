@@ -2077,6 +2077,9 @@ static struct vm_api _vm_api = {
    .db_update_i64 = db_update_i64,
    .db_remove_i64 = db_remove_i64,
    .db_get_i64 = db_get_i64,
+   .db_get_i64_ex = db_get_i64_ex,
+   .db_get_i64_exec = db_get_i64_exex,
+
    .db_next_i64 = db_next_i64,
 
    .db_previous_i64 = db_previous_i64,

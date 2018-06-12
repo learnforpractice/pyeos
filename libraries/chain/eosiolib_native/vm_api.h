@@ -37,6 +37,9 @@ struct vm_api {
    void (*db_remove_i64)(int32_t iterator);
 
    int32_t (*db_get_i64)(int32_t iterator, const void* data, uint32_t len);
+   int32_t (*db_get_i64_ex)( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
+   const char* (*db_get_i64_exex)( int itr, size_t* buffer_size );
+
    int32_t (*db_next_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_previous_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_find_i64)(account_name code, account_name scope, table_name table, uint64_t id);
@@ -141,9 +144,14 @@ struct vm_api {
    void (*eosio_exit)( int32_t code );
    uint64_t  (*current_time)();
    uint32_t  (*now)();
-
+#ifdef __cplusplus
    void (*send_deferred)(const uint128_t& sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t& sender_id);
+#else
+   void (*send_deferred)(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+   int (*cancel_deferred)(const uint128_t* sender_id);
+#endif
+
    size_t (*read_transaction)(char *buffer, size_t size);
    size_t (*transaction_size)();
    int (*tapos_block_num)();
@@ -154,15 +162,14 @@ struct vm_api {
 
    const char* (*get_code)( uint64_t receiver, size_t* size );
 
-   void (*rodb_remove_i64)( int itr );
-   int (*rodb_get_i64)( int itr, char* buffer, size_t buffer_size );
-   int (*rodb_next_i64)( int itr, uint64_t* primary );
-   int (*rodb_previous_i64)( int itr, uint64_t* primary );
-   int (*rodb_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-   int (*rodb_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-   int (*rodb_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
-   int (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
-
+   void (*rodb_remove_i64)( int32_t itr );
+   int32_t (*rodb_get_i64)( int32_t itr, char* buffer, size_t buffer_size );
+   int32_t (*rodb_next_i64)( int32_t itr, uint64_t* primary );
+   int32_t (*rodb_previous_i64)( int32_t itr, uint64_t* primary );
+   int32_t (*rodb_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int32_t (*rodb_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int32_t (*rodb_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int32_t (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
 };
 
 void register_vm_api(struct vm_api* api);

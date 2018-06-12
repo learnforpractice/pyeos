@@ -24,6 +24,14 @@ int32_t db_get_i64(int32_t iterator, const void* data, uint32_t len) {
    return get_vm_api()->db_get_i64(iterator, data, len);
 }
 
+int32_t db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size ) {
+   return get_vm_api()->db_get_i64_ex( itr, primary, buffer, buffer_size );
+}
+
+const char* db_get_i64_exex( int itr, size_t* buffer_size ) {
+   return get_vm_api()->db_get_i64_exex( itr,  buffer_size);
+}
+
 int32_t db_next_i64(int32_t iterator, uint64_t* primary) {
    return get_vm_api()->db_next_i64(iterator, primary);
 }
