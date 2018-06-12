@@ -201,7 +201,7 @@ void apply_eosio_setcode_py(apply_context& context) {
    auto  act = context.act.data_as<setcode>();
    context.require_authorization(act.account);
 
-   FC_ASSERT( act.vmtype == 1);
+   FC_ASSERT( act.vmtype == 1 );
    FC_ASSERT( act.vmversion == 0 );
 
    auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );

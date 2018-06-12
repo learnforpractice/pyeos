@@ -204,3 +204,17 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    return itr->second->apply(receiver, account, act);
 }
 
+
+void *vm_manager::get_wasm_vm_api() {
+
+}
+
+void *vm_manager::get_py_vm_api() {
+
+}
+
+void *vm_manager::get_eth_vm_api() {
+
+}
+
+

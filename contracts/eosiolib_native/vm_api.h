@@ -163,6 +163,18 @@ struct vm_api {
    uint32_t (*expiration)();
    int (*get_action)( uint32_t type, uint32_t index, char* buff, size_t size );
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
+
+   const char* (*get_code)( uint64_t receiver, size_t* size );
+
+   void (*rodb_remove_i64)( int itr );
+   int (*rodb_get_i64)( int itr, char* buffer, size_t buffer_size );
+   int (*rodb_next_i64)( int itr, uint64_t* primary );
+   int (*rodb_previous_i64)( int itr, uint64_t* primary );
+   int (*rodb_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
+
 };
 
 void register_vm_api(struct vm_api* api);

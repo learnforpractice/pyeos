@@ -2041,6 +2041,12 @@ static inline apply_context& ctx() {
 
 #include "eosiolib_native/vm_api.h"
 
+const char* get_code( uint64_t receiver, size_t* size ) {
+   const shared_string& src = db_api::get().get_code(receiver);
+   *size = src.size();
+   return src.data();
+}
+
 static struct vm_api _vm_api = {
    .read_action_data = read_action_data,
 
@@ -2178,6 +2184,16 @@ static struct vm_api _vm_api = {
    .expiration = expiration,
    .get_action = get_action,
    .get_context_free_data = get_context_free_data,
+   .get_code = get_code,
+
+   .rodb_remove_i64 = db_api_remove_i64,
+   .rodb_get_i64 = db_api_get_i64,
+   .rodb_next_i64 = db_api_next_i64,
+   .rodb_previous_i64 = db_api_previous_i64,
+   .rodb_find_i64 = db_api_find_i64,
+   .rodb_lowerbound_i64 = db_api_lowerbound_i64,
+   .rodb_upperbound_i64 = db_api_upperbound_i64,
+   .rodb_end_i64 = db_api_end_i64,
 };
 
 typedef void (*fn_register_vm_api)(struct vm_api* api);

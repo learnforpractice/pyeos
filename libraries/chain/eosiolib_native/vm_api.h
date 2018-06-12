@@ -32,23 +32,22 @@ struct vm_api {
    void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 
 
-
    int32_t (*db_store_i64)(account_name scope, table_name table, account_name payer, uint64_t id,  const void* data, uint32_t len);
    void (*db_update_i64)(int32_t iterator, account_name payer, const void* data, uint32_t len);
    void (*db_remove_i64)(int32_t iterator);
+
    int32_t (*db_get_i64)(int32_t iterator, const void* data, uint32_t len);
    int32_t (*db_next_i64)(int32_t iterator, uint64_t* primary);
-
    int32_t (*db_previous_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_find_i64)(account_name code, account_name scope, table_name table, uint64_t id);
    int32_t (*db_lowerbound_i64)(account_name code, account_name scope, table_name table, uint64_t id);
-
    int32_t (*db_upperbound_i64)(account_name code, account_name scope, table_name table, uint64_t id);
    int32_t (*db_end_i64)(account_name code, account_name scope, table_name table);
+
    int32_t (*db_idx64_store)(account_name scope, table_name table, account_name payer, uint64_t id, const uint64_t* secondary);
    void (*db_idx64_update)(int32_t iterator, account_name payer, const uint64_t* secondary);
-
    void (*db_idx64_remove)(int32_t iterator);
+
    int32_t (*db_idx64_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_previous)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_find_primary)(account_name code, account_name scope, table_name table, uint64_t* secondary, uint64_t primary);
@@ -152,6 +151,18 @@ struct vm_api {
    uint32_t (*expiration)();
    int (*get_action)( uint32_t type, uint32_t index, char* buff, size_t size );
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
+
+   const char* (*get_code)( uint64_t receiver, size_t* size );
+
+   void (*rodb_remove_i64)( int itr );
+   int (*rodb_get_i64)( int itr, char* buffer, size_t buffer_size );
+   int (*rodb_next_i64)( int itr, uint64_t* primary );
+   int (*rodb_previous_i64)( int itr, uint64_t* primary );
+   int (*rodb_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+   int (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
+
 };
 
 void register_vm_api(struct vm_api* api);

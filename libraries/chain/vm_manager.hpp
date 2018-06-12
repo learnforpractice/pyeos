@@ -31,6 +31,10 @@ public:
    int load_vm(int vm_type, uint64_t vm_name);
    bool init();
 
+   void *get_wasm_vm_api();
+   void *get_py_vm_api();
+   void *get_eth_vm_api();
+
 private:
    vm_manager();
    map<int, std::unique_ptr<vm_calls>> vm_map;
