@@ -2078,7 +2078,7 @@ static struct vm_api _vm_api = {
    .db_remove_i64 = db_remove_i64,
    .db_get_i64 = db_get_i64,
    .db_get_i64_ex = db_get_i64_ex,
-   .db_get_i64_exec = db_get_i64_exex,
+   .db_get_i64_exex = db_get_i64_exex,
 
    .db_next_i64 = db_next_i64,
 
@@ -2198,8 +2198,6 @@ static struct vm_api _vm_api = {
    .rodb_upperbound_i64 = db_api_upperbound_i64,
    .rodb_end_i64 = db_api_end_i64,
 };
-
-typedef void (*fn_register_vm_api)(struct vm_api* api);
 
 void register_vm_api(void* handle) {
    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "register_vm_api");

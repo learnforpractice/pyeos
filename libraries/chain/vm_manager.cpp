@@ -4,6 +4,12 @@
 
 using namespace eosio::chain;
 
+namespace eosio {
+namespace chain {
+   void register_vm_api(void* handle);
+}
+}
+
 static uint64_t vm_names[] = {
 #if defined(__APPLE__) && defined(__MACH__)
       N(vm.wasm.1),
@@ -79,6 +85,8 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
    if (apply == NULL) {
       return 0;
    }
+
+   register_vm_api(handle);
 
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
@@ -206,15 +214,15 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
 
 
 void *vm_manager::get_wasm_vm_api() {
-
+   return nullptr;
 }
 
 void *vm_manager::get_py_vm_api() {
-
+   return nullptr;
 }
 
 void *vm_manager::get_eth_vm_api() {
-
+   return nullptr;
 }
 
 

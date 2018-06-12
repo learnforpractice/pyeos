@@ -172,6 +172,8 @@ struct vm_api {
    int32_t (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
 };
 
+typedef void (*fn_register_vm_api)(struct vm_api* api);
+
 void register_vm_api(struct vm_api* api);
 struct vm_api* get_vm_api();
 
