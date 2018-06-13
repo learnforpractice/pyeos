@@ -111,6 +111,40 @@ namespace eosio { namespace chain {
          return it->second;
       }
 
+      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const digest_type& code_id,
+                                                                                    const shared_string& code)
+      {
+         auto it = instantiation_cache.find(code_id);
+         if(it == instantiation_cache.end()) {
+            IR::Module module;
+            try {
+               Serialization::MemoryInputStream stream((const U8*)code.data(), code.size());
+               WASM::serialize(stream, module);
+               module.userSections.clear();
+            } catch(const Serialization::FatalSerializationException& e) {
+               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+            } catch(const IR::ValidationException& e) {
+               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+            }
+
+            wasm_injections::wasm_binary_injection injector(module);
+            injector.inject();
+
+            std::vector<U8> bytes;
+            try {
+               Serialization::ArrayOutputStream outstream;
+               WASM::serialize(outstream, module);
+               bytes = outstream.getBytes();
+            } catch(const Serialization::FatalSerializationException& e) {
+               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+            } catch(const IR::ValidationException& e) {
+               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+            }
+            it = instantiation_cache.emplace(code_id, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
+         }
+         return it->second;
+      }
+
       void init_native_contract() {
          uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
          for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
