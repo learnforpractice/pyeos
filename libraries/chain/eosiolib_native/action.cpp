@@ -50,7 +50,6 @@ void send_inline(char *data, size_t data_len) {
    action act;
    fc::raw::unpack<action>(data, data_len, act);
    ctx().execute_inline(std::move(act));
-
 }
 
 void send_context_free_inline(char *data, size_t data_len) {

@@ -1,36 +1,49 @@
 
-void send_deferred(const uint128_t& sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
-   transaction_api(ctx(), false).send_deferred(sender_id, payer, array_ptr<char>((char*)serialized_transaction), size, replace_existing);
+void send_deferred(const uint128_t& sender_id, account_name payer, const char *data, size_t data_len, uint32_t replace_existing) {
+   try {
+      transaction trx;
+      fc::raw::unpack<transaction>(data, data_len, trx);
+      ctx().schedule_deferred_transaction(sender_id, payer, std::move(trx), replace_existing);
+   } FC_CAPTURE_AND_RETHROW((fc::to_hex(data, data_len)));
 }
 
-int cancel_deferred(const uint128_t& sender_id) {
-   return transaction_api(ctx(), false).cancel_deferred(sender_id);
+int cancel_deferred(const uint128_t& val) {
+   fc::uint128_t sender_id(val>>64, uint64_t(val) );
+   return ctx().cancel_deferred_transaction( (unsigned __int128)sender_id );
 }
 
-size_t read_transaction(char *buffer, size_t size) {
-   return context_free_transaction_api(ctx()).read_transaction(array_ptr<char>(buffer), size);
+size_t read_transaction(char *data, size_t buffer_size) {
+   bytes trx = ctx().get_packed_transaction();
+
+   auto s = trx.size();
+   if( buffer_size == 0) return s;
+
+   auto copy_size = std::min( buffer_size, s );
+   memcpy( data, trx.data(), copy_size );
+
+   return copy_size;
 }
 
 size_t transaction_size() {
-   return context_free_transaction_api(ctx()).transaction_size();
+   return ctx().get_packed_transaction().size();
 }
 
 int tapos_block_num() {
-   return context_free_transaction_api(ctx()).tapos_block_num();
+   return ctx().trx_context.trx.ref_block_num;
 }
 
 int tapos_block_prefix() {
-   return context_free_transaction_api(ctx()).tapos_block_prefix();
+   return ctx().trx_context.trx.ref_block_prefix;
 }
 
 uint32_t expiration() {
-   return context_free_transaction_api(ctx()).expiration();
+   return ctx().trx_context.trx.expiration.sec_since_epoch();
 }
 
-int get_action( uint32_t type, uint32_t index, char* buff, size_t size ) {
-   return context_free_transaction_api(ctx()).get_action(type, index, array_ptr<char>(buff), size);
+int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size ) {
+   return ctx().get_action( type, index, buffer, buffer_size );
 }
 
-int get_context_free_data( uint32_t index, char* buff, size_t size ) {
-   return context_free_api(ctx()).get_context_free_data(index, array_ptr<char>(buff), size);
+int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size ) {
+   return ctx().get_context_free_data( index, buffer, buffer_size );
 }

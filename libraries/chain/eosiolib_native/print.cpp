@@ -4,46 +4,84 @@
  */
 
 void prints( const char* cstr ) {
-   console_api(ctx()).prints(null_terminated_ptr((char*)cstr));
+   ctx().console_append<const char*>(cstr);
 }
 
 void prints_l( const char* cstr, uint32_t len) {
-   console_api(ctx()).prints_l(array_ptr<const char>(cstr), len);
+   ctx().console_append(string(cstr, len));
 }
 
-void printi( int64_t value ) {
-   console_api(ctx()).printi(value);
+void printi( int64_t val ) {
+   ctx().console_append(val);
 }
 
-void printui( uint64_t value ) {
-   console_api(ctx()).printui(value);
+void printui( uint64_t val ) {
+   ctx().console_append(val);
 }
 
-void printi128( const int128_t* value ) {
-   console_api(ctx()).printi128(*value);
+void printi128( const int128_t* val ) {
+   bool is_negative = (*val < 0);
+   unsigned __int128 val_magnitude;
+
+   if( is_negative )
+      val_magnitude = static_cast<unsigned __int128>(-*val); // Works even if val is at the lowest possible value of a int128_t
+   else
+      val_magnitude = static_cast<unsigned __int128>(*val);
+
+   fc::uint128_t v(val_magnitude>>64, static_cast<uint64_t>(val_magnitude) );
+
+   if( is_negative ) {
+      ctx().console_append("-");
+   }
+
+   ctx().console_append(fc::variant(v).get_string());
 }
 
-void printui128( const uint128_t* value ) {
-   console_api(ctx()).printui128(*value);
+void printui128( const uint128_t* val ) {
+   fc::uint128_t v(*val>>64, static_cast<uint64_t>(*val) );
+   ctx().console_append(fc::variant(v).get_string());
 }
 
-void printsf(float value) {
-   console_api(ctx()).printsf(value);
+void printsf(float val) {
+   // Assumes float representation on native side is the same as on the WASM side
+   auto& console = ctx().get_console_stream();
+   auto orig_prec = console.precision();
+
+   console.precision( std::numeric_limits<float>::digits10 );
+   ctx().console_append(val);
+
+   console.precision( orig_prec );
 }
 
-void printdf(double value) {
-   console_api(ctx()).printdf(value);
+void printdf(double val) {
+   // Assumes double representation on native side is the same as on the WASM side
+   auto& console = ctx().get_console_stream();
+   auto orig_prec = console.precision();
+
+   console.precision( std::numeric_limits<double>::digits10 );
+   ctx().console_append(val);
+
+   console.precision( orig_prec );
 }
 
-void printqf(const long double* value) {
-   console_api(ctx()).printqf(*(float128_t*)value);
+void printqf(const float128_t* val) {
+   auto& console = ctx().get_console_stream();
+   auto orig_prec = console.precision();
+
+   console.precision( std::numeric_limits<long double>::digits10 );
+
+   extFloat80_t val_approx;
+   f128M_to_extF80M((float128_t*)val, &val_approx);
+   ctx().console_append( *(long double*)(&val_approx) );
+
+   console.precision( orig_prec );
 }
 
-void printn( uint64_t name ) {
-   console_api(ctx()).printn(name);
+void printn( uint64_t n ) {
+   ctx().console_append(name(n).to_string());
 }
 
 void printhex( const void* data, uint32_t datalen ) {
-   console_api(ctx()).printhex(array_ptr<const char>((char*)data), datalen);
+   ctx().console_append(fc::to_hex((char*)data, datalen));
 }
 

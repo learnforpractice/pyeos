@@ -4,23 +4,35 @@
  */
 
 void  eosio_assert( uint32_t test, const char* msg ) {
-   context_free_system_api(ctx()).eosio_assert(test, null_terminated_ptr((char*)msg));
+   if( BOOST_UNLIKELY( !test ) ) {
+      std::string message( msg );
+      edump((message));
+      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
+   }
 }
 
 void  eosio_assert_message( uint32_t test, const char* msg, uint32_t msg_len ) {
-   context_free_system_api(ctx()).eosio_assert_message(test, array_ptr<const char>(msg), msg_len);
+   if( BOOST_UNLIKELY( !test ) ) {
+      std::string message( msg, msg_len );
+      edump((message));
+      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
+   }
 }
 
-void  eosio_assert_code( uint32_t test, uint64_t code ) {
-   context_free_system_api(ctx()).eosio_assert_code(test, code);
+void  eosio_assert_code( uint32_t test, uint64_t error_code ) {
+   if( BOOST_UNLIKELY( !test ) ) {
+      edump((error_code));
+      EOS_THROW( eosio_assert_code_exception,
+                 "assertion failure with error code: ${error_code}", ("error_code", error_code) );
+   }
 }
 
 void  eosio_exit( int32_t code ) {
-   context_free_system_api(ctx()).eosio_exit(code);
+   throw wasm_exit{code};
 }
 
 uint64_t  current_time() {
-   return system_api(ctx()).current_time();
+   return static_cast<uint64_t>( ctx().control.pending_block_time().time_since_epoch().count() );
 }
 
 uint32_t  now() {
