@@ -3,51 +3,67 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-uint32_t read_action_data( void* msg, uint32_t len ) {
-   array_ptr<char> ptr((char*)msg);
-   return action_api(ctx()).read_action_data(ptr, len);
+uint32_t read_action_data( void* msg, uint32_t buffer_size ) {
+   auto s = ctx().act.data.size();
+   if( buffer_size == 0 ) return s;
+
+   auto copy_size = std::min( (size_t)buffer_size, s );
+   memcpy( msg, ctx().act.data.data(), copy_size );
+
+   return copy_size;
+
 }
 
 uint32_t action_data_size() {
-   return action_api(ctx()).action_data_size();
+   return ctx().act.data.size();
 }
 
-void require_recipient( account_name name ) {
-   authorization_api(ctx()).require_recipient(name);
+uint64_t current_receiver() {
+   return ctx().receiver;
 }
 
-void require_auth( account_name name ) {
-   authorization_api(ctx()).require_authorization(name);
+void require_recipient( uint64_t name ) {
+   ctx().require_recipient(name);
 }
 
-void require_auth2( account_name name, permission_name permission ) {
-   authorization_api(ctx()).require_authorization(name, permission);
+void require_auth( uint64_t name ) {
+   ctx().require_authorization(name);
 }
 
-bool has_auth( account_name name ) {
-   return authorization_api(ctx()).has_authorization(name);
+void require_auth2( uint64_t name, uint64_t permission ) {
+   ctx().require_authorization(name, permission);
 }
 
-bool is_account( account_name name ) {
-   return authorization_api(ctx()).is_account(name);
+bool has_auth( uint64_t name ) {
+   return ctx().has_authorization(name);
 }
 
-void send_inline(char *serialized_action, size_t size) {
-   array_ptr<char> ptr((char*)serialized_action);
-   transaction_api(ctx()).send_inline(ptr, size);
+bool is_account( uint64_t name ) {
+   return ctx().is_account(name);
 }
 
-void send_context_free_inline(char *serialized_action, size_t size) {
-   array_ptr<char> ptr((char*)serialized_action);
-   transaction_api(ctx()).send_context_free_inline(ptr, size);
+void send_inline(char *data, size_t data_len) {
+   //TODO: Why is this limit even needed? And why is it not consistently checked on actions in input or deferred transactions
+   FC_ASSERT( data_len < ctx().control.get_global_properties().configuration.max_inline_action_size,
+              "inline action too big" );
+
+   action act;
+   fc::raw::unpack<action>(data, data_len, act);
+   ctx().execute_inline(std::move(act));
+
+}
+
+void send_context_free_inline(char *data, size_t data_len) {
+   //TODO: Why is this limit even needed? And why is it not consistently checked on actions in input or deferred transactions
+   FC_ASSERT( data_len < ctx().control.get_global_properties().configuration.max_inline_action_size,
+             "inline action too big" );
+
+   action act;
+   fc::raw::unpack<action>(data, data_len, act);
+   ctx().execute_context_free_inline(std::move(act));
 }
 
 uint64_t  publication_time() {
-   return system_api(ctx()).publication_time();
+   return static_cast<uint64_t>( ctx().trx_context.published.time_since_epoch().count() );
 }
-
-account_name current_receiver() {
-   return action_api(ctx()).current_receiver();;
-}
-
 

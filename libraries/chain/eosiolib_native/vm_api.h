@@ -5,19 +5,31 @@
 extern "C" {
 #endif
 
+struct checksum256 {
+   uint8_t hash[32];
+};
+
+struct checksum160 {
+   uint8_t hash[20];
+};
+
+struct checksum512 {
+   uint8_t hash[64];
+};
+
 struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
    uint32_t (*action_data_size)();
-   void (*require_recipient)( account_name name );
-   void (*require_auth)( account_name name );
-   void (*require_auth2)( account_name name, permission_name permission );
-   bool (*has_auth)( account_name name );
-   bool (*is_account)( account_name name );
+   void (*require_recipient)( uint64_t name );
+   void (*require_auth)( uint64_t name );
+   void (*require_auth2)( uint64_t name, uint64_t permission );
+   bool (*has_auth)( uint64_t name );
+   bool (*is_account)( uint64_t name );
    void (*send_inline)(char *serialized_action, size_t size);
    void (*send_context_free_inline)(char *serialized_action, size_t size);
    uint64_t  (*publication_time)();
-   account_name (*current_receiver)();
-   uint32_t (*get_active_producers)( account_name* producers, uint32_t datalen );
+   uint64_t (*current_receiver)();
+   uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
    void (*assert_sha256)( char* data, uint32_t length, const checksum256* hash );
    void (*assert_sha1)( char* data, uint32_t length, const checksum160* hash );
@@ -32,8 +44,8 @@ struct vm_api {
    void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 
 
-   int32_t (*db_store_i64)(account_name scope, table_name table, account_name payer, uint64_t id,  const void* data, uint32_t len);
-   void (*db_update_i64)(int32_t iterator, account_name payer, const void* data, uint32_t len);
+   int32_t (*db_store_i64)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
+   void (*db_update_i64)(int32_t iterator, uint64_t payer, const void* data, uint32_t len);
    void (*db_remove_i64)(int32_t iterator);
 
    int32_t (*db_get_i64)(int32_t iterator, const void* data, uint32_t len);
@@ -42,79 +54,79 @@ struct vm_api {
 
    int32_t (*db_next_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_previous_i64)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_find_i64)(account_name code, account_name scope, table_name table, uint64_t id);
-   int32_t (*db_lowerbound_i64)(account_name code, account_name scope, table_name table, uint64_t id);
-   int32_t (*db_upperbound_i64)(account_name code, account_name scope, table_name table, uint64_t id);
-   int32_t (*db_end_i64)(account_name code, account_name scope, table_name table);
+   int32_t (*db_find_i64)(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t (*db_lowerbound_i64)(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t (*db_upperbound_i64)(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t (*db_end_i64)(uint64_t code, uint64_t scope, uint64_t table);
 
-   int32_t (*db_idx64_store)(account_name scope, table_name table, account_name payer, uint64_t id, const uint64_t* secondary);
-   void (*db_idx64_update)(int32_t iterator, account_name payer, const uint64_t* secondary);
+   int32_t (*db_idx64_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint64_t* secondary);
+   void (*db_idx64_update)(int32_t iterator, uint64_t payer, const uint64_t* secondary);
    void (*db_idx64_remove)(int32_t iterator);
 
    int32_t (*db_idx64_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx64_find_primary)(account_name code, account_name scope, table_name table, uint64_t* secondary, uint64_t primary);
-   int32_t (*db_idx64_find_secondary)(account_name code, account_name scope, table_name table, const uint64_t* secondary, uint64_t* primary);
-   int32_t (*db_idx64_lowerbound)(account_name code, account_name scope, table_name table, uint64_t* secondary, uint64_t* primary);
-   int32_t (*db_idx64_upperbound)(account_name code, account_name scope, table_name table, uint64_t* secondary, uint64_t* primary);
-   int32_t (*db_idx64_end)(account_name code, account_name scope, table_name table);
-   int32_t (*db_idx128_store)(account_name scope, table_name table, account_name payer, uint64_t id, const uint128_t* secondary);
+   int32_t (*db_idx64_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t primary);
+   int32_t (*db_idx64_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const uint64_t* secondary, uint64_t* primary);
+   int32_t (*db_idx64_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
+   int32_t (*db_idx64_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
+   int32_t (*db_idx64_end)(uint64_t code, uint64_t scope, uint64_t table);
+   int32_t (*db_idx128_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* secondary);
 
-   void (*db_idx128_update)(int32_t iterator, account_name payer, const uint128_t* secondary);
+   void (*db_idx128_update)(int32_t iterator, uint64_t payer, const uint128_t* secondary);
    void (*db_idx128_remove)(int32_t iterator);
    int32_t (*db_idx128_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx128_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx128_find_primary)(account_name code, account_name scope, table_name table, uint128_t* secondary, uint64_t primary);
-   int32_t (*db_idx128_find_secondary)(account_name code, account_name scope, table_name table, const uint128_t* secondary, uint64_t* primary);
-   int32_t (*db_idx128_lowerbound)(account_name code, account_name scope, table_name table, uint128_t* secondary, uint64_t* primary);
-   int32_t (*db_idx128_upperbound)(account_name code, account_name scope, table_name table, uint128_t* secondary, uint64_t* primary);
+   int32_t (*db_idx128_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t primary);
+   int32_t (*db_idx128_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const uint128_t* secondary, uint64_t* primary);
+   int32_t (*db_idx128_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t* primary);
+   int32_t (*db_idx128_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t* primary);
 
-   int32_t (*db_idx128_end)(account_name code, account_name scope, table_name table);
-   int32_t (*db_idx256_store)(account_name scope, table_name table, account_name payer, uint64_t id, const void* data, uint32_t data_len );
-   void (*db_idx256_update)(int32_t iterator, account_name payer, const void* data, uint32_t data_len);
+   int32_t (*db_idx128_end)(uint64_t code, uint64_t scope, uint64_t table);
+   int32_t (*db_idx256_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const void* data, uint32_t data_len );
+   void (*db_idx256_update)(int32_t iterator, uint64_t payer, const void* data, uint32_t data_len);
    void (*db_idx256_remove)(int32_t iterator);
    int32_t (*db_idx256_next)(int32_t iterator, uint64_t* primary);
 
    int32_t (*db_idx256_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx256_find_primary)(account_name code, account_name scope, table_name table, void* data, uint32_t data_len, uint64_t primary);
-   int32_t (*db_idx256_find_secondary)(account_name code, account_name scope, table_name table, const void* data, uint32_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_lowerbound)(account_name code, account_name scope, table_name table, void* data, uint32_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_upperbound)(account_name code, account_name scope, table_name table, void* data, uint32_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_end)(account_name code, account_name scope, table_name table);
-   int32_t (*db_idx_double_store)(account_name scope, table_name table, account_name payer, uint64_t id, const double* secondary);
-   void (*db_idx_double_update)(int32_t iterator, account_name payer, const double* secondary);
+   int32_t (*db_idx256_find_primary)(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t primary);
+   int32_t (*db_idx256_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const void* data, uint32_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_end)(uint64_t code, uint64_t scope, uint64_t table);
+   int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const double* secondary);
+   void (*db_idx_double_update)(int32_t iterator, uint64_t payer, const double* secondary);
    void (*db_idx_double_remove)(int32_t iterator);
    int32_t (*db_idx_double_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx_double_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx_double_find_primary)(account_name code, account_name scope, table_name table, double* secondary, uint64_t primary);
-   int32_t (*db_idx_double_find_secondary)(account_name code, account_name scope, table_name table, const double* secondary, uint64_t* primary);
-   int32_t (*db_idx_double_lowerbound)(account_name code, account_name scope, table_name table, double* secondary, uint64_t* primary);
-   int32_t (*db_idx_double_upperbound)(account_name code, account_name scope, table_name table, double* secondary, uint64_t* primary);
-   int32_t (*db_idx_double_end)(account_name code, account_name scope, table_name table);
-   int32_t (*db_idx_long_double_store)(account_name scope, table_name table, account_name payer, uint64_t id, const long double* secondary);
-   void (*db_idx_long_double_update)(int32_t iterator, account_name payer, const long double* secondary);
+   int32_t (*db_idx_double_find_primary)(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t primary);
+   int32_t (*db_idx_double_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const double* secondary, uint64_t* primary);
+   int32_t (*db_idx_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t* primary);
+   int32_t (*db_idx_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t* primary);
+   int32_t (*db_idx_double_end)(uint64_t code, uint64_t scope, uint64_t table);
+   int32_t (*db_idx_long_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const long double* secondary);
+   void (*db_idx_long_double_update)(int32_t iterator, uint64_t payer, const long double* secondary);
    void (*db_idx_long_double_remove)(int32_t iterator);
    int32_t (*db_idx_long_double_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx_long_double_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx_long_double_find_primary)(account_name code, account_name scope, table_name table, long double* secondary, uint64_t primary);
-   int32_t (*db_idx_long_double_find_secondary)(account_name code, account_name scope, table_name table, const long double* secondary, uint64_t* primary);
-   int32_t (*db_idx_long_double_lowerbound)(account_name code, account_name scope, table_name table, long double* secondary, uint64_t* primary);
-   int32_t (*db_idx_long_double_upperbound)(account_name code, account_name scope, table_name table, long double* secondary, uint64_t* primary);
-   int32_t (*db_idx_long_double_end)(account_name code, account_name scope, table_name table);
+   int32_t (*db_idx_long_double_find_primary)(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t primary);
+   int32_t (*db_idx_long_double_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const long double* secondary, uint64_t* primary);
+   int32_t (*db_idx_long_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t* primary);
+   int32_t (*db_idx_long_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t* primary);
+   int32_t (*db_idx_long_double_end)(uint64_t code, uint64_t scope, uint64_t table);
 
 
    int32_t (*check_transaction_authorization)( const char* trx_data,     uint32_t trx_size,
                                     const char* pubkeys_data, uint32_t pubkeys_size,
                                     const char* perms_data,   uint32_t perms_size
                                   );
-   int32_t (*check_permission_authorization)( account_name account,
+   int32_t (*check_permission_authorization)( uint64_t account,
                                    permission_name permission,
                                    const char* pubkeys_data, uint32_t pubkeys_size,
                                    const char* perms_data,   uint32_t perms_size,
                                    uint64_t delay_us
                                  );
-   int64_t (*get_permission_last_used)( account_name account, permission_name permission );
-   int64_t (*get_account_creation_time)( account_name account );
+   int64_t (*get_permission_last_used)( uint64_t account, permission_name permission );
+   int64_t (*get_account_creation_time)( uint64_t account );
 
 
 
@@ -130,10 +142,10 @@ struct vm_api {
    void (*printn)( uint64_t name );
    void (*printhex)( const void* data, uint32_t datalen );
 
-   void (*set_resource_limits)( account_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
+   void (*set_resource_limits)( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
    int64_t (*set_proposed_producers)( char *producer_data, uint32_t producer_data_size );
-   bool (*is_privileged)( account_name account );
-   void (*set_privileged)( account_name account, bool is_priv );
+   bool (*is_privileged)( uint64_t account );
+   void (*set_privileged)( uint64_t account, bool is_priv );
    void (*set_blockchain_parameters_packed)(char* data, uint32_t datalen);
    uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
    void (*activate_feature)( int64_t f );
@@ -145,10 +157,10 @@ struct vm_api {
    uint64_t  (*current_time)();
    uint32_t  (*now)();
 #ifdef __cplusplus
-   void (*send_deferred)(const uint128_t& sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+   void (*send_deferred)(const uint128_t& sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t& sender_id);
 #else
-   void (*send_deferred)(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+   void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t* sender_id);
 #endif
 

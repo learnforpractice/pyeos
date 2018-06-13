@@ -3,18 +3,6 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-struct checksum256 {
-   uint8_t hash[32];
-};
-
-struct checksum160 {
-   uint8_t hash[20];
-};
-
-struct checksum512 {
-   uint8_t hash[64];
-};
-
 void assert_sha256( char* data, uint32_t length, const checksum256* hash ) {
    array_ptr<char> ptr(data);
    eosio_assert(data != nullptr && hash != nullptr);

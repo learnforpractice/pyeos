@@ -27,9 +27,28 @@
 
 #include <fc/crypto/xxhash.h>
 
-
 namespace eosio {
 namespace chain {
+
+static inline apply_context& ctx() {
+   return apply_context::ctx();
+}
+
+#include "eosiolib_native/action.cpp"
+#if 0
+#include "eosiolib_native/chain.cpp"
+#include "eosiolib_native/crypto.cpp"
+#include "eosiolib_native/db.cpp"
+#include "eosiolib_native/privileged.cpp"
+#include "eosiolib_native/system.cpp"
+#include "eosiolib_native/transaction.cpp"
+#include "eosiolib_native/print.cpp"
+#include "eosiolib_native/permission.cpp"
+#endif
+
+#include "eosiolib_native/vm_api.h"
+
+#define API() get_vm_api()
 
 #if defined(assert)
    #undef assert
@@ -930,21 +949,15 @@ class action_api : public context_aware_api {
       :context_aware_api(ctx,true){}
 
       int read_action_data(array_ptr<char> memory, size_t buffer_size) {
-         auto s = context.act.data.size();
-         if( buffer_size == 0 ) return s;
-
-         auto copy_size = std::min( buffer_size, s );
-         memcpy( memory, context.act.data.data(), copy_size );
-
-         return copy_size;
+         return API()->read_action_data(memory.value, buffer_size);
       }
 
       int action_data_size() {
-         return context.act.data.size();
+         return API()->action_data_size();
       }
 
       name current_receiver() {
-         return context.receiver;
+         return API()->current_receiver();
       }
 };
 
@@ -1895,22 +1908,6 @@ void eosio_assert( bool condition) {
    eosio_assert_( condition, null_terminated_ptr((char*)"") );
 }
 
-static inline apply_context& ctx() {
-   return apply_context::ctx();
-}
-
-#include "eosiolib_native/action.cpp"
-#include "eosiolib_native/chain.cpp"
-#include "eosiolib_native/crypto.cpp"
-#include "eosiolib_native/db.cpp"
-#include "eosiolib_native/privileged.cpp"
-#include "eosiolib_native/system.cpp"
-#include "eosiolib_native/transaction.cpp"
-#include "eosiolib_native/print.cpp"
-#include "eosiolib_native/permission.cpp"
-
-#include "eosiolib_native/vm_api.h"
-
 const char* get_code( uint64_t receiver, size_t* size ) {
    const shared_string& src = db_api::get().get_code(receiver);
    *size = src.size();
@@ -1937,15 +1934,15 @@ int32_t uint64_to_string_(uint64_t n, char* out, int size) {
 }
 
 static struct vm_api _vm_api = {
+//action.cpp
    .read_action_data = read_action_data,
-
    .action_data_size = action_data_size,
    .require_recipient = require_recipient,
    .require_auth = require_auth,
    .require_auth2 = require_auth2,
    .has_auth = has_auth,
    .is_account = is_account,
-
+#if 0
    .send_inline = send_inline,
    .send_context_free_inline = send_context_free_inline,
    .publication_time = publication_time,
@@ -2092,7 +2089,7 @@ static struct vm_api _vm_api = {
    .string_to_uint64 = string_to_uint64_,
    .uint64_to_string = uint64_to_string_,
    .string_to_symbol = string_to_symbol_c,
-
+#endif
 };
 
 void register_vm_api(void* handle) {
