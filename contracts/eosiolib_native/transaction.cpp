@@ -7,7 +7,7 @@
 #include "vm_api.h"
 
 #ifdef __cplusplus
-void send_deferred(const uint128_t& sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
+void send_deferred(const uint128_t& sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
    get_vm_api()->send_deferred(sender_id, payer,serialized_transaction, size, replace_existing);
 }
 
@@ -15,7 +15,7 @@ int cancel_deferred(const uint128_t& sender_id) {
    return get_vm_api()->cancel_deferred(sender_id);
 }
 #else
-void send_deferred(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
+void send_deferred(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
    get_vm_api()->send_deferred(sender_id, payer,serialized_transaction, size, replace_existing);
 }
 

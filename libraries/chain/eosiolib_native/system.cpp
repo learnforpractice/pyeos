@@ -39,3 +39,13 @@ uint32_t  now() {
    return (uint32_t)( current_time() / 1000000 );
 }
 
+void checktime() {
+   ctx().trx_context.checktime();
+}
+
+void check_context_free(bool context_free) {
+   if( ctx().context_free )
+      FC_ASSERT( context_free, "only context free api's can be used in this context" );
+   ctx().used_context_free_api |= !context_free;
+}
+

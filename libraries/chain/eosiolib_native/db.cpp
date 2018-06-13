@@ -10,11 +10,11 @@ static bool is_nan( const float128_t& f ) {
    return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
 }
 
-int32_t db_store_i64(account_name scope, table_name table, account_name payer, uint64_t id,  const void* data, uint32_t len) {
+int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
    return ctx().db_store_i64(scope, table, payer, id,  (const char*)data, len);
 }
 
-void db_update_i64(int32_t iterator, account_name payer, const void* data, uint32_t len) {
+void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len) {
    ctx().db_update_i64(iterator, payer, (const char*)data, len);
 }
 
@@ -42,19 +42,19 @@ int32_t db_previous_i64(int32_t iterator, uint64_t* primary) {
    return ctx().db_previous_i64(iterator, *primary);
 }
 
-int32_t db_find_i64(account_name code, account_name scope, table_name table, uint64_t id) {
+int32_t db_find_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id) {
    return ctx().db_find_i64(code, scope, table, id);
 }
 
-int32_t db_lowerbound_i64(account_name code, account_name scope, table_name table, uint64_t id) {
+int32_t db_lowerbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id) {
    return ctx().db_lowerbound_i64(code, scope, table, id);
 }
 
-int32_t db_upperbound_i64(account_name code, account_name scope, table_name table, uint64_t id) {
+int32_t db_upperbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id) {
    return ctx().db_upperbound_i64(code, scope, table, id);
 }
 
-int32_t db_end_i64(account_name code, account_name scope, table_name table) {
+int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
    return ctx().db_end_i64(code, scope, table);
 }
 
@@ -91,44 +91,44 @@ int32_t db_end_i64(account_name code, account_name scope, table_name table) {
       }
 
 #define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
-      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const ARR_ELEMENT_TYPE* data, size_t data_len) {\
+      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const void* data, size_t data_len) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.store(scope, table, payer, id, data);\
+         return ctx().IDX.store(scope, table, payer, id, (const ARR_ELEMENT_TYPE*)data);\
       }\
-      void db_##IDX##_update( int iterator, uint64_t payer, const ARR_ELEMENT_TYPE* data, size_t data_len ) {\
+      void db_##IDX##_update( int iterator, uint64_t payer, const void* data, size_t data_len ) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.update(iterator, payer, data);\
+         return ctx().IDX.update(iterator, payer, (const ARR_ELEMENT_TYPE*)data);\
       }\
       void db_##IDX##_remove( int iterator ) {\
          return ctx().IDX.remove(iterator);\
       }\
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t& primary ) {\
+      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const void* data, size_t data_len, uint64_t* primary ) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.find_secondary(code, scope, table, data, primary);\
+         return ctx().IDX.find_secondary(code, scope, table, (const ARR_ELEMENT_TYPE*)data, *primary);\
       }\
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t primary ) {\
+      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t primary ) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.find_primary(code, scope, table, data, primary);\
+         return ctx().IDX.find_primary(code, scope, table, (ARR_ELEMENT_TYPE*)data, primary);\
       }\
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
+      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary ) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.lowerbound_secondary(code, scope, table, data, *primary);\
+         return ctx().IDX.lowerbound_secondary(code, scope, table, (ARR_ELEMENT_TYPE*)data, *primary);\
       }\
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
+      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary ) {\
          FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.upperbound_secondary(code, scope, table, data, *primary);\
+         return ctx().IDX.upperbound_secondary(code, scope, table, (ARR_ELEMENT_TYPE*)data, *primary);\
       }\
       int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ) {\
          return ctx().IDX.end_secondary(code, scope, table);\

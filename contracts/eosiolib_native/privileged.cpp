@@ -3,7 +3,7 @@
 
 #include "vm_api.h"
 
-void set_resource_limits( account_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
+void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    get_vm_api()->set_resource_limits( account, ram_bytes, net_weight, cpu_weight );
 }
 
@@ -12,11 +12,11 @@ int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size
    return get_vm_api()->set_proposed_producers( producer_data, producer_data_size );
 }
 
-bool is_privileged( account_name account )  {
+bool is_privileged( uint64_t account )  {
    return get_vm_api()->is_privileged( account );
 }
 
-void set_privileged( account_name account, bool is_priv ) {
+void set_privileged( uint64_t account, bool is_priv ) {
    get_vm_api()->set_privileged( account, is_priv );
 }
 

@@ -1,5 +1,5 @@
 
-void send_deferred(const uint128_t& sender_id, account_name payer, const char *data, size_t data_len, uint32_t replace_existing) {
+void send_deferred(const uint128_t& sender_id, uint64_t payer, const char *data, size_t data_len, uint32_t replace_existing) {
    try {
       transaction trx;
       fc::raw::unpack<transaction>(data, data_len, trx);

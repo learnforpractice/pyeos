@@ -1,5 +1,5 @@
 
-void set_resource_limits( account_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
+void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    EOS_ASSERT(ram_bytes >= -1, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
    EOS_ASSERT(net_weight >= -1, wasm_execution_error, "invalid value for net resource weight expected [-1,INT64_MAX]");
    EOS_ASSERT(cpu_weight >= -1, wasm_execution_error, "invalid value for cpu resource weight expected [-1,INT64_MAX]");
@@ -14,7 +14,7 @@ int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t datalen
    fc::raw::unpack(ds, producers);
    EOS_ASSERT(producers.size() <= config::max_producers, wasm_execution_error, "Producer schedule exceeds the maximum producer count for this chain");
    // check that producers are unique
-   std::set<account_name> unique_producers;
+   std::set<uint64_t> unique_producers;
    for (const auto& p: producers) {
       EOS_ASSERT( ctx().is_account(p.producer_name), wasm_execution_error, "producer schedule includes a nonexisting account" );
       EOS_ASSERT( p.block_signing_key.valid(), wasm_execution_error, "producer schedule includes an invalid key" );
@@ -24,11 +24,11 @@ int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t datalen
    return ctx().control.set_proposed_producers( std::move(producers) );
 }
 
-bool is_privileged( account_name n )  {
+bool is_privileged( uint64_t n )  {
    return ctx().db.get<account_object, by_name>( n ).privileged;
 }
 
-void set_privileged( account_name n, bool is_priv ) {
+void set_privileged( uint64_t n, bool is_priv ) {
    const auto& a = ctx().db.get<account_object, by_name>( n );
    ctx().db.modify( a, [&]( auto& ma ){
       ma.privileged = is_priv;

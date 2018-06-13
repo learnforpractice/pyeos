@@ -1,7 +1,6 @@
 #include <eosiolib/types.h>
 #include <eosiolib/privileged.hpp>
 
-#if 0
 
 #include <eosiolib/datastream.hpp>
 
@@ -24,16 +23,3 @@ namespace eosio {
    }
 
 } /// namespace eosio
-
-#endif
-
-namespace eosio {
-
-   void set_blockchain_parameters(const eosio::blockchain_parameters& params) {
-   }
-
-   void get_blockchain_parameters(eosio::blockchain_parameters& params) {
-   }
-
-} /// namespace eosio
-
