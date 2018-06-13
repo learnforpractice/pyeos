@@ -3,6 +3,11 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
+void abort() {
+   edump(("abort() called"));
+   FC_ASSERT( false, "abort() called");
+}
+
 void  eosio_assert( uint32_t test, const char* msg ) {
    if( BOOST_UNLIKELY( !test ) ) {
       std::string message( msg );

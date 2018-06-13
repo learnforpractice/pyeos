@@ -8,6 +8,10 @@ void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weigh
    }
 }
 
+void get_resource_limits( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight ) {
+   ctx().control.get_resource_limits_manager().get_account_limits( account, *ram_bytes, *net_weight, *cpu_weight);
+}
+
 int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t datalen ) {
    datastream<const char*> ds( packed_producer_schedule, datalen );
    vector<producer_key> producers;

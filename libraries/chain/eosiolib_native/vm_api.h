@@ -143,6 +143,7 @@ struct vm_api {
    void (*printhex)( const void* data, uint32_t datalen );
 
    void (*set_resource_limits)( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
+   void (*get_resource_limits)( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight );
    int64_t (*set_proposed_producers)( char *producer_data, uint32_t producer_data_size );
    bool (*is_privileged)( uint64_t account );
    void (*set_privileged)( uint64_t account, bool is_priv );
@@ -150,6 +151,7 @@ struct vm_api {
    uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
    void (*activate_feature)( int64_t f );
 
+   void (*abort)();
    void (*eosio_assert)( uint32_t test, const char* msg );
    void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len );
    void (*eosio_assert_code)( uint32_t test, uint64_t code );
