@@ -1,5 +1,6 @@
 import ustruct
 from eoslib import *
+import db
 
 g_scope = N('cache')
 g_code = N('cache')
@@ -12,14 +13,14 @@ class CList(object):
         self.table_id = N('list'+str(table_id))
 
     def load(self):
-        itr = db_end_i64(g_code, g_scope, self.table_id)
+        itr = db.end_i64(g_code, g_scope, self.table_id)
         if itr == -1: #no value in table
             return
         while True:
-            itr, key = db_previous_i64(itr)
+            itr, key = db.previous_i64(itr)
             if itr < 0:
                 break
-            value = db_get_i64(itr)
+            value = db.get_i64(itr)
             value_type = ustruct.unpack('B', value)
             _value = None
 
@@ -39,11 +40,11 @@ class CList(object):
         _value = ustruct.pack('B', value_type)
         _value += raw_value_data
         
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        itr = db.find_i64(g_code, g_scope, self.table_id, id)
         if itr < 0:
-            db_store_i64(g_scope, self.table_id, payer, id, _value)
+            db.store_i64(g_scope, self.table_id, payer, id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            db.update_i64(itr, payer, _value)
 
     def store(self):
         for key in self._dirty_keys:
@@ -103,9 +104,9 @@ class CList(object):
         id = index
         del self._list[key]
         del self._dirty_keys[index]
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        itr = db.find_i64(g_code, g_scope, self.table_id, id)
         if itr >= 0:
-            db_remove_i64(itr)
+            db.remove_i64(itr)
 
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, str(self._list))
@@ -118,14 +119,14 @@ class cache_dict(object):
         self.table_id = N('cache'+str(table_id))
 
     def load(self):
-        itr = db_end_i64(g_code, g_scope, self.table_id);
+        itr = db.end_i64(g_code, g_scope, self.table_id);
         if itr == -1: #no value in table
             return
         while True:
-            itr, key = db_previous_i64(itr)
+            itr, key = db.previous_i64(itr)
             if itr < 0:
                 break
-            value = db_get_i64(itr)
+            value = db.get_i64(itr)
 
             key_type, key_length, value_type, value_length = ustruct.unpack('BHBH', value)
 
@@ -168,11 +169,11 @@ class cache_dict(object):
 
         _value += raw_key_data
         _value += raw_value_data
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        itr = db.find_i64(g_code, g_scope, self.table_id, id)
         if itr < 0:
-            db_store_i64(g_scope, self.table_id, payer, id, _value)
+            db.store_i64(g_scope, self.table_id, payer, id, _value)
         else:
-            db_update_i64(itr, payer, _value)
+            db.update_i64(itr, payer, _value)
 
     def store(self):
         for key in self._dirty_keys:
@@ -238,9 +239,9 @@ class cache_dict(object):
         id = self.get_hash(key)
         del self._dict[key]
         del self._dirty_keys[key]
-        itr = db_find_i64(g_code, g_scope, self.table_id, id)
+        itr = db.find_i64(g_code, g_scope, self.table_id, id)
         if itr >= 0:
-            db_remove_i64(itr)
+            db.remove_i64(itr)
 
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, str(self._dict))

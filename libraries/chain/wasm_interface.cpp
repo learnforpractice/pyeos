@@ -12,6 +12,8 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+#include <eosio/chain/symbol.hpp>
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -2053,6 +2055,19 @@ extern "C" {
    uint64_t string_to_uint64_(const char* str);
 }
 
+int32_t uint64_to_string_(uint64_t n, char* out, int size) {
+   if (out == NULL || size == 0) {
+      return 0;
+   }
+
+   string s = name(n).to_string();
+   if (s.length() < size) {
+      size = s.length();
+   }
+   memcpy(out, s.c_str(), size);
+   return size;
+}
+
 static struct vm_api _vm_api = {
    .read_action_data = read_action_data,
 
@@ -2206,7 +2221,10 @@ static struct vm_api _vm_api = {
 
    .split_path = split_path,
    .get_action_account = get_action_account,
-   .string_to_uint64 = string_to_uint64_
+   .string_to_uint64 = string_to_uint64_,
+   .uint64_to_string = uint64_to_string_,
+   .string_to_symbol = string_to_symbol_c,
+
 };
 
 void register_vm_api(void* handle) {

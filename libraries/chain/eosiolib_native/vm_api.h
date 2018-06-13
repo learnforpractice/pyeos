@@ -175,6 +175,8 @@ struct vm_api {
    int (*split_path)(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
    uint64_t (*get_action_account)();
    uint64_t (*string_to_uint64)(const char* str);
+   int32_t (*uint64_to_string)(uint64_t n, char* out, int size);
+   uint64_t (*string_to_symbol)(uint8_t precision, const char* str);
 };
 
 typedef void (*fn_register_vm_api)(struct vm_api* api);

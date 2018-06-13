@@ -1,5 +1,6 @@
-import ustruct as struct
+import db
 from eoslib import *
+import ustruct as struct
 
 def pack_int(value):
     return b'\x00' + int.to_bytes(value, 8, 'little')
@@ -54,25 +55,25 @@ def _get_hash(key):
     return hash64(key)
 
 def storage_find(code, table_id, id):
-    itr = db_find_i64(code, code, table_id, id)
+    itr = db.find_i64(code, code, table_id, id)
     if itr >= 0:
-        return db_get_i64(itr)
+        return db.get_i64(itr)
     return None
 
 def storage_get(itr):
-    return db_get_i64(itr)
+    return db.get_i64(itr)
 
 def storage_set(code, table_id, key, value):
-    itr = db_find_i64(code, code, table_id, key)
+    itr = db.find_i64(code, code, table_id, key)
     if itr >= 0:
-        db_update_i64(itr, code, value)
+        db.update_i64(itr, code, value)
     else:
-        db_store_i64(code, table_id, code, key, value)
+        db.store_i64(code, table_id, code, key, value)
 
 def storage_remove(code, table_id, key):
-    itr = db_find_i64(code, code, table_id, key)
+    itr = db.find_i64(code, code, table_id, key)
     if itr >= 0:
-        db_remove_i64(itr)
+        db.remove_i64(itr)
 
 class storage(object):
     def __init__(self):
@@ -94,16 +95,16 @@ class SList(storage):
 
         self.list_size_id = hash64('list.size%d')
 
-        itr = db_find_i64(self.code, self.code, table_id, self.list_size_id)
+        itr = db.find_i64(self.code, self.code, table_id, self.list_size_id)
         if itr >= 0:
-            self.list_size = db_get_i64(itr)
+            self.list_size = db.get_i64(itr)
             self.list_size = int.from_bytes(self.list_size, 'little')
         else:
             self.list_size = 0
 
         self.value_type = value_type
         
-        itr = db_end_i64(self.code, self.code, table_id)
+        itr = db.end_i64(self.code, self.code, table_id)
         if itr == -1: #no value in table
             return
 #        print('+++itr:', itr) # itr should be -2
@@ -180,11 +181,11 @@ class SList(storage):
 
     def update_size(self):
         _value = int.to_bytes(self.list_size, 4, 'little')
-        itr = db_find_i64(self.code, self.code, self.table_id, self.list_size_id)
+        itr = db.find_i64(self.code, self.code, self.table_id, self.list_size_id)
         if itr < 0:
-            db_store_i64(self.code, self.table_id, self.code, self.list_size_id, _value)
+            db.store_i64(self.code, self.table_id, self.code, self.list_size_id, _value)
         else:
-            db_update_i64(itr, self.code, _value)
+            db.update_i64(itr, self.code, _value)
 
     def setitem(self, index, val):
         id = index
@@ -193,11 +194,11 @@ class SList(storage):
         else:
             _value = self.pack(val)
 
-        itr = db_find_i64(self.code, self.code, self.table_id, id)
+        itr = db.find_i64(self.code, self.code, self.table_id, id)
         if itr < 0:
-            db_store_i64(self.code, self.table_id, self.code, id, _value)
+            db.store_i64(self.code, self.table_id, self.code, id, _value)
         else:
-            db_update_i64(itr, self.code, _value)
+            db.update_i64(itr, self.code, _value)
 
     def __setitem__(self, index, val):
         if index < 0 or index >= self.list_size:
@@ -213,9 +214,9 @@ class SList(storage):
         if index in self._dict:
             return self._dict[index]
 
-        itr = db_find_i64(self.code, self.code, self.table_id, index)
+        itr = db.find_i64(self.code, self.code, self.table_id, index)
         if itr >= 0:
-            value = db_get_i64(itr)
+            value = db.get_i64(itr)
             value = self.unpack(value)
             self._dict[index] = value
             return value
@@ -364,13 +365,13 @@ class SDict(storage):
         storage_set(self.code, self.value_table_id, id, raw_val)
 
     def __iter__(self):
-        self.idx = db_end_i64(self.code, self.code, self.key_table_id)
+        self.idx = db.end_i64(self.code, self.code, self.key_table_id)
         return self
 
     def __next__(self):
         if self.idx == -1:
             raise StopIteration
-        self.idx, id = db_previous_i64(self.idx)
+        self.idx, id = db.previous_i64(self.idx)
         if self.idx == -1:
             raise StopIteration
         type_id, key = storage_get(self.idx)

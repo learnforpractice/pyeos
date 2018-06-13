@@ -681,6 +681,10 @@ int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, si
    return vm_manager::get().get_py_vm_api()->compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
 }
 
+void mp_set_max_execution_time_(int _max) {
+   vm_manager::get().get_py_vm_api()->set_max_execution_time(_max);
+}
+
 void wast2wasm_(string& wast, string& result) {
    try {
       auto wasm = wast_to_wasm(wast);

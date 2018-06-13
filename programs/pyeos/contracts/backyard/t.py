@@ -1,6 +1,7 @@
 import os
 import time
 import wallet
+import debug
 import eosapi
 import initeos
 import db
@@ -54,6 +55,7 @@ def deploy():
 
 @init
 def deploy_mpy():
+    debug.mp_set_max_execution_time(100*1000)
     src_dir = os.path.dirname(os.path.abspath(__file__))
     code = eosapi.N('backyard')
     for file_name in libs:
