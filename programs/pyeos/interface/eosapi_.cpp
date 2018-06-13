@@ -25,6 +25,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#include <vm_manager.hpp>
+
 using namespace eosio;
 using namespace eosio::chain;
 
@@ -346,6 +348,7 @@ PyObject* push_raw_transaction_(string& signed_trx) {
 
 int produce_block_() {
 //   return app().get_plugin<producer_plugin>().produce_block();
+   return 0;
 }
 
 int produce_block_start_() {
@@ -675,7 +678,7 @@ int get_table_(string& scope, string& code, string& table, string& result) {
 }
 
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
-   return get_mpapi().compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
+   return vm_manager::get().get_py_vm_api()->compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
 }
 
 void wast2wasm_(string& wast, string& result) {

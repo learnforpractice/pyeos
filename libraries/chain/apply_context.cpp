@@ -91,8 +91,6 @@ void apply_context::schedule() {
       control.check_contract_list( receiver );
    }
 
-   vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
-
    if (a.vm_type == 0) {
          try {
             control.get_wasm_interface().apply(a.code_version, a.code, *this);
@@ -115,9 +113,8 @@ void apply_context::schedule() {
          }
       }
       if (trusted || !rpc_interface::get().ready()) {
-         auto &py = micropython_interface::get();
          try {
-            py.apply(receiver.value, act.account.value, act.name.value, a.code);
+            vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
          } catch (...) {
             throw;
          }

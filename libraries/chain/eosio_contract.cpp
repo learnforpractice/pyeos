@@ -27,7 +27,7 @@
 #include <eosio/chain/micropython_interface.hpp>
 #include <eosio/chain/evm_interface.hpp>
 
-
+#include "vm_manager.hpp"
 
 namespace eosio { namespace chain {
 void apply_eosio_setcode_py(apply_context& context);
@@ -239,7 +239,8 @@ void apply_eosio_setcode_py(apply_context& context) {
    if (new_size != old_size) {
       context.trx_context.add_ram_usage( act.account, new_size - old_size );
    }
-   micropython_interface::get().on_setcode(act.account, act.code);
+   vm_manager::get().setcode(1, act.account);
+   //   micropython_interface::get().on_setcode(act.account, act.code);
 }
 
 void apply_eosio_setcode_evm(apply_context& context) {

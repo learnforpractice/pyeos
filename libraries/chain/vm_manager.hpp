@@ -8,10 +8,13 @@
 #include <vector>
 #include <memory>
 
+#include <vm_py_api.h>
+
 using namespace std;
 
 typedef int (*fn_setcode)(uint64_t account);
 typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+typedef void (*fn_init_vm)();
 
 struct vm_calls {
    uint32_t version;
@@ -32,7 +35,7 @@ public:
    bool init();
 
    void *get_wasm_vm_api();
-   void *get_py_vm_api();
+   struct vm_py_api* get_py_vm_api();
    void *get_eth_vm_api();
 
 private:

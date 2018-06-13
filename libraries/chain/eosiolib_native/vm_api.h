@@ -170,9 +170,16 @@ struct vm_api {
    int32_t (*rodb_lowerbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
    int32_t (*rodb_upperbound_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
    int32_t (*rodb_end_i64)( uint64_t code, uint64_t scope, uint64_t table );
+
+
+   int (*split_path)(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
+   uint64_t (*get_action_account)();
+   uint64_t (*string_to_uint64)(const char* str);
 };
 
 typedef void (*fn_register_vm_api)(struct vm_api* api);
+
+void init_vm();
 
 void register_vm_api(struct vm_api* api);
 struct vm_api* get_vm_api();

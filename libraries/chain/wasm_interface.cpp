@@ -2047,6 +2047,12 @@ const char* get_code( uint64_t receiver, size_t* size ) {
    return src.data();
 }
 
+extern "C" {
+   int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
+   uint64_t get_action_account();
+   uint64_t string_to_uint64_(const char* str);
+}
+
 static struct vm_api _vm_api = {
    .read_action_data = read_action_data,
 
@@ -2197,6 +2203,10 @@ static struct vm_api _vm_api = {
    .rodb_lowerbound_i64 = db_api_lowerbound_i64,
    .rodb_upperbound_i64 = db_api_upperbound_i64,
    .rodb_end_i64 = db_api_end_i64,
+
+   .split_path = split_path,
+   .get_action_account = get_action_account,
+   .string_to_uint64 = string_to_uint64_
 };
 
 void register_vm_api(void* handle) {

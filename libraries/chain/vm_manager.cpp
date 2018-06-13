@@ -1,5 +1,6 @@
 #include "vm_manager.hpp"
 #include "micropython/db_api.hpp"
+
 #include <dlfcn.h>
 
 using namespace eosio::chain;
@@ -76,6 +77,11 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
       return 0;
    }
 
+   fn_init_vm init_vm = (fn_init_vm)dlsym(handle, "init_vm");
+   if (init_vm == NULL) {
+      return 0;
+   }
+
    fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
    if (setcode == NULL) {
       return 0;
@@ -86,6 +92,7 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
       return 0;
    }
 
+   init_vm();
    register_vm_api(handle);
 
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
@@ -93,7 +100,7 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
    calls->handle = handle;
    calls->setcode = setcode;
    calls->apply = apply;
-   printf("loading %s %p %p\n", vm_path, setcode, apply);
+   wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    vm_map[vm_type] = std::move(calls);
    return 1;
 }
@@ -165,6 +172,11 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
+   fn_init_vm init_vm = (fn_init_vm)dlsym(handle, "init_vm");
+   if (init_vm == NULL) {
+      return 0;
+   }
+
    fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
    if (setcode == NULL) {
       return 0;
@@ -175,12 +187,17 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
+   init_vm();
+   register_vm_api(handle);
+
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->handle = handle;
    calls->version = version;
    calls->setcode = setcode;
    calls->apply = apply;
-   printf("loading %s %p %p\n", vm_path, setcode, apply);
+
+   wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
+
    vm_map[vm_type] = std::move(calls);
 
    return 1;
@@ -212,13 +229,39 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    return itr->second->apply(receiver, account, act);
 }
 
-
 void *vm_manager::get_wasm_vm_api() {
    return nullptr;
 }
 
-void *vm_manager::get_py_vm_api() {
-   return nullptr;
+static vector<char> print_buffer;
+static void print(const char * str, size_t len) {
+   for (int i=0;i<len;i++) {
+      if (str[i] == '\n') {
+         string s(print_buffer.data(), print_buffer.size());
+         print_buffer.clear();
+         dlog(s);
+         continue;
+      }
+      print_buffer.push_back(str[i]);
+   }
+}
+
+typedef struct vm_py_api* (*fn_get_py_vm_api)();
+
+struct vm_py_api* vm_manager::get_py_vm_api() {
+   auto itr = vm_map.find(1);
+   if (itr == vm_map.end()) {
+      return nullptr;
+   }
+
+   fn_get_py_vm_api get_py_vm_api = (fn_get_py_vm_api)dlsym(itr->second->handle, "get_py_vm_api");
+   if (get_py_vm_api == nullptr) {
+      return nullptr;
+   }
+
+   struct vm_py_api* api = get_py_vm_api();
+   api->set_printer(print);
+   return api;
 }
 
 void *vm_manager::get_eth_vm_api() {

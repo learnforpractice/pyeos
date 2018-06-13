@@ -5,6 +5,10 @@ using namespace eosio;
 
 static struct vm_api s_api;
 
+void init_vm() {
+
+}
+
 void register_vm_api(struct vm_api* api) {
    s_api = *api;
 }
