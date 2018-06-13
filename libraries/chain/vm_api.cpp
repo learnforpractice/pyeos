@@ -27,6 +27,7 @@
 
 #include <fc/crypto/xxhash.h>
 
+
 namespace eosio {
 namespace chain {
 
