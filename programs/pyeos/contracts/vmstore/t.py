@@ -44,7 +44,7 @@ def deploy(d=True):
     else:
         raise Exception("platform is not supported")
 
-    V = 14
+    V = 15
     if d:
         aa = [ #  name                  type     version                   path
                 ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
@@ -58,9 +58,8 @@ def deploy(d=True):
                 ['vm.eth.'+platform,     2,         V,         "../libraries/vm_eth/libvm_eth.dylib"],
              ]
 
-    debug.mp_set_max_execution_time(1000_000)
-
     for a in aa:
+        debug.mp_set_max_execution_time(10000_000)
         if d:
             sync.deploy_vm(*a)
         else:

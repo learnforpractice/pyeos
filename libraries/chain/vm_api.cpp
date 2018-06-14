@@ -1061,9 +1061,9 @@ class action_api : public context_aware_api {
 
 class console_api : public context_aware_api {
    public:
-      console_api( apply_context& ctx )
-      : context_aware_api(ctx,true)
-      , ignore(!ctx.control.contracts_console()) {}
+      console_api( apply_context& _ctx )
+      : context_aware_api(_ctx,true)
+      , ignore(!ctx().control.contracts_console()) {}
 
       // Kept as intrinsic rather than implementing on WASM side (using prints_l and strlen) because strlen is faster on native side.
       void prints(null_terminated_ptr str) {
@@ -1658,6 +1658,7 @@ class call_depth_api : public context_aware_api {
          FC_THROW_EXCEPTION(wasm_execution_error, "Exceeded call depth maximum");
       }
 };
+
 
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )

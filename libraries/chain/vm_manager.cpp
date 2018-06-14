@@ -224,9 +224,10 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
 
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
-      return -1;
+      return 0;
    }
-   return itr->second->apply(receiver, account, act);
+   itr->second->apply(receiver, account, act);
+   return 1;
 }
 
 void *vm_manager::get_wasm_vm_api() {

@@ -3,7 +3,7 @@ from eoslib import *
 
 def deploy(vm_name, src_code):
     code = N('vmstore')
-    print('++++++++++++deploy:vm_name', vm_name)
+    print('++++++++++++deploy:vm_name', n2s(vm_name))
     itr = db.find_i64(code, code, code, vm_name)
     if itr < 0:
         db.store_i64(code, code, code, vm_name, src_code)

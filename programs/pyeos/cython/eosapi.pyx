@@ -154,6 +154,8 @@ def s2n(string& name):
     return ret
 
 def n2s(n):
+    if n < 0:
+        n &= 0xffffffffffffffff
     return uint64_to_string_(n)
 
 def N(name):

@@ -1,6 +1,6 @@
 add_subdirectory( pyeos )
 if(APPLE)
-  add_subdirectory( goeos )
+#  add_subdirectory( goeos )
 endif(APPLE)
 
 add_subdirectory( nodeos )

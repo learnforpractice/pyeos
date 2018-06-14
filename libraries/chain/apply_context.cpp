@@ -78,10 +78,10 @@ apply_context& apply_context::ctx() {
 }
 
 void apply_context::schedule() {
-  const auto &a = control.db().get<account_object, by_name>(receiver);
-  privileged = a.privileged;
+   const auto &a = control.db().get<account_object, by_name>(receiver);
+   privileged = a.privileged;
 
-  control.set_action_object(get_receiver(), act);
+   control.set_action_object(get_receiver(), act);
 
    if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
       return;
@@ -91,10 +91,17 @@ void apply_context::schedule() {
       control.check_contract_list( receiver );
    }
 
+   int ret = vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
+   if (ret) {
+      return;
+   }
+
    if (a.vm_type == 0) {
-         try {
-            control.get_wasm_interface().apply(a.code_version, a.code, *this);
-         } catch ( const wasm_exit& ){}
+      try {
+         control.get_wasm_interface().apply(a.code_version, a.code, *this);
+      } catch ( const wasm_exit& ){
+
+      }
    } else if (a.vm_type == 1) {
       if (py_debug_enabled_()) {
          contract_debug_apply(receiver.value, act.account.value, act.name.value);
@@ -113,11 +120,7 @@ void apply_context::schedule() {
          }
       }
       if (trusted || !rpc_interface::get().ready()) {
-         try {
-            vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
-         } catch (...) {
-            throw;
-         }
+         micropython_interface::get().apply(receiver.value, act.account.value, act.name.value);
       } else {
          FC_ASSERT(rpc_interface::get().ready(), "RPC not ready");
          auto &py = rpc_interface::get();
