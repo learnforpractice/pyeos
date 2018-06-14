@@ -35,7 +35,10 @@ namespace eosio { namespace chain {
    }
 
    int wasm_interface::apply( uint64_t receiver, uint64_t account, uint64_t act ) {
-      my->get_instantiated_module(receiver)->apply(receiver, account, act);
+      try {
+         my->get_instantiated_module(receiver)->apply(receiver, account, act);
+      } catch ( const wasm_exit& ){
+      }
       return 1;
    }
 
@@ -53,3 +56,4 @@ int wasm_setcode(uint64_t account) {
 int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return wasm_interface::get().apply(receiver, account, act);
 }
+

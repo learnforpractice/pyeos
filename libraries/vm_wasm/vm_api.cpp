@@ -780,7 +780,7 @@ public:
    }
 
    void eosio_exit(int32_t code) {
-      API()->eosio_exit(code);
+      throw wasm_exit{code};
    }
 
 };
