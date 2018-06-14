@@ -16,7 +16,7 @@
 
 #include <fc/crypto/xxhash.h>
 
-#include <eosio/chain/wasm_interface.hpp>
+//#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/wasm_interface_private.hpp>
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
@@ -43,16 +43,16 @@ class context_aware_api {
 };
 
 class context_free_api : public context_aware_api {
-   public:
-      context_free_api()
-      :context_aware_api(true) {
-         /* the context_free_data is not available during normal application because it is prunable */
-         API()->assert_context_free();
-      }
+public:
+   context_free_api()
+   :context_aware_api(true) {
+      /* the context_free_data is not available during normal application because it is prunable */
+      API()->assert_context_free();
+   }
 
-      int get_context_free_data( uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
-         return API()->get_context_free_data( index, buffer, buffer_size );
-      }
+   int get_context_free_data( uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
+      return API()->get_context_free_data( index, buffer, buffer_size );
+   }
 };
 
 class privileged_api : public context_aware_api {

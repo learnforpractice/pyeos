@@ -1,12 +1,12 @@
 
 add_library(vm_wasm SHARED vm_wasm.cpp 
            binaryen.cpp
-           wavm.cpp
+#           wavm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
            vm_api.cpp) 
 
-target_link_libraries(vm_wasm PRIVATE eosiolib_native binaryen softfloat builtins wavm-shared fc)
+target_link_libraries(vm_wasm PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc) #
 
 target_include_directories(vm_wasm PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
