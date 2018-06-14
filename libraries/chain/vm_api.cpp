@@ -231,6 +231,10 @@ static struct vm_api _vm_api = {
    .current_time = current_time,
    .now = now,
 
+   .checktime = checktime,
+   .check_context_free = check_context_free,
+   .contracts_console = contracts_console,
+
    .send_deferred = send_deferred,
    .cancel_deferred = cancel_deferred,
    .read_transaction = read_transaction,
@@ -240,6 +244,9 @@ static struct vm_api _vm_api = {
    .tapos_block_prefix = tapos_block_prefix,
    .expiration = expiration,
    .get_action = get_action,
+
+   .assert_privileged = assert_privileged,
+   .assert_context_free = assert_context_free,
    .get_context_free_data = get_context_free_data,
    .get_code = get_code,
 
@@ -275,11 +282,11 @@ class context_aware_api {
    public:
       context_aware_api(apply_context& ctx, bool context_free = false ) : context(ctx)
       {
-         eosio::chain::check_context_free(context_free);
+         API()->check_context_free(context_free);
       }
 
       void checktime() {
-         eosio::chain::checktime();
+         API()->checktime();
       }
 
    protected:

@@ -158,6 +158,11 @@ struct vm_api {
    void (*eosio_exit)( int32_t code );
    uint64_t  (*current_time)();
    uint32_t  (*now)();
+
+   void (*checktime)();
+   void (*check_context_free)(bool context_free);
+   bool (*contracts_console)();
+
 #ifdef __cplusplus
    void (*send_deferred)(const uint128_t& sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t& sender_id);
@@ -172,6 +177,9 @@ struct vm_api {
    int (*tapos_block_prefix)();
    uint32_t (*expiration)();
    int (*get_action)( uint32_t type, uint32_t index, char* buff, size_t size );
+
+   void (*assert_privileged)();
+   void (*assert_context_free)();
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 
    const char* (*get_code)( uint64_t receiver, size_t* size );

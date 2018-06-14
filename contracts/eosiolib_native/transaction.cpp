@@ -48,6 +48,14 @@ int get_action( uint32_t type, uint32_t index, char* buff, size_t size ) {
    return get_vm_api()->get_action( type, index, buff, size );
 }
 
+void assert_privileged() {
+   get_vm_api()->assert_privileged();
+}
+
+void assert_context_free() {
+   get_vm_api()->assert_context_free();
+}
+
 int get_context_free_data( uint32_t index, char* buff, size_t size ) {
    return get_vm_api()->get_context_free_data( index, buff, size );
 }

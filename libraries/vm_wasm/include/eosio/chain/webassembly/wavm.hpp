@@ -32,7 +32,7 @@ class wavm_runtime : public eosio::chain::wasm_runtime_interface {
 //This is a temporary hack for the single threaded implementation
 struct running_instance_context {
    MemoryInstance* memory;
-   apply_context*  apply_ctx;
+//   apply_context*  apply_ctx;
 };
 extern running_instance_context the_running_instance_context;
 
@@ -54,7 +54,7 @@ inline array_ptr<T> array_ptr_impl (running_instance_context& ctx, U32 ptr, size
    if (ptr >= mem_total || length > (mem_total - ptr) / sizeof(T))
       Runtime::causeException(Exception::Cause::accessViolation);
    
-   T* ret_ptr = (T*)(getMemoryBaseAddress(mem) + ptr);
+ //  T* ret_ptr = (T*)(getMemoryBaseAddress(mem) + ptr);
 
    return array_ptr<T>((T*)(getMemoryBaseAddress(mem) + ptr));
 }
@@ -630,8 +630,8 @@ struct intrinsic_function_invoker {
 
    template<MethodSig Method>
    static Ret wrapper(running_instance_context& ctx, Params... params) {
-      class_from_wasm<Cls>::value(*ctx.apply_ctx).checktime();
-      return (class_from_wasm<Cls>::value(*ctx.apply_ctx).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      return (class_from_wasm<Cls>::value().*Method)(params...);
    }
 
    template<MethodSig Method>
@@ -649,8 +649,8 @@ struct intrinsic_function_invoker<WasmSig, void, MethodSig, Cls, Params...> {
 
    template<MethodSig Method>
    static void_type wrapper(running_instance_context& ctx, Params... params) {
-      class_from_wasm<Cls>::value(*ctx.apply_ctx).checktime();
-      (class_from_wasm<Cls>::value(*ctx.apply_ctx).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      (class_from_wasm<Cls>::value().*Method)(params...);
       return void_type();
    }
 

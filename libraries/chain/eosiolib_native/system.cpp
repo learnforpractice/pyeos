@@ -54,3 +54,6 @@ void check_context_free(bool context_free) {
    ctx().used_context_free_api |= !context_free;
 }
 
+bool contracts_console() {
+   return ctx().control.contracts_console();
+}

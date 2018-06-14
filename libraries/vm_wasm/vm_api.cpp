@@ -1,3 +1,8 @@
+
+#include <eosiolib_native/vm_api.h>
+
+#define time __time
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -11,7 +16,13 @@
 
 #include <fc/crypto/xxhash.h>
 
-#include <eosiolib_native/vm_api.h>
+#include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/wasm_interface_private.hpp>
+#include <eosio/chain/webassembly/common.hpp>
+#include <eosio/chain/exceptions.hpp>
+
+#undef time
+
 
 namespace eosio {
 namespace chain {
@@ -21,26 +32,22 @@ namespace chain {
 
 class context_aware_api {
    public:
-      context_aware_api(apply_context& ctx, bool context_free = false ) : context(ctx)
+      context_aware_api(bool context_free = false )
       {
-         eosio::chain::check_context_free(context_free);
+         API()->check_context_free(context_free);
       }
 
       void checktime() {
-         eosio::chain::checktime();
+         API()->checktime();
       }
-
-   protected:
-      apply_context&             context;
-
 };
 
 class context_free_api : public context_aware_api {
    public:
-      context_free_api( apply_context& ctx )
-      :context_aware_api(ctx, true) {
+      context_free_api()
+      :context_aware_api(true) {
          /* the context_free_data is not available during normal application because it is prunable */
-         FC_ASSERT( context.context_free, "this API may only be called from context_free apply" );
+         API()->assert_context_free();
       }
 
       int get_context_free_data( uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
@@ -50,10 +57,9 @@ class context_free_api : public context_aware_api {
 
 class privileged_api : public context_aware_api {
    public:
-      privileged_api( apply_context& ctx )
-      :context_aware_api(ctx)
+      privileged_api():context_aware_api()
       {
-         FC_ASSERT( context.privileged, "${code} does not have permission to call this API", ("code",context.receiver) );
+         API()->assert_privileged();
       }
 
       /**
@@ -119,8 +125,7 @@ class privileged_api : public context_aware_api {
 class softfloat_api : public context_aware_api {
    public:
       // TODO add traps on truncations for special cases (NaN or outside the range which rounds to an integer)
-      softfloat_api( apply_context& ctx )
-      :context_aware_api(ctx, true) {}
+      softfloat_api() : context_aware_api(true) {}
 
       // float binops
       float _eosio_f32_add( float a, float b ) {
@@ -569,6 +574,17 @@ class softfloat_api : public context_aware_api {
       static bool is_nan( const float128_t& f ) {
          return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
       }
+
+      static bool is_nan( const double _f ) {
+         float64_t& f = *(float64_t*)&_f;
+         return ((f.v & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000);
+      }
+
+      static bool is_nan( const long double& _f ) {
+         float128_t& f = *(float128_t*)&_f;
+         return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
+      }
+
       static float32_t to_softfloat32( float f ) {
          return *reinterpret_cast<float32_t*>(&f);
       }
@@ -600,8 +616,8 @@ class producer_api : public context_aware_api {
 
 class crypto_api : public context_aware_api {
    public:
-      explicit crypto_api( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+      explicit crypto_api()
+      :context_aware_api(true){}
       /**
        * This method can be optimized out during replay as it has
        * no possible side effects other than "passing".
@@ -616,19 +632,6 @@ class crypto_api : public context_aware_api {
                         array_ptr<char> sig, size_t siglen,
                         array_ptr<char> pub, size_t publen ) {
          return API()->recover_key((checksum256*)&digest._hash, sig, siglen, pub, publen);
-      }
-
-      template<class Encoder> auto encode(char* data, size_t datalen) {
-         Encoder e;
-         const size_t bs = eosio::chain::config::hashing_checktime_block_size;
-         while ( datalen > bs ) {
-            e.write( data, bs );
-            data += bs;
-            datalen -= bs;
-            context.trx_context.checktime();
-         }
-         e.write( data, datalen );
-         return e.result();
       }
 
       void assert_sha256(array_ptr<char> data, size_t datalen, const fc::sha256& hash_val) {
@@ -756,8 +759,8 @@ class system_api : public context_aware_api {
 
 class context_free_system_api :  public context_aware_api {
 public:
-   explicit context_free_system_api( apply_context& ctx )
-   :context_aware_api(ctx,true){}
+   explicit context_free_system_api()
+   :context_aware_api(true){}
 
    void abort() {
       API()->abort();
@@ -784,8 +787,8 @@ public:
 
 class action_api : public context_aware_api {
    public:
-   action_api( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+   action_api()
+      :context_aware_api(true){}
 
       int read_action_data(array_ptr<char> memory, size_t buffer_size) {
          return API()->read_action_data(memory.value, buffer_size);
@@ -802,9 +805,9 @@ class action_api : public context_aware_api {
 
 class console_api : public context_aware_api {
    public:
-      console_api( apply_context& ctx )
-      : context_aware_api(ctx,true)
-      , ignore(!ctx.control.contracts_console()) {}
+      console_api()
+      : context_aware_api(true)
+      , ignore(!API()->contracts_console()) {}
 
       // Kept as intrinsic rather than implementing on WASM side (using prints_l and strlen) because strlen is faster on native side.
       void prints(null_terminated_ptr str) {
@@ -871,7 +874,7 @@ class console_api : public context_aware_api {
           */
 
          if ( !ignore ) {
-            API()->printqf(&val);
+            API()->printqf((long double*)&val);
          }
       }
 
@@ -1048,14 +1051,14 @@ class database_api : public context_aware_api {
       DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx64,  uint64_t)
       DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx128, uint128_t)
       DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(idx256, 2, uint128_t)
-      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, float64_t)
-      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_long_double, float128_t)
+      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, double)
+      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_long_double, long double)
 };
 
 class memory_api : public context_aware_api {
    public:
-      memory_api( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+      memory_api()
+      :context_aware_api(true){}
 
       char* memcpy( array_ptr<char> dest, array_ptr<const char> src, size_t length) {
          EOS_ASSERT((std::abs((ptrdiff_t)dest.value - (ptrdiff_t)src.value)) >= length,
@@ -1107,8 +1110,8 @@ class transaction_api : public context_aware_api {
 
 class context_free_transaction_api : public context_aware_api {
    public:
-      context_free_transaction_api( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+      context_free_transaction_api()
+      :context_aware_api(true){}
 
       int read_transaction( array_ptr<char> data, size_t buffer_size ) {
          return API()->read_transaction( data, buffer_size );
@@ -1136,8 +1139,8 @@ class context_free_transaction_api : public context_aware_api {
 
 class compiler_builtins : public context_aware_api {
    public:
-      compiler_builtins( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+      compiler_builtins()
+      :context_aware_api(true){}
 
       void __ashlti3(__int128& ret, uint64_t low, uint64_t high, uint32_t shift) {
          fc::uint128_t i(high, low);
@@ -1393,11 +1396,19 @@ class compiler_builtins : public context_aware_api {
  */
 class call_depth_api : public context_aware_api {
    public:
-      call_depth_api( apply_context& ctx )
-      :context_aware_api(ctx,true){}
+      call_depth_api()
+      :context_aware_api(true){}
       void call_depth_assert() {
          FC_THROW_EXCEPTION(wasm_execution_error, "Exceeded call depth maximum");
       }
+};
+
+class transaction_context_ {
+public:
+   transaction_context_() {}
+   void checktime() {
+      API()->checktime();
+   }
 };
 
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
@@ -1462,7 +1473,7 @@ REGISTER_INTRINSICS(privileged_api,
    (set_privileged,                   void(int64_t, int)                    )
 );
 
-REGISTER_INJECTED_INTRINSICS(transaction_context,
+REGISTER_INJECTED_INTRINSICS(transaction_context_,
    (checktime,      void())
 );
 

@@ -44,6 +44,14 @@ int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size 
    return ctx().get_action( type, index, buffer, buffer_size );
 }
 
+void assert_privileged() {
+   FC_ASSERT( ctx().privileged, "${code} does not have permission to call this API", ("code",ctx().receiver) );
+}
+
+void assert_context_free() {
+   FC_ASSERT( ctx().context_free, "this API may only be called from context_free apply" );
+}
+
 int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size ) {
    return ctx().get_context_free_data( index, buffer, buffer_size );
 }
