@@ -186,6 +186,10 @@ struct vm_api {
    uint64_t (*string_to_uint64)(const char* str);
    int32_t (*uint64_to_string)(uint64_t n, char* out, int size);
    uint64_t (*string_to_symbol)(uint8_t precision, const char* str);
+
+   void (*resume_billing_timer)();
+   void (*pause_billing_timer)();
+
 };
 
 void init_vm();
