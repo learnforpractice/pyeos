@@ -1,4 +1,4 @@
-An Experimental Project for Writing Smart Contract With Python Base on The Development of EOSIO 
+A Self Evolving Universal Smart Contract Platform Base on The Development of EOSIO 
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
 2. [Creating Your First Python Smart Contract](#creatsmartcontract)
