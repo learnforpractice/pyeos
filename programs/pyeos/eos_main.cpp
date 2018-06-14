@@ -126,11 +126,9 @@ extern "C" int eos_main(int argc, char** argv) {
 
    init_console();
 
-   boost::this_thread::sleep_for(boost::chrono::milliseconds(10000));
+//   boost::this_thread::sleep_for(boost::chrono::milliseconds(10000));
 
    boost::thread t( start_eos );
-
-
 
    while (!init_finished) {
          boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
