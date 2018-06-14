@@ -724,6 +724,14 @@ void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
    out = string(_out.begin(), _out.end());
 }
 
+void fc_pack_setconfig_(string& abiPath, uint64_t account, string& out) {
+   setconfig handler;
+   handler.account = account;
+   handler.config = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
+   auto _out = fc::raw::pack(handler);
+   out = string(_out.begin(), _out.end());
+}
+
 void fc_pack_uint64_(uint64_t n, string& out) {
    vector<char> _out = fc::raw::pack(n);
    out = string(_out.begin(), _out.end());

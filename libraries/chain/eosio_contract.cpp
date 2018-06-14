@@ -363,6 +363,29 @@ void apply_eosio_setabi(apply_context& context) {
    }
 }
 
+void apply_eosio_setconfig(apply_context& context) {
+   auto& db  = context.db;
+   auto  act = context.act.data_as<setconfig>();
+
+   context.require_authorization(act.account);
+
+   const auto& account = db.get<account_object,by_name>(act.account);
+
+   int64_t config_size = act.config.size();
+
+   int64_t old_size = (int64_t)account.config.size();
+   int64_t new_size = config_size;
+
+   db.modify( account, [&]( auto& a ) {
+      a.config.resize( config_size );
+      if( config_size > 0 )
+         memcpy( a.config.data(), act.config.data(), config_size );
+   });
+
+   if (new_size != old_size) {
+      context.trx_context.add_ram_usage( act.account, new_size - old_size );
+   }
+}
 
 void apply_eosio_lockcode(apply_context& context) {
    name _account_name;

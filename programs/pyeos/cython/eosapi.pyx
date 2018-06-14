@@ -95,6 +95,7 @@ cdef extern from "eosapi_.hpp":
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
+    void fc_pack_setconfig_(string& abiPath, uint64_t account, string& out);
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result)
     void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin) except +
@@ -429,6 +430,21 @@ def pack_setabi(string& abiPath, uint64_t account):
 
     cdef string out
     fc_pack_setabi_(abiPath, account, out)
+    return <bytes>out
+
+def pack_setconfig(string& configPath, uint64_t account):
+    '''pack setconfig struct
+
+    Args:
+        configPath (str|bytes): abi file path
+        account (int): account name encode in uint64_t
+
+    Returns:
+        bytes: packed set config struct.
+    '''
+
+    cdef string out
+    fc_pack_setconfig_(configPath, account, out)
     return <bytes>out
 
 def pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay):

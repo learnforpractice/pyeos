@@ -13,7 +13,7 @@
 namespace eosio { namespace chain {
 
    class account_object : public chainbase::object<account_object_type, account_object> {
-      OBJECT_CTOR(account_object,(code)(abi))
+      OBJECT_CTOR(account_object,(code)(abi)(config))
 
       id_type              id;
       account_name         name;
@@ -28,6 +28,7 @@ namespace eosio { namespace chain {
 
       shared_string  code;
       shared_string  abi;
+      shared_string  config;
 
       void set_abi( const eosio::chain::abi_def& a ) {
          abi.resize( fc::raw::pack_size( a ) );

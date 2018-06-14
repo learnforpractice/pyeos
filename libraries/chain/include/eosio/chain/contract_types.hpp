@@ -52,6 +52,18 @@ struct setabi {
    }
 };
 
+struct setconfig {
+   account_name                     account;
+   bytes                            config;
+
+   static account_name get_account() {
+      return config::system_account_name;
+   }
+
+   static action_name get_name() {
+      return N(setconfig);
+   }
+};
 
 struct updateauth {
    account_name                      account;
@@ -159,6 +171,7 @@ struct onerror {
 FC_REFLECT( eosio::chain::newaccount                       , (creator)(name)(owner)(active) )
 FC_REFLECT( eosio::chain::setcode                          , (account)(vmtype)(vmversion)(code) )
 FC_REFLECT( eosio::chain::setabi                           , (account)(abi) )
+FC_REFLECT( eosio::chain::setconfig                        , (account)(config) )
 FC_REFLECT( eosio::chain::updateauth                       , (account)(permission)(parent)(auth) )
 FC_REFLECT( eosio::chain::deleteauth                       , (account)(permission) )
 FC_REFLECT( eosio::chain::linkauth                         , (account)(code)(type)(requirement) )
