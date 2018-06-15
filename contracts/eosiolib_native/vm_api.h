@@ -205,7 +205,8 @@ struct vm_api {
 
 };
 
-void init_vm();
+void vm_init();
+void vm_deinit();
 
 void register_vm_api(struct vm_api* api);
 struct vm_api* get_vm_api();

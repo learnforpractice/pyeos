@@ -77,8 +77,13 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
       return 0;
    }
 
-   fn_init_vm init_vm = (fn_init_vm)dlsym(handle, "init_vm");
-   if (init_vm == NULL) {
+   fn_vm_init vm_init = (fn_vm_init)dlsym(handle, "vm_init");
+   if (vm_init == NULL) {
+      return 0;
+   }
+
+   fn_vm_deinit vm_deinit = (fn_vm_deinit)dlsym(handle, "vm_deinit");
+   if (vm_deinit == NULL) {
       return 0;
    }
 
@@ -92,12 +97,14 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
       return 0;
    }
 
-   init_vm();
+   vm_init();
    register_vm_api(handle);
 
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
    calls->handle = handle;
+   calls->vm_init = vm_init;
+   calls->vm_deinit = vm_deinit;
    calls->setcode = setcode;
    calls->apply = apply;
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
@@ -172,8 +179,13 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
-   fn_init_vm init_vm = (fn_init_vm)dlsym(handle, "init_vm");
-   if (init_vm == NULL) {
+   fn_vm_init vm_init = (fn_vm_init)dlsym(handle, "vm_init");
+   if (vm_init == NULL) {
+      return 0;
+   }
+
+   fn_vm_deinit vm_deinit = (fn_vm_deinit)dlsym(handle, "vm_deinit");
+   if (vm_deinit == NULL) {
       return 0;
    }
 
@@ -187,19 +199,30 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
-   init_vm();
+   vm_init();
    register_vm_api(handle);
 
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->handle = handle;
    calls->version = version;
+
+   calls->vm_init = vm_init;
+   calls->vm_deinit = vm_deinit;
+
    calls->setcode = setcode;
    calls->apply = apply;
 
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
+   auto _itr = vm_map.find(vm_type);
+   if (_itr != vm_map.end()) {
+      _itr->second->vm_deinit();
+      dlclose(_itr->second->handle);
+   }
 
    vm_map[vm_type] = std::move(calls);
-
+   if (vm_type == 1) { //micropython
+      get_py_vm_api(); //set printer
+   }
    return 1;
 }
 

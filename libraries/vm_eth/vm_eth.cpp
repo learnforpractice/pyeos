@@ -2,8 +2,11 @@
 
 static struct vm_api s_api;
 
-void init_vm() {
+void vm_init() {
+}
 
+void vm_deinit() {
+   printf("vm_eth finalize\n");
 }
 
 void register_vm_api(struct vm_api* api) {

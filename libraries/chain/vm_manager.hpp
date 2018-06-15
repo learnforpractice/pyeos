@@ -14,11 +14,14 @@ using namespace std;
 
 typedef int (*fn_setcode)(uint64_t account);
 typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
-typedef void (*fn_init_vm)();
+typedef void (*fn_vm_init)();
+typedef void (*fn_vm_deinit)();
 
 struct vm_calls {
    uint32_t version;
    void* handle;
+   fn_vm_init vm_init;
+   fn_vm_deinit vm_deinit;
    fn_setcode setcode;
    fn_apply apply;
 };

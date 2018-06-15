@@ -9,9 +9,14 @@ int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act);
 
 static struct vm_api s_api;
 
-void init_vm() {
+void vm_init() {
 
 }
+
+void vm_deinit() {
+   printf("vm_wasm finalize\n");
+}
+
 
 void register_vm_api(struct vm_api* api) {
    s_api = *api;
