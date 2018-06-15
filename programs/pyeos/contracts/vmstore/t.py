@@ -66,15 +66,6 @@ def deploy(d=True):
 def deploy_vm(vm_name, type, version, file_name):
     account = 'vmstore' #eosapi.N('vmstore')
     vm_name = eosapi.N(vm_name)
-    msg = int.to_bytes(eosapi.N(account), 8, 'little') #scope
-    msg += int.to_bytes(eosapi.N(account), 8, 'little') #table
-    msg += int.to_bytes(vm_name, 8, 'little') #id
-    msg += int.to_bytes(type, 4, 'little')
-    msg += int.to_bytes(version, 4, 'little')
-    msg += int.to_bytes(os.path.getsize(file_name), 4, 'little')
-    print('++++++++++++++++deply:', file_name)
-    r = eosapi.push_action(account,'deploy',msg,{account:'active'})
-    assert r
 
     f = open(file_name, 'rb')
     index = 1
@@ -92,6 +83,15 @@ def deploy_vm(vm_name, type, version, file_name):
         assert r
         index += 1
 
+    msg = int.to_bytes(eosapi.N(account), 8, 'little') #scope
+    msg += int.to_bytes(eosapi.N(account), 8, 'little') #table
+    msg += int.to_bytes(vm_name, 8, 'little') #id
+    msg += int.to_bytes(type, 4, 'little')
+    msg += int.to_bytes(version, 4, 'little')
+    msg += int.to_bytes(os.path.getsize(file_name), 4, 'little')
+    print('++++++++++++++++deply:', file_name)
+    r = eosapi.push_action(account,'deploy',msg,{account:'active'})
+    assert r
 
 @init()
 def test2(count=100):

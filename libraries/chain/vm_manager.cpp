@@ -11,6 +11,22 @@ namespace chain {
 }
 }
 
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h> // for sysconf
+
+uint64_t get_microseconds() {
+   if (sysconf(_POSIX_THREAD_CPUTIME)){
+      struct timespec tv;
+      int err = clock_gettime(CLOCK_THREAD_CPUTIME_ID,&tv);
+      if (err == 0) {
+         return tv.tv_sec * 1000000LL + tv.tv_nsec / 1000LL;
+      }
+   }
+   printf("+++++ERROR: something went wrong!\n");
+   return 0;
+}
+
 static uint64_t vm_names[] = {
 #if defined(__APPLE__) && defined(__MACH__)
       N(vm.wasm.1),
@@ -72,6 +88,8 @@ vm_manager::vm_manager() {
 }
 
 int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
+   uint64_t start = get_microseconds();
+
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
    if (handle == NULL) {
       return 0;
@@ -99,7 +117,7 @@ int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
 
    vm_init();
    register_vm_api(handle);
-
+   wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
    calls->handle = handle;
@@ -124,6 +142,8 @@ int vm_manager::check_new_version(int vm_type, uint64_t vm_name) {
    const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
    uint32_t type = *(uint32_t*)code;
    uint32_t version = *(uint32_t*)&code[4];
+   uint32_t file_size = *(uint32_t*)&code[8];
+
    if (vm_type != type) {
       wlog("+++++++++type not match");
       return 0; //type not match
@@ -140,6 +160,7 @@ int vm_manager::check_new_version(int vm_type, uint64_t vm_name) {
 }
 
 int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
+   uint64_t start = get_microseconds();
    uint64_t vm_store = N(vmstore);
 
    int itr = db_api::get().db_find_i64(vm_store, vm_store, vm_store, vm_name);
@@ -149,15 +170,7 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    size_t native_size = 0;
    const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
-   if (native_size <= 8) {
-      return 0;
-   }
-
    uint32_t type = *(uint32_t*)code;
-   if (type != vm_type) {
-      return 0;
-   }
-
    uint32_t version = *(uint32_t*)&code[4];
 
    char vm_path[128];
@@ -165,17 +178,23 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    wlog("loading vm ${n1}: ${n2}", ("n1", name(vm_name).to_string())("n2", vm_path));
 
-   struct stat _s;
-   if (stat(vm_path, &_s) == 0) {
-      //
-   } else {
-      std::ofstream out(vm_path, std::ios::binary | std::ios::out);
-      out.write(&code[8], native_size - 8);
-      out.close();
+   std::ofstream out(vm_path, std::ios::binary | std::ios::out);
+   int index = 1;
+   while (true) {
+      int itr = db_api::get().db_find_i64(vm_store, vm_store, vm_name, index);
+      if (itr < 0) {
+         break;
+      }
+      size_t native_size = 0;
+      const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
+      out.write(code, native_size);
+      index += 1;
    }
+   out.close();
 
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
    if (handle == NULL) {
+      wlog("++++++++++++++dlopen ${n} failed", ("n", vm_path));
       return 0;
    }
 
@@ -201,6 +220,8 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    vm_init();
    register_vm_api(handle);
+
+   wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
 
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->handle = handle;
