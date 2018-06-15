@@ -275,6 +275,14 @@ int db_api::db_get_i64( int iterator, char* buffer, size_t buffer_size ) {
    return obj.value.size();
 }
 
+int db_api::db_get_i64_ex( int iterator, uint64_t& primary, char* buffer, size_t buffer_size ) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+   memcpy( buffer, obj.value.data(), std::min(obj.value.size(), buffer_size) );
+
+   primary = obj.primary_key;
+   return obj.value.size();
+}
+
 const char* db_api::db_get_i64_exex( int itr, size_t* buffer_size ) {
    const key_value_object& obj = keyval_cache.get( itr );
    *buffer_size = obj.value.size();
@@ -441,6 +449,14 @@ void db_api_remove_i64(int itr) {
 
 int db_api_get_i64( int itr, char* buffer, size_t buffer_size ) {
    return db_api::get().db_get_i64(itr, buffer, buffer_size);
+}
+
+int32_t db_api_get_i64_ex( int iterator, uint64_t* primary, char* buffer, size_t buffer_size ) {
+   return db_api::get().db_get_i64_ex(iterator, *primary, buffer, buffer_size);
+}
+
+const char* db_api_get_i64_exex( int itr, size_t* buffer_size ) {
+   return db_api::get().db_get_i64_exex(itr, buffer_size);
 }
 
 int db_api_next_i64( int itr, uint64_t* primary ) {

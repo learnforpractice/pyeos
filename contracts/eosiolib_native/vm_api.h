@@ -184,6 +184,9 @@ struct vm_api {
 
    void (*rodb_remove_i64)( int32_t itr );
    int32_t (*rodb_get_i64)( int32_t itr, char* buffer, size_t buffer_size );
+   int32_t (*rodb_get_i64_ex)( int iterator, uint64_t* primary, char* buffer, size_t buffer_size );
+   const char* (*rodb_get_i64_exex)( int itr, size_t* buffer_size );
+
    int32_t (*rodb_next_i64)( int32_t itr, uint64_t* primary );
    int32_t (*rodb_previous_i64)( int32_t itr, uint64_t* primary );
    int32_t (*rodb_find_i64)( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );

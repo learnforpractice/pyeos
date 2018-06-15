@@ -251,10 +251,13 @@ static struct vm_api _vm_api = {
    .get_code = get_code,
 
    .rodb_remove_i64 = db_api_remove_i64,
-   .rodb_get_i64 = db_api_get_i64,
+
+   .rodb_find_i64 = db_api_find_i64,
+   .rodb_get_i64_ex = db_api_get_i64_ex,
+   .rodb_get_i64_exex = db_api_get_i64_exex,
+
    .rodb_next_i64 = db_api_next_i64,
    .rodb_previous_i64 = db_api_previous_i64,
-   .rodb_find_i64 = db_api_find_i64,
    .rodb_lowerbound_i64 = db_api_lowerbound_i64,
    .rodb_upperbound_i64 = db_api_upperbound_i64,
    .rodb_end_i64 = db_api_end_i64,
@@ -1659,7 +1662,7 @@ class call_depth_api : public context_aware_api {
       }
 };
 
-
+#if 0
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
 );
@@ -1923,7 +1926,7 @@ REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_ui32_to_f64,    double(int32_t)       )
       (_eosio_ui64_to_f64,    double(int64_t)       )
 );
-
+#endif
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;
    in >> s;
