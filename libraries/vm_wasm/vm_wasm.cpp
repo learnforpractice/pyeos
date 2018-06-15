@@ -42,3 +42,14 @@ const char* get_code( uint64_t receiver, size_t* size ) {
    return get_vm_api()->get_code( receiver, size );
 }
 
+int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
+   return get_vm_api()->rodb_find_i64(code, scope, table, id);
+}
+
+int32_t db_api_get_i64_ex( int iterator, uint64_t* primary, char* buffer, size_t buffer_size ) {
+   return get_vm_api()->rodb_get_i64_ex(iterator, primary, buffer, buffer_size);
+}
+
+const char* db_api_get_i64_exex( int itr, size_t* buffer_size ) {
+   return get_vm_api()->rodb_get_i64_exex(itr, buffer_size);
+}

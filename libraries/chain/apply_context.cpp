@@ -91,6 +91,13 @@ void apply_context::schedule() {
       control.check_contract_list( receiver );
    }
 
+   if (a.vm_type == 0) {
+      bool ret = control.get_wasm_interface().apply_native(*this);
+      if (ret) {
+         return;
+      }
+   }
+
    int ret = vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
    if (ret) {
       return;
