@@ -27,15 +27,15 @@ def apply(receiver, code, action):
         vm_name = read_action()
         vm_name = int.from_bytes(vm_name, 'little')
         itr = db.find_i64(code, code, code, vm_name)
+        print('+++++++++++:', itr)
         if itr >= 0:
             db.remove_i64(itr)
-        itr = db.end_i64(code, code, vm_name)
-        print('+++++++++++:', itr)
         while True:
             itr = db.end_i64(code, code, vm_name)
             print('+++++++++++ end_i64 :', itr)
             if itr == -1:
-                break;
+                break
             itr, primary = db.previous_i64(itr)
             print('+++++++++++ previous_i64 :', itr)
             db.remove_i64(itr)
+
