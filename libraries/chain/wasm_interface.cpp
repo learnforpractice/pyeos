@@ -59,6 +59,7 @@ namespace eosio { namespace chain {
    using namespace webassembly::common;
 
    void register_vm_api(void* handle);
+   void wasm_init_api();
 
    wasm_interface::wasm_interface(vm_type vm) : my( new wasm_interface_impl(vm) ) {
    }
@@ -67,6 +68,7 @@ namespace eosio { namespace chain {
 
    bool wasm_interface::init() {
       my->init_native_contract();
+      wasm_init_api();
       return true;
    }
 

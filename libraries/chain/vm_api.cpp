@@ -1662,7 +1662,14 @@ class call_depth_api : public context_aware_api {
       }
 };
 
-#if 0
+void wasm_init_api() {
+   static bool _init = false;
+   if (_init) {
+      return;
+   }
+
+   _init = true;
+
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
 );
@@ -1926,7 +1933,9 @@ REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_ui32_to_f64,    double(int32_t)       )
       (_eosio_ui64_to_f64,    double(int64_t)       )
 );
-#endif
+
+}
+
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;
    in >> s;

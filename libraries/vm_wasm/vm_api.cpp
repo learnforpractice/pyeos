@@ -1415,6 +1415,7 @@ REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
 );
 
+void wasm_init_api() {
 REGISTER_INTRINSICS(compiler_builtins,
    (__ashlti3,     void(int, int64_t, int64_t, int)               )
    (__ashrti3,     void(int, int64_t, int64_t, int)               )
@@ -1674,6 +1675,7 @@ REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_ui32_to_f64,    double(int32_t)       )
       (_eosio_ui64_to_f64,    double(int64_t)       )
 );
+}
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;

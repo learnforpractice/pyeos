@@ -6,11 +6,16 @@ using namespace eosio;
 int wasm_setcode(uint64_t account);
 int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act);
 
+namespace eosio {
+   namespace chain {
+      void wasm_init_api();
+   }
+}
 
 static struct vm_api s_api;
 
 void vm_init() {
-
+   eosio::chain::wasm_init_api();
 }
 
 void vm_deinit() {
