@@ -44,7 +44,7 @@ def deploy(d=True):
     else:
         raise Exception("platform is not supported")
 
-    V = 15
+    V = 21
     if d:
         aa = [ #  name                  type     version                   path
                 ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
@@ -60,10 +60,38 @@ def deploy(d=True):
 
     for a in aa:
         debug.mp_set_max_execution_time(10000_000)
-        if d:
-            sync.deploy_vm(*a)
-        else:
-            sync.deploy_vm(*a)
+#        sync.deploy_vm(*a)
+        deploy_vm(*a)
+
+def deploy_vm(vm_name, type, version, file_name):
+    account = 'vmstore' #eosapi.N('vmstore')
+    vm_name = eosapi.N(vm_name)
+    msg = int.to_bytes(eosapi.N(account), 8, 'little') #scope
+    msg += int.to_bytes(eosapi.N(account), 8, 'little') #table
+    msg += int.to_bytes(vm_name, 8, 'little') #id
+    msg += int.to_bytes(type, 4, 'little')
+    msg += int.to_bytes(version, 4, 'little')
+    msg += int.to_bytes(os.path.getsize(file_name), 4, 'little')
+    print('++++++++++++++++deply:', file_name)
+    r = eosapi.push_action(account,'deploy',msg,{account:'active'})
+    assert r
+
+    f = open(file_name, 'rb')
+    index = 1
+    while True:
+        src_code = f.read(512*1024)
+        print('++++++++++++++++src code: ', len(src_code), index)
+        if not src_code:
+            break
+        msg = int.to_bytes(eosapi.N(account), 8, 'little') #scope
+        msg += int.to_bytes(vm_name, 8, 'little') #table
+        msg += int.to_bytes(index, 8, 'little') #id
+        msg += src_code
+        print(account)
+        r = eosapi.push_action(account,'deploy',msg,{account:'active'})
+        assert r
+        index += 1
+
 
 @init()
 def test2(count=100):

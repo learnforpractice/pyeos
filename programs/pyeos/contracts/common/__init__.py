@@ -198,7 +198,10 @@ class Sync(object):
 
     def deploy_vm(self, vm_name, type, version, file_name):
         vm_name = eosapi.N(vm_name)
-        msg = int.to_bytes(vm_name, 8, 'little')
+        account = eosapi.N(self.account)
+        msg = int.to_bytes(account, 8, 'little') #scope
+        msg += int.to_bytes(account, 8, 'little') #table
+        msg += int.to_bytes(vm_name, 8, 'little') #id
         msg += int.to_bytes(type, 4, 'little')
         msg += int.to_bytes(version, 4, 'little')
         with open(file_name, 'rb') as f:
