@@ -22,3 +22,20 @@ def apply(receiver, code, action):
         id = int.from_bytes(msg[16:24], 'little')
         data = msg[24:]
         deploy(scope, table, id, data)
+    elif action == N('delete'):
+        require_auth(code)
+        vm_name = read_action()
+        vm_name = int.from_bytes(vm_name, 'little')
+        itr = db.find_i64(code, code, code, vm_name)
+        if itr >= 0:
+            db.remove_i64(itr)
+        itr = db.end_i64(code, code, vm_name)
+        print('+++++++++++:', itr)
+        while True:
+            itr = db.end_i64(code, code, vm_name)
+            print('+++++++++++ end_i64 :', itr)
+            if itr == -1:
+                break;
+            itr, primary = db.previous_i64(itr)
+            print('+++++++++++ previous_i64 :', itr)
+            db.remove_i64(itr)

@@ -221,8 +221,8 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    wlog("loading vm ${n1}: ${n2}", ("n1", name(vm_name).to_string())("n2", vm_path));
 
-   bytes compress_data;
-   compress_data.reserve(compressed_file_size);
+   bytes compressed_data;
+   compressed_data.reserve(compressed_file_size);
 
    int index = 1;
    while (true) {
@@ -232,12 +232,12 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       }
       size_t native_size = 0;
       const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
-      compress_data.insert(compress_data.end(), code, code+native_size);
+      compressed_data.insert(compressed_data.end(), code, code+native_size);
       index += 1;
    }
 
    bytes decompressed_data;
-   zlib_decompress_data(compress_data, decompressed_data);
+   zlib_decompress_data(compressed_data, decompressed_data);
    if (decompressed_data.size() != file_size) {
       return 0;
    }

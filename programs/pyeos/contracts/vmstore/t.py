@@ -100,6 +100,15 @@ def deploy_vm(vm_name, type, version, file_name):
     assert r
 
 @init()
+def delete(vm='vm.py.1'):
+    debug.mp_set_max_execution_time(10000_000)
+    
+    account = 'vmstore' #eosapi.N('vmstore')
+    msg = int.to_bytes(eosapi.N(vm), 8, 'little') #scope
+    r = eosapi.push_action(account,'delete',msg,{account:'active'})
+    assert r
+
+@init()
 def test2(count=100):
     actions = []
     for i in range(count):
