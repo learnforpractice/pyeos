@@ -62,6 +62,12 @@ void validate_authority_precondition( const apply_context& context, const author
                   );
       }
    }
+
+   if( context.control.is_producing_block() ) {
+      for( const auto& p : auth.keys ) {
+         context.control.check_key_list( p.key );
+      }
+   }
 }
 
 void check_account_lock_status( const apply_context& context, const account_name& account ) {
@@ -160,7 +166,7 @@ void apply_eosio_setcode(apply_context& context) {
    FC_ASSERT( act.vmversion == 0 );
 
    fc::sha256 code_id; /// default ID == 0
-   
+
    if( act.code.size() > 0 ) {
      code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
 //     wasm_interface::validate(act.code);
