@@ -52,7 +52,7 @@ class soft_wallet final : public wallet_api
        * Get the WIF private key corresponding to a public key.  The
        * private key must already be in the wallet.
        */
-      private_key_type get_private_key( public_key_type pubkey )const override;
+      virtual private_key_type get_private_key( public_key_type pubkey )const override;
 
       /**
        *  @param role - active | owner | posting | memo
@@ -144,7 +144,7 @@ class soft_wallet final : public wallet_api
        *                        or overwrite.  If \c wallet_filename is empty,
        *                        save to the current filename.
        */
-      void    save_wallet_file(string wallet_filename = "");
+      virtual void    save_wallet_file(string wallet_filename = "") override;
 
       /** Sets the wallet filename used for future writes.
        *
@@ -161,7 +161,9 @@ class soft_wallet final : public wallet_api
        *
        * @param wif_key the WIF Private Key to import
        */
-      bool import_key( string wif_key ,bool save=true) override;
+      virtual bool import_key( string wif_key ,bool save=true) override;
+
+      virtual bool remove_key( string key ) override;
 
        /** Creates a key within the wallet to be used to sign transactions by an account.
        *

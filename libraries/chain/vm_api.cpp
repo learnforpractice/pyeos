@@ -299,10 +299,10 @@ class context_aware_api {
 
 class context_free_api : public context_aware_api {
    public:
-      context_free_api( apply_context& ctx )
-      :context_aware_api(ctx, true) {
+      context_free_api( apply_context& _ctx )
+      :context_aware_api(_ctx, true) {
          /* the context_free_data is not available during normal application because it is prunable */
-         FC_ASSERT( context.context_free, "this API may only be called from context_free apply" );
+         FC_ASSERT( ctx().context_free, "this API may only be called from context_free apply" );
       }
 
       int get_context_free_data( uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
@@ -312,10 +312,10 @@ class context_free_api : public context_aware_api {
 
 class privileged_api : public context_aware_api {
    public:
-      privileged_api( apply_context& ctx )
-      :context_aware_api(ctx)
+      privileged_api( apply_context& _ctx )
+      :context_aware_api(_ctx)
       {
-         FC_ASSERT( context.privileged, "${code} does not have permission to call this API", ("code",context.receiver) );
+         FC_ASSERT( ctx().privileged, "${code} does not have permission to call this API", ("code",context.receiver) );
       }
 
       /**
