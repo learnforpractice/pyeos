@@ -114,6 +114,10 @@ cdef extern from "eosapi_.hpp":
     void n_to_symbol_(uint64_t n, string& out)
     uint64_t symbol_to_n_(string& n)
 
+    void zlib_compress_data_(const string& _in, string& out);
+    void zlib_decompress_data_(const string& _int, string& out);
+
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -707,6 +711,16 @@ def symbol2n(string& n):
 
 def symbolprecision(n):
     return n&0xff
+
+def zlib_compress_data(string& _in):
+    cdef string _out
+    zlib_compress_data_(_in, _out)
+    return <bytes>_out
+
+def zlib_decompress_data(string& data):
+    cdef string _out
+    zlib_decompress_data_(data, _out)
+    return <bytes>_out
 
 cdef extern void py_exit() with gil:
     exit()

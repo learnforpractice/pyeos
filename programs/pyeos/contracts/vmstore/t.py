@@ -44,7 +44,7 @@ def deploy(d=True):
     else:
         raise Exception("platform is not supported")
 
-    V = 21
+    V = 1
     if d:
         aa = [ #  name                  type     version                   path
                 ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
@@ -68,16 +68,20 @@ def deploy_vm(vm_name, type, version, file_name):
     vm_name = eosapi.N(vm_name)
 
     f = open(file_name, 'rb')
+    data = f.read()
+    compressed = eosapi.zlib_compress_data(data)
+
+    file_size = len(data)
+    compressed_file_size = len(compressed)
+
+    piece = 128*1024
     index = 1
-    while True:
-        src_code = f.read(512*1024)
-        print('++++++++++++++++src code: ', len(src_code), index)
-        if not src_code:
-            break
+    for i in range(0, len(compressed), piece):
+        data = compressed[i:i+piece]
         msg = int.to_bytes(eosapi.N(account), 8, 'little') #scope
         msg += int.to_bytes(vm_name, 8, 'little') #table
         msg += int.to_bytes(index, 8, 'little') #id
-        msg += src_code
+        msg += data
         print(account)
         r = eosapi.push_action(account,'deploy',msg,{account:'active'})
         assert r
@@ -89,6 +93,8 @@ def deploy_vm(vm_name, type, version, file_name):
     msg += int.to_bytes(type, 4, 'little')
     msg += int.to_bytes(version, 4, 'little')
     msg += int.to_bytes(os.path.getsize(file_name), 4, 'little')
+    msg += int.to_bytes(compressed_file_size, 4, 'little')
+
     print('++++++++++++++++deply:', file_name)
     r = eosapi.push_action(account,'deploy',msg,{account:'active'})
     assert r

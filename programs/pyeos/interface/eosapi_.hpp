@@ -119,3 +119,5 @@ PyObject* get_transaction_(string& id);
 void n_to_symbol_(uint64_t n, string& out);
 uint64_t symbol_to_n_(string& n);
 
+void zlib_compress_data_(const string& in, string& out);
+void zlib_decompress_data_(const string& data, string& out);

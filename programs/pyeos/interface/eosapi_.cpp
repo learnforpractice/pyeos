@@ -24,11 +24,16 @@
 #include <regex>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+
 
 #include <vm_manager.hpp>
 
 using namespace eosio;
 using namespace eosio::chain;
+namespace bio = boost::iostreams;
 
 auto tx_expiration = fc::seconds(30);
 bool tx_force_unique = false;
@@ -770,6 +775,47 @@ uint64_t symbol_to_n_(string& n) {
       return eosio::chain::symbol::from_string(n).value();
    } FC_LOG_AND_DROP();
    return 0;
+}
+
+template<size_t Limit>
+struct read_limiter {
+   using char_type = char;
+   using category = bio::multichar_output_filter_tag;
+
+   template<typename Sink>
+   size_t write(Sink &sink, const char* s, size_t count)
+   {
+      EOS_ASSERT(_total + count <= Limit, tx_decompression_error, "Exceeded maximum decompressed transaction size");
+      _total += count;
+      return bio::write(sink, s, count);
+   }
+
+   size_t _total = 0;
+};
+
+void zlib_compress_data_(const string& _in, string& _out) {
+   bytes out;
+   bio::filtering_ostream comp;
+   comp.push(bio::zlib_compressor(bio::zlib::best_compression));
+   comp.push(bio::back_inserter(out));
+   bio::write(comp, _in.c_str(), _in.size());
+   bio::close(comp);
+   _out = string(out.begin(), out.end());
+}
+
+void zlib_decompress_data_(const string& _data, string& _out) {
+   try {
+      bytes out;
+      bio::filtering_ostream decomp;
+      decomp.push(bio::zlib_decompressor());
+      decomp.push(read_limiter<100*1024*1024>()); // limit to 10 megs decompressed for zip bomb protections
+      decomp.push(bio::back_inserter(out));
+      bio::write(decomp, _data.c_str(), _data.size());
+      bio::close(decomp);
+      _out = string(out.begin(), out.end());
+   } catch( fc::exception& er ) {
+   } catch( ... ) {
+   }
 }
 
 

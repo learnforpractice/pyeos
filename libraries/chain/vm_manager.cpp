@@ -3,17 +3,29 @@
 
 #include <dlfcn.h>
 
+
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+
+#include <eosio/chain/exceptions.hpp>
+
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h> // for sysconf
+
+
+using namespace eosio;
 using namespace eosio::chain;
+namespace bio = boost::iostreams;
+
 
 namespace eosio {
 namespace chain {
    void register_vm_api(void* handle);
 }
 }
-
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h> // for sysconf
 
 uint64_t get_microseconds() {
    if (sysconf(_POSIX_THREAD_CPUTIME)){
@@ -25,6 +37,35 @@ uint64_t get_microseconds() {
    }
    printf("+++++ERROR: something went wrong!\n");
    return 0;
+}
+
+template<size_t Limit>
+struct read_limiter {
+   using char_type = char;
+   using category = bio::multichar_output_filter_tag;
+
+   template<typename Sink>
+   size_t write(Sink &sink, const char* s, size_t count)
+   {
+      EOS_ASSERT(_total + count <= Limit, tx_decompression_error, "Exceeded maximum decompressed transaction size");
+      _total += count;
+      return bio::write(sink, s, count);
+   }
+
+   size_t _total = 0;
+};
+
+void zlib_decompress_data(const bytes& data, bytes& out) {
+   try {
+      bio::filtering_ostream decomp;
+      decomp.push(bio::zlib_decompressor());
+      decomp.push(read_limiter<100*1024*1024>()); // limit to 10 megs decompressed for zip bomb protections
+      decomp.push(bio::back_inserter(out));
+      bio::write(decomp, data.data(), data.size());
+      bio::close(decomp);
+   } catch( fc::exception& er ) {
+   } catch( ... ) {
+   }
 }
 
 static uint64_t vm_names[] = {
@@ -172,13 +213,17 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
    uint32_t type = *(uint32_t*)code;
    uint32_t version = *(uint32_t*)&code[4];
+   uint32_t file_size = *(uint32_t*)&code[8];
+   uint32_t compressed_file_size = *(uint32_t*)&code[12];
 
    char vm_path[128];
    sprintf(vm_path, "%s.%d",name(vm_name).to_string().c_str(), version);
 
    wlog("loading vm ${n1}: ${n2}", ("n1", name(vm_name).to_string())("n2", vm_path));
 
-   std::ofstream out(vm_path, std::ios::binary | std::ios::out);
+   bytes compress_data;
+   compress_data.reserve(compressed_file_size);
+
    int index = 1;
    while (true) {
       int itr = db_api::get().db_find_i64(vm_store, vm_store, vm_name, index);
@@ -187,9 +232,18 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       }
       size_t native_size = 0;
       const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
-      out.write(code, native_size);
+      compress_data.insert(compress_data.end(), code, code+native_size);
       index += 1;
    }
+
+   bytes decompressed_data;
+   zlib_decompress_data(compress_data, decompressed_data);
+   if (decompressed_data.size() != file_size) {
+      return 0;
+   }
+
+   std::ofstream out(vm_path, std::ios::binary | std::ios::out);
+   out.write(decompressed_data.data(), file_size);
    out.close();
 
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
