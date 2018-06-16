@@ -35,6 +35,8 @@ def test(msg='hello,world'):
 #        print(r)
         assert r
 
+V = 2
+
 @init()
 def deploy(d=True):
     sync = Sync('vmstore', _dir=os.path.dirname(__file__), _ignore=['t.py', 'vmstore.py'])
@@ -44,18 +46,17 @@ def deploy(d=True):
     else:
         raise Exception("platform is not supported")
 
-    V = 1
     if d:
         aa = [ #  name                  type     version                   path
-                ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
-                ['vm.py.'+platform,      1,         V,         "../libraries/vm_py/libvm_py-1d.dylib"],
-                ['vm.eth.'+platform,     2,         V,         "../libraries/vm_eth/libvm_ethd.dylib"],
+                ['vm.wasm.'+platform+'.'+str(V),    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
+                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-1d.dylib"],
+                ['vm.eth.'+platform+'.'+str(V),     2,         V,         "../libraries/vm_eth/libvm_ethd.dylib"],
             ]
     else:
         aa = [ #  name                  type     version                   path
-                ['vm.wasm.'+platform,    0,         V,         "../libraries/vm_wasm/libvm_wasm.dylib"],
-                ['vm.py.'+platform,      1,         V,         "../libraries/vm_py/libvm_py-1.dylib"],
-                ['vm.eth.'+platform,     2,         V,         "../libraries/vm_eth/libvm_eth.dylib"],
+                ['vm.wasm.'+platform+'.'+str(V),    0,         V,         "../libraries/vm_wasm/libvm_wasm.dylib"],
+                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-1.dylib"],
+                ['vm.eth.'+platform+'.'+str(V),     2,         V,         "../libraries/vm_eth/libvm_eth.dylib"],
              ]
 
     for a in aa:
@@ -65,6 +66,7 @@ def deploy(d=True):
 
 def deploy_vm(vm_name, type, version, file_name):
     account = 'vmstore' #eosapi.N('vmstore')
+    print("++++++++++++++++++++deploy vm: ", vm_name)
     vm_name = eosapi.N(vm_name)
 
     f = open(file_name, 'rb')
@@ -107,6 +109,28 @@ def delete(vm='vm.py.1'):
     msg = int.to_bytes(eosapi.N(vm), 8, 'little') #scope
     r = eosapi.push_action(account,'delete',msg,{account:'active'})
     assert r
+
+@init()
+def activatevm():
+    msg = int.to_bytes(N('vm.py.1'), 8, 'little') #vm name, include platform id
+    msg += int.to_bytes(1, 8, 'little') #type: py
+    msg += int.to_bytes(V, 8, 'little') #type: version
+    act = [N('eosio'), N('activatevm'), [[N('eosio'), N('active')]], msg]
+    r = eosapi.push_transactions([[act]])
+    assert r[0]
+
+@init()
+def publish():
+    contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
+    _path = os.path.join(contracts_path, 'eosio.system', 'eosio.system')
+    abi = _path + '.abi'
+
+    setabi = eosapi.pack_setabi(abi, eosapi.N('eosio'))
+    assert setabi
+
+    setabi_action = [N('eosio'), N('setabi'), [[N('eosio'), N('active')]], setabi]
+    r = eosapi.push_transactions([[setabi_action]])
+    assert r[0]
 
 @init()
 def test2(count=100):

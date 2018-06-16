@@ -200,21 +200,49 @@ int vm_manager::check_new_version(int vm_type, uint64_t vm_name) {
    return 0;
 }
 
+#include <eosio/chain/contract_types.hpp>
+
 int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
-   uint64_t start = get_microseconds();
+   activatevm vm;
    uint64_t vm_store = N(vmstore);
 
-   int itr = db_api::get().db_find_i64(vm_store, vm_store, vm_store, vm_name);
+   uint64_t start = get_microseconds();
+
+   int itr = db_api::get().db_find_i64(N(eosio), N(eosio), N(eosio), vm_name);
    if (itr < 0) {
       return 0;
    }
 
+   int size = db_api::get().db_get_i64(itr, (char*)&vm, sizeof(vm));
+
+   if (size != sizeof(vm)) {
+      return 0;
+   }
+
+   if (vm.type != vm_type) {
+      return 0;
+   }
+
+   char _vm_name[128];
+   snprintf(_vm_name, sizeof(_vm_name), "%s.%d", name(vm.vm_name).to_string().c_str(), vm.version);
+   uint64_t vm_name_with_version = NN(_vm_name);
+
+   int _itr = db_api::get().db_find_i64(vm_store, vm_store, vm_store, vm_name_with_version);
+   if (_itr < 0) {
+      return 0;
+   }
+
    size_t native_size = 0;
-   const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
+   const char* code = db_api::get().db_get_i64_exex(_itr, &native_size);
    uint32_t type = *(uint32_t*)code;
    uint32_t version = *(uint32_t*)&code[4];
    uint32_t file_size = *(uint32_t*)&code[8];
    uint32_t compressed_file_size = *(uint32_t*)&code[12];
+
+   if (version != vm.version) {
+      wlog("version not right!");
+      return 0;
+   }
 
    char vm_path[128];
    sprintf(vm_path, "%s.%d",name(vm_name).to_string().c_str(), version);
@@ -288,10 +316,10 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    calls->apply = apply;
 
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
-   auto _itr = vm_map.find(vm_type);
-   if (_itr != vm_map.end()) {
-      _itr->second->vm_deinit();
-      dlclose(_itr->second->handle);
+   auto __itr = vm_map.find(vm_type);
+   if (__itr != vm_map.end()) {
+      __itr->second->vm_deinit();
+      dlclose(__itr->second->handle);
    }
 
    vm_map[vm_type] = std::move(calls);
@@ -302,11 +330,11 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 }
 
 int vm_manager::setcode(int type, uint64_t account) {
-
+/*
    if (check_new_version(type, vm_names[type])) {
       load_vm(type, vm_names[type]);
    }
-
+*/
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
       return -1;
@@ -315,11 +343,11 @@ int vm_manager::setcode(int type, uint64_t account) {
 }
 
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
-
+/*
    if (check_new_version(type, vm_names[type])) {
       load_vm(type, vm_names[type]);
    }
-
+*/
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
       return 0;

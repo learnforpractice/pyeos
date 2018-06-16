@@ -201,6 +201,14 @@ abi_def eosio_contract_abi(const abi_def& eosio_system_abi)
    });
 
    eos_abi.structs.emplace_back( struct_def {
+      "activatevm", "", {
+         {"vm_name", "account_name"},
+         {"type", "uint64"},
+         {"version", "uint64"},
+      }
+   });
+
+   eos_abi.structs.emplace_back( struct_def {
          "onerror", "", {
             {"sender_id", "uint128"},
             {"sent_trx",  "bytes"}
@@ -230,13 +238,18 @@ abi_def eosio_contract_abi(const abi_def& eosio_system_abi)
    eos_abi.actions.push_back( action_def{name("newaccount"), "newaccount",""} );
    eos_abi.actions.push_back( action_def{name("setcode"), "setcode",""} );
    eos_abi.actions.push_back( action_def{name("setabi"), "setabi",""} );
+
    eos_abi.actions.push_back( action_def{name("lockcode"), "lockcode",""} );
    eos_abi.actions.push_back( action_def{name("unlockcode"), "unlockcode",""} );
+
    eos_abi.actions.push_back( action_def{name("updateauth"), "updateauth",""} );
    eos_abi.actions.push_back( action_def{name("deleteauth"), "deleteauth",""} );
    eos_abi.actions.push_back( action_def{name("linkauth"), "linkauth",""} );
    eos_abi.actions.push_back( action_def{name("unlinkauth"), "unlinkauth",""} );
    eos_abi.actions.push_back( action_def{name("canceldelay"), "canceldelay",""} );
+
+   eos_abi.actions.push_back( action_def{name("activatevm"), "activatevm",""} );
+
    eos_abi.actions.push_back( action_def{name("onerror"), "onerror",""} );
    eos_abi.actions.push_back( action_def{name("onblock"), "onblock",""} );
 

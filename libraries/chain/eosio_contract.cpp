@@ -612,9 +612,17 @@ void apply_eosio_canceldelay(apply_context& context) {
    context.cancel_deferred_transaction(transaction_id_to_sender_id(trx_id), account_name());
 }
 
-void apply_eosio_activate(apply_context& context) {
-
+#include "vm_manager.hpp"
+void apply_eosio_activatevm(apply_context& context) {
+   auto vm = context.act.data_as<activatevm>();
+   context.require_authorization(N(eosio));
+   int itr = context.db_find_i64(N(eosio), N(eosio), N(eosio), vm.vm_name);
+   if (itr >= 0) {
+      context.db_update_i64(itr, N(eosio), (char*)&vm, sizeof(vm));
+   } else {
+      context.db_store_i64(N(eosio), N(eosio), N(eosio), vm.vm_name, (char*)&vm, sizeof(vm));
+   }
+   vm_manager::get().load_vm(vm.type, vm.vm_name);
 }
-
 
 } } // namespace eosio::chain
