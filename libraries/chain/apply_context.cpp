@@ -94,6 +94,7 @@ void apply_context::schedule() {
    if (a.vm_type == 0) {
       try {
          control.get_wasm_interface().apply(a.code_version, a.code, *this);
+         return;
       } catch ( const wasm_exit& ){
 
       }
