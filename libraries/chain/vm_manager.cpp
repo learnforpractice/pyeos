@@ -103,14 +103,38 @@ bool vm_manager::init() {
    init = true;
 
    const char* vm_libs_path[] = {
-#ifdef DEBUG
-   "../libraries/vm_wasm/libvm_wasmd.dylib",
-   "../libraries/vm_py/libvm_py-1d.dylib",
-   "../libraries/vm_eth/libvm_ethd.dylib",
+#if defined(__APPLE__) && defined(__MACH__)
+   #ifdef DEBUG
+      "../libraries/vm_wasm/libvm_wasmd.dylib",
+      "../libraries/vm_py/libvm_py-1d.dylib",
+      "../libraries/vm_eth/libvm_ethd.dylib",
+   #else
+      "../libraries/vm_wasm/libvm_wasm.dylib",
+      "../libraries/vm_py/libvm_py-1.dylib",
+      "../libraries/vm_eth/libvm_eth.dylib",
+   #endif
+#elif defined(__linux__)
+   #ifdef DEBUG
+      "../libraries/vm_wasm/libvm_wasmd.so",
+      "../libraries/vm_py/libvm_py-1d.so",
+      "../libraries/vm_eth/libvm_ethd.so",
+   #else
+      "../libraries/vm_wasm/libvm_wasm.so",
+      "../libraries/vm_py/libvm_py-1.so",
+      "../libraries/vm_eth/libvm_eth.so",
+   #endif
+#elif defined(_WIN64)
+   #ifdef DEBUG
+      "../libraries/vm_wasm/libvm_wasmd.dll",
+      "../libraries/vm_py/libvm_py-1d.dll",
+      "../libraries/vm_eth/libvm_ethd.dll",
+   #else
+      "../libraries/vm_wasm/libvm_wasm.dll",
+      "../libraries/vm_py/libvm_py-1.dll",
+      "../libraries/vm_eth/libvm_eth.dll",
+   #endif
 #else
-   "../libraries/vm_wasm/libvm_wasm.dylib",
-   "../libraries/vm_py/libvm_py.dylib",
-   "../libraries/vm_eth/libvm_eth.dylib",
+   #error Not Supported Platform
 #endif
    };
 
@@ -224,7 +248,7 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    }
 
    char _vm_name[128];
-   snprintf(_vm_name, sizeof(_vm_name), "%s.%d", name(vm.vm_name).to_string().c_str(), vm.version);
+   snprintf(_vm_name, sizeof(_vm_name), "%s.%d", name(vm.vm_name).to_string().c_str(), (int)vm.version);
    uint64_t vm_name_with_version = NN(_vm_name);
 
    int _itr = db_api::get().db_find_i64(vm_store, vm_store, vm_store, vm_name_with_version);
