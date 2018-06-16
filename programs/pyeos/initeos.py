@@ -260,12 +260,11 @@ def publish_system_contract():
 
             if account == 'eosio.token':
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
-                with producer:
-                    msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
-                    r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
-                    assert r
-                    r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
-                    assert r
+                msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
+                r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
+                assert r
+                r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+                assert r
 #                    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
 #                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
 
