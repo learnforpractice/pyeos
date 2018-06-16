@@ -722,19 +722,23 @@ void fc_pack_setcode_(chain::setcode _setcode, vector<char>& out) {
 
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out) {
-   setabi handler;
-   handler.account = account;
-   handler.abi = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
-   auto _out = fc::raw::pack(handler);
-   out = string(_out.begin(), _out.end());
+   try {
+      setabi handler;
+      handler.account = account;
+      handler.abi = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
+      auto _out = fc::raw::pack(handler);
+      out = string(_out.begin(), _out.end());
+   } FC_LOG_AND_DROP();
 }
 
 void fc_pack_setconfig_(string& abiPath, uint64_t account, string& out) {
-   setconfig handler;
-   handler.account = account;
-   handler.config = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
-   auto _out = fc::raw::pack(handler);
-   out = string(_out.begin(), _out.end());
+   try {
+      setconfig handler;
+      handler.account = account;
+      handler.config = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
+      auto _out = fc::raw::pack(handler);
+      out = string(_out.begin(), _out.end());
+   } FC_LOG_AND_DROP();
 }
 
 void fc_pack_uint64_(uint64_t n, string& out) {
