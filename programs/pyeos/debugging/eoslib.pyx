@@ -164,7 +164,7 @@ def db_end_i64( uint64_t code, uint64_t scope, uint64_t table ):
 
 def wasm_call2(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args):
     cdef vector[char] result
-    return wasm_call2_(receiver, file_name, func, args, result);
+    return None #wasm_call2_(receiver, file_name, func, args, result);
 
 def hash64(data, uint64_t seed = 0):
     '''64 bit hash using xxhash

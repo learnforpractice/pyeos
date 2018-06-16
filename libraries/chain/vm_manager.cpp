@@ -24,8 +24,10 @@ namespace bio = boost::iostreams;
 namespace eosio {
 namespace chain {
    void register_vm_api(void* handle);
+   int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
 }
 }
+
 
 uint64_t get_microseconds() {
    if (sysconf(_POSIX_THREAD_CPUTIME)){
@@ -380,10 +382,6 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    return 1;
 }
 
-void *vm_manager::get_wasm_vm_api() {
-   return nullptr;
-}
-
 static vector<char> print_buffer;
 static void print(const char * str, size_t len) {
    for (int i=0;i<len;i++) {
@@ -398,6 +396,7 @@ static void print(const char * str, size_t len) {
 }
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
+typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 
 struct vm_py_api* vm_manager::get_py_vm_api() {
    auto itr = vm_map.find(1);
@@ -419,4 +418,36 @@ void *vm_manager::get_eth_vm_api() {
    return nullptr;
 }
 
+struct vm_wasm_api* vm_manager::get_wasm_vm_api() {
+   auto itr = vm_map.find(0);
+   if (itr == vm_map.end()) {
+      return nullptr;
+   }
 
+   fn_get_wasm_vm_api get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "get_wasm_vm_api");
+   if (get_wasm_vm_api == nullptr) {
+      return nullptr;
+   }
+
+   struct vm_wasm_api* api = get_wasm_vm_api();
+   return api;
+}
+
+namespace eosio { namespace chain {
+
+   std::vector<uint8_t> wast_to_wasm( const std::string& wast ) {
+      std::vector<uint8_t> v(wast.size()*2);
+      struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
+      int size = api->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), v.data(), v.size());
+      return std::vector<uint8_t>(v.data(), v.data()+size);
+   }
+
+   std::string  wasm_to_wast( const uint8_t* data, uint64_t size ) {
+      std::vector<uint8_t> v(size*2);
+      struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
+      int wast_size = api->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
+      return std::string((char*)v.data(), wast_size);
+   }
+
+}
+}

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include <vm_py_api.h>
+#include <vm_wasm_api.h>
 
 using namespace std;
 
@@ -37,7 +38,7 @@ public:
    int load_vm(int vm_type, uint64_t vm_name);
    bool init();
 
-   void *get_wasm_vm_api();
+   struct vm_wasm_api* get_wasm_vm_api();
    struct vm_py_api* get_py_vm_api();
    void *get_eth_vm_api();
 

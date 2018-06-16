@@ -8,8 +8,8 @@
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/resource_limits.hpp>
 #include <eosio/chain/wasm_interface_private.hpp>
-#include <eosio/chain/wasm_eosio_validation.hpp>
-#include <eosio/chain/wasm_eosio_injection.hpp>
+//#include <eosio/chain/wasm_eosio_validation.hpp>
+//#include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/symbol.hpp>
@@ -26,6 +26,9 @@
 #include <fstream>
 
 #include <fc/crypto/xxhash.h>
+
+#include "vm_manager.hpp"
+
 
 static bool _wasm_debug_enable = 0;
 static bool _enable_native_contract = true;
@@ -55,48 +58,28 @@ void set_debug_contract_(string& _account, string& path) {
 }
 
 namespace eosio { namespace chain {
-   using namespace webassembly;
-   using namespace webassembly::common;
 
    void register_vm_api(void* handle);
    void wasm_init_api();
 
-   wasm_interface::wasm_interface(vm_type vm) : my( new wasm_interface_impl(vm) ) {
+   wasm_interface::wasm_interface(vm_type vm)  : my( new wasm_interface_impl(vm) ) {
    }
 
    wasm_interface::~wasm_interface() {}
 
    bool wasm_interface::init() {
       my->init_native_contract();
-      wasm_init_api();
+//      wasm_init_api();
       return true;
    }
 
    void wasm_interface::validate(const controller& control, const bytes& code) {
-      Module module;
-      try {
-         Serialization::MemoryInputStream stream((U8*)code.data(), code.size());
-         WASM::serialize(stream, module);
-      } catch(const Serialization::FatalSerializationException& e) {
-         EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-      } catch(const IR::ValidationException& e) {
-         EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-      }
 
-      wasm_validations::wasm_binary_validation validator(control, module);
-      validator.validate();
-
-      root_resolver resolver(true);
-      LinkResult link_result = linkModule(module, resolver);
-
-      //there are a couple opportunties for improvement here--
-      //Easy: Cache the Module created here so it can be reused for instantiaion
-      //Hard: Kick off instantiation in a separate thread at this location
    }
 
    void wasm_interface::call( const digest_type& code_id, const shared_string& code, string& func, vector<uint64_t>& args, apply_context& context ) {
    //      my->get_instantiated_module(context.act.account, code_id, code)->call(func, args, context);
-         my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
+   //      my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
    }
 
    bool wasm_interface::apply_native(apply_context& ctx) {
@@ -155,14 +138,10 @@ namespace eosio { namespace chain {
    }
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
-
       if (apply_native(context)) {
       } else {
-         my->get_instantiated_module(code_id, code, context.trx_context)->apply(context);
+         vm_manager::get().apply(0, context.receiver.value, context.act.account.value, context.act.name.value);
       }
    }
-
-   wasm_instantiated_module_interface::~wasm_instantiated_module_interface() {}
-   wasm_runtime_interface::~wasm_runtime_interface() {}
 
 } } /// eosio::chain

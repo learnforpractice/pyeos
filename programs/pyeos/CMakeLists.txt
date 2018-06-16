@@ -77,7 +77,7 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
     interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
     interface/debug_.cpp
-    interface/wasm_.cpp
+#    interface/wasm_.cpp
     interface/net_.cpp
 
     wrap/eosapi.wrap.cpp 

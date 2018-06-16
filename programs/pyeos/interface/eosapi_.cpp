@@ -591,8 +591,7 @@ int get_code_(string& name, string& wast, string& str_abi, string& code_hash, in
 
       if (accnt.code.size()) {
          if (accnt.vm_type == 0) {
-            result.wast = chain::wasm_to_wast((const uint8_t*)accnt.code.data(),
-                                              accnt.code.size());
+            result.wast = chain::wasm_to_wast((uint8_t*)accnt.code.data(), accnt.code.size());
          } else {
             result.wast = string((const char*)accnt.code.data(), accnt.code.size());
          }

@@ -45,16 +45,16 @@ add_library( eosio_chain SHARED
 
 #             chain_config.cpp
 #             block_trace.cpp
-              wast_to_wasm.cpp
+#              wast_to_wasm.cpp
               wasm_interface.cpp
-              wasm_eosio_validation.cpp
-              wasm_eosio_injection.cpp
+#              wasm_eosio_validation.cpp
+#              wasm_eosio_injection.cpp
               apply_context.cpp
               abi_serializer.cpp
               asset.cpp
 
-             webassembly/wavm.cpp
-             webassembly/binaryen.cpp
+#             webassembly/wavm.cpp
+#             webassembly/binaryen.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp
@@ -108,8 +108,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase wavm-shared
-        binaryen softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase  softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on vm_py, 
@@ -127,6 +126,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/extmod
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix

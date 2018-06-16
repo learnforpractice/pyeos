@@ -92,10 +92,17 @@ void apply_context::schedule() {
    }
 
    if (a.vm_type == 0) {
+      try {
+         control.get_wasm_interface().apply(a.code_version, a.code, *this);
+      } catch ( const wasm_exit& ){
+
+      }
+#if 0
       bool ret = control.get_wasm_interface().apply_native(*this);
       if (ret) {
          return;
       }
+#endif
    }
 
    int ret = vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
