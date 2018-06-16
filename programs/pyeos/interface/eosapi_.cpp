@@ -47,8 +47,7 @@ uint32_t tx_max_net_usage = 0;
 uint64_t string_to_uint64_(string str) {
    try {
       return name(str).value;
-   } catch (...) {
-   }
+   }  FC_LOG_AND_DROP();
    return 0;
 }
 
@@ -240,13 +239,8 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
          outputs.emplace_back(std::move(pretty_output));
       }
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
+
    if (cost_time == 0) {
       //
    } else {
@@ -289,13 +283,8 @@ PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       return python::json::to_string(fc::variant(trx));
 
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   } FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -307,13 +296,7 @@ PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key) {
       trx.sign(priv_key, get_info().chain_id);
       return python::json::to_string(fc::variant(trx));
 
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   } FC_LOG_AND_DROP();
    return py_new_none();
 
 }
@@ -337,13 +320,7 @@ PyObject* push_raw_transaction_(string& signed_trx) {
 
       success = true;
 
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
 
    if (success) {
       return python::json::to_string(result);
@@ -410,13 +387,8 @@ PyObject* create_account_(string creator, string newaccount, string owner,
       vv.emplace_back(std::move(actions));
       return push_transactions_(vv, sign);
 
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -472,12 +444,8 @@ PyObject* get_block_(char* num_or_id) {
       chain_apis::read_only::get_block_params params = {string(num_or_id)};
       auto results = ro_api.get_block(params);
       return python::json::to_string(results);
-   } catch (fc::bad_cast_exception& ex) { /* do nothing */
-   } catch (const fc::exception& e) {
-      elog((e.to_detail_string()));
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -505,13 +473,7 @@ PyObject* get_account_(const char* _name) {
       result = ro_api.get_account(params);
       return python::json::to_string(result);
 
-   } catch (fc::exception& ex) {
-//      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-//      elog(boost::diagnostic_information(ex));
-   } catch (...) {
-
-   }
+   }  FC_LOG_AND_DROP();
 
    return py_new_none();
 }
@@ -567,9 +529,8 @@ PyObject* get_actions_(uint64_t account, int pos, int offset) {
       auto ro_api = app().get_plugin<history_plugin>().get_read_only_api();
       auto results = ro_api.get_actions(params);
       return python::json::to_string(fc::variant(results));
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   }
+   }  FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -583,9 +544,8 @@ PyObject* get_transaction_(string& id) {
       auto ro_api = app().get_plugin<history_plugin>().get_read_only_api();
       auto results = ro_api.get_transaction(params);
       return python::json::to_string(fc::variant(results));
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   }
+   }  FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -615,11 +575,8 @@ PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
 
       return push_transactions_(vv, sign, 0, false, true);
 
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
+
    return py_new_none();
 }
 
@@ -654,11 +611,8 @@ int get_code_(string& name, string& wast, string& str_abi, string& code_hash, in
 //      abi = fc::json::to_string(get_abi_serializer().binary_to_variant("abi_def", accnt.abi));
 //      abi = fc::json::to_string(result.abi);
       return 0;
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
+
    return -1;
 }
 
@@ -674,16 +628,16 @@ int get_table_(string& scope, string& code, string& table, string& result) {
           ro_api.get_table_rows(params);
       result = fc::json::to_string(results);
       return 0;
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
+   }  FC_LOG_AND_DROP();
    return -1;
 }
 
 int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
-   return vm_manager::get().get_py_vm_api()->compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
+   auto api = vm_manager::get().get_py_vm_api();
+   if (api == nullptr) {
+      return 0;
+   }
+   return api->compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
 }
 
 void mp_set_max_execution_time_(int _max) {
@@ -694,9 +648,7 @@ void wast2wasm_(string& wast, string& result) {
    try {
       auto wasm = wast_to_wasm(wast);
       result = string((char *)wasm.data(), wasm.size());
-   } catch (...) {
-      elog("wast_to_wasm failed");
-   }
+   }  FC_LOG_AND_DROP();
 }
 
 bool is_replay_() {
@@ -798,13 +750,15 @@ struct read_limiter {
 };
 
 void zlib_compress_data_(const string& _in, string& _out) {
-   bytes out;
-   bio::filtering_ostream comp;
-   comp.push(bio::zlib_compressor(bio::zlib::best_compression));
-   comp.push(bio::back_inserter(out));
-   bio::write(comp, _in.c_str(), _in.size());
-   bio::close(comp);
-   _out = string(out.begin(), out.end());
+   try {
+      bytes out;
+      bio::filtering_ostream comp;
+      comp.push(bio::zlib_compressor(bio::zlib::best_compression));
+      comp.push(bio::back_inserter(out));
+      bio::write(comp, _in.c_str(), _in.size());
+      bio::close(comp);
+      _out = string(out.begin(), out.end());
+   } FC_LOG_AND_DROP();
 }
 
 void zlib_decompress_data_(const string& _data, string& _out) {
@@ -817,9 +771,7 @@ void zlib_decompress_data_(const string& _data, string& _out) {
       bio::write(decomp, _data.c_str(), _data.size());
       bio::close(decomp);
       _out = string(out.begin(), out.end());
-   } catch( fc::exception& er ) {
-   } catch( ... ) {
-   }
+   }  FC_LOG_AND_DROP();
 }
 
 
