@@ -647,7 +647,9 @@ void wast2wasm_(string& wast, string& result) {
    try {
       auto wasm = wast_to_wasm(wast);
       result = string((char *)wasm.data(), wasm.size());
-   }  FC_LOG_AND_DROP();
+   } catch (...) {
+      elog("wast_to_wasm failed");
+   }
 }
 
 bool is_replay_() {
