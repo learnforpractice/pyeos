@@ -121,3 +121,4 @@ uint64_t symbol_to_n_(string& n);
 
 void zlib_compress_data_(const string& in, string& out);
 void zlib_decompress_data_(const string& data, string& out);
+bool debug_mode_();

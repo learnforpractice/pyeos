@@ -117,6 +117,8 @@ cdef extern from "eosapi_.hpp":
     void zlib_compress_data_(const string& _in, string& out);
     void zlib_decompress_data_(const string& _int, string& out);
 
+    bool debug_mode_()
+
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -510,7 +512,7 @@ def push_raw_transaction(signed_trx):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
 
-def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, debug=True):
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False):
     '''Send transactions
 
     Args:
@@ -566,7 +568,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             memcpy(act.data.data(), a[3], len(a[3]))
             v.push_back(act)
         vv.push_back(v)
-    if debug:
+    if debug_mode_():
         produce_block_start_()
         ret = push_transactions_(vv, sign, skip_flag, _async, compress)
         time.sleep(0.5)
@@ -721,6 +723,9 @@ def zlib_decompress_data(string& data):
     cdef string _out
     zlib_decompress_data_(data, _out)
     return <bytes>_out
+
+def debug_mode():
+    return debug_mode_()
 
 cdef extern void py_exit() with gil:
     exit()

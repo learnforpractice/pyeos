@@ -773,4 +773,6 @@ void zlib_decompress_data_(const string& _data, string& _out) {
    }  FC_LOG_AND_DROP();
 }
 
-
+bool debug_mode_() {
+   return appbase::app().debug_mode();
+}
