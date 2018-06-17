@@ -10,6 +10,7 @@
 #include <boost/iostreams/filter/zlib.hpp>
 
 #include <eosio/chain/exceptions.hpp>
+#include <appbase/application.hpp>
 
 #include <sys/time.h>
 #include <time.h>
@@ -28,6 +29,21 @@ namespace chain {
 }
 }
 
+typedef struct vm_py_api* (*fn_get_py_vm_api)();
+typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
+
+static vector<char> print_buffer;
+static void print(const char * str, size_t len) {
+   for (int i=0;i<len;i++) {
+      if (str[i] == '\n') {
+         string s(print_buffer.data(), print_buffer.size());
+         print_buffer.clear();
+         dlog(s);
+         continue;
+      }
+      print_buffer.push_back(str[i]);
+   }
+}
 
 uint64_t get_microseconds() {
    if (sysconf(_POSIX_THREAD_CPUTIME)){
@@ -88,6 +104,41 @@ static uint64_t vm_names[] = {
 #endif
 };
 
+static const char* vm_libs_path[] = {
+#if defined(__APPLE__) && defined(__MACH__)
+#ifdef DEBUG
+   "../libraries/vm_wasm/libvm_wasmd.dylib",
+   "../libraries/vm_py/libvm_py-1d.dylib",
+   "../libraries/vm_eth/libvm_ethd.dylib",
+#else
+   "../libraries/vm_wasm/libvm_wasm.dylib",
+   "../libraries/vm_py/libvm_py-1.dylib",
+   "../libraries/vm_eth/libvm_eth.dylib",
+#endif
+#elif defined(__linux__)
+#ifdef DEBUG
+   "../libraries/vm_wasm/libvm_wasmd.so",
+   "../libraries/vm_py/libvm_py-1d.so",
+   "../libraries/vm_eth/libvm_ethd.so",
+#else
+   "../libraries/vm_wasm/libvm_wasm.so",
+   "../libraries/vm_py/libvm_py-1.so",
+   "../libraries/vm_eth/libvm_eth.so",
+#endif
+#elif defined(_WIN64)
+#ifdef DEBUG
+   "../libraries/vm_wasm/libvm_wasmd.dll",
+   "../libraries/vm_py/libvm_py-1d.dll",
+   "../libraries/vm_eth/libvm_ethd.dll",
+#else
+   "../libraries/vm_wasm/libvm_wasm.dll",
+   "../libraries/vm_py/libvm_py-1.dll",
+   "../libraries/vm_eth/libvm_eth.dll",
+#endif
+#else
+#error Not Supported Platform
+#endif
+};
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
    if (!mngr) {
@@ -104,47 +155,11 @@ bool vm_manager::init() {
 
    init = true;
 
-   const char* vm_libs_path[] = {
-#if defined(__APPLE__) && defined(__MACH__)
-   #ifdef DEBUG
-      "../libraries/vm_wasm/libvm_wasmd.dylib",
-      "../libraries/vm_py/libvm_py-1d.dylib",
-      "../libraries/vm_eth/libvm_ethd.dylib",
-   #else
-      "../libraries/vm_wasm/libvm_wasm.dylib",
-      "../libraries/vm_py/libvm_py-1.dylib",
-      "../libraries/vm_eth/libvm_eth.dylib",
-   #endif
-#elif defined(__linux__)
-   #ifdef DEBUG
-      "../libraries/vm_wasm/libvm_wasmd.so",
-      "../libraries/vm_py/libvm_py-1d.so",
-      "../libraries/vm_eth/libvm_ethd.so",
-   #else
-      "../libraries/vm_wasm/libvm_wasm.so",
-      "../libraries/vm_py/libvm_py-1.so",
-      "../libraries/vm_eth/libvm_eth.so",
-   #endif
-#elif defined(_WIN64)
-   #ifdef DEBUG
-      "../libraries/vm_wasm/libvm_wasmd.dll",
-      "../libraries/vm_py/libvm_py-1d.dll",
-      "../libraries/vm_eth/libvm_ethd.dll",
-   #else
-      "../libraries/vm_wasm/libvm_wasm.dll",
-      "../libraries/vm_py/libvm_py-1.dll",
-      "../libraries/vm_eth/libvm_eth.dll",
-   #endif
-#else
-   #error Not Supported Platform
-#endif
-   };
-
    for (int i=0;i<sizeof(vm_names)/sizeof(vm_names[0]);i++) {
       if (load_vm(i, vm_names[i])) {
          continue;
       }
-      load_vm_default(i, vm_libs_path[i]);
+      load_vm_from_path(i, vm_libs_path[i]);
    }
 
    return true;
@@ -154,7 +169,7 @@ vm_manager::vm_manager() {
    init();
 }
 
-int vm_manager::load_vm_default(int vm_type, const char* vm_path) {
+int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    uint64_t start = get_microseconds();
 
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
@@ -374,6 +389,7 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
       load_vm(type, vm_names[type]);
    }
 */
+
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
       return 0;
@@ -381,22 +397,6 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    itr->second->apply(receiver, account, act);
    return 1;
 }
-
-static vector<char> print_buffer;
-static void print(const char * str, size_t len) {
-   for (int i=0;i<len;i++) {
-      if (str[i] == '\n') {
-         string s(print_buffer.data(), print_buffer.size());
-         print_buffer.clear();
-         dlog(s);
-         continue;
-      }
-      print_buffer.push_back(str[i]);
-   }
-}
-
-typedef struct vm_py_api* (*fn_get_py_vm_api)();
-typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 
 struct vm_py_api* vm_manager::get_py_vm_api() {
    auto itr = vm_map.find(1);

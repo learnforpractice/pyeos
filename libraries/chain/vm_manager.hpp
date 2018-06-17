@@ -34,7 +34,7 @@ public:
    int setcode(int type, uint64_t account);
    int apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
    int check_new_version(int vm_type, uint64_t vm_name);
-   int load_vm_default(int vm_type, const char* vm_path);
+   int load_vm_from_path(int vm_type, const char* vm_path);
    int load_vm(int vm_type, uint64_t vm_name);
    bool init();
 
