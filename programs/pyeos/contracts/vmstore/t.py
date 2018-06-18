@@ -49,13 +49,13 @@ def deploy(d=True):
     if d:
         aa = [ #  name                  type     version                   path
                 ['vm.wasm.'+platform+'.'+str(V),    0,         V,         "../libraries/vm_wasm/libvm_wasmd.dylib"],
-                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-1d.dylib"],
+                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-6d.dylib"],
                 ['vm.eth.'+platform+'.'+str(V),     2,         V,         "../libraries/vm_eth/libvm_ethd.dylib"],
             ]
     else:
         aa = [ #  name                  type     version                   path
                 ['vm.wasm.'+platform+'.'+str(V),    0,         V,         "../libraries/vm_wasm/libvm_wasm.dylib"],
-                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-1.dylib"],
+                ['vm.py.'+platform+'.'+str(V),      1,         V,         "../libraries/vm_py/libvm_py-6.dylib"],
                 ['vm.eth.'+platform+'.'+str(V),     2,         V,         "../libraries/vm_eth/libvm_eth.dylib"],
              ]
 
