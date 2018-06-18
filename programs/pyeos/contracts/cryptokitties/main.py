@@ -1,23 +1,24 @@
 import ustruct
 from eoslib import *
-code = N('kitties')
+import db
 
 def deploy(mod_name, src_code):
+    code = N('kitties')
     print('++++++++++++deploy:mod_name', mod_name)
     id = hash64(mod_name)
-    itr = db_find_i64(code, code, code, id)
+    itr = db.find_i64(code, code, code, id)
     if itr < 0:
-        db_store_i64(code, code, code, id, src_code)
+        db.store_i64(code, code, code, id, src_code)
     else:
-        db_update_i64(itr, code, src_code)
+        db.update_i64(itr, code, src_code)
 
     if mod_name.endswith('.mpy'):
         #try to remove py source to prevent micropython loading the wrong source
         mod_name = mod_name[:-3] + 'py'
         id = hash64(mod_name)
-        itr = db_find_i64(code, code, code, id)
+        itr = db.find_i64(code, code, code, id)
         if itr >= 0:
-            db_remove_i64(itr)
+            db.remove_i64(itr)
 
 def apply(receiver, code, action):
     if action == N('deploy'):

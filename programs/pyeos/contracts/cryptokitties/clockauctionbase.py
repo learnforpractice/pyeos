@@ -2,7 +2,7 @@ from backend import *
 from basement import *
 from auction import Auction
 from erc721 import ERC721
-from storage import SDict
+from backyard.storage import SDict
 # @title Auction Core
 # @dev Contains models, variables, and internal methods for the auction.
 # @notice We omit a fallback function to prevent accidental sends to this contract.
