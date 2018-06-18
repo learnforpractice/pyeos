@@ -3,11 +3,11 @@ import time
 import pickle
 
 import os
+import db
 import sys
 import imp
 import initeos
 import eosapi
-import eoslib
 from tools import cpp2wast
 
 producer = eosapi.Producer()
@@ -89,11 +89,11 @@ class Sync(object):
             id = eosapi.hash64(src_file)
 
         code = eosapi.N(self.account)
-        itr = eoslib.db_find_i64(code, code, code, id)
+        itr = db.find_i64(code, code, code, id)
         if itr < 0:
             return True
 
-        old_src = eoslib.db_get_i64(itr)
+        old_src = db.get_i64(itr)
         _full_file_path = os.path.join(src_dir, src_file)
 
         if not mpy:
