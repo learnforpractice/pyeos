@@ -3,23 +3,23 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-void prints( const char* cstr ) {
+static void prints( const char* cstr ) {
    ctx().console_append<const char*>(cstr);
 }
 
-void prints_l( const char* cstr, uint32_t len) {
+static void prints_l( const char* cstr, uint32_t len) {
    ctx().console_append(string(cstr, len));
 }
 
-void printi( int64_t val ) {
+static void printi( int64_t val ) {
    ctx().console_append(val);
 }
 
-void printui( uint64_t val ) {
+static void printui( uint64_t val ) {
    ctx().console_append(val);
 }
 
-void printi128( const int128_t* val ) {
+static void printi128( const int128_t* val ) {
    bool is_negative = (*val < 0);
    unsigned __int128 val_magnitude;
 
@@ -37,12 +37,12 @@ void printi128( const int128_t* val ) {
    ctx().console_append(fc::variant(v).get_string());
 }
 
-void printui128( const uint128_t* val ) {
+static void printui128( const uint128_t* val ) {
    fc::uint128_t v(*val>>64, static_cast<uint64_t>(*val) );
    ctx().console_append(fc::variant(v).get_string());
 }
 
-void printsf(float val) {
+static void printsf(float val) {
    // Assumes float representation on native side is the same as on the WASM side
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
@@ -53,7 +53,7 @@ void printsf(float val) {
    console.precision( orig_prec );
 }
 
-void printdf(double val) {
+static void printdf(double val) {
    // Assumes double representation on native side is the same as on the WASM side
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
@@ -64,7 +64,7 @@ void printdf(double val) {
    console.precision( orig_prec );
 }
 
-void printqf(const float128_t* val) {
+static void printqf(const float128_t* val) {
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
 
@@ -77,11 +77,11 @@ void printqf(const float128_t* val) {
    console.precision( orig_prec );
 }
 
-void printn( uint64_t n ) {
+static void printn( uint64_t n ) {
    ctx().console_append(name(n).to_string());
 }
 
-void printhex( const void* data, uint32_t datalen ) {
+static void printhex( const void* data, uint32_t datalen ) {
    ctx().console_append(fc::to_hex((char*)data, datalen));
 }
 

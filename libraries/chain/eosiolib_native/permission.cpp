@@ -17,8 +17,7 @@ static void unpack_provided_permissions( flat_set<permission_level>& permissions
    permissions = fc::raw::unpack<flat_set<permission_level>>( perms_data, perms_size );
 }
 
-int32_t
-check_transaction_authorization( const char* trx_data,     uint32_t trx_size,
+static int32_t check_transaction_authorization( const char* trx_data,     uint32_t trx_size,
                                  const char* pubkeys_data, uint32_t pubkeys_size,
                                  const char* perms_data,   uint32_t perms_size
                                ) {
@@ -46,8 +45,7 @@ check_transaction_authorization( const char* trx_data,     uint32_t trx_size,
    return false;
 }
 
-int32_t
-check_permission_authorization( uint64_t account,
+static int32_t check_permission_authorization( uint64_t account,
                                 uint64_t permission,
                                 const char* pubkeys_data, uint32_t pubkeys_size,
                                 const char* perms_data,   uint32_t perms_size,
@@ -80,12 +78,12 @@ check_permission_authorization( uint64_t account,
    return false;
 }
 
-int64_t get_permission_last_used( uint64_t account, uint64_t permission ) {
+static int64_t get_permission_last_used( uint64_t account, uint64_t permission ) {
    const auto& am = ctx().control.get_authorization_manager();
    return am.get_permission_last_used( am.get_permission({account, permission}) ).time_since_epoch().count();
 }
 
-int64_t get_account_creation_time( uint64_t account ) {
+static int64_t get_account_creation_time( uint64_t account ) {
    auto* acct = ctx().db.find<account_object, by_name>(account);
    EOS_ASSERT( acct != nullptr, action_validate_exception,
                "account '${account}' does not exist", ("account", account) );
