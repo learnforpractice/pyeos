@@ -4,6 +4,8 @@ add_subdirectory( vm_py )
 add_subdirectory( vm_wasm )
 add_subdirectory( vm_eth )
 
+add_subdirectory( vm_api_rpc )
+
 add_subdirectory( builtins )
 add_subdirectory( softfloat )
 add_subdirectory( chainbase )

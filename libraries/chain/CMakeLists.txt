@@ -23,7 +23,7 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
 
 ## SORT .cpp by most likely to change / break compile
-add_library( eosio_chain
+add_library( eosio_chain SHARED
              merkle.cpp
              name.cpp
              transaction.cpp
@@ -73,18 +73,11 @@ add_library( eosio_chain
               micropython/mpeoslib.cpp
               evm_interface.cpp
               micropython_interface.cpp
-              rpc_interface/rpc_interface.cpp
-              rpc_interface/rpc_interface_.wrap.cpp
               python_contract.wrap.cpp
 
-              rpc_interface/cpp/RpcService.cpp
-              rpc_interface/cpp/RpcService_types.cpp
-              rpc_interface/cpp/rpceoslib.cpp
-
               vm_manager.cpp
-              vm_api.cpp
-
-             ${HEADERS}
+              vm_api_native/vm_api.cpp
+              ${HEADERS}
              )
 
 set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")

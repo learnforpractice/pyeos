@@ -3,8 +3,13 @@
 
 extern "C" {
    int eos_main(int argc, char** argv);
-   int start_client();
-   int start_server();
+   int start_client(){
+      return 0;
+   };
+
+   int start_server(){
+      return 0;
+   };
 }
 
 int main(int argc, char** argv) {

@@ -19,7 +19,7 @@
 
 #include "micropython/db_api.hpp"
 #include "micropython/mpeoslib.h"
-#include "rpc_interface/rpc_interface.hpp"
+//#include "rpc_interface/rpc_interface.hpp"
 
 
 extern "C" {
@@ -134,6 +134,7 @@ void apply_context::schedule() {
             }
          }
       }
+#if 0
       if (trusted || !rpc_interface::get().ready()) {
          micropython_interface::get().apply(receiver.value, act.account.value, act.name.value);
       } else {
@@ -145,6 +146,7 @@ void apply_context::schedule() {
             throw;
          }
       }
+#endif
    } else if (a.vm_type == 2) {
       bytes code(a.code.begin(), a.code.end());
       bytes args(act.data.begin(), act.data.end());
@@ -152,12 +154,14 @@ void apply_context::schedule() {
       evm_interface::get().run_code(*this, code, args, output);
       ilog("${n}",("n", output.size()));
    } else if (a.vm_type == 3) {
+#if 0
       auto &rpc = rpc_interface::get();
       try {
          rpc.apply(*this);
       } catch (...) {
          throw;
       }
+#endif
    }
 
 }
