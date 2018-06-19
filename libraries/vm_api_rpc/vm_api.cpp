@@ -1,10 +1,41 @@
+#include <eosio/chain/controller.hpp>
+#include <eosio/chain/transaction_context.hpp>
+#include <eosio/chain/producer_schedule.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <boost/core/ignore_unused.hpp>
+#include <eosio/chain/authorization_manager.hpp>
+#include <eosio/chain/resource_limits.hpp>
+/*
+#include <eosio/chain/wasm_interface_private.hpp>
+#include <eosio/chain/wasm_eosio_validation.hpp>
+#include <eosio/chain/wasm_eosio_injection.hpp>
+*/
+#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/account_object.hpp>
+
+#include <fc/exception/exception.hpp>
+#include <fc/crypto/sha256.hpp>
+#include <fc/crypto/sha1.hpp>
+#include <fc/io/raw.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <fstream>
+
+#include <fc/crypto/xxhash.h>
+#include <dlfcn.h>
+
+typedef struct { uint16_t v; } float16_t;
+typedef struct { uint32_t v; } float32_t;
+typedef struct { uint64_t v; } float64_t;
+typedef struct { uint64_t v[2]; } float128_t;
+
+
+using namespace fc;
 
 namespace eosio {
 namespace chain {
 
-static inline apply_context& ctx() {
-   return apply_context::ctx();
-}
 
 #include "vm_api.h"
 
@@ -38,9 +69,12 @@ void eosio_assert( bool condition) {
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {
+   return 0;
+#if 0
    const shared_string& src = db_api::get().get_code(receiver);
    *size = src.size();
    return src.data();
+#endif
 }
 
 extern "C" {
@@ -50,16 +84,19 @@ extern "C" {
 }
 
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
+#if 0
    if (out == NULL || size == 0) {
       return 0;
    }
 
-   string s = name(n).to_string();
+   std::string s = name(n).to_string();
    if (s.length() < size) {
       size = s.length();
    }
    memcpy(out, s.c_str(), size);
    return size;
+#endif
+   return 0;
 }
 
 void resume_billing_timer() {
@@ -111,6 +148,8 @@ static struct vm_api _vm_api = {
 
    .db_upperbound_i64 = db_upperbound_i64,
    .db_end_i64 = db_end_i64,
+
+#if 0
    .db_idx64_store = db_idx64_store,
    .db_idx64_update = db_idx64_update,
 
@@ -165,6 +204,7 @@ static struct vm_api _vm_api = {
    .db_idx_long_double_lowerbound = db_idx_long_double_lowerbound,
    .db_idx_long_double_upperbound = db_idx_long_double_upperbound,
    .db_idx_long_double_end = db_idx_long_double_end,
+#endif
 
    .check_transaction_authorization = check_transaction_authorization,
    .check_permission_authorization = check_permission_authorization,
@@ -220,7 +260,7 @@ static struct vm_api _vm_api = {
    .assert_context_free = assert_context_free,
    .get_context_free_data = get_context_free_data,
    .get_code = get_code,
-
+#if 0
    .rodb_remove_i64 = db_api_remove_i64,
 
    .rodb_find_i64 = db_api_find_i64,
@@ -240,6 +280,7 @@ static struct vm_api _vm_api = {
    .string_to_symbol = string_to_symbol_c,
    .resume_billing_timer = resume_billing_timer,
    .pause_billing_timer = pause_billing_timer
+#endif
 
 };
 
