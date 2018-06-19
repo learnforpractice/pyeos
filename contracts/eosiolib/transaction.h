@@ -106,7 +106,7 @@ extern "C" {
    /**
     * get the expiration of the currently executing transaction
     */
-   time expiration();
+   _time expiration();
 
    /**
     * Retrieve the indicated action from the active transaction.

@@ -28,8 +28,8 @@ namespace eosiosystem {
    using std::map;
    using std::pair;
 
-   static constexpr time refund_delay = 3*24*3600;
-   static constexpr time refund_expiration_time = 3600;
+   static constexpr _time refund_delay = 3*24*3600;
+   static constexpr _time refund_expiration_time = 3600;
 
    struct user_resources {
       account_name  owner;
@@ -62,7 +62,7 @@ namespace eosiosystem {
 
    struct refund_request {
       account_name  owner;
-      time          request_time;
+      _time          request_time;
       eosio::asset  net_amount;
       eosio::asset  cpu_amount;
 

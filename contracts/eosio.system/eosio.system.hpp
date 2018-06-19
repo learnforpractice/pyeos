@@ -103,7 +103,7 @@ namespace eosiosystem {
 
 
       uint32_t                    reserved1 = 0;
-      time                        reserved2 = 0;
+      _time                        reserved2 = 0;
       eosio::asset                reserved3;
 
       uint64_t primary_key()const { return owner; }

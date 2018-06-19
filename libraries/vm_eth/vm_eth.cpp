@@ -1,4 +1,6 @@
 #include <eosiolib_native/vm_api.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static struct vm_api s_api;
 

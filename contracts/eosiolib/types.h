@@ -3,12 +3,9 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-#define time __time
-
 #include <stdint.h>
 #include <wchar.h>
 
-#undef time
 
 #ifndef TYPES_H
 #define TYPES_H
@@ -37,7 +34,7 @@ typedef uint64_t permission_name;
 typedef uint64_t table_name;
 
 
-typedef uint32_t time;
+typedef uint32_t _time;
 
 typedef uint64_t scope_name;
 typedef uint64_t action_name;

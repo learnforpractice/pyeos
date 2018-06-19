@@ -40,7 +40,7 @@ int tapos_block_prefix() {
    return get_vm_api()->tapos_block_prefix();
 }
 
-time expiration() {
+_time expiration() {
    return get_vm_api()->expiration();
 }
 

@@ -3,10 +3,14 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
+#include <stdio.h>
+#include <string.h>
+
 #include <eosiolib/types.h>
 #include <functional>
 #include <tuple>
 #include <string>
+#include <vector>
 
 namespace eosio {
 
