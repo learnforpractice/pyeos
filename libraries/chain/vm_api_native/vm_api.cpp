@@ -39,17 +39,17 @@ static inline apply_context& ctx() {
    return apply_context::ctx();
 }
 
-#include "eosiolib_native/vm_api.h"
+#include "vm_api.h"
 
-#include "eosiolib_native/action.cpp"
-#include "eosiolib_native/chain.cpp"
-#include "eosiolib_native/system.cpp"
-#include "eosiolib_native/crypto.cpp"
-#include "eosiolib_native/db.cpp"
-#include "eosiolib_native/privileged.cpp"
-#include "eosiolib_native/transaction.cpp"
-#include "eosiolib_native/print.cpp"
-#include "eosiolib_native/permission.cpp"
+#include "action.cpp"
+#include "chain.cpp"
+#include "system.cpp"
+#include "crypto.cpp"
+#include "db.cpp"
+#include "privileged.cpp"
+#include "transaction.cpp"
+#include "print.cpp"
+#include "permission.cpp"
 
 
 #define API() get_vm_api()

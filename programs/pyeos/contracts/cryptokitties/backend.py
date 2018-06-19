@@ -1,3 +1,4 @@
+import db
 import ustruct
 from eoslib import *
 '''
@@ -159,16 +160,18 @@ class block:
     timestamp = None
 
 def keccak256(_str):
-    return sha256(_str)
+    return 0;
+#    return sha256(_str)
 
 class bytes4(object):
     def __init__(self, value):
+        return
         if isinstance(value, str):
             self._v = bytes(value, 'utf8')
         elif isinstance(value, bytes):
             self._v = value
         else:
-            raise Exception("unsupported type")
+            raise Exception("unsupported type " + str(value))
 
 class bytes32(bytes):
     pass
@@ -249,18 +252,18 @@ def store(key, value):
     id = get_hash(key)
     value = to_raw_value(value)
     code = contract_owner
-    itr = db_find_i64(receiver, receiver, g_table_id, id)
+    itr = db.find_i64(receiver, receiver, g_table_id, id)
     if itr >= 0:
-        value = db_update_i64(itr, receiver, value)
+        value = db.update_i64(itr, receiver, value)
     else:
-        db_store_i64(receiver, g_table_id, receiver, id, value)
+        db.store_i64(receiver, g_table_id, receiver, id, value)
 
 def load(key):
     id = get_hash(key)
-    itr = db_find_i64(receiver, receiver, g_table_id, id)
+    itr = db.find_i64(receiver, receiver, g_table_id, id)
     value = None
     if itr >= 0:
-        value = db_get_i64(itr)
+        value = db.get_i64(itr)
         return from_raw_value(value)
     return None
 

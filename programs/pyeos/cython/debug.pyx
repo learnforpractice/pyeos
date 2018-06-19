@@ -63,7 +63,8 @@ def test():
     debug_test()
 
 def run_code(string code):
-    run_code_(code)
+    pass
+    #run_code_(code)
 
 def enable():
     py_debug_enable_(1)

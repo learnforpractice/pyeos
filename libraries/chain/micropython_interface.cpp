@@ -20,7 +20,7 @@
 #include "micropython/db_api.hpp"
 
 #include "micropython/mpeoslib.h"
-#include "rpc_interface/rpc_interface.hpp"
+//#include "rpc_interface/rpc_interface.hpp"
 
 #if 0
 extern "C" void print_time() {
@@ -78,10 +78,12 @@ void init() {
 }
 
 void micropython_interface::on_server_setcode(uint64_t _account, bytes& code) {
+#if 0
    if (rpc_interface::get().ready()) {
       rpc_interface::get().on_setcode(_account, code);
       return;
    }
+#endif
 }
 
 void micropython_interface::on_client_setcode(uint64_t _account) {
@@ -102,10 +104,12 @@ void micropython_interface::on_setcode(uint64_t _account, bytes& code) {
    } else {
       //called by server
       if (!db_api::get().is_in_whitelist(_account)) {
+#if 0
          if (rpc_interface::get().ready()) {
             rpc_interface::get().on_setcode(_account, code);
             return;
          }
+#endif
          //FC_ASSERT(false, "RPC not ready");
       }
    }

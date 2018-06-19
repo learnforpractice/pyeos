@@ -16,7 +16,7 @@ def init(func):
 
 _dir = os.path.dirname(os.path.abspath(__file__))
 
-sync = Sync(_account = 'kitties', _dir = _dir, _ignore = ('main.py', 'test.py', 'ustruct.py', 'eoslib.py'))
+sync = Sync(_account = 'kitties', _dir = _dir, _ignore = ('main.py', 'test.py', 'ustruct.py', 'eoslib.py', 't.py'))
 
 @init
 def deploy_depend_libs():
@@ -47,7 +47,7 @@ def test(name=None):
     with producer:
         if not name:
             name = 'mike'
-        r = eosapi.push_action('kitties','sayhello',name,{'kitties':'active'})
+        r = eosapi.push_action('kitties','call',name,{'kitties':'active'})
         assert r
 
 @init

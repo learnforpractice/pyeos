@@ -1,6 +1,6 @@
 from backend import *
 from basement import *
-from storage import SList, SDict
+from backyard.storage import SList, SDict
 from kitty import Kitty
 
 #from kittyaccesscontrol import KittyAccessControl
@@ -41,29 +41,29 @@ class KittyBase(KittyAccessControl):
         #  creature that is both matron and sire... to itself! Has an invalid genetic code.
         #  In other words, cat ID 0 is invalid... ;-)
         #Kitty[] kitties;
-        self.kitties = SList()
+        self.kitties = SList(0)
     
         # @dev A mapping from cat IDs to the address that owns them. All cats have
         #  some valid owner address, even gen0 cats are created with a non-zero owner.
         #mapping (uint256 => address) public kittyIndexToOwner;
-        self.kittyIndexToOwner = SList(object_type = Kitty)
+        self.kittyIndexToOwner = SList(0, value_type = Kitty)
     
         # @dev A mapping from owner address to count of tokens that address owns.
         #  Used internally inside balanceOf() to resolve ownership count.
         #mapping (address => uint256) ownershipTokenCount;
-        self.ownershipTokenCount = SDict()
+        self.ownershipTokenCount = SDict(0)
     
         # @dev A mapping from KittyIDs to an address that has been approved to call
         #  transferFrom(). Each Kitty can only have one approved address for transfer
         #  at any time. A zero value means no approval is outstanding.
         #mapping (uint256 => address) public kittyIndexToApproved;
-        self.kittyIndexToApproved = SDict()
+        self.kittyIndexToApproved = SDict(0)
     
         # @dev A mapping from KittyIDs to an address that has been approved to use
         #  this Kitty for siring via breedWith(). Each Kitty can only have one approved
         #  address for siring at any time. A zero value means no approval is outstanding.
         #mapping (uint256 => address) public sireAllowedToAddress;
-        self.sireAllowedToAddress = SDict()
+        self.sireAllowedToAddress = SDict(0)
     
         # @dev The address of the ClockAuction contract that handles sales of Kitties. This
         #  same contract handles both peer-to-peer sales as well as the gen0 sales which are
