@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/wallet_api_plugin/*.hpp")
-add_library( wallet_api_plugin SHARED
+add_library( wallet_api_plugin
              wallet_api_plugin.cpp
              ${HEADERS} )
 

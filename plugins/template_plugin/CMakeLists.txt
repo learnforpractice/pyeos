@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/template_plugin/*.hpp")
-add_library( template_plugin SHARED
+add_library( template_plugin
              template_plugin.cpp
              ${HEADERS} )
 

@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/history_plugin/*.hpp")
-add_library( history_plugin SHARED
+add_library( history_plugin
              history_plugin.cpp
              ${HEADERS} )
 

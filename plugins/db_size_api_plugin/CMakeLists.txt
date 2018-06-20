@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/db_size_api_plugin/*.hpp")
-add_library( db_size_api_plugin SHARED
+add_library( db_size_api_plugin
              db_size_api_plugin.cpp
              ${HEADERS} )
 

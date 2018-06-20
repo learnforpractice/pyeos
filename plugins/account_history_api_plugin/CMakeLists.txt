@@ -1,5 +1,5 @@
 file( GLOB HEADERS "include/eosio/account_history_api_plugin/*.hpp" )
-add_library( account_history_api_plugin SHARED
+add_library( account_history_api_plugin
              account_history_api_plugin.cpp
              ${HEADERS} )
 

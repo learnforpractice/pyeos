@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/chain_api_plugin/*.hpp")
-add_library( chain_api_plugin SHARED
+add_library( chain_api_plugin
              chain_api_plugin.cpp
              ${HEADERS} )
 

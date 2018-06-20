@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/faucet_testnet_plugin/*.hpp")
-add_library( faucet_testnet_plugin SHARED
+add_library( faucet_testnet_plugin
              faucet_testnet_plugin.cpp
              ${HEADERS} )
 

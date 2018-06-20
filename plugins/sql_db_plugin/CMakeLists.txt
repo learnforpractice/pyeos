@@ -8,7 +8,7 @@ message(STATUS "Database SQL plugin: enabled")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} include db)
 
-add_library(sql_db_plugin SHARED
+add_library(sql_db_plugin
     db/database.cpp
     db/accounts_table.cpp
     db/transactions_table.cpp

@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/txn_test_gen_plugin/*.hpp")
-add_library( txn_test_gen_plugin SHARED
+add_library( txn_test_gen_plugin
              txn_test_gen_plugin.cpp
              ${HEADERS} )
 

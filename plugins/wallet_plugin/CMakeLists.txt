@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/wallet_plugin/*.hpp")
-add_library( wallet_plugin SHARED
+add_library( wallet_plugin
              wallet.cpp
              wallet_plugin.cpp
              wallet_manager.cpp
