@@ -363,7 +363,7 @@ mongodconf
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! ./configure
+		if ! ./configure  --enable-shared --with-pic
 		then
 			printf "\\tError running configure for secp256k1-zkp.\\n"
 			printf "\\tExiting now.\\n\\n"
