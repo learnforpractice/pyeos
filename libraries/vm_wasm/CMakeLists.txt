@@ -15,8 +15,9 @@ target_include_directories(vm_wasm PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/musl/include/musl/upstream/include
 #    PRIVATE ${CMAKE_SOURCE_DIR}/contracts/musl/upstream/include
     PRIVATE ${CMAKE_SOURCE_DIR}/externals/magic_get/include
-    PRIVATE ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/include
+    PRIVATE ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/Include
     PRIVATE ${CMAKE_SOURCE_DIR}/contracts
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
 )
+

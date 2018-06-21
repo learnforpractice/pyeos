@@ -1,8 +1,6 @@
 
 #include <eosiolib_native/vm_api.h>
 
-#define time __time
-
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -20,8 +18,6 @@
 #include <eosio/chain/wasm_interface_private.hpp>
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
-
-#undef time
 
 
 namespace eosio {
