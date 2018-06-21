@@ -3,7 +3,7 @@ add_executable( eosio-applesedemo main.cpp r1_signature_compactor.cpp )
 
 
 target_link_libraries( eosio-applesedemo
-        PRIVATE fc ${PLATFORM_SPECIFIC_LIBS} ${GMP_LIBRARIES}
+        PRIVATE fc ${PLATFORM_SPECIFIC_LIBS} ${MPIR_LIBRARY}
         )
 
 set_target_properties(eosio-applesedemo PROPERTIES LINK_FLAGS "-framework security -framework corefoundation")
