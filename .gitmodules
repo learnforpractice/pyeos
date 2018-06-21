@@ -46,3 +46,6 @@
 [submodule "libraries/fc"]
 	path = libraries/fc
 	url = https://github.com/learnforpractice/fc
+[submodule "cmake/polly"]
+	path = cmake/polly
+	url = https://github.com/learnforpractice/polly
