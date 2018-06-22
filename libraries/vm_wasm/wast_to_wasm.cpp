@@ -78,6 +78,10 @@ namespace eosio { namespace chain {
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size )
    {
       std::string s = wasm_to_wast(data, size);
+      if (wast == nullptr || wast_size == 0) {
+         return s.size();
+      }
+
       if (wast_size > s.size()) {
          wast_size = s.size();
       }

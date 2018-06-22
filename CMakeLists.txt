@@ -238,9 +238,8 @@ endif()
 
 add_subdirectory( externals )
 
-if ("${CORE_SYMBOL_NAME}" STREQUAL "")
-  set( CORE_SYMBOL_NAME "EOS" )
-endif()
+set( CORE_SYMBOL_NAME "EOS" )
+
 string(TOUPPER ${CORE_SYMBOL_NAME} CORE_SYMBOL_NAME)
 
 string(LENGTH ${CORE_SYMBOL_NAME} CORE_SYMBOL_NAME_LENGTH)

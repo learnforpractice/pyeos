@@ -443,9 +443,11 @@ namespace eosio { namespace chain {
    }
 
    std::string  _wasm_to_wast( const uint8_t* data, uint64_t size ) {
-      std::vector<uint8_t> v(size*2);
       struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
-      int wast_size = api->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
+      int wast_size = api->wasm_to_wast( (uint8_t*)data, size, nullptr, 0);
+
+      std::vector<uint8_t> v(wast_size);
+      wast_size = api->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
       return std::string((char*)v.data(), wast_size);
    }
 
