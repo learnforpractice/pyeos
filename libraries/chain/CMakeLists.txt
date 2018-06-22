@@ -24,6 +24,7 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp"
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
+             SHARED
              merkle.cpp
              name.cpp
              transaction.cpp

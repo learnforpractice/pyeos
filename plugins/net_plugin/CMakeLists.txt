@@ -1,5 +1,5 @@
 file(GLOB HEADERS "include/eosio/net_plugin/*.hpp" )
-add_library( net_plugin
+add_library( net_plugin SHARED
              net_plugin.cpp
              ${HEADERS} )
 
