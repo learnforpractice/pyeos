@@ -167,7 +167,7 @@ struct txn_test_gen_plugin_impl {
          {
             signed_transaction trx;
 
-            vector<uint8_t> wasm = wast_to_wasm(std::string(eosio_token_wast));
+            vector<uint8_t> wasm = _wast_to_wasm(std::string(eosio_token_wast));
 
             setcode handler;
             handler.account = newaccountC;

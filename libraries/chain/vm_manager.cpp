@@ -404,12 +404,12 @@ struct vm_py_api* vm_manager::get_py_vm_api() {
       return nullptr;
    }
 
-   fn_get_py_vm_api get_py_vm_api = (fn_get_py_vm_api)dlsym(itr->second->handle, "get_py_vm_api");
-   if (get_py_vm_api == nullptr) {
+   fn_get_py_vm_api _get_py_vm_api = (fn_get_py_vm_api)dlsym(itr->second->handle, "get_py_vm_api");
+   if (_get_py_vm_api == nullptr) {
       return nullptr;
    }
 
-   struct vm_py_api* api = get_py_vm_api();
+   struct vm_py_api* api = _get_py_vm_api();
    api->set_printer(print);
    return api;
 }
@@ -424,25 +424,25 @@ struct vm_wasm_api* vm_manager::get_wasm_vm_api() {
       return nullptr;
    }
 
-   fn_get_wasm_vm_api get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "get_wasm_vm_api");
-   if (get_wasm_vm_api == nullptr) {
+   fn_get_wasm_vm_api _get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "get_wasm_vm_api");
+   if (_get_wasm_vm_api == nullptr) {
       return nullptr;
    }
 
-   struct vm_wasm_api* api = get_wasm_vm_api();
+   struct vm_wasm_api* api = _get_wasm_vm_api();
    return api;
 }
 
 namespace eosio { namespace chain {
 
-   std::vector<uint8_t> wast_to_wasm( const std::string& wast ) {
+   std::vector<uint8_t> _wast_to_wasm( const std::string& wast ) {
       std::vector<uint8_t> v(wast.size()*2);
       struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
       int size = api->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), v.data(), v.size());
       return std::vector<uint8_t>(v.data(), v.data()+size);
    }
 
-   std::string  wasm_to_wast( const uint8_t* data, uint64_t size ) {
+   std::string  _wasm_to_wast( const uint8_t* data, uint64_t size ) {
       std::vector<uint8_t> v(size*2);
       struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
       int wast_size = api->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());

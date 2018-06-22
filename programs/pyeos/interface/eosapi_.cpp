@@ -591,7 +591,7 @@ int get_code_(string& name, string& wast, string& str_abi, string& code_hash, in
 
       if (accnt.code.size()) {
          if (accnt.vm_type == 0) {
-            result.wast = chain::wasm_to_wast((uint8_t*)accnt.code.data(), accnt.code.size());
+            result.wast = chain::_wasm_to_wast((uint8_t*)accnt.code.data(), accnt.code.size());
          } else {
             result.wast = string((const char*)accnt.code.data(), accnt.code.size());
          }
@@ -645,7 +645,7 @@ void mp_set_max_execution_time_(int _max) {
 
 void wast2wasm_(string& wast, string& result) {
    try {
-      auto wasm = wast_to_wasm(wast);
+      auto wasm = _wast_to_wasm(wast);
       result = string((char *)wasm.data(), wasm.size());
    } catch (...) {
       elog("wast_to_wasm failed");

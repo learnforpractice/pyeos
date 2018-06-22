@@ -2025,7 +2025,7 @@ int main( int argc, char** argv ) {
       }
       else {
          std::cout << localized("Assembling WASM...") << std::endl;
-         wasm = wast_to_wasm(wast);
+         wasm = _wast_to_wasm(wast);
       }
 
       actions.emplace_back( create_setcode(account, bytes(wasm.begin(), wasm.end()) ) );
@@ -2100,7 +2100,7 @@ int main( int argc, char** argv ) {
       }
       else {
          std::cout << localized("Assembling WASM...") << std::endl;
-         wasm = wast_to_wasm(wast);
+         wasm = _wast_to_wasm(wast);
       }
 
       std::vector<chain::action> actions;
