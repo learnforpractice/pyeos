@@ -76,6 +76,15 @@ const char* get_code( uint64_t receiver, size_t* size ) {
    return src.data();
 }
 
+int get_code_id( uint64_t account, char* code_id, size_t size ) {
+   digest_type id = db_api::get().get_code_id(account);
+   if (size != sizeof(id)) {
+      return 0;
+   }
+   memcpy(code_id, id._hash, size);
+   return 1;
+}
+
 extern "C" {
    int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
    uint64_t get_action_account();
@@ -252,7 +261,9 @@ static struct vm_api _vm_api = {
    .assert_privileged = assert_privileged,
    .assert_context_free = assert_context_free,
    .get_context_free_data = get_context_free_data,
+
    .get_code = get_code,
+   .get_code_id = get_code_id,
 
    .rodb_remove_i64 = db_api_remove_i64,
 

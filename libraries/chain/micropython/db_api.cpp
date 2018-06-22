@@ -90,6 +90,11 @@ const shared_string& db_api::get_code(uint64_t account) {
    return a.code;
 }
 
+digest_type db_api::get_code_id(uint64_t account) {
+   const auto &a = db.get<account_object, by_name>(account);
+   return a.code_version;
+}
+
 bool db_api::is_account(const account_name& account)const {
    return nullptr != db.find<account_object,by_name>( account );
 }

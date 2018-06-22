@@ -468,6 +468,9 @@ class db_api {
       const action_object& get_action_object() const;
       void get_code(uint64_t account, string& code);
       const shared_string& get_code(uint64_t account);
+
+      digest_type get_code_id(uint64_t account);
+
       bool is_in_whitelist(uint64_t account);
 
    /// Authorization methods:

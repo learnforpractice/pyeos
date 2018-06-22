@@ -35,6 +35,7 @@ using namespace Runtime;
 void resume_billing_timer();
 void pause_billing_timer();
 const char* get_code( uint64_t receiver, size_t* size );
+int get_code_id( uint64_t account, char* code_id, size_t size );
 
 int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int32_t db_api_get_i64_ex( int iterator, uint64_t* primary, char* buffer, size_t buffer_size );
@@ -81,13 +82,24 @@ namespace eosio { namespace chain {
          return mem_image;
       }
 
-      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& code_id )
+      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver )
       {
          size_t size = 0;
-         const char* code = get_code( code_id, &size );
+         const char* code = get_code( receiver, &size );
+         char code_id[8*4];
+         get_code_id(receiver, code_id, sizeof(code_id));
 
-         auto it = instantiation_cache.find(code_id);
-         if(it == instantiation_cache.end()) {
+         auto it = instantiation_cache.find(receiver);
+         bool need_update = 0;
+         if (it == instantiation_cache.end()) {
+            need_update = true;
+         }
+         if (!need_update) {
+            if (0 != memcmp(code_id, it->second->code_id, sizeof(code_id))) {
+               need_update = true;
+            }
+         }
+         if(need_update) {
             auto timer_pause = fc::make_scoped_exit([&](){
                resume_billing_timer();
             });
@@ -116,7 +128,10 @@ namespace eosio { namespace chain {
             } catch(const IR::ValidationException& e) {
                EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
             }
-            it = instantiation_cache.emplace(code_id, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
+            instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
+//            it = instantiation_cache.emplace(receiver, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
+            it = instantiation_cache.find(receiver);
+            memcpy(it->second->code_id, code_id, sizeof(code_id));
          }
          return it->second;
       }

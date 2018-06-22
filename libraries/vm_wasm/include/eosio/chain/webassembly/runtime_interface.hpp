@@ -13,6 +13,7 @@ class wasm_instantiated_module_interface {
       virtual uint64_t call(const std::string &entry_point, const std::vector <uint64_t> & _args) = 0;
 
       virtual ~wasm_instantiated_module_interface();
+   char code_id[8*4];
 };
 
 class wasm_runtime_interface {

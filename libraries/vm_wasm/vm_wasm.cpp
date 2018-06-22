@@ -69,6 +69,10 @@ const char* get_code( uint64_t receiver, size_t* size ) {
    return get_vm_api()->get_code( receiver, size );
 }
 
+int get_code_id( uint64_t account, char* code_id, size_t size ) {
+   return get_vm_api()->get_code_id( account, code_id, size );
+}
+
 int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
    return get_vm_api()->rodb_find_i64(code, scope, table, id);
 }
