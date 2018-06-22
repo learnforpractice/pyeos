@@ -77,12 +77,6 @@ add_library( eosio_chain
 #add_library(secp256k STATIC IMPORTED)
 #set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
 
-#set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
-set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
-
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
-
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PRIVATE -DDEBUG)
 endif()

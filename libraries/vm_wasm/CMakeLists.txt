@@ -7,6 +7,12 @@ add_library(vm_wasm SHARED vm_wasm.cpp
            wasm_eosio_injection.cpp
            vm_api.cpp) 
 
+message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
+message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
+
+#set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
+set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
+
 target_link_libraries(vm_wasm PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc) #
 
 target_include_directories(vm_wasm PRIVATE ${Boost_INCLUDE_DIR}
