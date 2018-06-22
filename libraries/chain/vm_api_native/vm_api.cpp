@@ -70,6 +70,19 @@ void eosio_assert( bool condition) {
    eosio_assert_( condition, "" );
 }
 
+void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
+   FC_ASSERT(version_size == sizeof(digest_type) && code != NULL && code_size != 0);
+   const auto& account = ctx().db.get<account_object,by_name>(user_account);
+   ctx().db.modify( account, [&]( auto& a ) {
+      a.vm_type = vm_type;
+      a.last_code_update = ctx().control.pending_block_time();
+      memcpy(&a.code_version, code_version, version_size);
+      a.code.resize( code_size );
+      if( code_size > 0 )
+         memcpy( a.code.data(), code, code_size );
+   });
+}
+
 const char* get_code( uint64_t receiver, size_t* size ) {
    const shared_string& src = db_api::get().get_code(receiver);
    *size = src.size();
@@ -263,6 +276,7 @@ static struct vm_api _vm_api = {
    .get_context_free_data = get_context_free_data,
 
    .get_code = get_code,
+   .set_code = set_code,
    .get_code_id = get_code_id,
 
    .rodb_remove_i64 = db_api_remove_i64,

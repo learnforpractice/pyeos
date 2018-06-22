@@ -183,6 +183,7 @@ struct vm_api {
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 
    const char* (*get_code)( uint64_t receiver, size_t* size );
+   void (*set_code)(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size);
    int (*get_code_id)( uint64_t account, char* code_id, size_t size );
 
    void (*rodb_remove_i64)( int32_t itr );
