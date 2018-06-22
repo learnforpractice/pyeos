@@ -268,7 +268,9 @@ void apply_eosio_setcode_evm(apply_context& context) {
    bytes code;
    bytes args(act.code.begin(), act.code.end());
    bytes output_code;
-   evm_interface::get().run_code(context, code, args, output_code);
+
+   #warning TODO: run evm code
+   //   evm_interface::get().run_code(context, code, args, output_code);
    FC_ASSERT(output_code.size() > 0, "evm return empty code");
 
    auto code_id = fc::sha256::hash( output_code.data(), (uint32_t)output_code.size() );

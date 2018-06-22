@@ -57,7 +57,8 @@ def eval(const char* code):
     get_mpapi().set_debug_mode(0)
 
 def evm_test(string _code, string _data):
-    evm_test_(_code, _data)
+    raise Exception("Fix me please.")
+#    evm_test_(_code, _data)
 
 def test():
     debug_test()

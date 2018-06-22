@@ -151,7 +151,7 @@ void apply_context::schedule() {
       bytes code(a.code.begin(), a.code.end());
       bytes args(act.data.begin(), act.data.end());
       bytes output;
-      evm_interface::get().run_code(*this, code, args, output);
+//      evm_interface::get().run_code(*this, code, args, output);
       ilog("${n}",("n", output.size()));
    } else if (a.vm_type == 3) {
 #if 0

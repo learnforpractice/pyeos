@@ -61,18 +61,11 @@ add_library( eosio_chain
 #             global_property_object.cpp
 #
 #             contracts/chain_initializer.cpp
-
-
 #             transaction_metadata.cpp
-
-              evm/EosState.cpp
-              evm/EosExecutive.cpp
-              evm/EosDB.cpp
-              evm/EosExtVM.cpp
 
               micropython/db_api.cpp
               micropython/mpeoslib.cpp
-              evm_interface.cpp
+#              evm_interface.cpp
               micropython_interface.cpp
               python_contract.wrap.cpp
 
@@ -80,14 +73,6 @@ add_library( eosio_chain
               vm_api_native/vm_api.cpp
               ${HEADERS}
              )
-
-set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
-
-include_directories (${CPP_ETHEREUM_DIR})
-include_directories (${CPP_ETHEREUM_DIR}/libethereum)
-include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
-include_directories (${CPP_ETHEREUM_DIR}/utils)
-include_directories (jsoncpp/include)
 
 #add_library(secp256k STATIC IMPORTED)
 #set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
@@ -102,7 +87,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase  softfloat builtins ${ETH_LIBRARY} python3 thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase  softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on vm_py, 
@@ -126,8 +111,6 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
-                            PRIVATE ${LevelDB_INCLUDE}
-                            PRIVATE ${CPP_ETHEREUM_DIR}
                             )
 
 set_target_properties( eosio_chain PROPERTIES PUBLIC_HEADER "${HEADERS}" )
