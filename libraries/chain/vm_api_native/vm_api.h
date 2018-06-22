@@ -207,6 +207,7 @@ struct vm_api {
 
    void (*resume_billing_timer)();
    void (*pause_billing_timer)();
+   char tmp[sizeof(char*)*128]; //for forward compatibility
 
 
 };
