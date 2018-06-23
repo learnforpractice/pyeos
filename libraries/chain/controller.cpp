@@ -1548,11 +1548,11 @@ void controller::set_action_object(const account_name& receiver, const action& a
          act_obj.account = act.account;
          act_obj.name = act.name;
 
-         act_obj.authorization.resize(0);
+//         act_obj.authorization.resize(0);
          act_obj.authorization.resize(act.authorization.size());
          memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
 
-         act_obj.data.resize(0);
+//         act_obj.data.resize(0);
          act_obj.data.resize(act.data.size());
          memcpy(act_obj.data.data(), act.data.data(), act.data.size());
       });

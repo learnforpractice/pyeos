@@ -63,7 +63,7 @@ namespace eosio { namespace chain {
          account_name               account;
          action_name                name;
          shared_vector<permission_level>   authorization;
-         shared_vector< char > data;
+         shared_string data;
    };
 
    using global_property_multi_index = chainbase::shared_multi_index_container<
