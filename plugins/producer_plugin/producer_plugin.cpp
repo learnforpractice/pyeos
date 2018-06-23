@@ -251,9 +251,8 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
 
       void on_incoming_block(const signed_block_ptr& block) {
          fc_dlog(_log, "received incoming block ${id}", ("id", block->id()));
-
-         FC_ASSERT( block->timestamp < (fc::time_point::now() + fc::seconds(7)), "received a block from the future, ignoring it" );
-
+//         wlog("${n1}      ${n2}        ${n3}", ("n1",block->timestamp)("n2", fc::time_point::now() + fc::seconds(10))("n3", block->timestamp.to_time_point() - fc::time_point::now() - fc::seconds(7)));
+         FC_ASSERT( block->timestamp.to_time_point() < (fc::time_point::now() + fc::seconds(15)), "received a block from the future, ignoring it" );
 
          chain::controller& chain = app().get_plugin<chain_plugin>().chain();
 
