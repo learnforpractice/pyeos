@@ -7,6 +7,14 @@ int cancel_deferred(const uint128_t& val) {
    return 0;
 }
 
+void _send_deferred(const uint128_t* sender_id, uint64_t payer, const char *data, size_t data_len, uint32_t replace_existing) {
+
+}
+
+int _cancel_deferred(const uint128_t* val) {
+   return 0;
+}
+
 size_t read_transaction(char *data, size_t buffer_size) {
    return 0;
 }

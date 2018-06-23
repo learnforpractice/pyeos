@@ -1095,11 +1095,11 @@ class transaction_api : public context_aware_api {
       }
 
       void send_deferred( const uint128_t& sender_id, account_name payer, array_ptr<char> data, size_t data_len, uint32_t replace_existing) {
-         API()->send_deferred( sender_id, payer, data, data_len, replace_existing);
+         API()->send_deferred( &sender_id, payer, data, data_len, replace_existing);
       }
 
       bool cancel_deferred( const unsigned __int128& val ) {
-         return API()->cancel_deferred( val );
+         return API()->cancel_deferred( &val );
       }
 };
 

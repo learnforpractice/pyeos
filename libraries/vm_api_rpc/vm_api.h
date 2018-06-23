@@ -163,13 +163,8 @@ struct vm_api {
    void (*check_context_free)(bool context_free);
    bool (*contracts_console)();
 
-#ifdef __cplusplus
-   void (*send_deferred)(const uint128_t& sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
-   int (*cancel_deferred)(const uint128_t& sender_id);
-#else
    void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t* sender_id);
-#endif
 
    size_t (*read_transaction)(char *buffer, size_t size);
    size_t (*transaction_size)();

@@ -73,10 +73,10 @@ extern "C" {
     * @return 1 if transaction was canceled, 0 if transaction was not found
     */
    int cancel_deferred(const uint128_t& sender_id);
-#else
-      void send_deferred(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing = 0);
-      int cancel_deferred(const uint128_t* sender_id);
 #endif
+
+      void _send_deferred(const uint128_t* sender_id, account_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing = 0);
+      int _cancel_deferred(const uint128_t* sender_id);
 
    /**
     * access a copy of the currently executing transaction

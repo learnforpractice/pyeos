@@ -261,8 +261,8 @@ static struct vm_api _vm_api = {
    .check_context_free = check_context_free,
    .contracts_console = contracts_console,
 
-   .send_deferred = send_deferred,
-   .cancel_deferred = cancel_deferred,
+   .send_deferred = _send_deferred,
+   .cancel_deferred = _cancel_deferred,
    .read_transaction = read_transaction,
    .transaction_size = transaction_size,
 
