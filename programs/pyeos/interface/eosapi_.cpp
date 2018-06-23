@@ -35,7 +35,7 @@ using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
-auto tx_expiration = fc::seconds(30);
+auto tx_expiration = fc::seconds(120);
 bool tx_force_unique = false;
 
 uint32_t tx_cf_cpu_usage = 0;

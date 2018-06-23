@@ -1,6 +1,7 @@
 #include <eosio/chain/block_header_state.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <limits>
+#include <appbase/application.hpp>
 
 namespace eosio { namespace chain {
 
@@ -155,7 +156,13 @@ namespace eosio { namespace chain {
 
     auto itr = producer_to_last_produced.find(h.producer);
     if( itr != producer_to_last_produced.end() ) {
-       FC_ASSERT( itr->second < result.block_num - h.confirmed, "producer ${prod} double-confirming known range", ("prod", h.producer) );
+       if (appbase::app().debug_mode()) {
+          if (itr->second >= result.block_num - h.confirmed) {
+             wlog("producer ${prod} double-confirming known range $(n}", ("prod", h.producer)("n", itr->second - result.block_num - h.confirmed));
+          }
+       } else {
+          FC_ASSERT( itr->second < result.block_num - h.confirmed, "producer ${prod} double-confirming known range", ("prod", h.producer) );
+       }
     }
 
     // FC_ASSERT( result.header.block_mroot == h.block_mroot, "mismatch block merkle root" );
