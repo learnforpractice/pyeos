@@ -10,7 +10,6 @@
 #include <fc/log/logger_config.hpp>
 
 #include <eosio/chain/exceptions.hpp>
-#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
 #include <fc/io/json.hpp>
 
 #include <eosio/chain_plugin/chain_plugin.hpp>
@@ -25,12 +24,15 @@ using namespace eosio;
 using namespace eosio::chain;
 
 wallet_manager& wm() {
-   return app().get_plugin<wallet_plugin>().get_wallet_manager();
+   abstract_plugin& plugin = app().get_plugin("eosio::wallet_plugin");
+   return static_cast<wallet_plugin*>(&plugin)->get_wallet_manager();
 }
+
+chain_plugin& get_chain_plugin();//eosapi_.cpp
 
 void sign_transaction(signed_transaction& trx) {
    const auto& public_keys = wm().get_public_keys();
-   auto ro_api = app().get_plugin<chain_plugin>().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
 
    eosio::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
    eosio::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);

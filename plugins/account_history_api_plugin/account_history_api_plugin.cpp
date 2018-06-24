@@ -51,3 +51,12 @@ void account_history_api_plugin::plugin_startup() {
 void account_history_api_plugin::plugin_shutdown() {}
 
 }
+
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::account_history_api_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

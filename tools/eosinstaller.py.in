@@ -1,0 +1,17 @@
+import os
+import shutil
+
+libs_path = "${CMAKE_BINARY_DIR}/libs"
+if not os.path.exists(libs_path):
+    os.mkdir(libs_path)
+
+for root, dirs, files in os.walk("${CMAKE_BINARY_DIR}"):
+#for root, dirs, files in os.walk("/Users/newworld/dev/pyeos/build-debug"):
+    if root == libs_path:
+        continue
+    for f in files:
+        if f.endswith("${CMAKE_SHARED_LIBRARY_SUFFIX}"):
+            print(f)
+            src = os.path.join(root, f)
+            dst = os.path.join(libs_path, f)
+            shutil.copyfile(src, dst)

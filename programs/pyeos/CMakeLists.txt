@@ -98,14 +98,11 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
 
     
 if( APPLE )
-target_link_libraries( pyeos-shared eosio_chain appbase chain_api_plugin history_api_plugin history_plugin
-    producer_plugin chain_plugin net_plugin http_plugin wallet_plugin wallet_api_plugin
+target_link_libraries( pyeos-shared appbase eosio_chain
     chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3  intl )
 else( APPLE )
-target_link_libraries( pyeos-shared eosio_chain appbase chain_api_plugin history_api_plugin history_plugin
-    producer_plugin chain_plugin net_plugin http_plugin
-    wallet_plugin wallet_api_plugin
+target_link_libraries( pyeos-shared eosio_chain appbase
     chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3 util  -Xlinker -export-dynamic)
 endif( APPLE )
@@ -117,11 +114,20 @@ target_include_directories( pyeos-shared
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/interface
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/history_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/history_api_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/net_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/chain_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/chain_interface/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/chain_api_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/http_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/producer_plugin/include
+                              PRIVATE ${CMAKE_SOURCE_DIR}/plugins/http_client_plugin/include
                               PRIVATE ${CMAKE_BINARY_DIR}/programs/nodeos
                            )
 

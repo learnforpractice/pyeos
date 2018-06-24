@@ -151,3 +151,11 @@ void wallet_api_plugin::plugin_initialize(const variables_map& options) {
 #undef CALL
 
 }
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::wallet_api_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

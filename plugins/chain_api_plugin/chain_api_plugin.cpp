@@ -100,3 +100,11 @@ void chain_api_plugin::plugin_startup() {
 void chain_api_plugin::plugin_shutdown() {}
 
 }
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::chain_api_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

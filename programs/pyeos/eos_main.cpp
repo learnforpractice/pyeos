@@ -1,6 +1,7 @@
 #include <appbase/application.hpp>
 #include <fc/log/logger_config.hpp>
 #include <fc/exception/exception.hpp>
+/*
 #include <eosio/history_plugin.hpp>
 #include <eosio/net_plugin/net_plugin.hpp>
 #include <eosio/http_plugin/http_plugin.hpp>
@@ -10,6 +11,7 @@
 #include <eosio/chain_api_plugin/chain_api_plugin.hpp>
 #include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
 #include <eosio/history_api_plugin/history_api_plugin.hpp>
+*/
 
 #include "config.hpp"
 
@@ -59,12 +61,17 @@ void start_eos() {
    try {
       eos_started = true;
       app().set_version(eosio::nodeos::config::version);
-      app().register_plugin<history_plugin>();
-      app().register_plugin<chain_api_plugin>();
-      app().register_plugin<wallet_api_plugin>();
-      app().register_plugin<history_api_plugin>();
+      app().register_plugin("chain_plugin");
+      app().register_plugin("http_plugin");
+      app().register_plugin("net_plugin");
+      app().register_plugin("producer_plugin");
 
-      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
+      app().register_plugin("chain_api_plugin");
+      app().register_plugin("wallet_api_plugin");
+      app().register_plugin("history_plugin");
+      app().register_plugin("history_api_plugin");
+
+      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
          init_finished = true;
          shutdown_finished = true;
          return;

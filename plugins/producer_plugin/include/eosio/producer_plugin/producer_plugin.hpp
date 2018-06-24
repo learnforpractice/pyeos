@@ -24,9 +24,11 @@ public:
    };
 
    producer_plugin();
-   int produce_block();
-   int produce_block_start();
-   int produce_block_end();
+
+   virtual int produce_block(){return 0;};
+   virtual int produce_block_start();
+   virtual int produce_block_end();
+
    virtual ~producer_plugin();
 
    virtual void set_program_options(

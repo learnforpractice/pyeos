@@ -63,7 +63,7 @@ class read_only {
       };
 
 
-      get_actions_result get_actions( const get_actions_params& )const;
+      virtual get_actions_result get_actions( const get_actions_params& )const;
 
 
       struct get_transaction_params {
@@ -79,7 +79,7 @@ class read_only {
          vector<fc::variant>                   traces;
       };
 
-      get_transaction_result get_transaction( const get_transaction_params& )const;
+      virtual get_transaction_result get_transaction( const get_transaction_params& )const;
       
 
 
@@ -101,7 +101,7 @@ class read_only {
       struct get_key_accounts_results {
          vector<chain::account_name> account_names;
       };
-      get_key_accounts_results get_key_accounts(const get_key_accounts_params& params) const;
+      virtual get_key_accounts_results get_key_accounts(const get_key_accounts_params& params) const;
 
 
       struct get_controlled_accounts_params {
@@ -110,7 +110,7 @@ class read_only {
       struct get_controlled_accounts_results {
          vector<chain::account_name> controlled_accounts;
       };
-      get_controlled_accounts_results get_controlled_accounts(const get_controlled_accounts_params& params) const;
+      virtual get_controlled_accounts_results get_controlled_accounts(const get_controlled_accounts_params& params) const;
 };
 
 
@@ -140,10 +140,11 @@ class history_plugin : public plugin<history_plugin> {
       void plugin_startup();
       void plugin_shutdown();
 
-      history_apis::read_only  get_read_only_api()const { return history_apis::read_only(history_const_ptr(my)); }
+      history_apis::read_only&  get_read_only_api()const { return *ro; }
 
    private:
       history_ptr my;
+      history_apis::read_only* ro;
 };
 
 } /// namespace eosio

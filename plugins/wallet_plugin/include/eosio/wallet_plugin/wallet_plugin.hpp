@@ -35,7 +35,7 @@ public:
    void plugin_shutdown() {}
 
    // api interface provider
-   wallet_manager& get_wallet_manager();
+   virtual wallet_manager& get_wallet_manager();
 
 private:
    std::unique_ptr<wallet_manager> wallet_manager_ptr;

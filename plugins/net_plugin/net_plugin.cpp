@@ -3159,3 +3159,13 @@ namespace eosio {
    }
 
 }
+
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::net_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}
+

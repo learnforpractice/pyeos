@@ -140,6 +140,7 @@ namespace eosio {
          bool bypass_filter = false;
          std::set<filter_entry> filter_on;
          chain_plugin*          chain_plug = nullptr;
+         history_apis::read_only *ro;
          fc::optional<scoped_connection> applied_transaction_connection;
 
          bool filter( const action_trace& act ) {
@@ -251,6 +252,7 @@ namespace eosio {
 
    history_plugin::history_plugin()
    :my(std::make_shared<history_plugin_impl>()) {
+      ro = new history_apis::read_only(history_const_ptr(my));
    }
 
    history_plugin::~history_plugin() {
@@ -467,3 +469,12 @@ namespace eosio {
 
 
 } /// namespace eosio
+
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::history_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

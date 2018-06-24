@@ -87,7 +87,7 @@ public:
       //string                  recent_slots;
       //double                  participation_rate = 0;
    };
-   get_info_results get_info(const get_info_params&) const;
+   virtual get_info_results get_info(const get_info_params&) const;
 
    struct producer_info {
       name                       producer_name;
@@ -125,7 +125,7 @@ public:
    struct get_account_params {
       name account_name;
    };
-   get_account_results get_account( const get_account_params& params )const;
+   virtual get_account_results get_account( const get_account_params& params )const;
 
 
    struct get_code_results {
@@ -151,8 +151,8 @@ public:
    };
 
 
-   get_code_results get_code( const get_code_params& params )const;
-   get_abi_results get_abi( const get_abi_params& params )const;
+   virtual get_code_results get_code( const get_code_params& params )const;
+   virtual get_abi_results get_abi( const get_abi_params& params )const;
 
 
 
@@ -165,7 +165,7 @@ public:
       vector<char>   binargs;
    };
 
-   abi_json_to_bin_result abi_json_to_bin( const abi_json_to_bin_params& params )const;
+   virtual abi_json_to_bin_result abi_json_to_bin( const abi_json_to_bin_params& params )const;
 
 
    struct abi_bin_to_json_params {
@@ -177,7 +177,7 @@ public:
       fc::variant    args;
    };
 
-   abi_bin_to_json_result abi_bin_to_json( const abi_bin_to_json_params& params )const;
+   virtual abi_bin_to_json_result abi_bin_to_json( const abi_bin_to_json_params& params )const;
 
 
    struct get_required_keys_params {
@@ -188,20 +188,20 @@ public:
       flat_set<public_key_type> required_keys;
    };
 
-   get_required_keys_result get_required_keys( const get_required_keys_params& params)const;
+   virtual get_required_keys_result get_required_keys( const get_required_keys_params& params)const;
 
 
    struct get_block_params {
       string block_num_or_id;
    };
 
-   fc::variant get_block(const get_block_params& params) const;
+   virtual fc::variant get_block(const get_block_params& params) const;
 
    struct get_block_header_state_params {
       string block_num_or_id;
    };
 
-   fc::variant get_block_header_state(const get_block_header_state_params& params) const;
+   virtual fc::variant get_block_header_state(const get_block_header_state_params& params) const;
 
    struct get_table_rows_params {
       bool        json = false;
@@ -220,7 +220,7 @@ public:
       bool                more = false; ///< true if last element in data is not the end and sizeof data() < limit
    };
 
-   get_table_rows_result get_table_rows( const get_table_rows_params& params )const;
+   virtual get_table_rows_result get_table_rows( const get_table_rows_params& params )const;
 
    struct get_currency_balance_params {
       name             code;
@@ -228,7 +228,7 @@ public:
       optional<string> symbol;
    };
 
-   vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
+   virtual vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
 
    struct get_currency_stats_params {
       name           code;
@@ -242,7 +242,7 @@ public:
       account_name   issuer;
    };
 
-   fc::variant get_currency_stats( const get_currency_stats_params& params )const;
+   virtual fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
    struct get_producers_params {
       bool        json = false;
@@ -256,7 +256,7 @@ public:
       string              more; ///< fill lower_bound with this value to fetch more rows
    };
 
-   get_producers_result get_producers( const get_producers_params& params )const;
+   virtual get_producers_result get_producers( const get_producers_params& params )const;
 
    static void copy_inline_row(const chain::key_value_object& obj, vector<char>& data) {
       data.resize( obj.value.size() );
@@ -343,19 +343,19 @@ public:
 
    using push_block_params = chain::signed_block;
    using push_block_results = empty;
-   void push_block(const push_block_params& params, chain::plugin_interface::next_function<push_block_results> next);
+   virtual void push_block(const push_block_params& params, chain::plugin_interface::next_function<push_block_results> next);
 
    using push_transaction_params = fc::variant_object;
    struct push_transaction_results {
       chain::transaction_id_type  transaction_id;
       fc::variant                 processed;
    };
-   void push_transaction(const push_transaction_params& params, chain::plugin_interface::next_function<push_transaction_results> next);
+   virtual void push_transaction(const push_transaction_params& params, chain::plugin_interface::next_function<push_transaction_results> next);
 
 
    using push_transactions_params  = vector<push_transaction_params>;
    using push_transactions_results = vector<push_transaction_results>;
-   void push_transactions(const push_transactions_params& params, chain::plugin_interface::next_function<push_transactions_results> next);
+   virtual void push_transactions(const push_transactions_params& params, chain::plugin_interface::next_function<push_transactions_results> next);
 
    friend resolver_factory<read_write>;
 };
@@ -374,15 +374,15 @@ public:
    void plugin_startup();
    void plugin_shutdown();
 
-   chain_apis::read_only get_read_only_api() const { return chain_apis::read_only(chain()); }
-   chain_apis::read_write get_read_write_api();
+   virtual chain_apis::read_only& get_read_only_api() const;
+   virtual chain_apis::read_write& get_read_write_api();
 
-   void accept_block( const chain::signed_block_ptr block );
-   void accept_transaction(const chain::packed_transaction& trx, chain::plugin_interface::next_function<chain::transaction_trace_ptr> next);
+   virtual void accept_block( const chain::signed_block_ptr block );
+   virtual void accept_transaction(const chain::packed_transaction& trx, chain::plugin_interface::next_function<chain::transaction_trace_ptr> next);
 
-   bool block_is_on_preferred_chain(const chain::block_id_type& block_id);
+   virtual bool block_is_on_preferred_chain(const chain::block_id_type& block_id);
 
-   bool recover_reversible_blocks( const fc::path& db_dir,
+   virtual bool recover_reversible_blocks( const fc::path& db_dir,
                                    uint32_t cache_size,
                                    optional<fc::path> new_db_dir = optional<fc::path>(),
                                    uint32_t truncate_at_block = 0
@@ -391,13 +391,13 @@ public:
    // Only call this in plugin_initialize() to modify controller constructor configuration
    controller::config& chain_config();
    // Only call this after plugin_startup()!
-   controller& chain();
+   virtual controller& chain();
    // Only call this after plugin_startup()!
-   const controller& chain() const;
+   virtual const controller& chain() const;
 
-   chain::chain_id_type get_chain_id() const;
+   virtual chain::chain_id_type get_chain_id() const;
 
-   bool is_replay() {
+   virtual bool is_replay() {
       return _replay;
    }
 
@@ -405,6 +405,8 @@ public:
 private:
    unique_ptr<class chain_plugin_impl> my;
    bool _replay = false;
+   chain_apis::read_only* ro;
+   chain_apis::read_write* rw;
 };
 
 }

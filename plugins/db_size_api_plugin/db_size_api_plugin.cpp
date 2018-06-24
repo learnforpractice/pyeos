@@ -54,3 +54,11 @@ db_size_stats db_size_api_plugin::get() {
 #undef CALL
 
 }
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::db_size_api_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

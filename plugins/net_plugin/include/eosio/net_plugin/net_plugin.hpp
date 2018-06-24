@@ -32,10 +32,10 @@ namespace eosio {
 
         void   broadcast_block(const chain::signed_block &sb);
 
-        string                       connect( const string& endpoint );
-        string                       disconnect( const string& endpoint );
-        optional<connection_status>  status( const string& endpoint )const;
-        vector<connection_status>    connections()const;
+        virtual string                       connect( const string& endpoint );
+        virtual string                       disconnect( const string& endpoint );
+        virtual optional<connection_status>  status( const string& endpoint )const;
+        virtual vector<connection_status>    connections()const;
 
         size_t num_peers() const;
       private:

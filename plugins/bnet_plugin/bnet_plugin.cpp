@@ -1534,3 +1534,12 @@ namespace eosio {
    }
 
 } /// namespace eosio
+
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::bnet_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

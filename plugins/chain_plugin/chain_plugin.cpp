@@ -392,6 +392,10 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
    }
 
    my->chain.emplace(*my->chain_config);
+
+   ro = new chain_apis::read_only(chain());
+   rw = new chain_apis::read_write(chain());
+
    // replay will call micropython and micropython relies on my->chain, but replay called in constructor of chain_controller,
    //so remove replay from constructor and replay it here.
 //   my->chain->replay();
@@ -467,8 +471,12 @@ void chain_plugin::plugin_shutdown() {
    my->chain.reset();
 }
 
-chain_apis::read_write chain_plugin::get_read_write_api() {
-   return chain_apis::read_write(chain());
+chain_apis::read_only& chain_plugin::get_read_only_api() const {
+   return *ro;
+}
+
+chain_apis::read_write& chain_plugin::get_read_write_api() {
+   return *rw;
 }
 
 void chain_plugin::accept_block(const signed_block_ptr block ) {
@@ -1148,3 +1156,11 @@ read_only::get_required_keys_result read_only::get_required_keys( const get_requ
 
 } // namespace chain_apis
 } // namespace eosio
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::chain_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

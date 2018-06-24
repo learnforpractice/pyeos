@@ -58,3 +58,11 @@ void http_client_plugin::plugin_shutdown() {
 }
 
 }
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::http_client_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

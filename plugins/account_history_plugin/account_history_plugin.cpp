@@ -531,3 +531,12 @@ read_only::get_controlled_accounts_results read_only::get_controlled_accounts(co
 
 } // namespace account_history_apis
 } // namespace eosio
+
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::account_history_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

@@ -49,7 +49,13 @@ fc::logger _log;
 
 namespace eosio {
 
-static appbase::abstract_plugin& _producer_plugin = app().register_plugin<producer_plugin>();
+static appbase::abstract_plugin* _producer_plugin = app().register_plugin("producer_plugin");
+
+chain_plugin& get_chain_plugin() {
+    abstract_plugin& plugin = app().get_plugin("eosio::chain_plugin");
+   return *static_cast<chain_plugin*>(&plugin);
+}
+
 
 using namespace eosio::chain;
 using namespace eosio::chain::plugin_interface;
@@ -264,7 +270,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
             FC_ASSERT( block->timestamp.to_time_point() < (fc::time_point::now() + fc::seconds(15)), "received a block from the future, ignoring it" );
          }
 
-         chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+         chain::controller& chain = get_chain_plugin().chain();
 
          /* de-dupe here... no point in aborting block if we already know the block */
          auto id = block->id();
@@ -308,7 +314,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
       std::vector<std::tuple<packed_transaction_ptr, bool, next_function<transaction_trace_ptr>>> _pending_incoming_transactions;
 
       void on_incoming_transaction_async(const packed_transaction_ptr& trx, bool persist_until_expired, next_function<transaction_trace_ptr> next) {
-         chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+         chain::controller& chain = get_chain_plugin().chain();
          auto block_time = chain.pending_block_state()->header.timestamp.to_time_point();
 
          auto send_response = [this, &trx, &next](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& response) {
@@ -592,7 +598,7 @@ void producer_plugin::plugin_startup()
 
    ilog("producer plugin:  plugin_startup() begin");
 
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    my->_accepted_block_connection.emplace(chain.accepted_block.connect( [this]( const auto& bsp ){ my->on_block( bsp ); } ));
    my->_irreversible_block_connection.emplace(chain.irreversible_block.connect( [this]( const auto& bsp ){ my->on_irreversible_block( bsp->block ); } ));
 
@@ -642,7 +648,7 @@ void producer_plugin::resume() {
    // re-evaluate that now
    //
    if (my->_pending_block_mode == pending_block_mode::speculating) {
-      chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+      chain::controller& chain = get_chain_plugin().chain();
       chain.abort_block();
       my->schedule_production_loop();
    }
@@ -665,7 +671,7 @@ void producer_plugin::update_runtime_options(const runtime_options& options) {
    }
 
    if (check_speculating && my->_pending_block_mode == pending_block_mode::speculating) {
-      chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+      chain::controller& chain = get_chain_plugin().chain();
       chain.abort_block();
       my->schedule_production_loop();
    }
@@ -681,7 +687,7 @@ producer_plugin::runtime_options producer_plugin::get_runtime_options() const {
 
 
 optional<fc::time_point> producer_plugin_impl::calculate_next_block_time(const account_name& producer_name) const {
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    const auto& pbs = chain.pending_block_state();
    const auto& active_schedule = pbs->active_schedule.producers;
    const auto& hbt = pbs->header.timestamp;
@@ -734,7 +740,7 @@ optional<fc::time_point> producer_plugin_impl::calculate_next_block_time(const a
 }
 
 producer_plugin_impl::start_block_result producer_plugin_impl::start_block() {
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    const auto& hbs = chain.head_block_state();
 
    //Schedule for the next second's tick regardless of chain state
@@ -940,7 +946,7 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block() {
 }
 
 void producer_plugin_impl::schedule_production_loop() {
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    _timer.cancel();
    std::weak_ptr<producer_plugin_impl> weak_this = shared_from_this();
 
@@ -1026,7 +1032,7 @@ bool producer_plugin_impl::maybe_produce_block() {
    } FC_LOG_AND_DROP();
 
    fc_dlog(_log, "Aborting block due to produce_block error");
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    chain.abort_block();
    return false;
 }
@@ -1055,7 +1061,7 @@ void producer_plugin_impl::produce_block() {
       }
    }
 
-   chain::controller& chain = app().get_plugin<chain_plugin>().chain();
+   chain::controller& chain = get_chain_plugin().chain();
    const auto& pbs = chain.pending_block_state();
    const auto& hbs = chain.head_block_state();
    FC_ASSERT(pbs, "pending_block_state does not exist but it should, another plugin may have corrupted it");
@@ -1139,3 +1145,11 @@ int producer_plugin::produce_block_end() {
 }
 
 } // namespace eosio
+
+extern "C" void plugin_init(appbase::application* app) {
+   app->register_plugin<eosio::producer_plugin>();
+}
+
+extern "C" void plugin_deinit() {
+
+}

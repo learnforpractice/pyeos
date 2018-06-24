@@ -6,19 +6,24 @@
 using namespace appbase;
 using namespace eosio;
 
+net_plugin& get_net_plugin() {
+   abstract_plugin& plugin = app().get_plugin("eosio::net_plugin");
+   return *static_cast<net_plugin*>(&plugin);
+}
+
 PyObject* connections_() {
-   auto peers = app().get_plugin<net_plugin>().connections();
+   auto peers = get_net_plugin().connections();
    return python::json::to_string(fc::variant(peers));
 }
 
 string connect_(const string& host) {
-   return app().get_plugin<net_plugin>().connect( host );
+   return get_net_plugin().connect( host );
 }
 
 string disconnect_(const string& host) {
-   return app().get_plugin<net_plugin>().disconnect( host );
+   return get_net_plugin().disconnect( host );
 }
 PyObject* status_(const string& host) {
-   auto s = app().get_plugin<net_plugin>().status( host );
+   auto s = get_net_plugin().status( host );
    return python::json::to_string(fc::variant(s));
 }
