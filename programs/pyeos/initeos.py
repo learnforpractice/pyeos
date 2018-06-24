@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import imp
+import signal
 import pickle
 import traceback
 
@@ -126,6 +127,8 @@ class PyEosConsole(InteractiveConsole):
                     self.write("\n")
                     break
                 else:
+                    if line.strip() == 'exit()':
+                        break
                     if line.strip():
                         self.check_module()
                     more = self.push(line)
@@ -133,6 +136,7 @@ class PyEosConsole(InteractiveConsole):
                 self.write("\nKeyboardInterrupt\n")
                 self.resetbuffer()
                 more = 0
+                break
         if exitmsg is None:
             self.write('now exiting %s...\n' % self.__class__.__name__)
         elif exitmsg != '':
@@ -281,7 +285,13 @@ def init():
 #    net.connect('127.0.0.1:9101')
     #load common libraries
 #    t.load_all()
+
+
+original_sigint_handler = signal.getsignal(signal.SIGINT)
+
 def start_console():
     init_wallet()
+    signal.signal(signal.SIGINT, original_sigint_handler)
     console = PyEosConsole(locals = globals())
     console.interact(banner='Welcome to PyEos')
+

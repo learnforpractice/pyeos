@@ -1,24 +1,12 @@
 #include <appbase/application.hpp>
 #include <fc/log/logger_config.hpp>
 #include <fc/exception/exception.hpp>
-/*
-#include <eosio/history_plugin.hpp>
-#include <eosio/net_plugin/net_plugin.hpp>
-#include <eosio/http_plugin/http_plugin.hpp>
-#include <eosio/chain_plugin/chain_plugin.hpp>
-#include <eosio/wallet_plugin/wallet_plugin.hpp>
-#include <eosio/producer_plugin/producer_plugin.hpp>
-#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
-#include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
-#include <eosio/history_api_plugin/history_api_plugin.hpp>
-*/
 
 #include "config.hpp"
 
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
-
 
 #include <signal.h>
 #include <stdlib.h>
@@ -61,17 +49,27 @@ void start_eos() {
    try {
       eos_started = true;
       app().set_version(eosio::nodeos::config::version);
-      app().register_plugin("chain_plugin");
-      app().register_plugin("http_plugin");
+
       app().register_plugin("net_plugin");
+      app().register_plugin("http_plugin");
+
+      app().register_plugin("chain_plugin");
       app().register_plugin("producer_plugin");
 
       app().register_plugin("chain_api_plugin");
       app().register_plugin("wallet_api_plugin");
       app().register_plugin("history_plugin");
       app().register_plugin("history_api_plugin");
+/*
+      app().register_plugin<history_plugin>();
+      app().register_plugin<chain_api_plugin>();
+      app().register_plugin<wallet_api_plugin>();
+      app().register_plugin<history_api_plugin>();
+*/
+
 
       if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
+//      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
@@ -92,7 +90,6 @@ void start_eos() {
    }
    init_finished = true;
    shutdown_finished = true;
-   py_exit();
 }
 
 void init_console() {
@@ -150,16 +147,13 @@ extern "C" int eos_main(int argc, char** argv) {
 //   PyRun_SimpleString("initeos.init()");
 
    if (app().interactive_mode()) {
-      for (int i=0;i<5;i++) {
-         PyRun_SimpleString("initeos.start_console()");
-      }
-      elog("too many errors ocurr, exiting...");
-      Py_Finalize();
+      PyRun_SimpleString("initeos.start_console()");
       appbase::app().quit();
    }
    while (!shutdown_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
+   py_exit();
 
    return 0;
 }
