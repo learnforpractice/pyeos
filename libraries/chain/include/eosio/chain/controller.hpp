@@ -104,7 +104,7 @@ namespace eosio { namespace chain {
          /**
           *
           */
-         transaction_trace_ptr push_transaction( const transaction_metadata_ptr& trx, fc::time_point deadline, uint32_t billed_cpu_time_us = 0 );
+         virtual transaction_trace_ptr push_transaction( const transaction_metadata_ptr& trx, fc::time_point deadline, uint32_t billed_cpu_time_us = 0 );
 
          /**
           * Attempt to execute a specific transaction in our deferred trx database
@@ -125,13 +125,13 @@ namespace eosio { namespace chain {
           */
          void push_confirmation( const header_confirmation& c );
 
-         chainbase::database& db()const;
+         virtual chainbase::database& db()const;
 
          fork_database& fork_db()const;
 
          const account_object&                 get_account( account_name n )const;
-         const global_property_object&         get_global_properties()const;
-         const dynamic_global_property_object& get_dynamic_global_properties()const;
+         virtual const global_property_object&         get_global_properties()const;
+         virtual const dynamic_global_property_object& get_dynamic_global_properties()const;
          const permission_object&              get_permission( const permission_level& level )const;
          const resource_limits_manager&        get_resource_limits_manager()const;
          resource_limits_manager&              get_mutable_resource_limits_manager();
@@ -161,7 +161,7 @@ namespace eosio { namespace chain {
          block_state_ptr fetch_block_state_by_number( uint32_t block_num )const;
          block_state_ptr fetch_block_state_by_id( block_id_type id )const;
 
-         block_id_type get_block_id_for_num( uint32_t block_num )const;
+         virtual block_id_type get_block_id_for_num( uint32_t block_num )const;
 
          void check_contract_list( account_name code )const;
          void check_action_list( account_name code, action_name action )const;
@@ -170,19 +170,19 @@ namespace eosio { namespace chain {
 
 
 
-         void validate_referenced_accounts( const transaction& t )const;
-         void validate_expiration( const transaction& t )const;
-         void validate_tapos( const transaction& t )const;
+         virtual void validate_referenced_accounts( const transaction& t )const;
+         virtual void validate_expiration( const transaction& t )const;
+         virtual void validate_tapos( const transaction& t )const;
 
-         bool is_known_unexpired_transaction( const transaction_id_type& id) const;
+         virtual bool is_known_unexpired_transaction( const transaction_id_type& id) const;
 
-         int64_t set_proposed_producers( vector<producer_key> producers );
+         virtual int64_t set_proposed_producers( vector<producer_key> producers );
 
-         bool skip_auth_check()const;
+         virtual bool skip_auth_check()const;
 
-         bool contracts_console()const;
+         virtual bool contracts_console()const;
 
-         chain_id_type get_chain_id()const;
+         virtual chain_id_type get_chain_id()const;
 
          signal<void(const block_state_ptr&)>          accepted_block_header;
          signal<void(const block_state_ptr&)>          accepted_block;
@@ -202,11 +202,11 @@ namespace eosio { namespace chain {
          signal<void(const transaction_trace_ptr&)>  post_apply_action;
          */
 
-         const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
+         virtual const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
          wasm_interface& get_wasm_interface();
 
 
-         optional<abi_serializer> get_abi_serializer( account_name n )const {
+         virtual optional<abi_serializer> get_abi_serializer( account_name n )const {
             if( n.good() ) {
                try {
                   const auto& a = get_account( n );

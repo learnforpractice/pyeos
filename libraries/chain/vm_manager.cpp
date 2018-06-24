@@ -1,5 +1,6 @@
 #include "vm_manager.hpp"
-#include "micropython/db_api.hpp"
+
+#include <eosio/chain/db_api.hpp>
 
 #include <dlfcn.h>
 

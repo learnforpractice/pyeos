@@ -17,7 +17,8 @@
 #include <chrono>
 #include <appbase/application.hpp>
 #include <fc/crypto/xxhash.h>
-#include "micropython/db_api.hpp"
+
+#include <eosio/chain/db_api.hpp>
 
 #include "micropython/mpeoslib.h"
 //#include "rpc_interface/rpc_interface.hpp"

@@ -17,7 +17,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eoslib_rpc PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( eoslib_rpc PUBLIC  fc thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( eoslib_rpc PUBLIC db_api fc thrift_static ${OPENSSL_LIBRARIES})
 
 target_include_directories( eoslib_rpc
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"

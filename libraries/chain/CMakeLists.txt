@@ -63,7 +63,6 @@ add_library( eosio_chain
 #             contracts/chain_initializer.cpp
 #             transaction_metadata.cpp
 
-              micropython/db_api.cpp
               micropython/mpeoslib.cpp
 #              evm_interface.cpp
               micropython_interface.cpp
@@ -81,7 +80,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase  softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase db_api softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on vm_py, 

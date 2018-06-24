@@ -98,11 +98,11 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
 
     
 if( APPLE )
-target_link_libraries( pyeos-shared appbase eosio_chain
+target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
     chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3  intl )
 else( APPLE )
-target_link_libraries( pyeos-shared eosio_chain appbase
+target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
     chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3 util  -Xlinker -export-dynamic)
 endif( APPLE )
@@ -111,11 +111,15 @@ target_include_directories( pyeos-shared
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/ethereum
                               PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
+                              PUBLIC ${CMAKE_BINARY_DIR}//libraries/chain/include
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/interface
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
+                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include

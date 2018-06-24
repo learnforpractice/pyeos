@@ -6,20 +6,11 @@
 #include <eosio/chain/producer_object.hpp>
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/permission_object.hpp>
-#include "db_api.hpp"
 
-extern "C" {
-#include <stdio.h>
-#include <string.h>
+#include <boost/algorithm/string.hpp>
 
-#include "py/objlist.h"
-#include "py/objstringio.h"
-#include "py/runtime.h"
-#include "py/stream.h"
-#include "py/obj.h"
-#include "py/compile.h"
-#include "py/gc.h"
-}
+#include <eosio/chain/db_api.hpp>
+
 
 using boost::container::flat_set;
 
@@ -489,7 +480,5 @@ int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
 }
 
 }
-
-
 
 

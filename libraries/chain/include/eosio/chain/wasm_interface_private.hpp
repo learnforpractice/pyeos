@@ -6,7 +6,7 @@
 
 #include <dlfcn.h>
 
-#include "micropython/db_api.hpp"
+#include <eosio/chain/db_api.hpp>
 
 using namespace fc;
 

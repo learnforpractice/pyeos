@@ -10,7 +10,7 @@
 #include <boost/thread/thread.hpp>
 
 #include <fc/log/logger.hpp>
-#include "../../micropython/db_api.hpp"
+#include <eosio/chain/db_api.hpp>
 
 #include "../../micropython/mpeoslib.h"
 #include "readerwriterqueue.h"

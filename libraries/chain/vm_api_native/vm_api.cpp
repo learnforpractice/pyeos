@@ -30,7 +30,7 @@
 #include <fc/crypto/xxhash.h>
 #include <dlfcn.h>
 
-#include "micropython/db_api.hpp"
+#include <eosio/chain/db_api.hpp>
 
 namespace eosio {
 namespace chain {
@@ -67,7 +67,7 @@ void eosio_assert_( bool condition, char* msg ) {
 }
 
 void eosio_assert( bool condition) {
-   eosio_assert_( condition, "" );
+   eosio_assert_( condition, (char*)"" );
 }
 
 void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
