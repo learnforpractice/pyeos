@@ -15,6 +15,10 @@ def connect(string& host):
 def disconnect(string& host):
     return disconnect_(host)
 
+def reconnect(string& host):
+    disconnect_(host)
+    connect_(host)
+
 def status(string& host):
     return status_(host)
 
