@@ -202,7 +202,9 @@ def get_block(id):
     if isinstance(id, str):
         id = bytes(id, 'utf8')
     info = get_block_(id)
-    return JsonStruct(info)
+    if info:
+        return JsonStruct(info)
+    return None
 
 def get_account(name):
     if isinstance(name, str):
