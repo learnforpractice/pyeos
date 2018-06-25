@@ -259,15 +259,14 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
          fc_dlog(_log, "received incoming block ${id}", ("id", block->id()));
 //         wlog("${n1}      ${n2}        ${n3}", ("n1",block->timestamp)("n2", fc::time_point::now() + fc::seconds(10))("n3", block->timestamp.to_time_point() - fc::time_point::now() - fc::seconds(7)));
          if (appbase::app().debug_mode()) {
-            auto ms = (fc::time_point::now() + fc::seconds(15)) - block->timestamp.to_time_point();
+            auto ms = (fc::time_point::now() + fc::seconds(7)) - block->timestamp.to_time_point();
             if (ms > fc::seconds(0)) {
 
             } else {
-               auto ms = (fc::time_point::now() + fc::seconds(15)) - block->timestamp.to_time_point();
                wlog("received a block from the future, ignoring it ${n}ms",  ("n", ms.count()/1000));
             }
          } else {
-            FC_ASSERT( block->timestamp.to_time_point() < (fc::time_point::now() + fc::seconds(15)), "received a block from the future, ignoring it" );
+            FC_ASSERT( block->timestamp.to_time_point() < (fc::time_point::now() + fc::seconds(7)), "received a block from the future, ignoring it" );
          }
 
          chain::controller& chain = get_chain_plugin().chain();
