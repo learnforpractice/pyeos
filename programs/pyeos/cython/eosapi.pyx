@@ -54,7 +54,10 @@ cdef extern from "eosapi_.hpp":
 
     object get_info_()
     object get_block_(char* num_or_id)
+
     object get_account_(char* name)
+    bool is_account_(const char* _name)
+
     object get_accounts_(char* public_key)
     object create_account_(string creator, string newaccount, string owner, string active, int sign)
     object get_controlled_accounts_(char* account_name);
@@ -205,6 +208,11 @@ def get_block(id):
     if info:
         return JsonStruct(info)
     return None
+
+def is_account(const char* name):
+    if is_account_(name):
+        return True
+    return False
 
 def get_account(name):
     if isinstance(name, str):

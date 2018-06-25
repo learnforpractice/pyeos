@@ -42,6 +42,8 @@
 #include <eosio/wallet_plugin/wallet_manager.hpp>
 #include <eosio/wallet_plugin/wallet_plugin.hpp>
 
+#include <eosio/chain/db_api.hpp>
+
 using namespace std;
 using namespace eosio;
 using namespace eosio::chain;
@@ -65,6 +67,7 @@ int produce_block_end_();
 PyObject* get_info_();
 PyObject* get_block_(char* num_or_id);
 PyObject* get_account_(const char* name);
+bool is_account_(const char* _name);
 
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol);
 

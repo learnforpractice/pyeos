@@ -497,6 +497,10 @@ PyObject* get_account_(const char* _name) {
    return py_new_none();
 }
 
+bool is_account_(const char* _name) {
+   return db_api::get().is_account(eosio::chain::name(_name));
+}
+
 PyObject* get_accounts_(char* public_key) {
    PyArray arr;
    #if 0
