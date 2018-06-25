@@ -330,87 +330,88 @@ def stepLog():
 
 # Command Line Arguments
 
-parser = argparse.ArgumentParser()
-
-commands = [
-    ('k', 'kill',           stepKillAll,                True,    "Kill all nodeos and keosd processes"),
-    ('w', 'wallet',         stepStartWallet,            True,    "Start keosd, create wallet, fill with keys"),
-    ('b', 'boot',           stepStartBoot,              True,    "Start boot node"),
-    ('s', 'sys',            createSystemAccounts,       True,    "Create system accounts (eosio.*)"),
-    ('c', 'contracts',      stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
-    ('t', 'tokens',         stepCreateTokens,           True,    "Create tokens"),
-    ('S', 'sys-contract',   stepSetSystemContract,      True,    "Set system contract"),
-    ('T', 'stake',          stepCreateStakedAccounts,   True,    "Create staked accounts"),
-    ('p', 'reg-prod',       stepRegProducers,           True,    "Register producers"),
-    ('P', 'start-prod',     stepStartProducers,         True,    "Start producers"),
-    ('v', 'vote',           stepVote,                   True,    "Vote for producers"),
-    ('R', 'claim',          claimRewards,               True,    "Claim rewards"),
-    ('x', 'proxy',          stepProxyVotes,             True,    "Proxy votes"),
-    ('q', 'resign',         stepResign,                 True,    "Resign eosio"),
-    ('m', 'msg-replace',    msigReplaceSystem,          False,   "Replace system contract using msig"),
-    ('X', 'xfer',           stepTransfer,               False,   "Random transfer tokens (infinite loop)"),
-    ('l', 'log',            stepLog,                    True,    "Show tail of node's log"),
-]
-
-parser.add_argument('--public-key', metavar='', help="EOSIO Public Key", default='EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr', dest="public_key")
-parser.add_argument('--private-Key', metavar='', help="EOSIO Private Key", default='5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p', dest="private_key")
-parser.add_argument('--cleos', metavar='', help="Cleos command", default='../../build/programs/cleos/cleos --wallet-url http://localhost:6666 ')
-parser.add_argument('--nodeos', metavar='', help="Path to nodeos binary", default='../../build/programs/nodeos/nodeos')
-parser.add_argument('--keosd', metavar='', help="Path to keosd binary", default='../../build/programs/keosd/keosd')
-parser.add_argument('--contracts-dir', metavar='', help="Path to contracts directory", default='../../build/contracts/')
-parser.add_argument('--nodes-dir', metavar='', help="Path to nodes directory", default='./nodes/')
-parser.add_argument('--genesis', metavar='', help="Path to genesis.json", default="./genesis.json")
-parser.add_argument('--wallet-dir', metavar='', help="Path to wallet directory", default='./wallet/')
-parser.add_argument('--log-path', metavar='', help="Path to log file", default='./output.log')
-parser.add_argument('--symbol', metavar='', help="The eosio.system symbol", default='SYS')
-parser.add_argument('--user-limit', metavar='', help="Max number of users. (0 = no limit)", type=int, default=3000)
-parser.add_argument('--max-user-keys', metavar='', help="Maximum user keys to import into wallet", type=int, default=10)
-parser.add_argument('--ram-funds', metavar='', help="How much funds for each user to spend on ram", type=float, default=0.1)
-parser.add_argument('--min-stake', metavar='', help="Minimum stake before allocating unstaked funds", type=float, default=0.9)
-parser.add_argument('--max-unstaked', metavar='', help="Maximum unstaked funds", type=float, default=10)
-parser.add_argument('--producer-limit', metavar='', help="Maximum number of producers. (0 = no limit)", type=int, default=0)
-parser.add_argument('--min-producer-funds', metavar='', help="Minimum producer funds", type=float, default=1000.0000)
-parser.add_argument('--num-producers-vote', metavar='', help="Number of producers for which each user votes", type=int, default=20)
-parser.add_argument('--num-voters', metavar='', help="Number of voters", type=int, default=10)
-parser.add_argument('--num-senders', metavar='', help="Number of users to transfer funds randomly", type=int, default=10)
-parser.add_argument('--producer-sync-delay', metavar='', help="Time (s) to sleep to allow producers to sync", type=int, default=80)
-parser.add_argument('-a', '--all', action='store_true', help="Do everything marked with (*)")
-parser.add_argument('-H', '--http-port', type=int, default=8000, metavar='', help='HTTP port for cleos')
-
-for (flag, command, function, inAll, help) in commands:
-    prefix = ''
-    if inAll: prefix += '*'
-    if prefix: help = '(' + prefix + ') ' + help
-    if flag:
-        parser.add_argument('-' + flag, '--' + command, action='store_true', help=help, dest=command)
-    else:
-        parser.add_argument('--' + command, action='store_true', help=help, dest=command)
-        
-args = parser.parse_args()
-
-args.cleos += '--url http://localhost:%d ' % args.http_port
-
-logFile = open(args.log_path, 'a')
-
-logFile.write('\n\n' + '*' * 80 + '\n\n\n')
-
-with open('accounts.json') as f:
-    a = json.load(f)
-    if args.user_limit:
-        del a['users'][args.user_limit:]
-    if args.producer_limit:
-        del a['producers'][args.producer_limit:]
-    firstProducer = len(a['users'])
-    numProducers = len(a['producers'])
-    accounts = a['users'] + a['producers']
-
-maxClients = numProducers + 10
-
-haveCommand = False
-for (flag, command, function, inAll, help) in commands:
-    if getattr(args, command) or inAll and args.all:
-        if function:
-            haveCommand = True
-            function()
-if not haveCommand:
-    print('bios-boot-tutorial.py: Tell me what to do. -a does almost everything. -h shows options.')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    
+    commands = [
+        ('k', 'kill',           stepKillAll,                True,    "Kill all nodeos and keosd processes"),
+        ('w', 'wallet',         stepStartWallet,            True,    "Start keosd, create wallet, fill with keys"),
+        ('b', 'boot',           stepStartBoot,              True,    "Start boot node"),
+        ('s', 'sys',            createSystemAccounts,       True,    "Create system accounts (eosio.*)"),
+        ('c', 'contracts',      stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
+        ('t', 'tokens',         stepCreateTokens,           True,    "Create tokens"),
+        ('S', 'sys-contract',   stepSetSystemContract,      True,    "Set system contract"),
+        ('T', 'stake',          stepCreateStakedAccounts,   True,    "Create staked accounts"),
+        ('p', 'reg-prod',       stepRegProducers,           True,    "Register producers"),
+        ('P', 'start-prod',     stepStartProducers,         True,    "Start producers"),
+        ('v', 'vote',           stepVote,                   True,    "Vote for producers"),
+        ('R', 'claim',          claimRewards,               True,    "Claim rewards"),
+        ('x', 'proxy',          stepProxyVotes,             True,    "Proxy votes"),
+        ('q', 'resign',         stepResign,                 True,    "Resign eosio"),
+        ('m', 'msg-replace',    msigReplaceSystem,          False,   "Replace system contract using msig"),
+        ('X', 'xfer',           stepTransfer,               False,   "Random transfer tokens (infinite loop)"),
+        ('l', 'log',            stepLog,                    True,    "Show tail of node's log"),
+    ]
+    
+    parser.add_argument('--public-key', metavar='', help="EOSIO Public Key", default='EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr', dest="public_key")
+    parser.add_argument('--private-Key', metavar='', help="EOSIO Private Key", default='5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p', dest="private_key")
+    parser.add_argument('--cleos', metavar='', help="Cleos command", default='../../build/programs/cleos/cleos --wallet-url http://localhost:6666 ')
+    parser.add_argument('--nodeos', metavar='', help="Path to nodeos binary", default='../../build/programs/nodeos/nodeos')
+    parser.add_argument('--keosd', metavar='', help="Path to keosd binary", default='../../build/programs/keosd/keosd')
+    parser.add_argument('--contracts-dir', metavar='', help="Path to contracts directory", default='../../build/contracts/')
+    parser.add_argument('--nodes-dir', metavar='', help="Path to nodes directory", default='./nodes/')
+    parser.add_argument('--genesis', metavar='', help="Path to genesis.json", default="./genesis.json")
+    parser.add_argument('--wallet-dir', metavar='', help="Path to wallet directory", default='./wallet/')
+    parser.add_argument('--log-path', metavar='', help="Path to log file", default='./output.log')
+    parser.add_argument('--symbol', metavar='', help="The eosio.system symbol", default='SYS')
+    parser.add_argument('--user-limit', metavar='', help="Max number of users. (0 = no limit)", type=int, default=3000)
+    parser.add_argument('--max-user-keys', metavar='', help="Maximum user keys to import into wallet", type=int, default=10)
+    parser.add_argument('--ram-funds', metavar='', help="How much funds for each user to spend on ram", type=float, default=0.1)
+    parser.add_argument('--min-stake', metavar='', help="Minimum stake before allocating unstaked funds", type=float, default=0.9)
+    parser.add_argument('--max-unstaked', metavar='', help="Maximum unstaked funds", type=float, default=10)
+    parser.add_argument('--producer-limit', metavar='', help="Maximum number of producers. (0 = no limit)", type=int, default=0)
+    parser.add_argument('--min-producer-funds', metavar='', help="Minimum producer funds", type=float, default=1000.0000)
+    parser.add_argument('--num-producers-vote', metavar='', help="Number of producers for which each user votes", type=int, default=20)
+    parser.add_argument('--num-voters', metavar='', help="Number of voters", type=int, default=10)
+    parser.add_argument('--num-senders', metavar='', help="Number of users to transfer funds randomly", type=int, default=10)
+    parser.add_argument('--producer-sync-delay', metavar='', help="Time (s) to sleep to allow producers to sync", type=int, default=80)
+    parser.add_argument('-a', '--all', action='store_true', help="Do everything marked with (*)")
+    parser.add_argument('-H', '--http-port', type=int, default=8000, metavar='', help='HTTP port for cleos')
+    
+    for (flag, command, function, inAll, help) in commands:
+        prefix = ''
+        if inAll: prefix += '*'
+        if prefix: help = '(' + prefix + ') ' + help
+        if flag:
+            parser.add_argument('-' + flag, '--' + command, action='store_true', help=help, dest=command)
+        else:
+            parser.add_argument('--' + command, action='store_true', help=help, dest=command)
+            
+    args = parser.parse_args()
+    
+    args.cleos += '--url http://localhost:%d ' % args.http_port
+    
+    logFile = open(args.log_path, 'a')
+    
+    logFile.write('\n\n' + '*' * 80 + '\n\n\n')
+    
+    with open('accounts.json') as f:
+        a = json.load(f)
+        if args.user_limit:
+            del a['users'][args.user_limit:]
+        if args.producer_limit:
+            del a['producers'][args.producer_limit:]
+        firstProducer = len(a['users'])
+        numProducers = len(a['producers'])
+        accounts = a['users'] + a['producers']
+    
+    maxClients = numProducers + 10
+    
+    haveCommand = False
+    for (flag, command, function, inAll, help) in commands:
+        if getattr(args, command) or inAll and args.all:
+            if function:
+                haveCommand = True
+                function()
+    if not haveCommand:
+        print('bios-boot-tutorial.py: Tell me what to do. -a does almost everything. -h shows options.')
