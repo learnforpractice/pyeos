@@ -12,6 +12,8 @@ import wallet
 import eosapi
 import debug
 
+from eosapi import *
+
 from code import InteractiveConsole
 from tools import sketch
 from imp import reload
@@ -288,12 +290,66 @@ def init():
 
 #{'peer': '185.253.188.1:19877', 'connecting': False, 'syncing': False, 'last_handshake': {'network_version': 1206, 'chain_id': 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906', 'node_id': '7bb4919c0ada83d3c58327df5dbd24eea3be107d6ddda9e0ddabce737a54a403', 'key': 'EOS8mTvPNb9Pwm94z4yrjC1pFetk3otHPuWDu7XFsp5ewmuFtQQDa', 'time': 1529892410318197237, 'token': 'f35be5448760792d74826de520f9265b83724c3cd90607c66de2d0369c68f6e6', 'sig': 'SIG_K1_KZCkqeFkNFZzs9wxQuXmwd5ajMsQhE9sm5a7iE7cXmrjLdFbDhUCsmAzWhyno9P8XMqG8PvjwcsCT1xipRqeW6hdMLVzW2', 'p2p_address': '0.0.0.0:9000 - 7bb4919', 'last_irreversible_block_num': 2489982, 'last_irreversible_block_id': '0025fe7e5ac6d86d4b0f67ba87f423ec1e4f6e748292c6dedc89d2bd8100d985', 'head_num': 2489982, 'head_id': '0025ffc7bc59caaa79cdf6d334806a63db7eb9c5b767df696d7e10d2dd45401e', 'os': 'linux', 'agent': 'EOSGen', 'generation': 1}}
 
-def cleanup_peers():
+peers = ('173.242.25.101:7115',
+'18.191.33.148:59876',
+'185.253.188.1:19877',
+'40.114.68.16:9876',
+'api-full1.eoseoul.io:9876',
+'api-full2.eoseoul.io:9876',
+'bp.antpool.com:443',
+'bp.cryptolions.io:9876',
+'dc1.eosemerge.io:9876',
+'eno.eosvan.io:19866',
+'eos.infinitystones.io:9876',
+'eos.nodepacific.com:9876',
+'eosapi.blockmatrix.network:13546',
+'eosbp.eosvillage.io:8181',
+'fn001.eossv.org:443',
+'mainnet.eoscalgary.io:5222',
+'mars.fnp2p.eosbixin.com:443',
+'node.eosio.lt:9878',
+'node1.eosnewyork.io:6987',
+'node2.eosarmy.io:3330',
+'node2.eosnewyork.io:6987',
+'node2.eosphere.io:9876',
+'p2p.eos.bitspace.no:9876',
+'p2p.genereos.io:9876',
+'p2p.meet.one:9876',
+'p2p.one.eosdublin.io:9876',
+'p2p.saltblock.io:19876',
+'p2p.two.eosdublin.io:9876',
+'peer.eosjrr.io:9876',
+'peer.eosn.io:9876',
+'peer.main.alohaeos.com:9876',
+'peer1.eospalliums.org:9876',
+'peer1.eosthu.com:8080',
+'peer1.mainnet.eos.store:80',
+'peer1.mainnet.helloeos.com.cn:80',
+'peer2.eospalliums.org:9876',
+'peer2.mainnet.helloeos.com.cn:80',
+'peering.mainnet.eoscanada.com:9876',
+'pub1.eostheworld.io:9876',
+'pub2.eostheworld.io:9876',
+'publicnode.cypherglass.com:9876',
+'seed2.greymass.com:9876')
+
+def peers_connect():
+    for peer in peers:
+        net.connect(peer)
+
+def peers_cleanup():
     for n in net.connections():
         if n['last_handshake']['network_version'] == 0:
             net.disconnect(n['peer'])
 
+pc = peers_connect
+pcu = peers_cleanup
+
+
 original_sigint_handler = signal.getsignal(signal.SIGINT)
+
+def info():
+    eosapi.get_info()
 
 def start_console():
     init_wallet()
