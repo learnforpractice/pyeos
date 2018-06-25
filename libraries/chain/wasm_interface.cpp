@@ -96,9 +96,17 @@ namespace eosio { namespace chain {
          contract_path = debug_contract_path;
 
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-         FC_ASSERT(handle, "open dll failed");
+         if (!handle) {
+            elog("open dll ${n} failed", ("n", contract_path));
+            return false;
+         }
+
          register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+         if (!_apply) {
+            elog("apply not found in ${n}", ("n", contract_path));
+            return false;
+         }
          _apply(ctx.receiver, ctx.act.account, ctx.act.name);
          return true;
       }
@@ -116,20 +124,20 @@ namespace eosio { namespace chain {
 
          int _itr = db_api::get().db_find_i64(native, native, native, __account);
          if (_itr < 0) {
-            return false;
-         }
-
-         size_t buffer_size = 0;
-         const char* code = db_api::get().db_get_i64_exex(_itr, &buffer_size);
-         uint32_t version = *(uint32_t*)code;
-         if (version > itr->second->version) {
-             wlog("reloading native contract ${n} ${n2} ${n3}", ("n", ctx.act.account.to_string())("n2", version)("n3",itr->second->version));
-            _apply = my->load_native_contract(ctx.act.account.value);
-            if (!_apply) {
-               return false;
-            }
-         } else {
             _apply = itr->second->apply;
+         } else {
+            size_t buffer_size = 0;
+            const char* code = db_api::get().db_get_i64_exex(_itr, &buffer_size);
+            uint32_t version = *(uint32_t*)code;
+            if (version > itr->second->version) {
+                wlog("reloading native contract ${n} ${n2} ${n3}", ("n", ctx.act.account.to_string())("n2", version)("n3",itr->second->version));
+               _apply = my->load_native_contract(ctx.act.account.value);
+               if (!_apply) {
+                  return false;
+               }
+            } else {
+               _apply = itr->second->apply;
+            }
          }
       }
 

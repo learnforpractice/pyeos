@@ -10,8 +10,8 @@ add_library( vm_api_rpc SHARED
 #    cpp/rpceoslib.cpp
 )
 
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
+message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
+message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_FILE})
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(vm_api_rpc PRIVATE -DDEBUG)

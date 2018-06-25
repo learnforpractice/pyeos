@@ -2,11 +2,14 @@
 
 #include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/transaction_context.hpp>
-#include <fc/scoped_exit.hpp>
-
-#include <dlfcn.h>
 
 #include <eosio/chain/db_api.hpp>
+#include <appbase/platform.hpp>
+
+#include <fc/scoped_exit.hpp>
+#include <fc/ext_string.h>
+
+#include <dlfcn.h>
 
 using namespace fc;
 
@@ -43,7 +46,13 @@ namespace eosio { namespace chain {
       }
 
       fn_apply load_native_contract(uint64_t _account) {
+
+         if (!db_api::get().is_account(_account)) {
+            return nullptr;
+         }
+
          string contract_path;
+         uint32_t version = 0;
          uint64_t native = N(native);
          void *handle = nullptr;
          char _name[64];
@@ -52,32 +61,44 @@ namespace eosio { namespace chain {
 
          int itr = db_api::get().db_find_i64(native, native, native, __account);
          if (itr < 0) {
-            return nullptr;
-         }
-
-         size_t native_size = 0;
-         const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
-         uint32_t version = *(uint32_t*)code;
-
-         char native_path[64];
-         sprintf(native_path, "%s.%d",name(__account).to_string().c_str(), version);
-
-         wlog("loading native contract:\t ${n}", ("n", native_path));
-
-         struct stat _s;
-         if (stat(native_path, &_s) == 0) {
-            //
+            char _path[128];
+            ext_string s = name(_account).to_string();
+            s.replace(".", "_");
+            snprintf(_path, sizeof(_path), "../libs/lib%s_native%s", s.c_str(), DYLIB_SUFFIX);
+            handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+            if (!handle) {
+               snprintf(_path, sizeof(_path), "../libs/lib%s_natived%s", s.c_str(), DYLIB_SUFFIX);
+               handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+               if (!handle) {
+                  return nullptr;
+               }
+            }
          } else {
-            std::ofstream out(native_path, std::ios::binary | std::ios::out);
-            out.write(&code[4], native_size - 4);
-            out.close();
-         }
-         contract_path = native_path;
+            size_t native_size = 0;
+            const char* code = db_api::get().db_get_i64_exex(itr, &native_size);
+            version = *(uint32_t*)code;
 
-         handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-         if (!handle) {
-            return nullptr;
+            char native_path[64];
+            sprintf(native_path, "%s.%d",name(__account).to_string().c_str(), version);
+
+            wlog("loading native contract:\t ${n}", ("n", native_path));
+
+            struct stat _s;
+            if (stat(native_path, &_s) == 0) {
+               //
+            } else {
+               std::ofstream out(native_path, std::ios::binary | std::ios::out);
+               out.write(&code[4], native_size - 4);
+               out.close();
+            }
+            contract_path = native_path;
+
+            handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+            if (!handle) {
+               return nullptr;
+            }
          }
+
          register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 

@@ -7,8 +7,8 @@ add_library(vm_wasm SHARED vm_wasm.cpp
            wasm_eosio_injection.cpp
            vm_api.cpp) 
 
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
-message("++++++++++++++++++"${CMAKE_CURRENT_LIST_FILE})
+message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
+message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_FILE})
 
 #set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
 set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
