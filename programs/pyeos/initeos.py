@@ -51,8 +51,8 @@ plugin = eosio::history_api_plugin
 
 genesis = '''
 {
-  "initial_timestamp": "2018-03-02T12:00:00.000",
-  "initial_key": "EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr",
+  "initial_timestamp": "2018-06-08T08:08:08.888",
+  "initial_key": "EOS7EarnUhcyYqmdnPon8rm7mBCTnBoot6o7fE2WzjvEX2TdggbL3",
   "initial_configuration": {
     "max_block_net_usage": 1048576,
     "target_block_net_usage_pct": 1000,
@@ -61,9 +61,9 @@ genesis = '''
     "net_usage_leeway": 500,
     "context_free_discount_net_usage_num": 20,
     "context_free_discount_net_usage_den": 100,
-    "max_block_cpu_usage": 100000,
-    "target_block_cpu_usage_pct": 500,
-    "max_transaction_cpu_usage": 50000,
+    "max_block_cpu_usage": 200000,
+    "target_block_cpu_usage_pct": 1000,
+    "max_transaction_cpu_usage": 150000,
     "min_transaction_cpu_usage": 100,
     "max_transaction_lifetime": 3600,
     "deferred_trx_expiration_window": 600,
@@ -71,8 +71,7 @@ genesis = '''
     "max_inline_action_size": 4096,
     "max_inline_action_depth": 4,
     "max_authority_depth": 6
-  },
-  "initial_chain_id": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
 }
 '''
 
@@ -219,11 +218,12 @@ try:
     from rpctest import t as rt
     from simpleauction import t as st
     from lab import t as lt
-    from biosboot import t as bb
     
     from vote import t as vt2
     from native import t as nt
     from vmstore import t as vt
+    from biosboot import t as bb
+
 except Exception as e:
     traceback.print_exc()
 
@@ -286,6 +286,12 @@ def init():
     #load common libraries
 #    t.load_all()
 
+#{'peer': '185.253.188.1:19877', 'connecting': False, 'syncing': False, 'last_handshake': {'network_version': 1206, 'chain_id': 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906', 'node_id': '7bb4919c0ada83d3c58327df5dbd24eea3be107d6ddda9e0ddabce737a54a403', 'key': 'EOS8mTvPNb9Pwm94z4yrjC1pFetk3otHPuWDu7XFsp5ewmuFtQQDa', 'time': 1529892410318197237, 'token': 'f35be5448760792d74826de520f9265b83724c3cd90607c66de2d0369c68f6e6', 'sig': 'SIG_K1_KZCkqeFkNFZzs9wxQuXmwd5ajMsQhE9sm5a7iE7cXmrjLdFbDhUCsmAzWhyno9P8XMqG8PvjwcsCT1xipRqeW6hdMLVzW2', 'p2p_address': '0.0.0.0:9000 - 7bb4919', 'last_irreversible_block_num': 2489982, 'last_irreversible_block_id': '0025fe7e5ac6d86d4b0f67ba87f423ec1e4f6e748292c6dedc89d2bd8100d985', 'head_num': 2489982, 'head_id': '0025ffc7bc59caaa79cdf6d334806a63db7eb9c5b767df696d7e10d2dd45401e', 'os': 'linux', 'agent': 'EOSGen', 'generation': 1}}
+
+def cleanup_peers():
+    for n in net.connections():
+        if n['last_handshake']['network_version'] == 0:
+            net.disconnect(n['peer'])
 
 original_sigint_handler = signal.getsignal(signal.SIGINT)
 
