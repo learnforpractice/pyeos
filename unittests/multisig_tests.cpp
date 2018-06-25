@@ -334,7 +334,7 @@ BOOST_FIXTURE_TEST_CASE( propose_with_wrong_requested_auth, eosio_msig_tester ) 
 
 BOOST_FIXTURE_TEST_CASE( big_transaction, eosio_msig_tester ) try {
    vector<permission_level> perm = { { N(alice), config::active_name }, { N(bob), config::active_name } };
-   auto wasm = wast_to_wasm( exchange_wast );
+   auto wasm = _wast_to_wasm( exchange_wast );
 
    variant pretty_trx = fc::mutable_variant_object()
       ("expiration", "2020-01-01T00:30")
@@ -440,7 +440,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_all_approve, eosio_msig_tester )
 
    vector<permission_level> action_perm = {{N(eosio), config::active_name}};
 
-   auto wasm = wast_to_wasm( test_api_wast );
+   auto wasm = _wast_to_wasm( test_api_wast );
 
    variant pretty_trx = fc::mutable_variant_object()
       ("expiration", "2020-01-01T00:30")
@@ -551,7 +551,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_major_approve, eosio_msig_tester
 
    vector<permission_level> action_perm = {{N(eosio), config::active_name}};
 
-   auto wasm = wast_to_wasm( test_api_wast );
+   auto wasm = _wast_to_wasm( test_api_wast );
 
    variant pretty_trx = fc::mutable_variant_object()
       ("expiration", "2020-01-01T00:30")

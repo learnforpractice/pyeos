@@ -18,7 +18,7 @@ void test_types::types_size() {
 
    eosio_assert( sizeof(account_name) ==  8, "account_name size !=  8");
    eosio_assert( sizeof(table_name) ==  8, "table_name size !=  8");
-   eosio_assert( sizeof(time) ==  4, "time size !=  4");
+   eosio_assert( sizeof(_time) ==  4, "time size !=  4");
    eosio_assert( sizeof(eosio::key256) == 32, "key256 size != 32" );
 }
 

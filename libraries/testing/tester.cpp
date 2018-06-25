@@ -605,7 +605,7 @@ namespace eosio { namespace testing {
 
 
    void base_tester::set_code( account_name account, const char* wast, const private_key_type* signer  ) try {
-      set_code(account, wast_to_wasm(wast), signer);
+      set_code(account, _wast_to_wasm(wast), signer);
    } FC_CAPTURE_AND_RETHROW( (account) )
 
 

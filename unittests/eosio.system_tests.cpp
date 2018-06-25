@@ -1596,7 +1596,7 @@ BOOST_FIXTURE_TEST_CASE(producers_upgrade_system_contract, eosio_system_tester) 
 
    transaction trx;
    {
-      auto code = wast_to_wasm( eosio_system_wast2 );
+      auto code = _wast_to_wasm( eosio_system_wast2 );
       variant pretty_trx = fc::mutable_variant_object()
          ("expiration", "2020-01-01T00:30")
          ("ref_block_num", 2)
