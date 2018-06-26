@@ -9,7 +9,7 @@ add_wast_executable(TARGET eosio.system
 
 add_library(eosio_native SHARED eosio.system.cpp) #exchange_state.cpp
 
-target_link_libraries(eosio_native PRIVATE eosiolib_native)
+target_link_libraries(eosio_native PRIVATE eosiolib_native softfloat)
 
 target_include_directories(eosio_native PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
