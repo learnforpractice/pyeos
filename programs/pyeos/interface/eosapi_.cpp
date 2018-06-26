@@ -675,6 +675,16 @@ void wast2wasm_(string& wast, string& result) {
    }
 }
 
+void wasm2wast_(string& wasm, string& result) {
+   try {
+      auto wast = _wasm_to_wast((uint8_t*)wasm.c_str(), wasm.size());
+      result = string((char *)wast.data(), wast.size());
+   } catch (...) {
+      elog("wast_to_wasm failed");
+   }
+}
+
+
 bool is_replay_() {
    return get_chain_plugin().is_replay();
 }

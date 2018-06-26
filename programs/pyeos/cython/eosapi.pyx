@@ -77,6 +77,8 @@ cdef extern from "eosapi_.hpp":
     int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size)
 
     void wast2wasm_( string& wast ,string& result)
+    void wasm2wast_(string& wasm, string& result)
+
     bool is_replay_()
 
     void pack_bytes_(string& _in, string& out)
@@ -121,7 +123,7 @@ cdef extern from "eosapi_.hpp":
     void zlib_decompress_data_(const string& _int, string& out);
 
     bool debug_mode_()
-
+    void start_eos_()
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -244,9 +246,10 @@ def transfer(_from, _to, _amount, _memo=''):
     return False
 
 def create_account(creator, newaccount, owner_key, active_key, sign=True):
-    result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
-    if result:
-        return JsonStruct(result[0])
+    with producer:
+        result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
+        if result:
+            return JsonStruct(result[0])
     return None
 
 def create_key():
@@ -344,6 +347,7 @@ class Producer(object):
         produce_block_end_()
         time.sleep(0.5)
 
+producer = Producer()
 
 def mp_compile(py_file):
     '''Compile Micropython source to binary code.
@@ -395,6 +399,11 @@ def wast2wasm( string& wast ):
     wast2wasm_(wast, wasm)
     return <bytes>wasm
 
+def wasm2wast( string& wasm ):
+    cdef string wast
+    wast2wasm_(wasm, wast)
+    return <bytes>wast
+
 def is_replay():
     ''' check if Eos is started with --replay
 
@@ -435,7 +444,7 @@ def unpack_bytes(string& _in):
     unpack_bytes_(_in, out)
     return <bytes>out
 
-def pack_setabi(string& abiPath, uint64_t account):
+def pack_setabi(string& abiPath, account):
     '''pack setabi struct
 
     Args:
@@ -447,10 +456,12 @@ def pack_setabi(string& abiPath, uint64_t account):
     '''
 
     cdef string out
+    if isinstance(account, str):
+        account = N(account)
     fc_pack_setabi_(abiPath, account, out)
     return <bytes>out
 
-def pack_setconfig(string& configPath, uint64_t account):
+def pack_setconfig(string& configPath, account):
     '''pack setconfig struct
 
     Args:
@@ -460,6 +471,8 @@ def pack_setconfig(string& configPath, uint64_t account):
     Returns:
         bytes: packed set config struct.
     '''
+    if isinstance(account, str):
+        account = N(account)
 
     cdef string out
     fc_pack_setconfig_(configPath, account, out)
@@ -564,13 +577,13 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
         v = vector[action]()
         for a in aa:
             act = action()
-            act.account = a[0]
-            act.name = a[1]
+            act.account = N(a[0])
+            act.name = N(a[1])
             pers = vector[permission_level]()
             for auth in a[2]:
                 per = permission_level()
-                per.actor = auth[0]
-                per.permission = auth[1]
+                per.actor = N(auth[0])
+                per.permission = N(auth[1])
                 pers.push_back(per)
             act.authorization = pers
             act.data.resize(0)
@@ -587,7 +600,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
     else:
         return push_transactions_(vv, sign, skip_flag, _async, compress)
 
-def push_action(string& contract, string& action, args, permissions: Dict, sign=True):
+def push_action(contract, action, args, permissions: Dict, sign=True):
     '''Publishing message to blockchain
 
     Args:
@@ -602,16 +615,14 @@ def push_action(string& contract, string& action, args, permissions: Dict, sign=
         JsonStruct|None: 
     '''
     assert type(args) in (str, dict, bytes)
-    _contract = s2n(contract)
-    _action = s2n(action)
 
     if isinstance(args, dict):
-        args = pack_args(_contract, _action, args)
+        args = pack_args(contract, action, args)
 
     pers = []
     for per in permissions:
-        pers.append([N(per), N(permissions[per])])
-    act = [_contract, _action, pers, args]
+        pers.append([per, permissions[per]])
+    act = [contract, action, pers, args]
     outputs, cost_time = push_transactions([[act]], sign)
     if outputs:
         if outputs[0]['except']:
@@ -623,10 +634,10 @@ def push_action(string& contract, string& action, args, permissions: Dict, sign=
 def push_actions(actions, sign=True):
     _actions = []
     for act in actions:
-        _act = [N(act[0]), N(act[1])]
+        _act = [act[0], act[1]]
         pers = []
         for per in act[2]:
-            pers.append([N(per), N(act[2][per])])
+            pers.append([per, act[2][per]])
         _act.append(pers)
         args = act[3]
         if isinstance(args, dict):
@@ -649,13 +660,13 @@ def push_evm_action(eth_address, args, permissions: Dict, sign=True):
     for key in permissions:
         value = permissions[key]
         key = convert_from_eth_address(key)
-        pers.append([N(key), N(value)])
+        pers.append([key, value])
 
     if args[:2] == '0x':
         args = bytes.fromhex(args[2:])
     else:
         args = bytes.fromhex(args)
-    act = [s2n(contract_), N('call'), pers, args]
+    act = [contract_, 'call', pers, args]
     outputs, cost_time = push_transactions([[act]], sign)
     if outputs:
         return (outputs[0], cost_time)
@@ -675,8 +686,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     Returns:
         JsonStruct|None: 
     '''
-    account = N(account)
-    code = struct.pack('QBB', account, vmtype, 0)
+    code = struct.pack('QBB', N(account), vmtype, 0)
 
     if vmtype == 0:
         with open(src_file, 'rb') as f:
@@ -689,10 +699,12 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     else:
         raise Exception("unknown code")
 
-    setcode = [N('eosio'), N('setcode'), [[account, N('active')]], code]
+    setcode = ['eosio', 'setcode', [[account, 'active']], code]
 
     setabi = pack_setabi(abi_file, account)
-    setabi = [N('eosio'), N('setabi'), [[account, N('active')]], setabi]
+    
+    
+    setabi = ['eosio', 'setabi', [[account, 'active']], setabi]
 
     ret, cost = push_transactions([[setcode, setabi]], sign, compress = True)
     if ret:
