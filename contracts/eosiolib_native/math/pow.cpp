@@ -88,6 +88,7 @@ cp_l    = -7.02846165095275826516e-09, /* 0xBE3E2FE0, 0x145B01F5 =tail of cp_h*/
 ivln2   =  1.44269504088896338700e+00, /* 0x3FF71547, 0x652B82FE =1/ln2 */
 ivln2_h =  1.44269502162933349609e+00, /* 0x3FF71547, 0x60000000 =24b 1/ln2*/
 ivln2_l =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
+
 #include "../double.hpp"
 
 Double sqrt(Double x);
@@ -98,7 +99,7 @@ Double scalbn(Double x, int n);
 
 Double std::pow(Double x, Double y)
 {
-   printf("+++++++++++++++++++++++++++++pow %p %p\n", x._v.v, y._v.v);
+   printf("+++++++++++++++++++++++++++++pow %f %f\n", x._v.d, y._v.d);
    Double z,ax,z_h,z_l,p_h,p_l;
    Double y1,t1,t2,r,s,t,u,v,w;
    int32_t i,j,k,yisint,n;
@@ -276,7 +277,7 @@ Double std::pow(Double x, Double y)
       z_h = cp_h*p_h;        /* cp_h+cp_l = 2/(3*log2) */
       z_l = cp_l*p_h+p_l*cp + dp_l[k];
       /* log2(ax) = (ss+..)*2/(3*log2) = n + dp_h + z_h + z_l */
-      t = (Double)n;
+      t = n;
       t1 = ((z_h + z_l) + dp_h[k]) + t;
       SET_LOW_WORD(t1, 0);
       t2 = z_l - (((t1 - t) - dp_h[k]) - z_h);

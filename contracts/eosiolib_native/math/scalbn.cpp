@@ -28,7 +28,7 @@ Double scalbn(Double x, int n)
             n = -1022;
       }
    }
-   u.i = (uint64_t)(0x3ff+n)<<52;
+   u.f = (double)((0x3ff+n)<<52);
    x = y * u.f;
    return x;
 }

@@ -14,6 +14,7 @@
 #define _LIBM_H
 
 #include <stdint.h>
+#include <float.h>
 
 #define FORCE_EVAL(x) do {                        \
    if (sizeof(x) == sizeof(float)) {         \
@@ -32,7 +33,7 @@
 #define EXTRACT_WORDS(hi,lo,d)                    \
 do {                                              \
   union {double f; uint64_t i;} __u;              \
-  __u.i = (d._v.v);                                    \
+  __u.i = (d._v.i);                                    \
   (hi) = __u.i >> 32;                             \
   (lo) = (uint32_t)__u.i;                         \
 } while (0)

@@ -12,136 +12,229 @@
 #include <softfloat.hpp>
 
 static float64_t to_softfloat64( double d ) {
-   float64_t f;
-   f.v = (uint64_t)d;
-   return f;
+   return *(float64_t*)&d;
+}
+
+static double from_softfloat64( float64_t d ) {
+   return *(double*)&d;
 }
 
 class Double
 {
 public:
-    float64_t _v;
-public:
-    Double() : _v(){
+   union {
+      float64_t f;
+      uint64_t i;
+      double d;
+   } _v;
 
+public:
+    Double() {
+       _v.i = 0;
     }
 
-     Double(const float64_t& v) : _v(to_softfloat64(0.0)){
+    Double(int32_t& n) {
+       _v.f = i32_to_f64(n);
+    }
 
+    Double(uint32_t& n) {
+       _v.f = ui32_to_f64(n);
+    }
+
+    Double(int64_t& n) {
+       _v.f = i64_to_f64(n);
+    }
+
+    Double(uint64_t& n) {
+       _v.f = ui64_to_f64(n);
+    }
+
+    Double(const float64_t& v) {
+        _v.f = v;
      }
 
-     Double(const double& v) : _v(to_softfloat64(v)){
-
+     Double(const double& v) {
+        _v.d = v;
      }
 
-     Double(const Double& v) : _v(v._v){
-
+     Double(const Double& v) {
+        _v = v._v;
      }
 
-     Double& operator= (const double& __v) {
-        _v = to_softfloat64(__v);
+     Double& operator= (const double& v) {
+        _v.d = v;
         return *this;
      }
 
-     Double& operator= (const Double& __v) {
-        _v = __v._v;
+     Double& operator= (const Double& v) {
+        if (this == &v) {
+           return *this;
+        }
+        _v = v._v;
         return *this;
      }
 
      Double operator- () {
-       float64_t __v = f64_sub(to_softfloat64(0.0), _v);
+       float64_t __v = f64_sub(to_softfloat64(0.0), _v.f);
        return Double(__v);
     }
 
     Double operator-(const double& b) {
-       float64_t __v = f64_sub(to_softfloat64(0.0), to_softfloat64(b));
+       float64_t __v = f64_sub(_v.f, to_softfloat64(b));
        return Double(__v);
     }
 
     Double operator-(const Double& b) {
-       float64_t __v = f64_sub(_v, b._v);
+       float64_t __v = f64_sub(_v.f, b._v.f);
        return Double(__v);
     }
 
-     Double operator+(const double& b) {
-        float64_t __v = f64_add(_v, to_softfloat64(b));
-        return Double(__v);
-     }
+    Double operator+(const double& b) {
+       float64_t __v = f64_add(_v.f, to_softfloat64(b));
+       return Double(__v);
+    }
 
     Double operator+(const Double& b) {
-       float64_t __v = f64_add(_v, b._v);
+       float64_t __v = f64_add(_v.f, b._v.f);
        return Double(__v);
     }
 
     Double operator* (const double& b) {
-       float64_t __v = f64_mul(_v, to_softfloat64(b));
+       float64_t __v = f64_mul(_v.f, to_softfloat64(b));
        return Double(__v);
     }
 
     Double operator* (const Double& b) {
-       float64_t __v = f64_mul(_v, b._v);
+       float64_t __v = f64_mul(_v.f, b._v.f);
        return Double(__v);
     }
 
     Double operator/ (const double& b) {
-       float64_t __v = f64_div(_v, to_softfloat64(b));
+       float64_t __v = f64_div(_v.f, to_softfloat64(b));
        return Double(__v);
     }
 
     Double operator/ (const Double& b) {
-       float64_t __v = f64_div(_v, b._v);
+       float64_t __v = f64_div(_v.f, b._v.f);
        return Double(__v);
     }
 
-     Double& operator+=(const double& __v) {
-        _v = f64_add(_v, to_softfloat64(__v) );
+     Double& operator+=(const double& v) {
+        _v.f = f64_add(_v.f, to_softfloat64(v) );
         return *this;
      }
 
-     Double& operator-=(const double& __v) {
-        _v = f64_sub(_v, to_softfloat64(__v) );
+     Double& operator+=(const Double& v)
+     {
+        _v.f = f64_add(_v.f, v._v.f );
+         return *this;
+     }
+
+     Double& operator-=(const double& v) {
+        _v.f = f64_sub(_v.f, to_softfloat64(v) );
         return *this;
      }
 
-     Double& operator*=(const double& __v) {
-        _v = f64_mul(_v, to_softfloat64(__v) );
+     Double& operator*=(const double& v) {
+        _v.f = f64_mul(_v.f, to_softfloat64(v) );
         return *this;
      }
 
-     Double& operator+=(const Double& __v)
+     Double& operator-=(const Double& v)
      {
-        _v = f64_add(_v, __v._v );
+        _v.f = f64_sub(_v.f, v._v.f );
          return *this;
      }
 
-     Double& operator-=(const Double& __v)
+     Double& operator*=(const Double& v)
      {
-        _v = f64_sub(_v, __v._v );
+        _v.f = f64_mul(_v.f, v._v.f);
          return *this;
      }
 
-     Double& operator*=(const Double& __v)
-     {
-        _v = f64_mul(_v, __v._v );
-         return *this;
-     }
-
-     Double& operator/=(const double& __v) {
-        _v = f64_div(_v, to_softfloat64(__v) );
+     Double& operator/=(const double& v) {
+        _v.f = f64_div(_v.f, to_softfloat64(v) );
         return *this;
      }
 
-     Double& operator/=(const Double& __v)
+     Double& operator/=(const Double& v)
      {
-        _v = f64_div(_v, __v._v );
+        _v.f = f64_div(_v.f, v._v.f);
          return *this;
+     }
+
+
+     bool operator>(const double& v) {
+        return _v.d > v;
+     }
+
+     bool operator>(const Double& v)
+     {
+        return _v.d > v._v.d;
+     }
+
+     bool operator>=(const double& v) {
+        return _v.d >= v;
+     }
+
+     bool operator>=(const Double& v)
+     {
+        return _v.d >= v._v.d;
+     }
+
+
+     bool operator< (const double& v) {
+        return _v.d < v;
+     }
+
+     bool operator < (const Double& v)
+     {
+        return _v.d < v._v.d;
+     }
+
+     bool operator<= (const double& v) {
+        return _v.d <= v;
+     }
+
+     bool operator <= (const Double& v)
+     {
+        return _v.d <= v._v.d;
      }
 
      operator int64_t()const {
-        return int64_t(_v.v);
+        return int64_t(_v.d);
+     }
+
+     operator double()const {
+        return _v.d;
      }
 
 };
+
+inline Double operator*(int val, Double const& x) {
+   return Double(val)* x;
+}
+
+inline Double operator*(double val, Double const& x) {
+   return Double(val)* x;
+}
+
+inline Double operator/(int val, Double const& x) {
+   return Double(val) / x;
+}
+
+inline Double operator/(double val, Double const& x) {
+   return Double(val) / x;
+}
+
+inline Double operator-(double val, Double const& x) {
+   return Double(val) - x;
+}
+
+inline Double operator+(double val, Double const& x) {
+   return Double(val) + x;
+}
+
 
 namespace std {
    Double pow(Double base,Double power);
