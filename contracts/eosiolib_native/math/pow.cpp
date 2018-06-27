@@ -99,7 +99,6 @@ Double scalbn(Double x, int n);
 
 Double std::pow(Double x, Double y)
 {
-   printf("+++++++++++++++++++++++++++++pow %f %f\n", x._v.d, y._v.d);
    Double z,ax,z_h,z_l,p_h,p_l;
    Double y1,t1,t2,r,s,t,u,v,w;
    int32_t i,j,k,yisint,n;

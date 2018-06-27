@@ -29,32 +29,61 @@ public:
        _v.i = 0;
     }
 
-    Double(int32_t& n) {
+    Double(const int32_t& n) {
        _v.f = i32_to_f64(n);
     }
 
-    Double(uint32_t& n) {
+    Double(const uint32_t& n) {
        _v.f = ui32_to_f64(n);
     }
 
-    Double(int64_t& n) {
+    Double(const int64_t& n) {
        _v.f = i64_to_f64(n);
     }
 
-    Double(uint64_t& n) {
+    Double(const uint64_t& n) {
        _v.f = ui64_to_f64(n);
     }
 
     Double(const float64_t& v) {
         _v.f = v;
-     }
+    }
 
-     Double(const double& v) {
+    Double(const float& v) {
+       _v.f = f32_to_f64(*(float32_t*)&v);
+    }
+
+    Double(const double& v) {
         _v.d = v;
      }
 
      Double(const Double& v) {
         _v = v._v;
+     }
+
+     Double& operator= (const int32_t& n) {
+        _v.f = i32_to_f64(n);
+        return *this;
+     }
+
+     Double& operator= (const uint32_t& n) {
+        _v.f = ui32_to_f64(n);
+        return *this;
+     }
+
+     Double& operator= (const int64_t& n) {
+        _v.f = i64_to_f64(n);
+        return *this;
+     }
+
+     Double& operator= (const uint64_t& n) {
+        _v.f = ui64_to_f64(n);
+        return *this;
+     }
+
+     Double& operator= (const float& v) {
+        _v.f = f32_to_f64(*(float32_t*)&v);
+        return *this;
      }
 
      Double& operator= (const double& v) {
@@ -73,7 +102,7 @@ public:
      Double operator- () {
        float64_t __v = f64_sub(to_softfloat64(0.0), _v.f);
        return Double(__v);
-    }
+     }
 
     Double operator-(const double& b) {
        float64_t __v = f64_sub(_v.f, to_softfloat64(b));
