@@ -1,15 +1,26 @@
 #include <exchange/exchange_state.hpp>
 
+extern "C" uint64_t wasm_call(const char*func, uint64_t* args , int argc);
+
+namespace std {
+   double _pow(double base, double power) {
+      uint64_t args[2];
+      args[0] = *(uint64_t*)&base;
+      args[1] = *(uint64_t*)&power;
+      uint64_t ret = wasm_call("mypow", args, 2);
+      return *(double*)&ret;
+   }
+}
+
 namespace eosiosystem {
    asset exchange_state::convert_to_exchange( connector& c, asset in ) {
-
       real_type R(supply.amount);
       real_type C(c.balance.amount+in.amount);
       real_type F(c.weight/1000.0);
       real_type T(in.amount);
       real_type ONE(1.0);
 
-      real_type E = -R * (ONE - std::pow( ONE + T / C, F) );
+      real_type E = -R * (ONE - std::_pow( ONE + T / C, F) );
       //print( "E: ", E, "\n");
       int64_t issued = int64_t(E);
 
@@ -24,7 +35,7 @@ namespace eosiosystem {
 
       real_type R(supply.amount - in.amount);
       real_type C(c.balance.amount);
-      real_type F(1000.0/c.weight);
+      real_type F(Double(1000.0)/Double(c.weight));
       real_type E(in.amount);
       real_type ONE(1.0);
 
@@ -35,7 +46,7 @@ namespace eosiosystem {
      // -1 can be expressed as std::expm1(n * std::log1p(x)). 
      // real_type T = C * std::expm1( F * std::log1p(E/R) );
       
-      real_type T = C * (std::pow( ONE + E/R, F) - ONE);
+      real_type T = C * (std::_pow( ONE + E/R, F) - ONE);
       //print( "T: ", T, "\n");
       int64_t out = int64_t(T);
 

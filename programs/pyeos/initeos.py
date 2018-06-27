@@ -344,12 +344,17 @@ def peers_cleanup():
 
 pc = peers_connect
 pcu = peers_cleanup
-
+pbs = produce_block_start
+pbe = produce_block_end
 
 original_sigint_handler = signal.getsignal(signal.SIGINT)
 
 def info():
     eosapi.get_info()
+
+def wd():
+    print('disable native contract')
+    debug.wasm_enable_native_contract(0)
 
 def start_console():
     init_wallet()

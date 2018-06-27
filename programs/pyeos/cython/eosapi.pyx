@@ -401,7 +401,7 @@ def wast2wasm( string& wast ):
 
 def wasm2wast( string& wasm ):
     cdef string wast
-    wast2wasm_(wasm, wast)
+    wasm2wast_(wasm, wast)
     return <bytes>wast
 
 def is_replay():

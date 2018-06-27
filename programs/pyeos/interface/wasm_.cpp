@@ -4,7 +4,7 @@
 #include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/micropython_interface.hpp>
 
-#include <eosio/chain/webassembly/wavm.hpp>
+//#include <eosio/chain/webassembly/wavm.hpp>
 #include <eosio/chain/webassembly/binaryen.hpp>
 #include <eosio/chain/webassembly/runtime_interface.hpp>
 #include <eosio/chain/wasm_eosio_injection.hpp>

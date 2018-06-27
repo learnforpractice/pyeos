@@ -15,10 +15,6 @@ static float64_t to_softfloat64( double d ) {
    return *(float64_t*)&d;
 }
 
-static double from_softfloat64( float64_t d ) {
-   return *(double*)&d;
-}
-
 class Double
 {
 public:

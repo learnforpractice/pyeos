@@ -1,4 +1,4 @@
-add_library(eosiolib_native STATIC 
+add_library(eosiolib_native SHARED 
 eosiolib.cpp
 action.cpp
 chain.cpp
@@ -10,9 +10,16 @@ print.cpp
 privileged.cpp
 system.cpp
 transaction.cpp
+
+math/fabs.cpp
+math/pow.cpp
+math/sqrt.cpp
+math/scalbn.cpp
+
+double.hpp
 ) #exchange_state.cpp
 
-target_link_libraries( eosiolib_native PRIVATE )
+target_link_libraries( eosiolib_native PUBLIC softfloat)
 
 target_include_directories(eosiolib_native PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
@@ -28,3 +35,7 @@ target_include_directories(eosiolib_native PRIVATE ${Boost_INCLUDE_DIR}
 
 )
 
+add_executable ( st test/main.cpp )
+target_link_libraries( st PUBLIC softfloat)
+
+target_include_directories( st PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/source/include" "${CMAKE_CURRENT_SOURCE_DIR}/source/8086-SSE" "${CMAKE_CURRENT_SOURCE_DIR}/build/Linux-x86_64-GCC" )
