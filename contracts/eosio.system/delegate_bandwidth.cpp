@@ -108,21 +108,16 @@ namespace eosiosystem {
       eosio_assert( quant.amount > 0, "must purchase a positive amount" );
 
       auto fee = quant;
-      fee.amount = ( fee.amount + 199 ) / 200; /// .5% fee (round up)
-      // fee.amount cannot be 0 since that is only possible if quant.amount is 0 which is not allowed by the assert above.
-      // If quant.amount == 1, then fee.amount == 1,
-      // otherwise if quant.amount > 1, then 0 < fee.amount < quant.amount.
+      fee.amount /= 200; /// .5% fee
       auto quant_after_fee = quant;
       quant_after_fee.amount -= fee.amount;
-      // quant_after_fee.amount should be > 0 if quant.amount > 1.
-      // If quant.amount == 1, then quant_after_fee.amount == 0 and the next inline transfer will fail causing the buyram action to fail.
 
       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {payer,N(active)},
-         std::make_tuple( payer, N(eosio.ram), quant_after_fee, std::string("buy ram")) );
+         { payer, N(eosio.ram), quant_after_fee, std::string("buy ram") } );
 
       if( fee.amount > 0 ) {
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {payer,N(active)},
-                                                       std::make_tuple( payer, N(eosio.ramfee), fee, std::string("ram fee") ) );
+                                                       { payer, N(eosio.ramfee), fee, std::string("ram fee") } );
       }
 
       int64_t bytes_out;
@@ -186,11 +181,11 @@ namespace eosiosystem {
       set_resource_limits( res_itr->owner, res_itr->ram_bytes, res_itr->net_weight.amount, res_itr->cpu_weight.amount );
 
       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.ram),N(active)},
-                                                       std::make_tuple( N(eosio.ram), account, asset(tokens_out), std::string("sell ram") ) );
+                                                       { N(eosio.ram), account, asset(tokens_out), std::string("sell ram") } );
       auto fee = tokens_out.amount / 200;
       if( fee > 0 ) {
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {account,N(active)},
-            std::make_tuple( account, N(eosio.ramfee), asset(fee), std::string("sell ram fee") ) );
+            { account, N(eosio.ramfee), asset(fee), std::string("sell ram fee") } );
       }
    }
 
@@ -322,8 +317,7 @@ namespace eosiosystem {
             eosio::transaction out;
             out.actions.emplace_back( permission_level{ from, N(active) }, _self, N(refund), from );
             out.delay_sec = refund_delay;
-            cancel_deferred( from ); // TODO: Remove this line when replacing deferred trxs is fixed
-            out.send( from, from, true );
+            out.send( from, receiver, true );
          } else {
             cancel_deferred( from );
          }
@@ -331,7 +325,7 @@ namespace eosiosystem {
          auto transfer_amount = net_balance + cpu_balance;
          if ( asset(0) < transfer_amount ) {
             INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {source_stake_from, N(active)},
-               std::make_tuple( source_stake_from, N(eosio.stake), asset(transfer_amount), std::string("stake bandwidth") ) );
+               { source_stake_from, N(eosio.stake), asset(transfer_amount), std::string("stake bandwidth") } );
          }
       }
 
@@ -396,7 +390,7 @@ namespace eosiosystem {
       // consecutive missed blocks.
 
       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.stake),N(active)},
-                                                    std::make_tuple( N(eosio.stake), req->owner, req->net_amount + req->cpu_amount, std::string("unstake") ) );
+                                                    { N(eosio.stake), req->owner, req->net_amount + req->cpu_amount, std::string("unstake") } );
 
       refunds_tbl.erase( req );
    }

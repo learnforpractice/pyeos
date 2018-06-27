@@ -90,16 +90,16 @@ namespace eosiosystem {
          auto to_per_vote_pay    = to_producers - to_per_block_pay;
 
          INLINE_ACTION_SENDER(eosio::token, issue)( N(eosio.token), {{N(eosio),N(active)}},
-                                                    std::make_tuple(N(eosio), asset(new_tokens), std::string("issue tokens for producer pay and savings")) );
+                                                    {N(eosio), asset(new_tokens), std::string("issue tokens for producer pay and savings")} );
 
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio),N(active)},
-                                                       std::make_tuple(N(eosio), N(eosio.saving), asset(to_savings), "unallocated inflation") );
+                                                       { N(eosio), N(eosio.saving), asset(to_savings), "unallocated inflation" } );
 
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio),N(active)},
-                                                       std::make_tuple(N(eosio), N(eosio.bpay), asset(to_per_block_pay), "fund per-block bucket" ) );
+                                                       { N(eosio), N(eosio.bpay), asset(to_per_block_pay), "fund per-block bucket" } );
 
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio),N(active)},
-                                                       std::make_tuple(N(eosio), N(eosio.vpay), asset(to_per_vote_pay), "fund per-vote bucket" ) );
+                                                       { N(eosio), N(eosio.vpay), asset(to_per_vote_pay), "fund per-vote bucket" } );
 
          _gstate.pervote_bucket  += to_per_vote_pay;
          _gstate.perblock_bucket += to_per_block_pay;
@@ -129,11 +129,11 @@ namespace eosiosystem {
 
       if( producer_per_block_pay > 0 ) {
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.bpay),N(active)},
-                                                       std::make_tuple(N(eosio.bpay), owner, asset(producer_per_block_pay), std::string("producer block pay")) );
+                                                       { N(eosio.bpay), owner, asset(producer_per_block_pay), std::string("producer block pay") } );
       }
       if( producer_per_vote_pay > 0 ) {
          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.vpay),N(active)},
-                                                       std::make_tuple(N(eosio.vpay), owner, asset(producer_per_vote_pay), std::string("producer vote pay") ) );
+                                                       { N(eosio.vpay), owner, asset(producer_per_vote_pay), std::string("producer vote pay") } );
       }
    }
 
