@@ -42,6 +42,8 @@ public:
    struct vm_py_api* get_py_vm_api();
    void *get_eth_vm_api();
 
+   uint64_t wasm_call(const string& func, vector<uint64_t> args);
+
 private:
    vm_manager();
    map<int, std::unique_ptr<vm_calls>> vm_map;

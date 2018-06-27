@@ -34,6 +34,10 @@ namespace eosio { namespace chain {
       return 0;
    }
 
+   uint64_t wasm_interface::call(string& func, vector<uint64_t>& args) {
+      return my->get_instantiated_module()->call(func, args);
+   }
+
    int wasm_interface::apply( uint64_t receiver, uint64_t account, uint64_t act ) {
       try {
          my->get_instantiated_module(receiver)->apply(receiver, account, act);
@@ -55,5 +59,14 @@ int wasm_setcode(uint64_t account) {
 
 int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return wasm_interface::get().apply(receiver, account, act);
+}
+
+uint64_t _wasm_call(const char* act, uint64_t* args, int argc) {
+   vector<uint64_t> v;
+   for (int i=0;i<argc;i++) {
+      v.push_back(args[i]);
+   }
+   string _act = string(act);
+   return wasm_interface::get().call(_act, v);
 }
 

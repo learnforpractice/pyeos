@@ -31,3 +31,8 @@ uint32_t  now() {
    return (uint32_t)( current_time() / 1000000 );
 }
 
+uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
+   printf("++++++++wasm_call: %s\n", func);
+   return get_vm_api()->wasm_call(func, args , argc);
+}
+

@@ -31,6 +31,7 @@
 #include <dlfcn.h>
 
 #include <eosio/chain/db_api.hpp>
+#include <vm_manager.hpp>
 
 namespace eosio {
 namespace chain {
@@ -297,7 +298,9 @@ static struct vm_api _vm_api = {
    .uint64_to_string = uint64_to_string_,
    .string_to_symbol = string_to_symbol_c,
    .resume_billing_timer = resume_billing_timer,
-   .pause_billing_timer = pause_billing_timer
+   .pause_billing_timer = pause_billing_timer,
+
+   .wasm_call = wasm_call,
 
 };
 

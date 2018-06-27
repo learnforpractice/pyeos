@@ -57,6 +57,7 @@ namespace eosio { namespace chain {
          ~wasm_interface();
 
          int setcode(uint64_t account);
+         uint64_t call(string& func, vector<uint64_t>& args );
          //Calls apply or error on a given code
          int apply(uint64_t receiver, uint64_t account, uint64_t act);
          bool init();

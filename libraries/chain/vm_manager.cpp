@@ -32,6 +32,7 @@ namespace chain {
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
+typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 
 static vector<char> print_buffer;
 static void print(const char * str, size_t len) {
@@ -432,6 +433,23 @@ struct vm_wasm_api* vm_manager::get_wasm_vm_api() {
 
    struct vm_wasm_api* api = _get_wasm_vm_api();
    return api;
+}
+
+uint64_t vm_manager::wasm_call(const string& func, vector<uint64_t> args) {
+   auto itr = vm_map.find(0);
+   if (itr == vm_map.end()) {
+      return -1;
+   }
+   uint64_t _args[args.size()];
+   for (int i=0;i<args.size();i++) {
+      _args[i] = args[i];
+   }
+   fn_wasm_call _wasm_call = (fn_wasm_call)dlsym(itr->second->handle, "call");
+   if (_wasm_call == nullptr) {
+      return -1;
+   }
+
+   return _wasm_call(func.c_str(), _args, args.size());
 }
 
 namespace eosio { namespace chain {

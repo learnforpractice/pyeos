@@ -57,6 +57,10 @@ int apply(uint64_t receiver, uint64_t account, uint64_t act) {
    wasm_apply(receiver, account, act);
    return 0;
 }
+uint64_t _wasm_call(const char* act, uint64_t* args, int argc);
+uint64_t call(const char* act, uint64_t* args, int argc) {
+   return _wasm_call(act, args, argc);
+}
 
 void resume_billing_timer() {
    get_vm_api()->resume_billing_timer();

@@ -202,6 +202,10 @@ struct vm_api {
 
    void (*resume_billing_timer)();
    void (*pause_billing_timer)();
+
+   uint64_t (*wasm_call)(const char*func, uint64_t* args , int argc);
+
+
    char reserved[sizeof(char*)*128]; //for forward compatibility
 
 
@@ -217,6 +221,8 @@ struct vm_api* get_vm_api();
 
 int setcode(uint64_t account);
 int apply(uint64_t receiver, uint64_t account, uint64_t act);
+uint64_t call(const char* act, uint64_t* args, int argc);
+uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 
 #ifdef __cplusplus
 }
