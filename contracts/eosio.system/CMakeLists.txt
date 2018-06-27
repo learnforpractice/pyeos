@@ -20,3 +20,5 @@ target_include_directories(eosio_native PRIVATE ${Boost_INCLUDE_DIR}
      PRIVATE ${CMAKE_SOURCE_DIR}/contracts
 )
 
+add_subdirectory(v1)
+
