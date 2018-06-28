@@ -1,12 +1,13 @@
 #pragma once
 
 #include <eosiolib/asset.hpp>
+#include <eosiolib_native/double.hpp>
 
 namespace eosiosystem {
    using eosio::asset;
    using eosio::symbol_type;
 
-   typedef double real_type;
+   typedef Double real_type;
 
    /**
     *  Uses Bancor math to create a 50/50 relay between two asset types. The state of the

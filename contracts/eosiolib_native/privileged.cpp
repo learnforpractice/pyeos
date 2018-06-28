@@ -3,10 +3,13 @@
 
 #include "vm_api.h"
 
+extern "C" int is_feature_active( int64_t feature_name ) {
+   return false;
+}
+
 void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    get_vm_api()->set_resource_limits( account, ram_bytes, net_weight, cpu_weight );
 }
-
 
 int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size ) {
    return get_vm_api()->set_proposed_producers( producer_data, producer_data_size );
