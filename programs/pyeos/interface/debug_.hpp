@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <micropython/mpeoslib.h>
+#include <Python.h>
 
 using namespace std;
 
@@ -36,3 +37,5 @@ void app_set_debug_mode_(bool d);
 uint64_t wasm_test_action_(const char* cls, const char* method);
 
 void block_log_test_(string& path, int start_block, int end_block);
+int block_on_action(int block, PyObject* trx);
+PyObject* block_log_get_block_(string& path, int block_num);

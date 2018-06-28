@@ -39,6 +39,7 @@ cdef extern from "../interface/debug_.hpp":
 
     uint64_t wasm_test_action_(const char* cls, const char* method)
     void block_log_test_(string& path, int start_block, int end_block)
+    object block_log_get_block_(string& path, int block_num);
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -117,11 +118,11 @@ def wasm_test_action(const char* cls, const char* method):
     return wasm_test_action_(cls, method)
 
 callback = None
-cdef extern int block_on_action(int block, string action):
+cdef extern int block_on_action(int block, object trx):
     global callback
     if callback:
         try:
-            callback(block, <bytes>action)
+            callback(block, trx)
         except:
             traceback.print_exc()
             return 0
@@ -131,4 +132,7 @@ def  block_log_test(string& path, start, end, cb):
     global callback
     callback = cb
     block_log_test_(path, start, end)
+
+def block_log_get_block(string& path, int block_num):
+    return block_log_get_block_(path, block_num)
 

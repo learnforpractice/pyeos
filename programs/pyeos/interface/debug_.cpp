@@ -8,7 +8,7 @@
 
 #include <fc/reflect/variant.hpp>
 #include "json.hpp"
-#include <Python.h>
+#include "pyobject.hpp"
 
 using namespace dev;
 
@@ -143,7 +143,7 @@ uint64_t wasm_test_action_(const char* cls, const char* method)
 
 using namespace eosio::chain;
 
-int block_on_action(int block, string act);
+int block_on_action(int block, PyObject* trx);
 
 #define FC_LOG_AND_RETURN( ... )  \
    catch( const boost::interprocess::bad_alloc& ) {\
@@ -170,7 +170,7 @@ int block_on_action(int block, string act);
 
 void block_log_test_(string& path, int start_block, int end_block) {
    eosio::chain::block_log log(path);
-   for (int i=start_block;i<end_block;i++) {
+   for (int i=start_block;i<=end_block;i++) {
       signed_block_ptr block;
       try {
          block = log.read_block_by_num(i);
@@ -184,20 +184,53 @@ void block_log_test_(string& path, int start_block, int end_block) {
             }
             packed_transaction& pt = tr.trx.get<packed_transaction>();
             signed_transaction st = pt.get_signed_transaction();
-   //         wlog("st.size: ${n}", ("n", st.actions.size()));
-            for (auto& act: st.actions) {
-   //            wlog("${n1} ${n2}", ("n1", act.account)("n2", act.name));
-//               python::json::to_string(fc::variant(act));
-               auto d = fc::raw::pack(act);
-               string s(d.data(), d.size());
-               int ret = block_on_action(i, s);
-               if (!ret) {
-                  return;
-               }
+            PyObject* json = python::json::to_string(fc::variant(st));
+            int ret = block_on_action(i, json);
+            if (!ret) {
+               return;
             }
          }
       } FC_LOG_AND_RETURN();
    }
 }
 
+void block_log_get_actions_(string& path, int block_num) {
+   eosio::chain::block_log log(path);
+
+   signed_block_ptr block;
+   try {
+      block = log.read_block_by_num(block_num);
+      if (!block) {
+         wlog("bad block number ${n}", ("n", block_num));
+         return;
+      }
+      for (auto& tr : block->transactions) {
+         if (!tr.trx.contains<packed_transaction>()) {
+            continue;
+         }
+         packed_transaction& pt = tr.trx.get<packed_transaction>();
+         signed_transaction st = pt.get_signed_transaction();
+         PyObject* json = python::json::to_string(fc::variant(st));
+         int ret = block_on_action(block_num, json);
+         if (!ret) {
+            return;
+         }
+      }
+   } FC_LOG_AND_RETURN();
+
+}
+
+PyObject* block_log_get_block_(string& path, int block_num) {
+   eosio::chain::block_log log(path);
+   signed_block_ptr block;
+   try {
+      block = log.read_block_by_num(block_num);
+      if (!block) {
+         wlog("bad block number ${n}", ("n", block_num));
+         return py_new_none();
+      }
+      return python::json::to_string(fc::variant(block));
+   } FC_LOG_AND_DROP();
+   return py_new_none();
+}
 

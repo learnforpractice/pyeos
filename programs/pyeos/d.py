@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import imp
+import json
 import signal
 import pickle
 import traceback
@@ -147,27 +148,98 @@ eosio = N('eosio')
 setcode = N('setcode')
 newaccount = N('newaccount')
 
+class JsonStruct(object):
+    def __init__(self, js):
+        if isinstance(js, bytes):
+            js = js.decode('utf8')
+            js = json.loads(js)
+        if isinstance(js, str):
+            js = json.loads(js)
+
+        for key in js:
+            value = js[key]
+            if isinstance(value, dict):
+                self.__dict__[key] = JsonStruct(value)
+            elif isinstance(value, list):
+                for i in range(len(value)):
+                    v = value[i]
+                    if isinstance(v, dict):
+                        value[i] = JsonStruct(v)
+                self.__dict__[key] = value
+            else:
+                self.__dict__[key] = value
+
+    def __str__(self):
+#        return str(self.__dict__)
+        return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+
+    def __repr__(self):
+        return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+
+
 #   account_name                     creator;
 #   account_name                     name;
+total_contracts = {}
+def parse_log(num, trx):
+#    print('+++++', num, JsonStruct(trx))
+    trx = JsonStruct(trx)
+    for act in trx.actions:
+        if not act.account == 'eosio':
+            continue
+        if act.name == 'setcode':
+            setcode_raw = bytes.fromhex(act.data)
+            account, = struct.unpack('Q', setcode_raw[:8])
+            account = n2s(account)
+            print(num, 'setcode', account)
+            if account in total_contracts:
+                total_contracts[account].append(num)
+            else:
+                total_contracts[account] = [num]
 
-def parse_log(num, action):
-#    print(len(action))
-    a, b = struct.unpack('QQ', action[:16])
-    if not a == eosio:
-        return
-    if b == setcode:
-        print('+++++++++++++++', num, n2s(a), n2s(b))
-    elif b == newaccount:
-        creator, name = struct.unpack('QQ', action[16:16+16])
-        creator = n2s(creator)
-        name = n2s(name)
-        print(creator, name)
-        return
-        if name.find('eosio') >=0:
-            print('create system account:', creator, name)
+        if act.name == 'newaccount':
+            raw_newaccount = bytes.fromhex(act.data)
+            creator, name = struct.unpack('QQ', raw_newaccount[:16])
+            creator, name = n2s(creator), n2s(name)
+            if name.startswith('eosio.'):
+                print(num, 'newaccount', creator, name)
 
-def t6(s, e):
+def t6(s=1, e=300e4):
     _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
     debug.block_log_test(_path, s, e, parse_log)
+    print(total_contracts)
+    print(len(total_contracts))
 
+def get_block(n):
+    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    return debug.block_log_get_block(_path, n)
+
+
+def parse_log2(num, trx):
+    print('+++++', num, JsonStruct(trx))
+    for act in trx['actions']:
+        if not act.account == 'eosio':
+            continue
+        if act.name == 'setcode':
+            setcode_raw = bytes.fromhex(act.data)
+            account, = struct.unpack('Q', setcode_raw[:8])
+            account = n2s(account)
+            print(num, 'setcode', account)
+            if account in total_contracts:
+                total_contracts[account].append(num)
+            else:
+                total_contracts[account] = [num]
+
+        if act.name == 'newaccount':
+            raw_newaccount = bytes.fromhex(act.data)
+            creator, name = struct.unpack('QQ', raw_newaccount[:16])
+            creator, name = n2s(creator), n2s(name)
+            if name.startswith('eosio.'):
+                print(num, 'newaccount', creator, name)
+
+def get_actions(n):
+    total_contracts.clear()
+    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    debug.block_log_test(_path, n, n, parse_log2)
+    print(total_contracts)
+    print(len(total_contracts))
 
