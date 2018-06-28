@@ -62,7 +62,30 @@ namespace eosio { namespace chain {
    void register_vm_api(void* handle);
    void wasm_init_api();
 
+    static fn_apply _old_eosio_apply = nullptr;
+    void load_system_contract_v1() {
+        if (_old_eosio_apply) {
+            return;
+        }
+        
+        char _path[128];
+        void* handle;
+        snprintf(_path, sizeof(_path), "../libs/libeosio_native_v1%s", DYLIB_SUFFIX);
+        handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+        if (!handle) {
+            snprintf(_path, sizeof(_path), "../libs/libeosio_native_v1d%s", DYLIB_SUFFIX);
+            handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+            if (!handle) {
+                return;
+            }
+        }
+        
+        register_vm_api(handle);
+        _old_eosio_apply = (fn_apply)dlsym(handle, "apply");
+    }
+    
    wasm_interface::wasm_interface(vm_type vm)  : my( new wasm_interface_impl(vm) ) {
+       load_system_contract_v1();
    }
 
    wasm_interface::~wasm_interface() {}
@@ -146,10 +169,30 @@ namespace eosio { namespace chain {
    }
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
-      if (apply_native(context)) {
-      } else {
-         vm_manager::get().apply(0, context.receiver.value, context.act.account.value, context.act.name.value);
+      uint32_t num = context.control.head_block_state()->header.block_num();
+      while (num >= 200) {
+         if (context.receiver == N(eosio)) {
+              //context.act.name == N(buyrambytes) || context.act.name == N(buyram) || context.act.name == N(sellram)
+//            12000 setcode eosio set bios.boot
+//            12247 setcode eosio set back eosio.system
+            if (num  <= 11999) {
+               _old_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
+               return;
+            }
+            if (num >= 12248 && num< 1722000) {
+               _old_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
+               return;
+            }
+            break;
+         }
+
+         if (context.receiver == N(eosio.token) && apply_native(context)) {
+            return;
+         }
+         break;
       }
+
+      vm_manager::get().apply(0, context.receiver.value, context.act.account.value, context.act.name.value);
    }
 
 } } /// eosio::chain

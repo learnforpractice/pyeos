@@ -236,7 +236,12 @@ namespace eosio { namespace chain {
      auto d = sig_digest();
      header.producer_signature = signer( d );
      if( !trust ) {
-        FC_ASSERT( block_signing_key == fc::crypto::public_key( header.producer_signature, d ) );
+        bool b = block_signing_key == fc::crypto::public_key( header.producer_signature, d );
+        if (!b) {
+           wlog(" signature not right at header.block_num(): ${n} ", ("n", header.block_num()));
+           wlog("${n}", ("n", variant(header)));
+        }
+        FC_ASSERT( b );
      }
   }
 

@@ -124,6 +124,7 @@ cdef extern from "eosapi_.hpp":
 
     bool debug_mode_()
     void start_eos_()
+    void replay_block_(string& id, int s);
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -203,9 +204,6 @@ def get_info():
 def get_block(id):
     if isinstance(id, int):
         id = str(id)
-        id = bytes(id, 'utf8')
-    if isinstance(id, str):
-        id = bytes(id, 'utf8')
     info = get_block_(id)
     if info:
         return JsonStruct(info)

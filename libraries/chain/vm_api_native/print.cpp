@@ -4,22 +4,27 @@
  */
 
 static void prints( const char* cstr ) {
+//   wlog("++++++${n}", ("n", cstr));
    ctx().console_append<const char*>(cstr);
 }
 
 static void prints_l( const char* cstr, uint32_t len) {
+//   wlog("++++++${n}", ("n", cstr));
    ctx().console_append(string(cstr, len));
 }
 
 static void printi( int64_t val ) {
+//   wlog("++++++${n}", ("n", val));
    ctx().console_append(val);
 }
 
 static void printui( uint64_t val ) {
+//   wlog("++++++${n}", ("n", val));
    ctx().console_append(val);
 }
 
 static void printi128( const int128_t* val ) {
+//   wlog("++++++${n}", ("n", (uint64_t)val));
    bool is_negative = (*val < 0);
    unsigned __int128 val_magnitude;
 
@@ -38,11 +43,13 @@ static void printi128( const int128_t* val ) {
 }
 
 static void printui128( const uint128_t* val ) {
+//   wlog("++++++${n}", ("n", (uint64_t)val));
    fc::uint128_t v(*val>>64, static_cast<uint64_t>(*val) );
    ctx().console_append(fc::variant(v).get_string());
 }
 
 static void printsf(float val) {
+//   wlog("++++++${n}", ("n", val));
    // Assumes float representation on native side is the same as on the WASM side
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
@@ -54,6 +61,7 @@ static void printsf(float val) {
 }
 
 static void printdf(double val) {
+//   wlog("++++++${n}", ("n", val));
    // Assumes double representation on native side is the same as on the WASM side
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
@@ -65,6 +73,7 @@ static void printdf(double val) {
 }
 
 static void printqf(const float128_t* val) {
+//   wlog("++++++${n}", ("n", (uint64_t)val));
    auto& console = ctx().get_console_stream();
    auto orig_prec = console.precision();
 
@@ -78,10 +87,12 @@ static void printqf(const float128_t* val) {
 }
 
 static void printn( uint64_t n ) {
+//   wlog("++++++${n}", ("n", n));
    ctx().console_append(name(n).to_string());
 }
 
 static void printhex( const void* data, uint32_t datalen ) {
+//   wlog("++++++${n}", ("n", (uint64_t)data));
    ctx().console_append(fc::to_hex((char*)data, datalen));
 }
 

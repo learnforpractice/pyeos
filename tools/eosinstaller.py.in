@@ -6,7 +6,6 @@ if not os.path.exists(libs_path):
     os.mkdir(libs_path)
 
 for root, dirs, files in os.walk("${CMAKE_BINARY_DIR}"):
-#for root, dirs, files in os.walk("/Users/newworld/dev/pyeos/build-debug"):
     if root == libs_path:
         continue
     for f in files:

@@ -20,8 +20,8 @@ target_link_libraries( print_floats PRIVATE ${Boost_LIBRARIES} )
 
 add_custom_target( eosinstall ALL
   python ${CMAKE_CURRENT_BINARY_DIR}/eosinstaller.py
-  COMMENT "Running ${GOCMDPP}"
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/eosinstaller.py
+  COMMENT "Running eosinstaller"
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/eosinstaller.py ${CMAKE_BINARY_DIR}/programs/pyeos/pyeos
 )
 
 add_dependencies(eosinstall pyeos eth)

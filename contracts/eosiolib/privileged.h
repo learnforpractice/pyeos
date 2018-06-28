@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+   int is_feature_active( int64_t feature_name );
+
    /**
     * @defgroup privilegedapi Privileged API
     * @ingroup systemapi

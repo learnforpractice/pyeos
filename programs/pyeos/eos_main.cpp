@@ -8,6 +8,16 @@
 #include <boost/thread/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
+#include <eosio/history_plugin.hpp>
+#include <eosio/net_plugin/net_plugin.hpp>
+#include <eosio/http_plugin/http_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <eosio/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/producer_plugin/producer_plugin.hpp>
+#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
+#include <eosio/wallet_api_plugin/wallet_api_plugin.hpp>
+#include <eosio/history_api_plugin/history_api_plugin.hpp>
+
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +59,7 @@ void start_eos() {
    try {
       eos_started = true;
       app().set_version(eosio::nodeos::config::version);
-
+/*
       app().register_plugin("net_plugin");
       app().register_plugin("http_plugin");
 
@@ -60,16 +70,16 @@ void start_eos() {
       app().register_plugin("wallet_api_plugin");
       app().register_plugin("history_plugin");
       app().register_plugin("history_api_plugin");
-/*
+*/
       app().register_plugin<history_plugin>();
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<history_api_plugin>();
-*/
 
 
-      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
-//      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
+
+//      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
+      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
          init_finished = true;
          shutdown_finished = true;
          return;
@@ -79,15 +89,7 @@ void start_eos() {
       init_finished = true;
       app().exec();
 
-   } catch (const fc::exception& e) {
-      elog("${e}", ("e", e.to_detail_string()));
-   } catch (const boost::exception& e) {
-      elog("${e}", ("e", boost::diagnostic_information(e)));
-   } catch (const std::exception& e) {
-      elog("${e}", ("e", e.what()));
-   } catch (...) {
-      elog("unknown exception");
-   }
+   } FC_LOG_AND_DROP();
    init_finished = true;
    shutdown_finished = true;
 }

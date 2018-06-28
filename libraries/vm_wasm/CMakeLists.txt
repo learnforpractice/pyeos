@@ -1,7 +1,7 @@
 
 add_library(vm_wasm SHARED vm_wasm.cpp 
            binaryen.cpp
-#           wavm.cpp
+           wavm.cpp
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp

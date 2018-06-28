@@ -10,7 +10,9 @@
 #include "test_print.cpp"
 #include "test_types.cpp"
 #include "test_fixedpoint.cpp"
+#ifdef __WASM
 #include "test_compiler_builtins.cpp"
+#endif
 #include "test_crypto.cpp"
 #include "test_chain.cpp"
 #include "test_transaction.cpp"
@@ -50,7 +52,7 @@ extern "C" {
       WASM_TEST_HANDLER(test_types, char_to_symbol);
       WASM_TEST_HANDLER(test_types, string_to_name);
       WASM_TEST_HANDLER(test_types, name_class);
-
+#ifdef __WASM
       //test_compiler_builtins
       WASM_TEST_HANDLER(test_compiler_builtins, test_multi3);
       WASM_TEST_HANDLER(test_compiler_builtins, test_divti3);
@@ -65,7 +67,7 @@ extern "C" {
       WASM_TEST_HANDLER(test_compiler_builtins, test_lshrti3);
       WASM_TEST_HANDLER(test_compiler_builtins, test_ashlti3);
       WASM_TEST_HANDLER(test_compiler_builtins, test_ashrti3);
-
+#endif
       //test_action
       WASM_TEST_HANDLER(test_action, read_action_normal);
       WASM_TEST_HANDLER(test_action, read_action_to_0);
