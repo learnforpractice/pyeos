@@ -32,3 +32,7 @@ void mp_set_max_execution_time_(int _max);
 
 //application.cpp
 void app_set_debug_mode_(bool d);
+
+uint64_t wasm_test_action_(const char* cls, const char* method);
+
+void block_log_test_(string& path, int start_block, int end_block);

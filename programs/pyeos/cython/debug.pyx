@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from libcpp cimport bool
 from eostypes_ cimport * 
 import os
+import traceback
 
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
     void* execute_from_str(const char* str);
@@ -35,6 +36,9 @@ cdef extern from "../interface/debug_.hpp":
     void mp_set_max_execution_time_(int _max)
 
     void app_set_debug_mode_(bool d)
+
+    uint64_t wasm_test_action_(const char* cls, const char* method)
+    void block_log_test_(string& path, int start_block, int end_block)
 
 cdef extern from "py/gc.h":
     ctypedef int size_t 
@@ -108,4 +112,23 @@ def mp_set_max_execution_time(_max):
 
 def app_set_debug_mode(d):
     app_set_debug_mode_(d)
+
+def wasm_test_action(const char* cls, const char* method):
+    return wasm_test_action_(cls, method)
+
+callback = None
+cdef extern int block_on_action(int block, string action):
+    global callback
+    if callback:
+        try:
+            callback(block, <bytes>action)
+        except:
+            traceback.print_exc()
+            return 0
+    return 1
+
+def  block_log_test(string& path, start, end, cb):
+    global callback
+    callback = cb
+    block_log_test_(path, start, end)
 

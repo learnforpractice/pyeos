@@ -7,7 +7,8 @@
 #include <fc/io/raw.hpp>
 
 #include <fc/reflect/variant.hpp>
-
+#include "json.hpp"
+#include <Python.h>
 
 using namespace dev;
 
@@ -123,3 +124,80 @@ void debug_test__() {
    wlog(___key.str());
 
 }
+
+static constexpr unsigned int DJBH(const char* cp)
+{
+  unsigned int hash = 5381;
+  while (*cp)
+      hash = 33 * hash ^ (unsigned char) *cp++;
+  return hash;
+}
+
+uint64_t wasm_test_action_(const char* cls, const char* method)
+{
+  return static_cast<unsigned long long>(DJBH(cls)) << 32 | static_cast<unsigned long long>(DJBH(method));
+}
+
+#include <eosio/chain/block_log.hpp>
+#include <eosio/chain/transaction.hpp>
+
+using namespace eosio::chain;
+
+int block_on_action(int block, string act);
+
+#define FC_LOG_AND_RETURN( ... )  \
+   catch( const boost::interprocess::bad_alloc& ) {\
+      throw;\
+   } catch( fc::exception& er ) { \
+      wlog( "${details}", ("details",er.to_detail_string()) ); \
+      return; \
+   } catch( const std::exception& e ) {  \
+      fc::exception fce( \
+                FC_LOG_MESSAGE( warn, "rethrow ${what}: ",FC_FORMAT_ARG_PARAMS( __VA_ARGS__  )("what",e.what()) ), \
+                fc::std_exception_code,\
+                BOOST_CORE_TYPEID(e).name(), \
+                e.what() ) ; \
+      wlog( "${details}", ("details",fce.to_detail_string()) ); \
+      return; \
+   } catch( ... ) {  \
+      fc::unhandled_exception e( \
+                FC_LOG_MESSAGE( warn, "rethrow", FC_FORMAT_ARG_PARAMS( __VA_ARGS__) ), \
+                std::current_exception() ); \
+      wlog( "${details}", ("details",e.to_detail_string()) ); \
+      return; \
+   }
+
+
+void block_log_test_(string& path, int start_block, int end_block) {
+   eosio::chain::block_log log(path);
+   for (int i=start_block;i<end_block;i++) {
+      signed_block_ptr block;
+      try {
+         block = log.read_block_by_num(i);
+         if (!block) {
+            wlog("bad block number ${n}", ("n", i));
+            break;
+         }
+         for (auto& tr : block->transactions) {
+            if (!tr.trx.contains<packed_transaction>()) {
+               continue;
+            }
+            packed_transaction& pt = tr.trx.get<packed_transaction>();
+            signed_transaction st = pt.get_signed_transaction();
+   //         wlog("st.size: ${n}", ("n", st.actions.size()));
+            for (auto& act: st.actions) {
+   //            wlog("${n1} ${n2}", ("n1", act.account)("n2", act.name));
+//               python::json::to_string(fc::variant(act));
+               auto d = fc::raw::pack(act);
+               string s(d.data(), d.size());
+               int ret = block_on_action(i, s);
+               if (!ret) {
+                  return;
+               }
+            }
+         }
+      } FC_LOG_AND_RETURN();
+   }
+}
+
+

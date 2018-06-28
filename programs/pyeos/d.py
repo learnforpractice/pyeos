@@ -1,4 +1,18 @@
+import os
+import re
+import sys
+import imp
+import signal
+import pickle
+import traceback
+
+import db
+import net
+import wallet
 import eosapi
+import debug
+
+from eosapi import *
 
 def t1():
     abi_file = '../contracts/eosio.token/eosio.token.abi'
@@ -128,4 +142,32 @@ def t5():
         cmds = "c++filt -n "+eval(func)
         cmds = shlex.split(cmds)
         subprocess.call(cmds)
+
+eosio = N('eosio')
+setcode = N('setcode')
+newaccount = N('newaccount')
+
+#   account_name                     creator;
+#   account_name                     name;
+
+def parse_log(num, action):
+#    print(len(action))
+    a, b = struct.unpack('QQ', action[:16])
+    if not a == eosio:
+        return
+    if b == setcode:
+        print('+++++++++++++++', num, n2s(a), n2s(b))
+    elif b == newaccount:
+        creator, name = struct.unpack('QQ', action[16:16+16])
+        creator = n2s(creator)
+        name = n2s(name)
+        print(creator, name)
+        return
+        if name.find('eosio') >=0:
+            print('create system account:', creator, name)
+
+def t6(s, e):
+    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    debug.block_log_test(_path, s, e, parse_log)
+
 
