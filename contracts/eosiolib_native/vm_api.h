@@ -201,6 +201,7 @@ struct vm_api {
    void (*pause_billing_timer)();
 
    uint64_t (*wasm_call)(const char*func, uint64_t* args , int argc);
+   int (*has_option)(const char* _option);
 
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };

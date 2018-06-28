@@ -32,6 +32,7 @@
 
 #include <eosio/chain/db_api.hpp>
 #include <vm_manager.hpp>
+#include <appbase/application.hpp>
 
 namespace eosio {
 namespace chain {
@@ -103,6 +104,10 @@ extern "C" {
    int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
    uint64_t get_action_account();
    uint64_t string_to_uint64_(const char* str);
+}
+
+int has_option(const char* _option) {
+   return appbase::app().has_option(_option);
 }
 
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
@@ -301,6 +306,7 @@ static struct vm_api _vm_api = {
    .pause_billing_timer = pause_billing_timer,
 
    .wasm_call = wasm_call,
+   .has_option = has_option
 
 };
 

@@ -4,19 +4,20 @@
 
 #include <dlfcn.h>
 
-
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 
 #include <eosio/chain/exceptions.hpp>
+
 #include <appbase/application.hpp>
+#include <appbase/platform.hpp>
+#include <eosio/chain/contract_types.hpp>
 
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h> // for sysconf
-
 
 using namespace eosio;
 using namespace eosio::chain;
@@ -92,53 +93,35 @@ static uint64_t vm_names[] = {
 #if defined(__APPLE__) && defined(__MACH__)
       N(vm.wasm.1),
       N(vm.py.1),
-      N(vm.eth.1)
+      N(vm.eth.1),
+      N(vm.wasm.1),
+      N(vm.wavm.1),
 #elif defined(__linux__)
       N(vm.wasm.2),
       N(vm.py.2),
-      N(vm.eth.2)
+      N(vm.eth.2),
+      N(vm.wavm.2),
 #elif defined(_WIN64)
       N(vm.wasm.3),
       N(vm.py.3),
-      N(vm.eth.3)
+      N(vm.eth.3),
+      N(vm.wavm.3),
 #else
    #error Not Supported Platform
 #endif
 };
 
 static const char* vm_libs_path[] = {
-#if defined(__APPLE__) && defined(__MACH__)
 #ifdef DEBUG
-   "../libraries/vm_wasm/libvm_wasmd.dylib",
-   "../libraries/vm_py/libvm_py-1d.dylib",
-   "../libraries/vm_eth/libvm_ethd.dylib",
+   "../libraries/vm_wasm/libvm_wasm_binaryend" DYLIB_SUFFIX,
+   "../libraries/vm_py/libvm_py-1d" DYLIB_SUFFIX,
+   "../libraries/vm_eth/libvm_ethd" DYLIB_SUFFIX,
+   "../libraries/vm_wasm/libvm_wasm_wavmd" DYLIB_SUFFIX,
 #else
-   "../libraries/vm_wasm/libvm_wasm.dylib",
-   "../libraries/vm_py/libvm_py-1.dylib",
-   "../libraries/vm_eth/libvm_eth.dylib",
-#endif
-#elif defined(__linux__)
-#ifdef DEBUG
-   "../libraries/vm_wasm/libvm_wasmd.so",
-   "../libraries/vm_py/libvm_py-1d.so",
-   "../libraries/vm_eth/libvm_ethd.so",
-#else
-   "../libraries/vm_wasm/libvm_wasm.so",
-   "../libraries/vm_py/libvm_py-1.so",
-   "../libraries/vm_eth/libvm_eth.so",
-#endif
-#elif defined(_WIN64)
-#ifdef DEBUG
-   "../libraries/vm_wasm/libvm_wasmd.dll",
-   "../libraries/vm_py/libvm_py-1d.dll",
-   "../libraries/vm_eth/libvm_ethd.dll",
-#else
-   "../libraries/vm_wasm/libvm_wasm.dll",
-   "../libraries/vm_py/libvm_py-1.dll",
-   "../libraries/vm_eth/libvm_eth.dll",
-#endif
-#else
-#error Not Supported Platform
+   "../libraries/vm_wasm/libvm_wasm_binaryen" DYLIB_SUFFIX,
+   "../libraries/vm_py/libvm_py-1" DYLIB_SUFFIX,
+   "../libraries/vm_eth/libvm_eth" DYLIB_SUFFIX,
+   "../libraries/vm_wasm/libvm_wasm_wavm" DYLIB_SUFFIX,
 #endif
 };
 vm_manager& vm_manager::get() {
@@ -157,7 +140,7 @@ bool vm_manager::init() {
 
    init = true;
 
-   for (int i=0;i<sizeof(vm_names)/sizeof(vm_names[0]);i++) {
+   for (int i=0;i<sizeof(vm_libs_path)/sizeof(vm_libs_path[0]);i++) {
       if (load_vm(i, vm_names[i])) {
          continue;
       }
@@ -242,8 +225,6 @@ int vm_manager::check_new_version(int vm_type, uint64_t vm_name) {
    }
    return 0;
 }
-
-#include <eosio/chain/contract_types.hpp>
 
 int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    activatevm vm;
@@ -391,8 +372,16 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
       load_vm(type, vm_names[type]);
    }
 */
+   map<int, std::unique_ptr<vm_calls>>::iterator itr;
 
-   auto itr = vm_map.find(type);
+   if (type == 0) { //wasm
+      if (appbase::app().has_option("hard-replay-blockchain")) { //replay
+         itr = vm_map.find(3); //wavm
+      }
+   } else {
+      itr = vm_map.find(type);
+   }
+
    if (itr == vm_map.end()) {
       return 0;
    }
