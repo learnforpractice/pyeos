@@ -24,7 +24,7 @@ namespace eosio {
 
 #include "vm_api.h"
 static struct vm_api s_api;
-void register_vm_api(struct vm_api* api) {
+void vm_register_api(struct vm_api* api) {
    s_api = *api;
 }
 

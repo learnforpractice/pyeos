@@ -172,12 +172,12 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       return 0;
    }
 
-   fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
+   fn_setcode setcode = (fn_setcode)dlsym(handle, "vm_setcode");
    if (setcode == NULL) {
       return 0;
    }
 
-   fn_apply apply = (fn_apply)dlsym(handle, "apply");
+   fn_apply apply = (fn_apply)dlsym(handle, "vm_apply");
    if (apply == NULL) {
       return 0;
    }
@@ -314,12 +314,12 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
-   fn_setcode setcode = (fn_setcode)dlsym(handle, "setcode");
+   fn_setcode setcode = (fn_setcode)dlsym(handle, "vm_setcode");
    if (setcode == NULL) {
       return 0;
    }
 
-   fn_apply apply = (fn_apply)dlsym(handle, "apply");
+   fn_apply apply = (fn_apply)dlsym(handle, "vm_apply");
    if (apply == NULL) {
       return 0;
    }
@@ -378,7 +378,7 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
       // || receiver == N(eosio) || receiver == N(eosio.token)
       //appbase::app().has_option("hard-replay-blockchain")
       if (receiver == N(eosio) || receiver == N(eosio.token)) { //replay
-         type = 3; //wavm
+         type = 0; //wavm
       }
    }
 
@@ -417,7 +417,7 @@ struct vm_wasm_api* vm_manager::get_wasm_vm_api() {
       return nullptr;
    }
 
-   fn_get_wasm_vm_api _get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "get_wasm_vm_api");
+   fn_get_wasm_vm_api _get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "vm_get_wasm_api");
    if (_get_wasm_vm_api == nullptr) {
       return nullptr;
    }
@@ -435,7 +435,7 @@ uint64_t vm_manager::wasm_call(const string& func, vector<uint64_t> args) {
    for (int i=0;i<args.size();i++) {
       _args[i] = args[i];
    }
-   fn_wasm_call _wasm_call = (fn_wasm_call)dlsym(itr->second->handle, "call");
+   fn_wasm_call _wasm_call = (fn_wasm_call)dlsym(itr->second->handle, "vm_call");
    if (_wasm_call == nullptr) {
       return -1;
    }

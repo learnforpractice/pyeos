@@ -1,0 +1,4 @@
+CODEABI_1.0 {
+    global: vm_init;vm_deinit;vm_register_api;vm_setcode;vm_apply;vm_call;vm_get_wasm_api
+    local: *;
+};

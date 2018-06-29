@@ -315,7 +315,7 @@ struct vm_api* get_vm_api() {
 }
 
 void register_vm_api(void* handle) {
-   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "register_vm_api");
+   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
    _register_vm_api(&_vm_api);
 }
 

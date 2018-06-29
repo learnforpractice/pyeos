@@ -36,11 +36,11 @@ void vm_deinit() {
    printf("vm_wasm finalize\n");
 }
 
-extern "C" struct vm_wasm_api* get_wasm_vm_api() {
+extern "C" struct vm_wasm_api* vm_get_wasm_api() {
    return &s_vm_wasm_api;
 }
 
-void register_vm_api(struct vm_api* api) {
+void vm_register_api(struct vm_api* api) {
    s_api = *api;
 }
 
@@ -48,17 +48,17 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-int setcode(uint64_t account) {
+int vm_setcode(uint64_t account) {
    wasm_setcode(account);
    return 0;
 }
 
-int apply(uint64_t receiver, uint64_t account, uint64_t act) {
+int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    wasm_apply(receiver, account, act);
    return 0;
 }
 uint64_t _wasm_call(const char* act, uint64_t* args, int argc);
-uint64_t call(const char* act, uint64_t* args, int argc) {
+uint64_t vm_call(const char* act, uint64_t* args, int argc) {
    return _wasm_call(act, args, argc);
 }
 
