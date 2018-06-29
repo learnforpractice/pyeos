@@ -204,13 +204,13 @@ def parse_log(num, trx):
                 print(num, 'newaccount', creator, name)
 
 def t6(s=1, e=300e4):
-    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    _path = 'data-dir/blocks'
     debug.block_log_test(_path, s, e, parse_log)
     print(total_contracts)
     print(len(total_contracts))
 
 def get_block(n):
-    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    _path = 'data-dir/blocks'
     return debug.block_log_get_block(_path, n)
 
 
@@ -238,7 +238,7 @@ def parse_log2(num, trx):
 
 def get_actions(n):
     total_contracts.clear()
-    _path = '/Users/newworld/dev/pyeos/build/programs/blocks.bk'
+    _path = 'data-dir/blocks'
     debug.block_log_test(_path, n, n, parse_log2)
     print(total_contracts)
     print(len(total_contracts))

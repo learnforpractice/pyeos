@@ -13,7 +13,7 @@ message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_FILE})
 #set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
 set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 
-target_compile_options(vm_wasm_binaryen     PRIVATE     -fvisibility=hidden -D_BINARYEN)
+target_compile_options(vm_wasm_binaryen     PRIVATE   -D_BINARYEN)
 target_link_libraries(vm_wasm_binaryen       PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc) #
 
 target_include_directories(vm_wasm_binaryen PRIVATE ${Boost_INCLUDE_DIR}
@@ -43,7 +43,7 @@ message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_FILE})
 #set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore leveldb ${SECP256K1_LIBRARY})
 set (ETH_LIBRARY devcore ethereum evm ethashseal ethcore)
 
-target_compile_options(vm_wasm_wavm     PRIVATE     -fvisibility=hidden -D_WAVM)
+target_compile_options(vm_wasm_wavm     PRIVATE   -D_WAVM)
 target_link_libraries(vm_wasm_wavm       PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc) #
 
 target_include_directories(vm_wasm_wavm PRIVATE ${Boost_INCLUDE_DIR}

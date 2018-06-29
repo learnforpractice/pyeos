@@ -35,19 +35,21 @@ namespace eosio { namespace chain {
 
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
-         init_native_contract();
+         //init_native_contract();
       }
 
       void init_native_contract() {
          uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
          for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
-//            load_native_contract(native_account[i], false);
+            if (!load_native_contract(native_account[i])) {
+               load_native_contract_default(native_account[i]);
+            }
          }
-         _bios_apply = load_native_contract_default(N(eosio.bios));
-         _msig_apply = load_native_contract_default(N(eosio.msig));
-         _token_apply = load_native_contract_default(N(eosio.token));
-         _eosio_apply = load_native_contract_default(N(eosio));
-         _exchange_apply = load_native_contract_default(N(exchange));
+         _bios_apply = native_cache[N(eosio.bios)]->apply;
+         _msig_apply = native_cache[N(eosio.msig)]->apply;
+         _token_apply = native_cache[N(eosio.token)]->apply;
+         _eosio_apply = native_cache[N(eosio)]->apply;
+         _exchange_apply = native_cache[N(exchange)]->apply;
       }
 
       fn_apply load_native_contract_default(uint64_t _account) {

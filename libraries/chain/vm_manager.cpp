@@ -113,15 +113,15 @@ static uint64_t vm_names[] = {
 
 static const char* vm_libs_path[] = {
 #ifdef DEBUG
-   "../libraries/vm_wasm/libvm_wasm_binaryend" DYLIB_SUFFIX,
-   "../libraries/vm_py/libvm_py-1d" DYLIB_SUFFIX,
-   "../libraries/vm_eth/libvm_ethd" DYLIB_SUFFIX,
-   "../libraries/vm_wasm/libvm_wasm_wavmd" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_binaryend" DYLIB_SUFFIX,
+   "../libs/libvm_py-1d" DYLIB_SUFFIX,
+   "../libs/libvm_ethd" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_wavmd" DYLIB_SUFFIX,
 #else
-   "../libraries/vm_wasm/libvm_wasm_binaryen" DYLIB_SUFFIX,
-   "../libraries/vm_py/libvm_py-1" DYLIB_SUFFIX,
-   "../libraries/vm_eth/libvm_eth" DYLIB_SUFFIX,
-   "../libraries/vm_wasm/libvm_wasm_wavm" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
+   "../libs/libvm_py-1" DYLIB_SUFFIX,
+   "../libs/libvm_eth" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_wavm" DYLIB_SUFFIX,
 #endif
 };
 vm_manager& vm_manager::get() {
@@ -375,12 +375,14 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    map<int, std::unique_ptr<vm_calls>>::iterator itr;
 
    if (type == 0) { //wasm
-      if (appbase::app().has_option("hard-replay-blockchain")) { //replay
-         itr = vm_map.find(3); //wavm
+      // || receiver == N(eosio) || receiver == N(eosio.token)
+      //appbase::app().has_option("hard-replay-blockchain")
+      if (receiver == N(eosio) || receiver == N(eosio.token)) { //replay
+         type = 3; //wavm
       }
-   } else {
-      itr = vm_map.find(type);
    }
+
+   itr = vm_map.find(type);
 
    if (itr == vm_map.end()) {
       return 0;

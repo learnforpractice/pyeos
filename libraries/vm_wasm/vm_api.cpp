@@ -1407,11 +1407,11 @@ public:
    }
 };
 
-REGISTER_INJECTED_INTRINSICS(call_depth_api,
-   (call_depth_assert,  void()               )
-);
-
 void wasm_init_api() {
+   REGISTER_INJECTED_INTRINSICS(call_depth_api,
+      (call_depth_assert,  void()               )
+   );
+
 REGISTER_INTRINSICS(compiler_builtins,
    (__ashlti3,     void(int, int64_t, int64_t, int)               )
    (__ashrti3,     void(int, int64_t, int64_t, int)               )
