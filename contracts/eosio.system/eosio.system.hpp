@@ -112,6 +112,14 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(reserved1)(reserved2)(reserved3) )
    };
 
+   struct boost_account {
+      account_name    account;
+
+      uint64_t primary_key()const { return account; }
+
+      EOSLIB_SERIALIZE( boost_account, (account) )
+   };
+
    typedef eosio::multi_index< N(voters), voter_info>  voters_table;
 
 
@@ -120,6 +128,8 @@ namespace eosiosystem {
                                >  producers_table;
 
    typedef eosio::singleton<N(global), eosio_global_state> global_state_singleton;
+
+   typedef eosio::multi_index< N(boost), boost_account>  boost_table;
 
    //   static constexpr uint32_t     max_inflation_rate = 5;  // 5% annual inflation
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
@@ -133,6 +143,7 @@ namespace eosiosystem {
 
          eosio_global_state     _gstate;
          rammarket              _rammarket;
+         boost_table            _boost;
 
       public:
          system_contract( account_name s );
@@ -215,6 +226,9 @@ namespace eosiosystem {
          void rmvproducer( account_name producer );
 
          void bidname( account_name bidder, account_name newname, asset bid );
+         void boost(account_name account);
+         void cancelboost(account_name account);
+
       private:
          void update_elected_producers( block_timestamp timestamp );
 

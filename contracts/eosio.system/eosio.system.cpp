@@ -14,7 +14,8 @@ namespace eosiosystem {
     _voters(_self,_self),
     _producers(_self,_self),
     _global(_self,_self),
-    _rammarket(_self,_self)
+    _rammarket(_self,_self),
+    _boost(_self, _self)
    {
       //print( "construct system\n" );
       _gstate = _global.exists() ? _global.get() : get_default_parameters();
@@ -134,6 +135,25 @@ namespace eosiosystem {
       }
    }
 
+   void system_contract::boost(account_name account) {
+      require_auth( N(eosio) );
+      eosio_assert(is_account(account), "account does not exist");
+      if (_boost.find(account) != _boost.end()) {
+         return;
+      }
+      _boost.emplace( account, [&]( auto& p ) {
+            p.account = account;
+      });
+   }
+
+   void system_contract::cancelboost(account_name account) {
+      require_auth( N(eosio) );
+      eosio_assert(is_account(account), "account does not exist");
+      auto itr = _boost.find(account);
+      eosio_assert( itr != _boost.end(), "account not in list" );
+      _boost.erase(itr);
+   }
+
    /**
     *  Called after a new account is created. This code enforces resource-limits rules
     *  for new accounts as well as new account naming conventions.
@@ -186,7 +206,7 @@ namespace eosiosystem {
 
 EOSIO_ABI( eosiosystem::system_contract,
      // native.hpp (newaccount definition is actually in eosio.system.cpp)
-     (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
+     (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)(boost)(cancelboost)
      // eosio.system.cpp
      (setram)(setparams)(setpriv)(rmvproducer)(bidname)
      // delegate_bandwidth.cpp

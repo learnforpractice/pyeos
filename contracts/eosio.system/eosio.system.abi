@@ -404,6 +404,18 @@
           {"name":"high_bid", "type":"int64"},
           {"name":"last_bid_time", "type":"uint64"}
        ]
+    }, {
+       "name": "boost",
+       "base": "",
+       "fields": [
+          {"name":"account", "type":"account_name"}
+       ]
+    }, {
+       "name": "cancelboost",
+       "base": "",
+       "fields": [
+          {"name":"account", "type":"account_name"}
+       ]
     }
    ],
    "actions": [{
@@ -522,7 +534,16 @@
       "name": "setparams",
       "type": "setparams",
       "ricardian_contract": ""
-    }],
+    },{
+      "name": "boost",
+      "type": "boost",
+      "ricardian_contract": ""
+    },{
+      "name": "cancelboost",
+      "type": "cancelboost",
+      "ricardian_contract": ""
+    }
+    ],
    "tables": [{
       "name": "producers",
       "type": "producer_info",

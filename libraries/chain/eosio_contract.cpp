@@ -200,8 +200,9 @@ void apply_eosio_setcode(apply_context& context) {
    if (new_size != old_size) {
       context.trx_context.add_ram_usage( act.account, new_size - old_size );
    }
-
+   vm_manager::get().setcode(0, act.account);
 }
+
 void apply_eosio_setcode_py(apply_context& context) {
    auto& db = context.db;
    auto  act = context.act.data_as<setcode>();

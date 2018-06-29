@@ -26,7 +26,6 @@
 
 #include <dlfcn.h>
 
-
 using namespace fc;
 using namespace eosio::chain::webassembly;
 using namespace IR;
@@ -46,6 +45,7 @@ void resume_billing_timer();
 void pause_billing_timer();
 const char* get_code( uint64_t receiver, size_t* size );
 int get_code_id( uint64_t account, char* code_id, size_t size );
+bool vm_is_account(uint64_t account);
 
 int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int32_t db_api_get_i64_ex( int iterator, uint64_t* primary, char* buffer, size_t buffer_size );
@@ -66,8 +66,13 @@ namespace eosio { namespace chain {
       wasm_interface_impl(wasm_interface::vm_type vm) {
 #ifdef _WAVM
          runtime_interface = std::make_unique<webassembly::wavm::wavm_runtime>();
-         get_instantiated_module(N(eosio));
-         get_instantiated_module(N(eosio.token));
+         if (vm_is_account(N(eosio))) {
+            get_instantiated_module(N(eosio));
+         }
+
+         if (vm_is_account(N(eosio.token))) {
+            get_instantiated_module(N(eosio.token));
+         }
 #endif
 #ifdef _BINARYEN
          runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
@@ -96,8 +101,10 @@ namespace eosio { namespace chain {
       std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver )
       {
          size_t size = 0;
-         const char* code = get_code( receiver, &size );
+         const char* code;
          char code_id[8*4];
+
+         code = get_code( receiver, &size );
          get_code_id(receiver, code_id, sizeof(code_id));
 
          auto it = instantiation_cache.find(receiver);
@@ -111,6 +118,7 @@ namespace eosio { namespace chain {
             }
          }
          if(need_update) {
+            elog("update code ${n}", ("n", receiver));
             auto timer_pause = fc::make_scoped_exit([&](){
                resume_billing_timer();
             });

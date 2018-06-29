@@ -70,6 +70,7 @@ add_library( eosio_chain
 
               vm_manager.cpp
               vm_api_native/vm_api.cpp
+              vm_api_native/utility.cpp
               ${HEADERS}
              )
 
@@ -89,6 +90,7 @@ target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase db_
 add_dependencies(eosio_chain vm_py)
 
 target_include_directories( eosio_chain
+                            PUBLIC ${Boost_INCLUDE_DIR}
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                             PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
@@ -104,6 +106,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
+                            PUBLIC ${CMAKE_SOURCE_DIR}/externals/magic_get/include
                             )
 
 set_target_properties( eosio_chain PROPERTIES PUBLIC_HEADER "${HEADERS}" )

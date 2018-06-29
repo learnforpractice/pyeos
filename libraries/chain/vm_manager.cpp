@@ -31,6 +31,8 @@ namespace chain {
 }
 }
 
+bool is_boost_account(uint64_t account);
+
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
@@ -372,17 +374,17 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
       load_vm(type, vm_names[type]);
    }
 */
-   map<int, std::unique_ptr<vm_calls>>::iterator itr;
-
    if (type == 0) { //wasm
       // || receiver == N(eosio) || receiver == N(eosio.token)
       //appbase::app().has_option("hard-replay-blockchain")
       if (receiver == N(eosio) || receiver == N(eosio.token)) { //replay
-         type = 0; //wavm
+         type = 3; //accelerate execution using JIT
+      } else if (is_boost_account(receiver)) {
+         type = 3;
       }
    }
 
-   itr = vm_map.find(type);
+   auto itr = vm_map.find(type);
 
    if (itr == vm_map.end()) {
       return 0;

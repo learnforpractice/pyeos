@@ -1,5 +1,6 @@
 
-add_library(vm_wasm_binaryen SHARED vm_wasm.cpp 
+add_library(vm_wasm_binaryen SHARED 
+           vm_wasm.cpp 
            binaryen.cpp
            wavm.cpp
            wast_to_wasm.cpp
@@ -30,7 +31,8 @@ target_include_directories(vm_wasm_binaryen PRIVATE ${Boost_INCLUDE_DIR}
 )
 
 
-add_library(vm_wasm_wavm SHARED vm_wasm.cpp 
+add_library(vm_wasm_wavm SHARED
+           vm_wasm.cpp 
            binaryen.cpp
            wavm.cpp
            wast_to_wasm.cpp
