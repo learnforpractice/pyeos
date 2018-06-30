@@ -26,6 +26,7 @@ target_include_directories( vm_api_rpc
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
+                            PUBLIC ${CMAKE_SOURCE_DIR}/contracts/eosiolib_native
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             )

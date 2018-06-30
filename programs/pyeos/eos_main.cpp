@@ -43,9 +43,8 @@ extern "C" {
    PyObject* PyInit_wallet();
    PyObject* PyInit_net();
 
-   PyObject* PyInit_eoslib();
 //only used in debug
-   PyObject* PyInit_eoslib();
+//   PyObject* PyInit_eoslib();
    PyObject* PyInit_db();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
@@ -95,7 +94,7 @@ void start_eos() {
 }
 
 void init_console() {
-   init_api();
+//   init_api();
 
    Py_Initialize();
 
@@ -107,7 +106,7 @@ void init_console() {
    PyInit_eosapi();
    PyInit_net();
 
-   PyInit_eoslib();
+//   PyInit_eoslib();
    PyInit_db();
    PyInit_debug();
    PyInit_python_contract();

@@ -28,18 +28,20 @@ typedef char bool;
  *
  *  @{
  */
-
+#ifndef __TYPES
 typedef uint64_t account_name;
 typedef uint64_t permission_name;
 typedef uint64_t table_name;
 
 
-typedef uint32_t _time;
 
 typedef uint64_t scope_name;
 typedef uint64_t action_name;
 
 typedef uint16_t weight_type;
+#endif
+
+typedef uint32_t _time;
 
 #ifndef __WASM
    typedef __int128 int128_t ;
@@ -58,7 +60,8 @@ struct signature {
    uint8_t data[66];
 };
 
-#ifdef __WASM
+#ifndef __TYPES
+
 struct ALIGNED(checksum256) {
    uint8_t hash[32];
 };
@@ -70,23 +73,10 @@ struct ALIGNED(checksum160) {
 struct ALIGNED(checksum512) {
    uint8_t hash[64];
 };
-#else
-struct checksum256 {
-   uint8_t hash[32];
-};
-
-struct checksum160 {
-   uint8_t hash[20];
-};
-
-struct checksum512 {
-   uint8_t hash[64];
-};
-
-#endif
 
 typedef struct checksum256 transaction_id_type;
 typedef struct checksum256 block_id_type;
+#endif
 
 struct account_permission {
    account_name account;

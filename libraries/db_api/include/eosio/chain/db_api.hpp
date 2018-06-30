@@ -452,16 +452,34 @@ class db_api {
    /// Constructor
    public:
    private:
-      db_api(const action& a);
+      db_api(const action& a, bool rw=false);
 
    public:
-      static db_api *_instance;
-      static db_api& get() {
+
+      inline static db_api& get() {
+         static db_api *_instance = nullptr;
          static action act;
          if (!_instance) {
             _instance = new db_api(act);
          }
          return *_instance;
+      }
+
+      inline static db_api& rwdb() {
+         static db_api *_instance = nullptr;
+         static action act;
+         if (!_instance) {
+            _instance = new db_api(act, true);
+         }
+         return *_instance;
+      }
+
+      uint64_t get_receiver_ex() {
+         return receiver.value;
+      }
+
+      void set_receiver_ex(uint64_t _receiver) {
+         receiver.value = _receiver;
       }
 
       bool get_action(action& act);
@@ -534,8 +552,11 @@ class db_api {
       void db_get_table_i64( int iterator, uint64_t& code, uint64_t& scope, uint64_t& payer, uint64_t& table, uint64_t& id);
 
       int  db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
+      int  db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
+
       void db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size );
       void db_remove_i64( int iterator );
+      void db_remove_i64_ex( int iterator );
 
       int  db_get_i64( int iterator, char* buffer, size_t buffer_size );
       int  db_get_i64_ex( int iterator, uint64_t& primary, char* buffer, size_t buffer_size );
@@ -563,7 +584,6 @@ class db_api {
       const table_id_object& find_or_create_table( name code, name scope, name table, const account_name &payer );
       void                   remove_table( const table_id_object& tid );
 
-      int  db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
 
 
    /// Misc methods:
@@ -607,7 +627,6 @@ class db_api {
       vector<action>                      _inline_actions; ///< queued inline messages
       vector<action>                      _cfa_inline_actions; ///< queued inline messages
       std::ostringstream                  _pending_console_output;
-
       //bytes                               _cached_trx;
 };
 

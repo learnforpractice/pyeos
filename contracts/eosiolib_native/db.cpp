@@ -12,6 +12,11 @@ int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id
    return get_vm_api()->db_store_i64(scope, table, payer, id, data, len);
 }
 
+int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
+   return get_vm_api()->db_store_i64_ex(code, scope, table, payer, id, data, len);
+}
+
+
 void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len) {
    get_vm_api()->db_update_i64( iterator, payer, data, len);
 }
@@ -177,11 +182,11 @@ int32_t db_idx256_end(uint64_t code, uint64_t scope, uint64_t table) {
 }
 
 int32_t db_idx_double_store(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const double* secondary) {
-   return get_vm_api()->db_idx_double_store(scope, table, payer, id, secondary);
+   return get_vm_api()->db_idx_double_store(scope, table, payer, id, (const float64_t*)secondary);
 }
 
 void db_idx_double_update(int32_t iterator, uint64_t payer, const double* secondary) {
-   get_vm_api()->db_idx_double_update(iterator, payer, secondary);
+   get_vm_api()->db_idx_double_update(iterator, payer, (const float64_t*)secondary);
 }
 
 void db_idx_double_remove(int32_t iterator) {
@@ -197,19 +202,19 @@ int32_t db_idx_double_previous(int32_t iterator, uint64_t* primary) {
 }
 
 int32_t db_idx_double_find_primary(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t primary) {
-   return get_vm_api()->db_idx_double_find_primary(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_double_find_primary(code, scope, table, (float64_t*)secondary, primary);
 }
 
 int32_t db_idx_double_find_secondary(uint64_t code, uint64_t scope, uint64_t table, const double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_double_find_secondary(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_double_find_secondary(code, scope, table, (const float64_t*)secondary, primary);
 }
 
 int32_t db_idx_double_lowerbound(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_double_lowerbound(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_double_lowerbound(code, scope, table, (float64_t*)secondary, primary);
 }
 
 int32_t db_idx_double_upperbound(uint64_t code, uint64_t scope, uint64_t table, double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_double_upperbound(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_double_upperbound(code, scope, table, (float64_t*)secondary, primary);
 }
 
 int32_t db_idx_double_end(uint64_t code, uint64_t scope, uint64_t table) {
@@ -217,11 +222,11 @@ int32_t db_idx_double_end(uint64_t code, uint64_t scope, uint64_t table) {
 }
 
 int32_t db_idx_long_double_store(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const long double* secondary) {
-   return get_vm_api()->db_idx_long_double_store(scope, table, payer, id, secondary);
+   return get_vm_api()->db_idx_long_double_store(scope, table, payer, id, (const float128_t*)secondary);
 }
 
 void db_idx_long_double_update(int32_t iterator, uint64_t payer, const long double* secondary) {
-   get_vm_api()->db_idx_long_double_update(iterator, payer, secondary);
+   get_vm_api()->db_idx_long_double_update(iterator, payer, (const float128_t*)secondary);
 }
 
 void db_idx_long_double_remove(int32_t iterator) {
@@ -237,19 +242,19 @@ int32_t db_idx_long_double_previous(int32_t iterator, uint64_t* primary) {
 }
 
 int32_t db_idx_long_double_find_primary(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t primary) {
-   return get_vm_api()->db_idx_long_double_find_primary(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_long_double_find_primary(code, scope, table, (float128_t*)secondary, primary);
 }
 
 int32_t db_idx_long_double_find_secondary(uint64_t code, uint64_t scope, uint64_t table, const long double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_long_double_find_secondary(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_long_double_find_secondary(code, scope, table, (const float128_t*)secondary, primary);
 }
 
 int32_t db_idx_long_double_lowerbound(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_long_double_lowerbound(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_long_double_lowerbound(code, scope, table, (float128_t*)secondary, primary);
 }
 
 int32_t db_idx_long_double_upperbound(uint64_t code, uint64_t scope, uint64_t table, long double* secondary, uint64_t* primary) {
-   return get_vm_api()->db_idx_long_double_upperbound(code, scope, table, secondary, primary);
+   return get_vm_api()->db_idx_long_double_upperbound(code, scope, table, (float128_t*)secondary, primary);
 }
 int32_t db_idx_long_double_end(uint64_t code, uint64_t scope, uint64_t table) {
    return get_vm_api()->db_idx_long_double_end(code, scope, table);

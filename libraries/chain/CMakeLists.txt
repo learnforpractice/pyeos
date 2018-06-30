@@ -63,14 +63,15 @@ add_library( eosio_chain
 #             contracts/chain_initializer.cpp
 #             transaction_metadata.cpp
 
-              micropython/mpeoslib.cpp
+#              micropython/mpeoslib.cpp
 #              evm_interface.cpp
-              micropython_interface.cpp
+#              micropython_interface.cpp
               python_contract.wrap.cpp
 
               vm_manager.cpp
               vm_api_native/vm_api.cpp
               vm_api_native/utility.cpp
+              vm_api_native/context_free_db.cpp
               ${HEADERS}
              )
 

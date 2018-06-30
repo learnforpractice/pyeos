@@ -1,6 +1,3 @@
-
-#include <eosiolib_native/vm_api.h>
-
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -19,9 +16,10 @@
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
 
-
 namespace eosio {
 namespace chain {
+
+#include <eosiolib_native/vm_api.h>
 
 
 #define API() get_vm_api()
@@ -870,7 +868,7 @@ class console_api : public context_aware_api {
           */
 
          if ( !ignore ) {
-            API()->printqf((long double*)&val);
+            API()->printqf(&val);
          }
       }
 
@@ -1047,8 +1045,8 @@ class database_api : public context_aware_api {
       DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx64,  uint64_t)
       DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY(idx128, uint128_t)
       DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(idx256, 2, uint128_t)
-      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, double)
-      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_long_double, long double)
+      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_double, float64_t)
+      DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY(idx_long_double, float128_t)
 };
 
 class memory_api : public context_aware_api {

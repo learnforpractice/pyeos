@@ -52,6 +52,8 @@ extern "C" {
  */
 
 int32_t db_store_i64(account_name scope, table_name table, account_name payer, uint64_t id,  const void* data, uint32_t len);
+int32_t db_store_i64_ex(account_name code, account_name scope, table_name table, account_name payer, uint64_t id,  const void* data, uint32_t len);
+
 void db_update_i64(int32_t iterator, account_name payer, const void* data, uint32_t len);
 void db_remove_i64(int32_t iterator);
 int32_t db_get_i64(int32_t iterator, const void* data, uint32_t len);

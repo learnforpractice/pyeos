@@ -57,9 +57,10 @@ cdef extern from "py/gc.h":
     void gc_collect()
 
 def eval(const char* code):
-    get_mpapi().set_debug_mode(1)
-    get_mpapi().execute_from_str(code)
-    get_mpapi().set_debug_mode(0)
+    pass
+#    get_mpapi().set_debug_mode(1)
+#    get_mpapi().execute_from_str(code)
+#    get_mpapi().set_debug_mode(0)
 
 def evm_test(string _code, string _data):
     raise Exception("Fix me please.")

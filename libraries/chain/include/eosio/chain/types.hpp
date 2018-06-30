@@ -3,6 +3,11 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
+
+#ifndef __TYPES
+#define __TYPES
+#endif
+
 #include <eosio/chain/name.hpp>
 #include <eosio/chain/chain_id_type.hpp>
 

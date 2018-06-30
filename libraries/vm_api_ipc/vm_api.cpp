@@ -36,7 +36,7 @@ using namespace fc;
 namespace eosio {
 namespace chain {
 
-
+#define __NO_EOSIOLIB_HEADER_DEFINES // avoid type conflicts
 #include "vm_api.h"
 
 #include "action.cpp"

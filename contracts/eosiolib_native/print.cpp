@@ -40,7 +40,7 @@ void printdf(double value) {
 }
 
 void printqf(const long double* value) {
-   get_vm_api()->printqf(value);
+   get_vm_api()->printqf((const float128_t*)value);
 }
 
 void printn( uint64_t name ) {

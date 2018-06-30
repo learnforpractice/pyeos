@@ -19,10 +19,8 @@ extern "C" void execution_end();
 
 namespace eosio { namespace chain {
 
-db_api *db_api::_instance = 0;
-
-db_api::db_api(const action& a)
-: db(fc::path("data-dir/state"), chainbase::database::read_only, config::default_state_size, true),
+db_api::db_api(const action& a, bool rw)
+: db(fc::path("data-dir/state"), rw ? chainbase::database::read_write: chainbase::database::read_only, config::default_state_size, true),
  act(a)
 {
    db.add_index<account_index>();
@@ -141,15 +139,7 @@ const table_id_object& db_api::find_or_create_table( name code, name scope, name
 
 int db_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
 //   require_write_lock( scope );
-   /*
-   int itr = db_find_i64(get_receiver(), scope, table, id);
-   if (itr >= 0) {
-      db_update_i64( itr, payer, buffer, buffer_size );
-      return itr;
-   }
-   */
-
-   const auto& tab = find_or_create_table( get_receiver(), scope, table, payer );
+   const auto& tab = find_or_create_table( code, scope, table, payer );
    auto tableid = tab.id;
 
    FC_ASSERT( payer != account_name(), "must specify a valid account to pay for new record" );
@@ -167,10 +157,14 @@ int db_api::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const a
    });
 
    int64_t billable_size = (int64_t)(buffer_size + config::billable_size_v<key_value_object>);
-   update_db_usage( payer, billable_size );
+   update_db_usage( payer, billable_size);
 
    keyval_cache.cache_table( tab );
    return keyval_cache.add( obj );
+}
+
+int db_api::db_store_i64(  uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
+   return db_store_i64(get_receiver(),  scope, table,payer, id, buffer, buffer_size );
 }
 
 void db_api::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size ) {
@@ -191,7 +185,6 @@ void db_api::db_update_i64( int iterator, account_name payer, const char* buffer
       // refund the existing payer
       update_db_usage( obj.payer,  -(old_size) );
       // charge the new payer
-
       update_db_usage( payer,  (new_size));
    } else if(old_size != new_size) {
       // charge/refund the existing payer the difference
@@ -203,6 +196,28 @@ void db_api::db_update_i64( int iterator, account_name payer, const char* buffer
      memcpy( o.value.data(), buffer, buffer_size );
      o.payer = payer;
    });
+}
+
+void db_api::db_remove_i64( int iterator ) {
+   const key_value_object& obj = keyval_cache.get( iterator );
+
+   const auto& table_obj = keyval_cache.get_table( obj.t_id );
+   FC_ASSERT( table_obj.code == receiver, "db access violation" );
+
+//   require_write_lock( table_obj.scope );
+
+   update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key_value_object>) );
+
+   db.modify( table_obj, [&]( auto& t ) {
+      --t.count;
+   });
+   db.remove( obj );
+
+   if (table_obj.count == 0) {
+      remove_table(table_obj);
+   }
+
+   keyval_cache.remove( iterator );
 }
 
 void db_api::remove_table( const table_id_object& tid ) {
@@ -223,7 +238,7 @@ void db_api::update_db_usage( const account_name& payer, int64_t delta ) {
 #endif
 }
 
-void db_api::db_remove_i64( int iterator ) {
+void db_api::db_remove_i64_ex( int iterator ) {
 #if 0
    const key_value_object& obj = keyval_cache.get( iterator );
 

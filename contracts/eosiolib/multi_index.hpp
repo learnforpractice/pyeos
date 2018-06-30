@@ -662,8 +662,11 @@ class multi_index
             ds << obj;
 
             auto pk = obj.primary_key();
-
+#ifdef __WASM
             i.__primary_itr = db_store_i64( _scope, TableName, payer, pk, buffer, size );
+#else
+            i.__primary_itr = db_store_i64_ex(_code, _scope, TableName, payer, pk, buffer, size );
+#endif
 
             if ( max_stack_buffer_size < size ) {
                free(buffer);

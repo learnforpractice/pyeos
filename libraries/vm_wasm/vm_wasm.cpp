@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <eosiolib_native/vm_api.h>
 #include <eosiolib/types.hpp>
 #include "vm_wasm_api.h"
