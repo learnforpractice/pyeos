@@ -1,8 +1,40 @@
-#include "../debugging/eoslib_.hpp"
-
-#include "../micropython/mpeoslib.h"
+#include "eoslib_.hpp"
 
 #include <eosio/chain/name.hpp>
+
+extern "C" void  eosio_assert( uint32_t test, const char* msg );
+
+namespace eosio {
+namespace chain {
+
+   uint32_t read_action_data( void* msg, uint32_t buffer_size );
+   uint32_t action_data_size();
+   bool is_account( uint64_t name );
+   void require_auth( uint64_t name );
+   void require_recipient( uint64_t name );
+   uint64_t string_to_uint64_(const char* str);
+
+   int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
+   int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
+
+   void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len);
+   void db_remove_i64(int32_t iterator);
+
+   int32_t db_get_i64(int32_t iterator, void* data, uint32_t len);
+   int32_t db_get_i64_ex( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
+   const char* db_get_i64_exex( int itr, size_t* buffer_size );
+
+   int32_t db_next_i64(int32_t iterator, uint64_t* primary);
+   int32_t db_previous_i64(int32_t iterator, uint64_t* primary);
+   int32_t db_find_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t db_lowerbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t db_upperbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
+   int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table);
+
+}
+}
+
+using namespace eosio::chain;
 
 uint64_t s2n_(const char* str) {
    return string_to_uint64_(str);
@@ -29,11 +61,11 @@ int is_account_(uint64_t account) {
 }
 
 int read_action_(char* memory, size_t size) {
-   return read_action(memory, size);
+   return read_action_data(memory, size);
 }
 
 int action_size_() {
-   return action_size();
+   return action_data_size();
 }
 
 int db_store_i64_( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {

@@ -89,8 +89,8 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
     wrap/debug.wrap.cpp
     wrap/net.wrap.cpp
 
-#    debugging/eoslib.wrap.cpp
-#    debugging/eoslib_.cpp
+    debugging/eoslib.wrap.cpp
+    debugging/eoslib_.cpp
 
     )
 

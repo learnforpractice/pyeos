@@ -25,7 +25,7 @@ void db_remove_i64(int32_t iterator) {
    get_vm_api()->db_remove_i64(iterator);
 }
 
-int32_t db_get_i64(int32_t iterator, const void* data, uint32_t len) {
+int32_t db_get_i64(int32_t iterator, void* data, uint32_t len) {
    return get_vm_api()->db_get_i64(iterator, data, len);
 }
 

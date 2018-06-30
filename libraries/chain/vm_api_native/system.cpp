@@ -2,13 +2,14 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
+extern "C" {
 
 void abort() {
    edump(("abort() called"));
    FC_ASSERT( false, "abort() called");
 }
 
-extern "C" void  eosio_assert( uint32_t test, const char* msg ) {
+void  eosio_assert( uint32_t test, const char* msg ) {
    if( BOOST_UNLIKELY( !test ) ) {
       std::string message( msg );
       edump((message));
@@ -66,3 +67,5 @@ uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
    return vm_manager::get().wasm_call(string(func), _args);
 }
 
+
+}

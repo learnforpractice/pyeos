@@ -44,7 +44,7 @@ extern "C" {
    PyObject* PyInit_net();
 
 //only used in debug
-//   PyObject* PyInit_eoslib();
+   PyObject* PyInit_eoslib();
    PyObject* PyInit_db();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
@@ -106,7 +106,7 @@ void init_console() {
    PyInit_eosapi();
    PyInit_net();
 
-//   PyInit_eoslib();
+   PyInit_eoslib();
    PyInit_db();
    PyInit_debug();
    PyInit_python_contract();

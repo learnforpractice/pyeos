@@ -177,6 +177,10 @@ bool vm_manager::init() {
 
    visit_boost_account(_on_boost_account, this);
 
+   if (boost_accounts.size() == 0) {
+      return true;
+   }
+
 
    vector<std::unique_ptr<boost::thread>> threads;
 
@@ -196,7 +200,7 @@ bool vm_manager::init() {
       threads.push_back(std::move(thread));
    }
 
-   for (int i=1;i<=10;i++) {
+   for (int i=0;i<threads.size();i++) {
       threads[i]->join();
    }
 

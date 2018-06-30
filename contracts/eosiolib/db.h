@@ -56,7 +56,7 @@ int32_t db_store_i64_ex(account_name code, account_name scope, table_name table,
 
 void db_update_i64(int32_t iterator, account_name payer, const void* data, uint32_t len);
 void db_remove_i64(int32_t iterator);
-int32_t db_get_i64(int32_t iterator, const void* data, uint32_t len);
+int32_t db_get_i64(int32_t iterator, void* data, uint32_t len);
 int32_t db_next_i64(int32_t iterator, uint64_t* primary);
 int32_t db_previous_i64(int32_t iterator, uint64_t* primary);
 int32_t db_find_i64(account_name code, account_name scope, table_name table, uint64_t id);
