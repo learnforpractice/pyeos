@@ -153,6 +153,7 @@ static struct vm_api _vm_api = {
    .recover_key = recover_key,
    .assert_recover_key = assert_recover_key,
    .db_store_i64 = db_store_i64,
+   .db_store_i64_ex = db_store_i64_ex,
    .db_update_i64 = db_update_i64,
    .db_remove_i64 = db_remove_i64,
    .db_get_i64 = db_get_i64,

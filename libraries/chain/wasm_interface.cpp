@@ -172,6 +172,8 @@ namespace eosio { namespace chain {
       uint32_t num = context.control.head_block_state()->header.block_num();
       while (false) {//(num >= 200) {
          if (context.receiver == N(eosio)) {
+            _old_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
+            break;
               //context.act.name == N(buyrambytes) || context.act.name == N(buyram) || context.act.name == N(sellram)
 //            12000 setcode eosio set bios.boot
 //            12247 setcode eosio set back eosio.system

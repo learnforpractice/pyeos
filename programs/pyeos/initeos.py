@@ -21,6 +21,8 @@ from imp import reload
 producer = eosapi.Producer()
 
 sys.path.insert(0, '/Applications/Eclipse.app/Contents//Eclipse/plugins/org.python.pydev_5.9.2.201708151115/pysrc')
+tests = os.path.join(os.path.dirname(__file__), 'tests')
+sys.path.insert(0, tests)
 
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.
@@ -233,7 +235,7 @@ except Exception as e:
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
-    accounts_map = {'eosio.bios':'eosio.bios', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system', 'eosio.token':'eosio.token'}
+    accounts_map = {'eosio.token':'eosio.token', 'eosio.bios':'eosio.bios', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system'}
     for account in accounts_map:
         print('account', account)
         if not eosapi.get_account(account):

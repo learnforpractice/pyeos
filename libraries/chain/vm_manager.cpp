@@ -165,7 +165,7 @@ bool vm_manager::init() {
 
    char _path[128];
 #ifdef DEBUG
-   const char* _format = "../libs/libvm_wasm_wavmd-%d" DYLIB_SUFFIX;
+   const char* _format = "../libs/libvm_wasm_wavm-%dd" DYLIB_SUFFIX;
 #else
    const char* _format = "../libs/libvm_wasm_wavm-%d" DYLIB_SUFFIX;
 #endif
@@ -182,10 +182,9 @@ bool vm_manager::init() {
    }
 
 
-   vector<std::unique_ptr<boost::thread>> threads;
+   boost::thread_group g;
 
    for (int i=1;i<=10;i++) {//TODO: 10 --> number of CPU cores
-      fn_preload _preload;
       auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
       if (itr == vm_map.end()) {
          continue;
@@ -195,15 +194,9 @@ bool vm_manager::init() {
       }
 
       const auto _calls = itr->second.get();
-      std::unique_ptr<boost::thread> thread;
-      thread.reset(new boost::thread([this, _calls]{this->preload_accounts(_calls);}));
-      threads.push_back(std::move(thread));
+      g.create_thread( boost::bind( &vm_manager::preload_accounts,this, _calls ) );
    }
-
-   for (int i=0;i<threads.size();i++) {
-      threads[i]->join();
-   }
-
+   g.join_all();
    return true;
 }
 

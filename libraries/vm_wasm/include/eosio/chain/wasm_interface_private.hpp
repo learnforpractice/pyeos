@@ -66,13 +66,6 @@ namespace eosio { namespace chain {
       wasm_interface_impl(wasm_interface::vm_type vm) {
 #ifdef _WAVM
          runtime_interface = std::make_unique<webassembly::wavm::wavm_runtime>();
-         if (vm_is_account(N(eosio))) {
-            get_instantiated_module(N(eosio));
-         }
-
-         if (vm_is_account(N(eosio.token))) {
-            get_instantiated_module(N(eosio.token));
-         }
 #endif
 #ifdef _BINARYEN
          runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
