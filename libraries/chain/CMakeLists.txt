@@ -78,7 +78,7 @@ add_library( eosio_chain
 #set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-   target_compile_options(eosio_chain PRIVATE -DDEBUG)
+   target_compile_options(eosio_chain PUBLIC -DDEBUG)
 endif()
 
 target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase db_api softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})

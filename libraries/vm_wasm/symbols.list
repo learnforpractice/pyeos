@@ -5,3 +5,5 @@ _vm_setcode
 _vm_apply
 _vm_call
 _vm_get_wasm_api
+_vm_preload
+

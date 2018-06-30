@@ -98,7 +98,7 @@ namespace eosio { namespace chain {
          return mem_image;
       }
 
-      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver )
+      std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver, bool preload = false )
       {
          size_t size = 0;
          const char* code;
@@ -119,10 +119,12 @@ namespace eosio { namespace chain {
          }
          if(need_update) {
             elog("update code ${n}", ("n", receiver));
-            auto timer_pause = fc::make_scoped_exit([&](){
-               resume_billing_timer();
-            });
-            pause_billing_timer();
+            if (!preload) {
+               auto timer_pause = fc::make_scoped_exit([&](){
+                  resume_billing_timer();
+               });
+               pause_billing_timer();
+            }
             IR::Module module;
             try {
                Serialization::MemoryInputStream stream((const U8*)code, size);

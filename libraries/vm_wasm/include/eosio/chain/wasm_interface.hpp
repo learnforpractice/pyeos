@@ -61,6 +61,8 @@ namespace eosio { namespace chain {
          //Calls apply or error on a given code
          int apply(uint64_t receiver, uint64_t account, uint64_t act);
          bool init();
+         int preload(uint64_t account);
+
       private:
          wasm_interface(vm_type vm);
          unique_ptr<struct wasm_interface_impl> my;

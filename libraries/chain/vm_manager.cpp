@@ -8,6 +8,7 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <eosio/chain/exceptions.hpp>
 
@@ -18,6 +19,9 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h> // for sysconf
+
+#include <thread>
+#include <mutex>
 
 using namespace eosio;
 using namespace eosio::chain;
@@ -31,11 +35,20 @@ namespace chain {
 }
 }
 
+#define WAVM_VM_START_INDEX (0x10000)
+
+typedef void (*fn_on_boost_account)(void* v, uint64_t account);
 bool is_boost_account(uint64_t account);
+void visit_boost_account(fn_on_boost_account fn, void* param);
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
+
+void _on_boost_account(void* v, uint64_t account) {
+   vm_manager* mngr = (vm_manager*)v;
+   mngr->on_boost_account(account);
+}
 
 static vector<char> print_buffer;
 static void print(const char * str, size_t len) {
@@ -118,14 +131,15 @@ static const char* vm_libs_path[] = {
    "../libs/libvm_wasm_binaryend" DYLIB_SUFFIX,
    "../libs/libvm_py-1d" DYLIB_SUFFIX,
    "../libs/libvm_ethd" DYLIB_SUFFIX,
-   "../libs/libvm_wasm_wavmd" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_wavm-0d" DYLIB_SUFFIX
 #else
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_py-1" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
-   "../libs/libvm_wasm_wavm" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX
 #endif
 };
+
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
    if (!mngr) {
@@ -149,7 +163,73 @@ bool vm_manager::init() {
       load_vm_from_path(i, vm_libs_path[i]);
    }
 
+   char _path[128];
+#ifdef DEBUG
+   const char* _format = "../libs/libvm_wasm_wavmd-%d" DYLIB_SUFFIX;
+#else
+   const char* _format = "../libs/libvm_wasm_wavm-%d" DYLIB_SUFFIX;
+#endif
+
+   for (int i=1;i<=10;i++) {
+      snprintf(_path, sizeof(_path), _format, i);
+      load_vm_from_path(WAVM_VM_START_INDEX|i, _path);
+   }
+
+   visit_boost_account(_on_boost_account, this);
+
+
+   vector<std::unique_ptr<boost::thread>> threads;
+
+   for (int i=1;i<=10;i++) {//TODO: 10 --> number of CPU cores
+      fn_preload _preload;
+      auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
+      if (itr == vm_map.end()) {
+         continue;
+      }
+      if (!itr->second->preload) {
+         continue;
+      }
+
+      const auto _calls = itr->second.get();
+      std::unique_ptr<boost::thread> thread;
+      thread.reset(new boost::thread([this, _calls]{this->preload_accounts(_calls);}));
+      threads.push_back(std::move(thread));
+   }
+
+   for (int i=1;i<=10;i++) {
+      threads[i]->join();
+   }
+
    return true;
+}
+
+void vm_manager::preload_accounts(vm_calls* _calls) {
+   static std::mutex m1, m2;
+   while(true) {
+      uint64_t account;
+      {
+         std::lock_guard<std::mutex> lock(m1);
+         if (boost_accounts.empty()) {
+            break;
+         }
+         account = boost_accounts.back();
+         boost_accounts.pop_back();
+      }
+      {
+         _calls->preload(account);
+         std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
+         *calls = *_calls;
+         {
+            std::lock_guard<std::mutex> lock(m2);
+            preload_account_map[account] = std::move(calls);
+         }
+      }
+   }
+}
+
+
+void vm_manager::on_boost_account(uint64_t account) {
+   boost_accounts.push_back(account);
 }
 
 vm_manager::vm_manager() {
@@ -184,6 +264,13 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       return 0;
    }
 
+   fn_preload preload = (fn_preload)dlsym(handle, "vm_preload");
+   /*
+   if (preload == NULL) {
+      return 0;
+   }
+   */
+
    vm_init();
    register_vm_api(handle);
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
@@ -194,6 +281,8 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->vm_deinit = vm_deinit;
    calls->setcode = setcode;
    calls->apply = apply;
+   calls->preload = preload;
+
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    vm_map[vm_type] = std::move(calls);
    return 1;
@@ -326,6 +415,13 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
       return 0;
    }
 
+   fn_preload preload = (fn_preload)dlsym(handle, "vm_preload");
+   /*
+   if (preload == NULL) {
+      return 0;
+   }
+   */
+
    vm_init();
    register_vm_api(handle);
 
@@ -340,6 +436,7 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 
    calls->setcode = setcode;
    calls->apply = apply;
+   calls->preload = preload;
 
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    auto __itr = vm_map.find(vm_type);
@@ -375,12 +472,11 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    }
 */
    if (type == 0) { //wasm
-      // || receiver == N(eosio) || receiver == N(eosio.token)
-      //appbase::app().has_option("hard-replay-blockchain")
-      if (receiver == N(eosio) || receiver == N(eosio.token)) { //replay
-         type = 3; //accelerate execution using JIT
+      auto itr = preload_account_map.find(receiver);
+      if (itr != preload_account_map.end()) {
+         return itr->second->apply(receiver, account, act);
       } else if (is_boost_account(receiver)) {
-         type = 3;
+         type = 3;//accelerating execution by JIT
       }
    }
 

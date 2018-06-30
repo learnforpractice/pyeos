@@ -6,6 +6,7 @@ using namespace eosio;
 
 int wasm_setcode(uint64_t account);
 int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act);
+int wasm_preload(uint64_t account);
 
 namespace eosio {
    namespace chain {
@@ -57,6 +58,11 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    wasm_apply(receiver, account, act);
    return 0;
 }
+
+int vm_preload(uint64_t account) {
+   return wasm_preload(account);
+}
+
 uint64_t _wasm_call(const char* act, uint64_t* args, int argc);
 uint64_t vm_call(const char* act, uint64_t* args, int argc) {
    return _wasm_call(act, args, argc);
