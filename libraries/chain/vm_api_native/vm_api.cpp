@@ -41,7 +41,8 @@ static inline apply_context& ctx() {
    return apply_context::ctx();
 }
 
-#include "vm_api.h"
+#define __NO_EOSIOLIB_HEADER_DEFINES
+#include <eosiolib_native/vm_api.h>
 
 #include "action.cpp"
 #include "chain.cpp"
@@ -60,16 +61,16 @@ static inline apply_context& ctx() {
    #undef assert
 #endif
 
-void eosio_assert_( bool condition, char* msg ) {
-   if( BOOST_UNLIKELY( !condition ) ) {
-      std::string message( msg );
-      edump((message));
-      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
-   }
+uint64_t get_action_account() {
+   return ctx().act.account.value;
 }
 
-void eosio_assert( bool condition) {
-   eosio_assert_( condition, (char*)"" );
+uint64_t string_to_uint64_(const char* str) {
+   try {
+      return name(str).value;
+   } catch (...) {
+   }
+   return 0;
 }
 
 void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
@@ -98,12 +99,6 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
    }
    memcpy(code_id, id._hash, size);
    return 1;
-}
-
-extern "C" {
-   int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
-   uint64_t get_action_account();
-   uint64_t string_to_uint64_(const char* str);
 }
 
 int has_option(const char* _option) {
@@ -297,7 +292,6 @@ static struct vm_api _vm_api = {
    .rodb_upperbound_i64 = db_api_upperbound_i64,
    .rodb_end_i64 = db_api_end_i64,
 
-   .split_path = split_path,
    .get_action_account = get_action_account,
    .string_to_uint64 = string_to_uint64_,
    .uint64_to_string = uint64_to_string_,

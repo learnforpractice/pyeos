@@ -1,5 +1,5 @@
 
-static void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
+void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    EOS_ASSERT(ram_bytes >= -1, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
    EOS_ASSERT(net_weight >= -1, wasm_execution_error, "invalid value for net resource weight expected [-1,INT64_MAX]");
    EOS_ASSERT(cpu_weight >= -1, wasm_execution_error, "invalid value for cpu resource weight expected [-1,INT64_MAX]");
@@ -8,11 +8,11 @@ static void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t ne
    }
 }
 
-static void get_resource_limits( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight ) {
+void get_resource_limits( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight ) {
    ctx().control.get_resource_limits_manager().get_account_limits( account, *ram_bytes, *net_weight, *cpu_weight);
 }
 
-static int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t datalen ) {
+int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t datalen ) {
    datastream<const char*> ds( packed_producer_schedule, datalen );
    vector<producer_key> producers;
    fc::raw::unpack(ds, producers);
@@ -28,18 +28,18 @@ static int64_t set_proposed_producers( char *packed_producer_schedule, uint32_t 
    return ctx().control.set_proposed_producers( std::move(producers) );
 }
 
-static bool is_privileged( uint64_t n )  {
+bool is_privileged( uint64_t n )  {
    return ctx().db.get<account_object, by_name>( n ).privileged;
 }
 
-static void set_privileged( uint64_t n, bool is_priv ) {
+void set_privileged( uint64_t n, bool is_priv ) {
    const auto& a = ctx().db.get<account_object, by_name>( n );
    ctx().db.modify( a, [&]( auto& ma ){
       ma.privileged = is_priv;
    });
 }
 
-static void set_blockchain_parameters_packed(char* packed_blockchain_parameters, uint32_t datalen) {
+void set_blockchain_parameters_packed(char* packed_blockchain_parameters, uint32_t datalen) {
    datastream<const char*> ds( packed_blockchain_parameters, datalen );
    chain::chain_config cfg;
    fc::raw::unpack(ds, cfg);
@@ -51,7 +51,7 @@ static void set_blockchain_parameters_packed(char* packed_blockchain_parameters,
 
 }
 
-static uint32_t get_blockchain_parameters_packed(char* packed_blockchain_parameters, uint32_t buffer_size) {
+uint32_t get_blockchain_parameters_packed(char* packed_blockchain_parameters, uint32_t buffer_size) {
    auto& gpo = ctx().control.get_global_properties();
 
    auto s = fc::raw::pack_size( gpo.configuration );
@@ -65,7 +65,7 @@ static uint32_t get_blockchain_parameters_packed(char* packed_blockchain_paramet
    return 0;
 }
 
-static void activate_feature( int64_t f ) {
+void activate_feature( int64_t f ) {
    FC_ASSERT( !"Unsupported Hardfork Detected" );
 }
 

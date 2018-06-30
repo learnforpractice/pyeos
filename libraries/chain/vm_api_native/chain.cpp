@@ -5,7 +5,7 @@
 
 
 
-static uint32_t get_active_producers( uint64_t* producers, uint32_t buffer_size ) {
+uint32_t get_active_producers( uint64_t* producers, uint32_t buffer_size ) {
    auto active_producers = ctx().get_active_producers();
 
    size_t len = active_producers.size();
