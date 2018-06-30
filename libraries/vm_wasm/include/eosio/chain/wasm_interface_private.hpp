@@ -119,10 +119,12 @@ namespace eosio { namespace chain {
          }
          if(need_update) {
             elog("update code ${n}", ("n", receiver));
-            if (!preload) {
-               auto timer_pause = fc::make_scoped_exit([&](){
+            auto timer_pause = fc::make_scoped_exit([&](){
+               if (!preload) {
                   resume_billing_timer();
-               });
+               }
+            });
+            if (!preload) {
                pause_billing_timer();
             }
             IR::Module module;
