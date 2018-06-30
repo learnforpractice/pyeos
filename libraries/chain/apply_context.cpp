@@ -4,50 +4,23 @@
 #include <eosio/chain/transaction_context.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/micropython_interface.hpp>
-
-#include <eosio/chain/evm_interface.hpp>
-
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/resource_limits.hpp>
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
-
-#include "vm_manager.hpp"
-
-#include <eosio/chain/db_api.hpp>
-#include "micropython/mpeoslib.h"
-//#include "rpc_interface/rpc_interface.hpp"
-
-
-extern "C" {
-#include <stdio.h>
-#include <string.h>
-
-#include "py/objlist.h"
-#include "py/objstringio.h"
-#include "py/runtime.h"
-#include "py/stream.h"
-#include "py/obj.h"
-#include "py/compile.h"
-#include "py/gc.h"
-}
+#include <fc/scoped_exit.hpp>
 
 using boost::container::flat_set;
 
-static bool _py_debug_enable = 0;
+void py_debug_enable_(int e) {
 
-void py_debug_enable_(int enable) {
-   _py_debug_enable = enable;
 }
 
-bool py_debug_enabled_() {
-   return _py_debug_enable;
+int py_debug_enabled_() {
+   return 0;
 }
-
-int contract_debug_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 
 namespace eosio { namespace chain {
 
@@ -70,102 +43,6 @@ bool apply_context::get_code_size(uint64_t _account, int& size) {
       return false;
    }
 }
-
-apply_context* apply_context::current_context = 0;
-
-apply_context& apply_context::ctx() {
-   return *current_context;
-}
-
-void apply_context::schedule() {
-   const auto &a = control.db().get<account_object, by_name>(receiver);
-   privileged = a.privileged;
-
-   control.set_action_object(get_receiver(), act);
-
-   if( a.code.size() <= 0 || (act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) ) {
-      return;
-   }
-
-   if( control.is_producing_block() ) {
-      control.check_contract_list( receiver );
-   }
-
-   if (a.vm_type == 0) {
-      try {
-         control.get_wasm_interface().apply(a.code_version, a.code, *this);
-         return;
-      } catch ( const wasm_exit& ){
-
-      }
-#if 0
-      bool ret = control.get_wasm_interface().apply_native(*this);
-      if (ret) {
-         return;
-      }
-#endif
-   }
-
-   int ret = vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
-   if (ret) {
-      return;
-   }
-
-   if (a.vm_type == 0) {
-      try {
-         control.get_wasm_interface().apply(a.code_version, a.code, *this);
-      } catch ( const wasm_exit& ){
-
-      }
-   } else if (a.vm_type == 1) {
-      if (py_debug_enabled_()) {
-         contract_debug_apply(receiver.value, act.account.value, act.name.value);
-         return;
-      }
-      bool trusted = false;
-      int itr = db_api::get().db_find_i64(N(credit), N(credit), N(credit), receiver.value);
-      if (itr >= 0) {
-         char c = 0;
-         int ret = db_api::get().db_get_i64(itr, &c, sizeof(c));
-         if (ret == 1) {
-            FC_ASSERT(c != '2', "account has been blocked out!");
-            if (c == '1') {
-               trusted = true;
-            }
-         }
-      }
-#if 0
-      if (trusted || !rpc_interface::get().ready()) {
-         micropython_interface::get().apply(receiver.value, act.account.value, act.name.value);
-      } else {
-         FC_ASSERT(rpc_interface::get().ready(), "RPC not ready");
-         auto &py = rpc_interface::get();
-         try {
-            py.apply(*this);
-         } catch (...) {
-            throw;
-         }
-      }
-#endif
-   } else if (a.vm_type == 2) {
-      bytes code(a.code.begin(), a.code.end());
-      bytes args(act.data.begin(), act.data.end());
-      bytes output;
-//      evm_interface::get().run_code(*this, code, args, output);
-      ilog("${n}",("n", output.size()));
-   } else if (a.vm_type == 3) {
-#if 0
-      auto &rpc = rpc_interface::get();
-      try {
-         rpc.apply(*this);
-      } catch (...) {
-         throw;
-      }
-#endif
-   }
-
-}
-
 static inline void print_debug(account_name receiver, const action_trace& ar) {
    if (!ar.console.empty()) {
       auto prefix = fc::format_string(
@@ -180,10 +57,21 @@ static inline void print_debug(account_name receiver, const action_trace& ar) {
    }
 }
 
+//apply_context* apply_context::__ctx = nullptr;
+apply_context* apply_context::current_context = nullptr;
+apply_context& apply_context::ctx() {
+   FC_ASSERT(current_context != nullptr, "not in apply_context");
+   return *current_context;
+}
+
 action_trace apply_context::exec_one()
 {
-    current_context = this;
+//   apply_context::__ctx = this;
+   auto cleanup = fc::make_scoped_exit([&](){
+      current_context = nullptr;
+   });
 
+   current_context = this;
    auto start = fc::time_point::now();
 
    const auto& cfg = control.get_global_properties().configuration;
@@ -197,8 +85,18 @@ action_trace apply_context::exec_one()
             control.check_action_list( act.account, act.name );
          }
          (*native)(*this);
-      } else {
-        schedule();
+      }
+
+      if( a.code.size() > 0
+          && !(act.account == config::system_account_name && act.name == N(setcode) && receiver == config::system_account_name) )
+      {
+         if( trx_context.can_subjectively_fail && control.is_producing_block() ) {
+            control.check_contract_list( receiver );
+            control.check_action_list( act.account, act.name );
+         }
+         try {
+            control.get_wasm_interface().apply(a.code_version, a.code, *this);
+         } catch ( const wasm_exit& ){}
       }
 
 
@@ -555,9 +453,8 @@ int apply_context::get_context_free_data( uint32_t index, char* buffer, size_t b
 }
 
 int apply_context::db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   return db_store_i64( get_receiver(), scope, table, payer, id, buffer, buffer_size);
+   return db_store_i64( receiver, scope, table, payer, id, buffer, buffer_size);
 }
-
 name apply_context::get_receiver() {
   if ( act.account == setcode::get_account() ) {
      if ( act.name == setcode::get_name() ) {
@@ -567,12 +464,9 @@ name apply_context::get_receiver() {
   }
   return this->receiver;
 }
-
-
 int apply_context::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
 //   require_write_lock( scope );
-   const auto& tab = find_or_create_table( get_receiver(), scope, table, payer );
-
+   const auto& tab = find_or_create_table( code, scope, table, payer );
    auto tableid = tab.id;
 
    FC_ASSERT( payer != account_name(), "must specify a valid account to pay for new record" );
@@ -600,7 +494,7 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   FC_ASSERT( table_obj.code == get_receiver(), "db access violation" );
+   FC_ASSERT( table_obj.code == receiver, "db access violation" );
 
 //   require_write_lock( table_obj.scope );
 
@@ -614,7 +508,6 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
       // refund the existing payer
       update_db_usage( obj.payer,  -(old_size) );
       // charge the new payer
-
       update_db_usage( payer,  (new_size));
    } else if(old_size != new_size) {
       // charge/refund the existing payer the difference
@@ -632,7 +525,7 @@ void apply_context::db_remove_i64( int iterator ) {
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   FC_ASSERT( table_obj.code == get_receiver(), "db access violation" );
+   FC_ASSERT( table_obj.code == receiver, "db access violation" );
 
 //   require_write_lock( table_obj.scope );
 
