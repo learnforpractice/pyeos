@@ -189,6 +189,18 @@ def t3():
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
 
+def t4():
+    accounts = gen_names(100)
+    actions = []
+    for account in accounts[10:80]:
+        print('++++++boost account', account)
+        msg = eosapi.pack_args('eosio', 'cancelboost', {'account':account})
+        act = ['eosio', 'cancelboost', {'eosio':'active'}, msg]
+        actions.append(act)
+    rr, cost = eosapi.push_actions(actions)
+    assert_ret(rr)
+
+
 def buyram():
     accounts = gen_names(100)
     actions = []
