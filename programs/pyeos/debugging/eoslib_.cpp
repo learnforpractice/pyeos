@@ -2,10 +2,8 @@
 
 #include <eosio/chain/name.hpp>
 
-extern "C" void  eosio_assert( uint32_t test, const char* msg );
-
-namespace eosio {
-namespace chain {
+extern "C" {
+   void  eosio_assert( uint32_t test, const char* msg );
 
    uint32_t read_action_data( void* msg, uint32_t buffer_size );
    uint32_t action_data_size();
@@ -30,8 +28,6 @@ namespace chain {
    int32_t db_lowerbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
    int32_t db_upperbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
    int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table);
-
-}
 }
 
 using namespace eosio::chain;
