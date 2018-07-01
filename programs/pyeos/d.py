@@ -184,6 +184,10 @@ def parse_log(num, trx):
 #    print('+++++', num, JsonStruct(trx))
     trx = JsonStruct(trx)
     for act in trx.actions:
+        print(act.account, act.name)
+        args = eosapi.unpack_args(act.account, act.name, bytes.fromhex(act.data))
+        print(args)
+        continue
         if not act.account == 'eosio':
             continue
         if act.name == 'setcode':
@@ -204,7 +208,7 @@ def parse_log(num, trx):
                 print(num, 'newaccount', creator, name)
 
 def t6(s=1, e=300e4):
-    _path = 'data-dir/blocks'
+    _path = 'data-dir.bk/blocks'
     debug.block_log_test(_path, s, e, parse_log)
     print(total_contracts)
     print(len(total_contracts))

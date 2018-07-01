@@ -111,6 +111,7 @@ void fc_pack_setconfig_(string& abiPath, uint64_t account, string& out);
 
 void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result);
 void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin);
+PyObject* fc_unpack_args(uint64_t code, uint64_t action, string& bin);
 
 
 PyObject* gen_transaction_(vector<chain::action>& v, int expiration);

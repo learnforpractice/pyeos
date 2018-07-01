@@ -771,6 +771,17 @@ void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
    } FC_LOG_AND_DROP();
 }
 
+PyObject* fc_unpack_args(uint64_t code, uint64_t action, string& bin) {
+   auto& ro_api = get_chain_plugin().get_read_only_api();
+   eosio::chain_apis::read_only::abi_bin_to_json_params params;
+   params = {code, action, vector<char>(bin.begin(), bin.end())};
+   try {
+      auto result = ro_api.abi_bin_to_json(params);
+      return python::json::to_string(result.args);
+   } FC_LOG_AND_DROP();
+   return py_new_none();
+}
+
 void n_to_symbol_(uint64_t n, string& out) {
    try {
       out = eosio::chain::symbol(n).name();

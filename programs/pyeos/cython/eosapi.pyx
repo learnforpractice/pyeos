@@ -104,7 +104,7 @@ cdef extern from "eosapi_.hpp":
     void fc_pack_setabi_(string& abiPath, uint64_t account, string& out)
     void fc_pack_updateauth(string& _account, string& _permission, string& _parent, string& _auth, uint32_t _delay, string& result)
     void fc_pack_args(uint64_t code, uint64_t action, string& js, string& bin) except +
-
+    object fc_unpack_args(uint64_t code, uint64_t action, string& bin);
 
     object gen_transaction_(vector[action]& v, int expiration)
     object sign_transaction_(string& trx_json_to_sign, string& str_private_key)
@@ -500,6 +500,15 @@ def pack_args(code, action, args):
         raise Exception('error ocurred in fc_pack_args')
     return <bytes>bin
 
+
+def unpack_args(code, action, string& bin):
+    if isinstance(code, str):
+        code = N(code)
+
+    if isinstance(action, str):
+        action = N(action)
+
+    return fc_unpack_args(code, action, bin);
 
 def gen_transaction(actions, int expiration=100):
     cdef vector[action] v
