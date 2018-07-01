@@ -138,9 +138,7 @@ namespace eosiosystem {
    void system_contract::boost(account_name account) {
       require_auth( N(eosio) );
       eosio_assert(is_account(account), "account does not exist");
-      if (_boost.find(account) != _boost.end()) {
-         return;
-      }
+       eosio_assert(_boost.find(account) != _boost.end(), "account already accelerated");
       _boost.emplace( account, [&]( auto& p ) {
             p.account = account;
       });

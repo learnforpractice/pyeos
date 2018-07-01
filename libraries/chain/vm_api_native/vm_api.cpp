@@ -65,7 +65,7 @@ uint64_t get_action_account() {
    return ctx().act.account.value;
 }
 
-uint64_t string_to_uint64_(const char* str) {
+extern "C" uint64_t string_to_uint64_(const char* str) {
    try {
       return name(str).value;
    } catch (...) {

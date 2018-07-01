@@ -1,3 +1,4 @@
+extern "C" {
 
 void _send_deferred(const uint128_t* sender_id, uint64_t payer, const char *data, size_t data_len, uint32_t replace_existing) {
    try {
@@ -54,4 +55,6 @@ void assert_context_free() {
 
 int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size ) {
    return ctx().get_context_free_data( index, buffer, buffer_size );
+}
+
 }

@@ -2,6 +2,7 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
+extern "C" {
 
 void prints( const char* cstr ) {
 //   wlog("++++++${n}", ("n", cstr));
@@ -96,3 +97,4 @@ void printhex( const void* data, uint32_t datalen ) {
    ctx().console_append(fc::to_hex((char*)data, datalen));
 }
 
+}

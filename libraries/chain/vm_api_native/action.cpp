@@ -2,6 +2,7 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
+extern "C" {
 
 uint32_t read_action_data( void* msg, uint32_t buffer_size ) {
    auto s = ctx().act.data.size();
@@ -66,3 +67,4 @@ uint64_t  publication_time() {
    return static_cast<uint64_t>( ctx().trx_context.published.time_since_epoch().count() );
 }
 
+}

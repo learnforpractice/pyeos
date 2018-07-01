@@ -1,5 +1,6 @@
-#define __CONTEXT_FREE
+#include "context_free_db.hpp"
 #include <eosiolib/multi_index.hpp>
+
 using namespace std;
 
 struct boost_account {

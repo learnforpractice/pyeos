@@ -9,7 +9,7 @@ bool is_nan( const float64_t f ) {
 bool is_nan( const float128_t& f ) {
    return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
 }
-
+extern "C" {
 int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
    return ctx().db_store_i64(scope, table, payer, id,  (const char*)data, len);
 }
@@ -186,4 +186,5 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_(idx128, uint128_t)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_(idx256, 2, uint128_t)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_(idx_double, float64_t)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_(idx_long_double, float128_t)
+}
 

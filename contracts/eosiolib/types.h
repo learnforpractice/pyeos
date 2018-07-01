@@ -43,10 +43,8 @@ typedef uint16_t weight_type;
 
 typedef uint32_t _time;
 
-#ifndef __WASM
-   typedef __int128 int128_t ;
-   typedef unsigned __int128 uint128_t;
-#endif
+typedef __int128 int128_t ;
+typedef unsigned __int128 uint128_t;
 
 
 /* macro to align/overalign a type to ensure calls to intrinsics with pointers/references are properly aligned */

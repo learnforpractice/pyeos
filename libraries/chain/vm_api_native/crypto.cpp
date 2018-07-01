@@ -27,7 +27,7 @@ template<class Encoder> auto encode(char* data, size_t datalen) {
    e.write( data, datalen );
    return e.result();
 }
-
+extern "C" {
 void assert_sha256( char* data, uint32_t datalen, const struct checksum256* hash ) {
    FC_ASSERT(data != nullptr && datalen != 0 && hash!= nullptr);
    auto result = encode<fc::sha256::encoder>( data, datalen );
@@ -101,4 +101,6 @@ void assert_recover_key( const struct checksum256* digest, const char* sig, size
 
    auto check = fc::crypto::public_key( s, *(fc::sha256*)digest, false );
    FC_ASSERT( check == p, "Error expected key different than recovered key" );
+}
+
 }

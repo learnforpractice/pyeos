@@ -1,3 +1,4 @@
+extern "C" {
 
 void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    EOS_ASSERT(ram_bytes >= -1, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
@@ -69,4 +70,4 @@ void activate_feature( int64_t f ) {
    FC_ASSERT( !"Unsupported Hardfork Detected" );
 }
 
-
+}
