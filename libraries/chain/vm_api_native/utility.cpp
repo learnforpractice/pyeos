@@ -1,3 +1,4 @@
+#define __CONTEXT_FREE
 #include <eosiolib/multi_index.hpp>
 using namespace std;
 
