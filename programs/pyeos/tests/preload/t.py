@@ -28,6 +28,8 @@ def assert_ret(rr):
             print(r['except'])
         assert not r['except']
 
+ACCOUNT_COUNT = 100
+
 def t():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
@@ -97,7 +99,7 @@ def t2():
     sys.path.append(os.getcwd())
     account = 'eosio'
     path = 'eosio.system'
-    accounts = gen_names(100)
+    accounts = gen_names(ACCOUNT_COUNT)
 
 
     _path = os.path.join(contracts_path, path, path)
@@ -179,7 +181,7 @@ def t2():
             assert r and not r['except']
 
 def t3():
-    accounts = gen_names(100)
+    accounts = gen_names(ACCOUNT_COUNT)
     actions = []
     for account in accounts:
         print('++++++boost account', account)
@@ -190,9 +192,9 @@ def t3():
     assert_ret(rr)
 
 def t4():
-    accounts = gen_names(100)
+    accounts = gen_names(ACCOUNT_COUNT)
     actions = []
-    for account in accounts[10:80]:
+    for account in accounts:
         print('++++++boost account', account)
         msg = eosapi.pack_args('eosio', 'cancelboost', {'account':account})
         act = ['eosio', 'cancelboost', {'eosio':'active'}, msg]
@@ -202,7 +204,7 @@ def t4():
 
 
 def buyram():
-    accounts = gen_names(100)
+    accounts = gen_names(ACCOUNT_COUNT)
     actions = []
     for account in accounts:
         print('buy ram', account)
@@ -214,7 +216,7 @@ def buyram():
     assert_ret(rr)
 
 def buyrambytes():
-    accounts = gen_names(100)
+    accounts = gen_names(ACCOUNT_COUNT)
     actions = []
     for account in accounts:
         print('buy ram in bytes', account)
