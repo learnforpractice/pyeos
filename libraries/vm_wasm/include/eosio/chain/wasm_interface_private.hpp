@@ -155,6 +155,15 @@ namespace eosio { namespace chain {
          return it->second;
       }
 
+      int unload_module(uint64_t account) {
+         auto it = instantiation_cache.find(account);
+         if (it != instantiation_cache.end()) {
+            instantiation_cache.erase(it);
+            return 1;
+         }
+         return 0;
+      }
+
 
       std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module()
       {

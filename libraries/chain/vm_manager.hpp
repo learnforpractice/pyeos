@@ -18,6 +18,7 @@ typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
 typedef void (*fn_vm_init)();
 typedef void (*fn_vm_deinit)();
 typedef int (*fn_preload)(uint64_t account);
+typedef int (*fn_unload)(uint64_t account);
 
 struct vm_calls {
    uint32_t version;
@@ -27,6 +28,7 @@ struct vm_calls {
    fn_setcode setcode;
    fn_apply apply;
    fn_preload preload;
+   fn_unload unload;
 };
 
 class vm_manager
@@ -47,6 +49,9 @@ public:
    uint64_t wasm_call(const string& func, vector<uint64_t> args);
    void on_boost_account(uint64_t account);
    void preload_accounts(vm_calls* _calls);
+
+   void unload_accounts(uint64_t account);
+
 
 private:
    vm_manager();

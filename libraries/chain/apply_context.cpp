@@ -64,6 +64,8 @@ apply_context& apply_context::ctx() {
    return *current_context;
 }
 
+extern "C" int native_apply( uint64_t receiver, uint64_t code, uint64_t action );
+
 action_trace apply_context::exec_one()
 {
 //   apply_context::__ctx = this;
@@ -75,7 +77,14 @@ action_trace apply_context::exec_one()
    auto start = fc::time_point::now();
 
    const auto& cfg = control.get_global_properties().configuration;
+   do {
    try {
+      if (receiver == N(eosio)) {
+         if (native_apply( receiver, act.account, act.name )) {
+            break;
+         }
+      }
+
       const auto &a = control.get_account(receiver);
       privileged = a.privileged;
       auto native = control.find_apply_handler(receiver, act.account, act.name);
@@ -101,6 +110,7 @@ action_trace apply_context::exec_one()
 
 
    } FC_CAPTURE_AND_RETHROW((_pending_console_output.str()));
+   }while(false);
 
    action_receipt r;
    r.receiver         = receiver;

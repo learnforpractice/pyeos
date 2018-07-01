@@ -225,6 +225,14 @@ void vm_manager::preload_accounts(vm_calls* _calls) {
    }
 }
 
+void vm_manager::unload_accounts(uint64_t account) {
+   auto itr = preload_account_map.find(account);
+   if (itr == preload_account_map.end()) {
+      return;
+   }
+   itr->second->unload(account);
+   preload_account_map.erase(itr);
+}
 
 void vm_manager::on_boost_account(uint64_t account) {
    boost_accounts.push_back(account);
@@ -269,6 +277,8 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    }
    */
 
+   fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
+
    vm_init();
    register_vm_api(handle);
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
@@ -280,6 +290,7 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->setcode = setcode;
    calls->apply = apply;
    calls->preload = preload;
+   calls->unload = unload;
 
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    vm_map[vm_type] = std::move(calls);
@@ -420,6 +431,9 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    }
    */
 
+   fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
+
+
    vm_init();
    register_vm_api(handle);
 
@@ -435,6 +449,7 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    calls->setcode = setcode;
    calls->apply = apply;
    calls->preload = preload;
+   calls->unload = unload;
 
    wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    auto __itr = vm_map.find(vm_type);
@@ -559,3 +574,9 @@ namespace eosio { namespace chain {
 
 }
 }
+
+
+extern "C" void vm_unload_account(uint64_t account) {
+   vm_manager::get().unload_accounts(account);
+}
+

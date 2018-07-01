@@ -143,7 +143,6 @@ namespace eosiosystem {
 
          eosio_global_state     _gstate;
          rammarket              _rammarket;
-         boost_table            _boost;
 
       public:
          system_contract( account_name s );
@@ -226,8 +225,6 @@ namespace eosiosystem {
          void rmvproducer( account_name producer );
 
          void bidname( account_name bidder, account_name newname, asset bid );
-         void boost(account_name account);
-         void cancelboost(account_name account);
 
       private:
          void update_elected_producers( block_timestamp timestamp );

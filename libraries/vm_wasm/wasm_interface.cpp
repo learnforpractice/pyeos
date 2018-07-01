@@ -51,6 +51,10 @@ namespace eosio { namespace chain {
       return 1;
    }
 
+   int wasm_interface::unload(uint64_t account) {
+      return my->unload_module(account);
+   }
+
    wasm_instantiated_module_interface::~wasm_instantiated_module_interface() {}
    wasm_runtime_interface::~wasm_runtime_interface() {}
 
@@ -68,6 +72,10 @@ int wasm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 
 int wasm_preload(uint64_t account) {
    return wasm_interface::get().preload(account);
+}
+
+int wasm_unload(uint64_t account) {
+   return wasm_interface::get().unload(account);
 }
 
 uint64_t _wasm_call(const char* act, uint64_t* args, int argc) {

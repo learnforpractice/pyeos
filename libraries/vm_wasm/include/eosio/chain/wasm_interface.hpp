@@ -62,6 +62,7 @@ namespace eosio { namespace chain {
          int apply(uint64_t receiver, uint64_t account, uint64_t act);
          bool init();
          int preload(uint64_t account);
+         int unload(uint64_t account);
 
       private:
          wasm_interface(vm_type vm);
