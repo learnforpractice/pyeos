@@ -23,9 +23,11 @@ cdef extern from "" namespace "boost::filesystem":
         path()
         operator = (string & s)
 
+'''
 cdef extern from "<fc/crypto/sha256.hpp>" namespace "fc":
     cdef cppclass sha256:
         string str() const
+'''
 
 cdef extern from "<fc/time.hpp>" namespace "fc":
     cdef cppclass time_point_sec:
@@ -85,10 +87,11 @@ cdef extern from "<fc/crypto/public_key.hpp>" namespace "fc::crypto":
 cdef extern from "<fc/crypto/public_key.hpp>" namespace "fc::crypto":
     void to_variant(const public_key & var, variant & vo);
 
-
+'''
 cdef extern from "<eosio/chain/types.hpp>" namespace "eosio::chain":
     ctypedef public_key public_key_type
     ctypedef sha256 chain_id_type
+'''
 
 '''
 cdef extern from "<eosio/types/generated.hpp>" namespace "eosio::types":

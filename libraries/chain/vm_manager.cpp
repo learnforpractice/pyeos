@@ -212,6 +212,7 @@ void vm_manager::preload_accounts(vm_calls* _calls) {
          account = boost_accounts.back();
          boost_accounts.pop_back();
       }
+      ilog("preloading ${n}", ("n", name(account)));
       {
          _calls->preload(account);
          std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();

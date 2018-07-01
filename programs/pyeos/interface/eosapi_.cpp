@@ -638,6 +638,23 @@ int get_code_(string& name, string& wast, string& str_abi, string& code_hash, in
    return -1;
 }
 
+void get_code_hash_(string& name, string& code_hash) {
+   try {
+      controller& db = get_chain_plugin().chain();
+
+      chain_apis::read_only::get_code_results result;
+      result.account_name = name;
+      const auto& d = db.db();
+      const auto& accnt = d.get<account_object, by_name>(name);
+
+      if (accnt.code.size()) {
+         code_hash = fc::sha256::hash(accnt.code.data(), accnt.code.size());
+      }
+   }  FC_LOG_AND_DROP();
+
+   return;
+}
+
 int get_table_(string& scope, string& code, string& table, string& result) {
    try {
       auto& ro_api = get_chain_plugin().get_read_only_api();
@@ -811,3 +828,8 @@ void zlib_decompress_data_(const string& _data, string& _out) {
 bool debug_mode_() {
    return appbase::app().debug_mode();
 }
+
+void sha256_(string& data, string& hash) {
+   hash = fc::sha256::hash(data.c_str(), data.size()).str();
+}
+

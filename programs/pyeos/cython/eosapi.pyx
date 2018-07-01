@@ -126,6 +126,10 @@ cdef extern from "eosapi_.hpp":
     void start_eos_()
     void replay_block_(string& id, int s);
 
+    void get_code_hash_(string& name, string& code_hash)
+    void sha256_(string& data, string& hash)
+
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -749,5 +753,15 @@ def debug_mode():
 
 cdef extern void py_exit() with gil:
     exit()
+
+def get_code_hash(string& name):
+    cdef string hash
+    get_code_hash_(name, hash)
+    return hash
+
+def sha256(string& data):
+    cdef string hash
+    sha256_(data, hash)
+    return hash
 
 

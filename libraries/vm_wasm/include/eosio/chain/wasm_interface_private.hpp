@@ -99,6 +99,9 @@ namespace eosio { namespace chain {
 
          code = get_code( receiver, &size );
          get_code_id(receiver, code_id, sizeof(code_id));
+         if (size <= 0) {
+            return instantiation_cache.end()->second;
+         }
 
          auto it = instantiation_cache.find(receiver);
          bool need_update = 0;
