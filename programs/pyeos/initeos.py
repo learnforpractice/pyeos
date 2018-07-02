@@ -232,6 +232,50 @@ try:
 except Exception as e:
     traceback.print_exc()
 
+def assert_ret(rr):
+    for r in rr:
+        if r['except']:
+            print(r['except'])
+        assert not r['except']
+
+def create_system_accounts():
+    systemAccounts = [
+        'eosio.bpay',
+        'eosio.msig',
+        'eosio.names',
+        'eosio.ram',
+        'eosio.ramfee',
+        'eosio.jit',
+        'eosio.jitfee',
+        'eosio.saving',
+        'eosio.stake',
+        'eosio.token',
+        'eosio.vpay',
+    ]
+    newaccount = {'creator': 'eosio',
+     'name': '',
+     'owner': {'threshold': 1,
+               'keys': [{'key': key1,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': key2,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+
+    for account in systemAccounts:
+        if not eosapi.get_account(account):
+            actions = []
+            print('+++++++++create account', account)
+            newaccount['name'] = account
+            _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
+            act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+            actions.append(act)
+            rr, cost = eosapi.push_actions(actions)
+            assert_ret(rr)
+
 def publish_system_contract():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
@@ -282,11 +326,12 @@ def init():
         return
 
     src_dir = os.path.dirname(os.path.abspath(__file__))
-
+    create_system_accounts()
     publish_system_contract()
 
-    from backyard import t
-    t.deploy_mpy()
+#    from backyard import t
+#    t.deploy_mpy()
+
 #    net.connect('127.0.0.1:9101')
     #load common libraries
 #    t.load_all()

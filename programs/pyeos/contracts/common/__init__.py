@@ -15,6 +15,71 @@ CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_EVM = 2
 
+def assert_ret(rr):
+    for r in rr:
+        if r['except']:
+            print(r['except'])
+        assert not r['except']
+
+def _create_account(account):
+    actions = []
+    newaccount = {'creator': 'eosio',
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': initeos.key1,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': initeos.key2,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+
+    _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
+    act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+    actions.append(act)
+
+    args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
+    args = eosapi.pack_args('eosio', 'buyram', args)
+    act = ['eosio', 'buyram', {'eosio':'active'}, args]
+    actions.append(act)
+
+    args = {'from': 'eosio',
+     'receiver': account,
+     'stake_net_quantity': '1.0050 EOS',
+     'stake_cpu_quantity': '1.0050 EOS',
+     'transfer': 1}
+    args = eosapi.pack_args('eosio', 'delegatebw', args)
+    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    actions.append(act)
+    rr, cost = eosapi.push_actions(actions)
+    assert_ret(rr)
+
+def _set_contract(account, wast_file, abi_file):
+    with open(wast_file, 'rb') as f:
+        wasm = eosapi.wast2wasm(f.read())
+
+    code_hash = eosapi.sha256(wasm)
+    with open(abi_file, 'rb') as f:
+        abi = f.read()
+
+    actions = []
+    _setcode = eosapi.pack_args('eosio', 'setcode', {'account':account,'vmtype':0, 'vmversion':0, 'code':wasm.hex()})
+#        _setabi = eosapi.pack_args('eosio', 'setabi', {'account':account, 'abi':abi.hex()})
+    _setabi = eosapi.pack_setabi(abi_file, account)
+
+    old_hash = eosapi.get_code_hash(account)
+    print(old_hash, code_hash)
+    if code_hash != old_hash:
+        setcode = ['eosio', 'setcode', {account:'active'}, _setcode]
+        actions.append(setcode)
+
+    setabi = ['eosio', 'setabi', {account:'active'}, _setabi]
+    actions.append(setabi)
+    rr, cost = eosapi.push_actions(actions)
+    assert_ret(rr)
+
 def prepare(name, src, abi, full_src_path):
     with producer:
         prepare_(name, src, abi, full_src_path)
@@ -43,8 +108,7 @@ def prepare_(name, src, abi, full_src_path):
 
     if not eosapi.get_account(name):
         print('*'*20, 'create_account')
-        r = eosapi.create_account('eosio', name, initeos.key1, initeos.key2)
-        assert r
+        _create_account(name)
 
     old_code = eosapi.get_code(name)
     need_update = True
@@ -66,8 +130,11 @@ def prepare_(name, src, abi, full_src_path):
 
     if need_update:
         print('Updating contract', src)
-        r = eosapi.set_contract(name, src, abi, code_type)
-        assert r, 'set_contract failed'
+        if code_type == 0:
+            _set_contract(name, src, abi)
+        else:
+            r = eosapi.set_contract(name, src, abi, code_type)
+            assert r, 'set_contract failed'
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):

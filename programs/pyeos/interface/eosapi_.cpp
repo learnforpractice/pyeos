@@ -492,7 +492,8 @@ PyObject* get_account_(const char* _name) {
       result = ro_api.get_account(params);
       return python::json::to_string(result);
 
-   }  FC_LOG_AND_DROP();
+   }  catch(...) {
+   }
 
    return py_new_none();
 }
