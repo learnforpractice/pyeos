@@ -11,6 +11,7 @@
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include <eosiolib/currency.hpp>
+#include <eosiolib/singleton.hpp>
 
 #define EOSIO_NATIVE_ABI( TYPE, MEMBERS ) \
 extern "C" { \
@@ -45,7 +46,16 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( boost_account, (account) )
    };
 
+   struct jit_bid {
+     account_name            high_bidder;
+     int64_t                 high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
+     uint64_t                last_bid_time = 0;
+     uint64_t                jit_remains;
+   };
+
    typedef eosio::multi_index< N(boost), boost_account>  boost_table;
+
+   typedef eosio::singleton<N(jitbid), jit_bid> jit_bid_singleton;
 
 
    /*

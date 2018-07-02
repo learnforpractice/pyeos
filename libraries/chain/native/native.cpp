@@ -42,12 +42,19 @@ bool is_boost_account_expired(uint64_t account) {
 bool is_boost_account(uint64_t account, bool& expired) {
    uint64_t _now = current_time();
    eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
+
    auto itr = _boost.find(account);
    expired = false;
    if (itr != _boost.end()) {
       if (itr->expiration < _now) {
          expired = true;
          _boost.erase(itr);
+          jit_bid_singleton _jitbid(N(eosio), N(eosio));
+          if (_jitbid.exists()) {
+              jit_bid bid = _jitbid.get();
+              bid.jit_remains += 1;
+              _jitbid.set(bid, 0);
+          }
       }
       return true;
    }
