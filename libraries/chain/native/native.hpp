@@ -43,13 +43,14 @@ namespace eosiosystem {
       uint64_t        expiration;
       uint64_t primary_key()const { return account; }
 
-      EOSLIB_SERIALIZE( boost_account, (account) )
+      EOSLIB_SERIALIZE( boost_account, (account)(expiration) )
    };
 
    struct jit_bid {
      account_name            high_bidder;
      int64_t                 high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
      uint64_t                last_bid_time = 0;
+     uint64_t                start_bid_time = 0;
      uint64_t                jit_remains;
    };
 

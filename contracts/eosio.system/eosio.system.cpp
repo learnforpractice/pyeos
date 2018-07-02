@@ -15,8 +15,9 @@ namespace eosiosystem {
     _producers(_self,_self),
     _global(_self,_self),
     _rammarket(_self,_self),
-    _jitbid(_self,_self)
-   {
+    _jitbid(_self,_self),
+    _boost(_self,_self)
+    {
       //print( "construct system\n" );
       _gstate = _global.exists() ? _global.get() : get_default_parameters();
       if (!_jitbid.exists()) {
@@ -24,6 +25,7 @@ namespace eosiosystem {
          bid.high_bidder = 0;
          bid.high_bid = 0;
          bid.last_bid_time = 0;
+         bid.start_bid_time = current_time();
          bid.jit_remains = 100; //TODO: max jit resources, should be configurable
          _jitbid.set(bid, _self);
       }
@@ -168,6 +170,37 @@ namespace eosiosystem {
        current.last_bid_time = current_time();
        _jitbid.set(current, _self);
     }
+
+   void system_contract::boost(account_name account) {
+      require_auth( N(eosio) );
+      eosio_assert(is_account(account), "account does not exist");
+       eosio_assert(_boost.find(account) == _boost.end(), "account already accelerated");
+      _boost.emplace( N(eosio), [&]( auto& p ) {
+            p.account = account;
+            p.expiration = -1; //no expiration
+      });
+      jit_bid bid = _jitbid.get();
+      bid.jit_remains -= 1;
+      _jitbid.set(bid, 0);
+   }
+
+   void system_contract::cancelboost(account_name account) {
+      require_auth( N(eosio) );
+      eosio_assert(is_account(account), "account does not exist");
+      auto itr = _boost.find(account);
+      eosio_assert( itr != _boost.end(), "account not in list" );
+      _boost.modify(itr, 0, [&](auto& b ) {
+         b.expiration = 0; //will be removed in onblock
+      });
+/*
+      _boost.erase(itr);
+*/
+      jit_bid bid = _jitbid.get();
+      bid.jit_remains += 1;
+      _jitbid.set(bid, 0);
+
+//      vm_unload_account(account);
+   }
 
    /**
     *  Called after a new account is created. This code enforces resource-limits rules

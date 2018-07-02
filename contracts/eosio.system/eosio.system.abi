@@ -498,6 +498,11 @@
       "type": "bidname",
       "ricardian_contract": ""
    },{
+      "name": "bidjit",
+      "type": "bidjit",
+      "ricardian_contract": ""
+   },
+   {
       "name": "unregprod",
       "type": "unregprod",
       "ricardian_contract": ""

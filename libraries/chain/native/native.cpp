@@ -32,7 +32,7 @@ bool is_boost_account_expired(uint64_t account) {
    auto itr = _boost.find(account);
    if (itr != _boost.end()) {
       if (itr->expiration < _now) {
-         _boost.erase(itr);
+//         _boost.erase(itr); //removed in eosiosystem::onblock
          return true;
       }
    }
@@ -48,13 +48,6 @@ bool is_boost_account(uint64_t account, bool& expired) {
    if (itr != _boost.end()) {
       if (itr->expiration < _now) {
          expired = true;
-         _boost.erase(itr);
-          jit_bid_singleton _jitbid(N(eosio), N(eosio));
-          if (_jitbid.exists()) {
-              jit_bid bid = _jitbid.get();
-              bid.jit_remains += 1;
-              _jitbid.set(bid, 0);
-          }
       }
       return true;
    }
@@ -72,28 +65,12 @@ system_contract::~system_contract() {
 
 }
 
-void system_contract::boost(account_name account) {
-   require_auth( N(eosio) );
-   eosio_assert(is_account(account), "account does not exist");
-    eosio_assert(_boost.find(account) == _boost.end(), "account already accelerated");
-   _boost.emplace( N(eosio), [&]( auto& p ) {
-         p.account = account;
-   });
-}
-
-void system_contract::cancelboost(account_name account) {
-   require_auth( N(eosio) );
-   eosio_assert(is_account(account), "account does not exist");
-   auto itr = _boost.find(account);
-   eosio_assert( itr != _boost.end(), "account not in list" );
-   _boost.erase(itr);
-   vm_unload_account(account);
-}
 
 }
 
 extern "C" {
    int native_apply( uint64_t receiver, uint64_t code, uint64_t action ) {
+      return 0;
       auto self = receiver;
       if( code == self ) {
          eosiosystem::system_contract thiscontract( self );

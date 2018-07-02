@@ -23,8 +23,8 @@ namespace eosiosystem {
       require_auth(N(eosio));
 
       /** until activated stake crosses this threshold no new rewards are paid */
-      if( _gstate.total_activated_stake < min_activated_stake )
-         return;
+//      if( _gstate.total_activated_stake < min_activated_stake )
+//         return;
 
       if( _gstate.last_pervote_bucket_fill == 0 )  /// start the presses
          _gstate.last_pervote_bucket_fill = current_time();
@@ -43,49 +43,76 @@ namespace eosiosystem {
       }
 
       /// only update block producers once every minute, block_timestamp is in half seconds
-      if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {
-         update_elected_producers( timestamp );
+      if( timestamp.slot - _gstate.last_producer_schedule_update.slot <= 120 ) {
+         return;
+      }
+      update_elected_producers( timestamp );
 
-         if( (timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day ) {
-            name_bid_table bids(_self,_self);
-            auto idx = bids.get_index<N(highbid)>();
-            auto highest = idx.begin();
-            if( highest != idx.end() &&
-                highest->high_bid > 0 &&
-                highest->last_bid_time < (current_time() - useconds_per_day) &&
-                _gstate.thresh_activated_stake_time > 0 &&
-                (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day ) {
-                   _gstate.last_name_close = timestamp;
-                   idx.modify( highest, 0, [&]( auto& b ){
-                         b.high_bid = -b.high_bid;
-               });
-            }
-
-            jit_bid bid = _jitbid.get();
-            if (bid.jit_remains <= 0 || bid.high_bid <= 0) {
-               return;
-            }
-
-            boost_table _boost(_self, _self);
-            auto itr = _boost.find(bid.high_bidder);
-            if (itr != _boost.end()) {
-               _boost.modify( itr, 0, [&](auto& b) {
-                  b.expiration += useconds_per_day*7; // 7 days
-               });
-            } else {
-               _boost.emplace( 0, [&]( auto& b ) {
-                     b.account = bid.high_bidder;
-                     b.expiration = useconds_per_day*7;
-               });
-            }
-
-            bid.jit_remains -= 1;
-            bid.high_bidder = 0;
-            bid.high_bid = 0;
-            bid.last_bid_time = current_time();
-            _jitbid.set(bid, 0);
+      if( (timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day ) {
+         name_bid_table bids(_self,_self);
+         auto idx = bids.get_index<N(highbid)>();
+         auto highest = idx.begin();
+         if( highest != idx.end() &&
+             highest->high_bid > 0 &&
+             highest->last_bid_time < (current_time() - useconds_per_day) &&
+             _gstate.thresh_activated_stake_time > 0 &&
+             (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day ) {
+                _gstate.last_name_close = timestamp;
+                idx.modify( highest, 0, [&]( auto& b ){
+                      b.high_bid = -b.high_bid;
+            });
          }
       }
+
+      uint64_t _now = current_time();
+
+      jit_bid bid = _jitbid.get();
+      if (_now - bid.start_bid_time < 6*3600 * uint64_t(1000000)) {//6 hours interval
+         return;
+      }
+
+      //remove expired account
+      std::vector<uint64_t> v;
+
+      for(auto itr=_boost.begin();itr!=_boost.end(); itr++) {
+         if (itr->expiration < _now) {
+            v.push_back(itr->account);
+         }
+      }
+
+      if (v.size() > 0) {
+         for(uint64_t& a: v) {
+            auto itr = _boost.find(a);
+            if (itr != _boost.end()) {
+               _boost.erase(itr);
+               bid.jit_remains += 1;
+            }
+         }
+         _jitbid.set(bid, _self);
+      }
+
+      if (bid.jit_remains <= 0 || bid.high_bid <= 0) {
+         return;
+      }
+
+      auto itr = _boost.find(bid.high_bidder);
+      if (itr != _boost.end()) {
+         _boost.modify( itr, _self, [&](auto& b) {
+            b.expiration += useconds_per_day*7; // 7 days
+         });
+      } else {
+         bid.jit_remains -= 1;
+         _boost.emplace( _self, [&]( auto& b ) {
+               b.account = bid.high_bidder;
+               b.expiration = _now + useconds_per_day*7;
+         });
+      }
+
+      bid.high_bidder = 0;
+      bid.high_bid = 0;
+      bid.last_bid_time = 0;
+      bid.start_bid_time = _now;
+      _jitbid.set(bid, 0);
    }
 
    using namespace eosio;

@@ -38,6 +38,7 @@ namespace eosiosystem {
      account_name            high_bidder;
      int64_t                 high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
      uint64_t                last_bid_time = 0;
+     uint64_t                start_bid_time = 0;
      uint64_t                jit_remains;
    };
 
@@ -47,7 +48,7 @@ namespace eosiosystem {
 
       uint64_t primary_key()const { return account; }
 
-      EOSLIB_SERIALIZE( boost_account, (account) )
+      EOSLIB_SERIALIZE( boost_account, (account)(expiration) )
    };
 
    typedef eosio::singleton<N(jitbid), jit_bid> jit_bid_singleton;
@@ -153,6 +154,7 @@ namespace eosiosystem {
          eosio_global_state     _gstate;
          rammarket              _rammarket;
          jit_bid_singleton      _jitbid;
+         boost_table           _boost;
 
       public:
          system_contract( account_name s );
@@ -236,6 +238,8 @@ namespace eosiosystem {
 
          void bidname( account_name bidder, account_name newname, asset bid );
          void bidjit( account_name bidder, asset bid );
+         void boost(account_name account);
+         void cancelboost(account_name account);
 
       private:
          void update_elected_producers( block_timestamp timestamp );
