@@ -5,8 +5,8 @@
  *      Author: newworld
  */
 
-#ifndef CHAIN_VM_API_NATIVE_CONTEXT_FREE_DB_HPP_
-#define CHAIN_VM_API_NATIVE_CONTEXT_FREE_DB_HPP_
+#ifndef RO_DB_HPP_
+#define RO_DB_HPP_
 
 
 #define db_store_i64          rodb_store_i64
@@ -21,4 +21,4 @@
 #define db_end_i64            rodb_end_i64
 
 
-#endif /* CHAIN_VM_API_NATIVE_CONTEXT_FREE_DB_HPP_ */
+#endif /* RO_DB_HPP_ */

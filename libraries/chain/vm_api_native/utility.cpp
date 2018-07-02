@@ -1,4 +1,4 @@
-#include "context_free_db.hpp"
+#include "ro_db.hpp"
 #include <eosiolib/multi_index.hpp>
 
 using namespace std;

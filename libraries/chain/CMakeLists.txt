@@ -71,7 +71,8 @@ add_library( eosio_chain
               vm_manager.cpp
               vm_api_native/vm_api.cpp
               vm_api_native/utility.cpp
-              vm_api_native/context_free_db.cpp
+              vm_api_native/ro_db.cpp
+              vm_api_native/rw_db.cpp
               native/native.cpp
               ${HEADERS}
              )
