@@ -203,6 +203,41 @@ def t4():
     assert_ret(rr)
 
 
+def ca(account='aabb111'):
+    actions = []
+    newaccount = {'creator': 'eosio',
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': initeos.key1,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': initeos.key2,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+
+    _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
+    act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+    actions.append(act)
+
+    args = {'payer':'eosio', 'receiver':account, 'bytes':819200000}
+    args = eosapi.pack_args('eosio', 'buyrambytes', args)
+    act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
+    actions.append(act)
+
+    args = {'from': 'eosio',
+     'receiver': account,
+     'stake_net_quantity': '3000.0050 EOS',
+     'stake_cpu_quantity': '3000.0050 EOS',
+     'transfer': 1}
+    args = eosapi.pack_args('eosio', 'delegatebw', args)
+    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    actions.append(act)
+    rr, cost = eosapi.push_actions(actions)
+    assert_ret(rr)
+
 def buyram():
     accounts = gen_names(ACCOUNT_COUNT)
     actions = []
