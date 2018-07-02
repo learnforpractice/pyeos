@@ -38,7 +38,10 @@ cdef extern from "../interface/debug_.hpp":
     void app_set_debug_mode_(bool d)
 
     uint64_t wasm_test_action_(const char* cls, const char* method)
+
     void block_log_test_(string& path, int start_block, int end_block)
+    void block_log_get_raw_actions_(string& path, int start, int end);
+
     object block_log_get_block_(string& path, int block_num);
 
 cdef extern from "py/gc.h":
@@ -133,6 +136,22 @@ def  block_log_test(string& path, start, end, cb):
     global callback
     callback = cb
     block_log_test_(path, start, end)
+
+raw_action_cb = None
+cdef extern int block_on_raw_action(int block, string act):
+    global raw_action_cb
+    if raw_action_cb:
+        try:
+            raw_action_cb(block, <bytes>act)
+        except:
+            traceback.print_exc()
+            return 0
+    return 1
+
+def block_log_get_raw_actions(string& path, start, end, cb):
+    global raw_action_cb
+    raw_action_cb = cb
+    block_log_get_raw_actions_(path, start, end);
 
 def block_log_get_block(string& path, int block_num):
     return block_log_get_block_(path, block_num)

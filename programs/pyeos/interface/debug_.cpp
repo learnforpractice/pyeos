@@ -145,6 +145,8 @@ using namespace eosio::chain;
 
 int block_on_action(int block, PyObject* trx);
 
+int block_on_raw_action(int block, string act);
+
 #define FC_LOG_AND_RETURN( ... )  \
    catch( const boost::interprocess::bad_alloc& ) {\
       throw;\
@@ -219,6 +221,37 @@ void block_log_get_actions_(string& path, int block_num) {
    } FC_LOG_AND_RETURN();
 
 }
+
+void block_log_get_raw_actions_(string& path, int start, int end) {
+   eosio::chain::block_log log(path);
+
+   signed_block_ptr block;
+   for (int block_num=start;block_num<end;block_num++) {
+      try {
+         block = log.read_block_by_num(block_num);
+         if (!block) {
+            wlog("bad block number ${n}", ("n", block_num));
+            return;
+         }
+         for (auto& tr : block->transactions) {
+            if (!tr.trx.contains<packed_transaction>()) {
+               continue;
+            }
+            packed_transaction& pt = tr.trx.get<packed_transaction>();
+            signed_transaction st = pt.get_signed_transaction();
+            for (auto& act: st.actions) {
+               auto v = fc::raw::pack(act);
+               string raw_act(v.begin(), v.end());
+               int ret = block_on_raw_action(block_num, raw_act);
+               if (!ret) {
+                  return;
+               }
+            }
+         }
+      } FC_LOG_AND_RETURN();
+   }
+}
+
 
 PyObject* block_log_get_block_(string& path, int block_num) {
    eosio::chain::block_log log(path);
