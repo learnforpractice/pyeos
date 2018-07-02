@@ -60,6 +60,30 @@ namespace eosiosystem {
                          b.high_bid = -b.high_bid;
                });
             }
+
+            jit_bid bid = _jitbid.get();
+            if (bid.jit_remains <= 0 || bid.high_bid <= 0) {
+               return;
+            }
+
+            boost_table _boost(_self, _self);
+            auto itr = _boost.find(bid.high_bidder);
+            if (itr != _boost.end()) {
+               _boost.modify( itr, 0, [&](auto& b) {
+                  b.expiration += useconds_per_day*7; // 7 days
+               });
+            } else {
+               _boost.emplace( 0, [&]( auto& b ) {
+                     b.account = bid.high_bidder;
+                     b.expiration = useconds_per_day*7;
+               });
+            }
+
+            bid.jit_remains -= 1;
+            bid.high_bidder = 0;
+            bid.high_bid = 0;
+            bid.last_bid_time = current_time();
+            _jitbid.set(bid, 0);
          }
       }
    }

@@ -34,6 +34,25 @@ namespace eosiosystem {
                                indexed_by<N(highbid), const_mem_fun<name_bid, uint64_t, &name_bid::by_high_bid>  >
                                >  name_bid_table;
 
+   struct jit_bid {
+     account_name            high_bidder;
+     int64_t                 high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
+     uint64_t                last_bid_time = 0;
+     uint64_t                jit_remains;
+   };
+
+   struct boost_account {
+      account_name    account;
+      uint64_t        expiration;
+
+      uint64_t primary_key()const { return account; }
+
+      EOSLIB_SERIALIZE( boost_account, (account) )
+   };
+
+   typedef eosio::singleton<N(jitbid), jit_bid> jit_bid_singleton;
+
+   typedef eosio::multi_index< N(boost), boost_account>  boost_table;
 
    struct eosio_global_state : eosio::blockchain_parameters {
       uint64_t free_ram()const { return max_ram_size - total_ram_bytes_reserved; }
@@ -112,14 +131,6 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(reserved1)(reserved2)(reserved3) )
    };
 
-   struct boost_account {
-      account_name    account;
-
-      uint64_t primary_key()const { return account; }
-
-      EOSLIB_SERIALIZE( boost_account, (account) )
-   };
-
    typedef eosio::multi_index< N(voters), voter_info>  voters_table;
 
 
@@ -128,8 +139,6 @@ namespace eosiosystem {
                                >  producers_table;
 
    typedef eosio::singleton<N(global), eosio_global_state> global_state_singleton;
-
-   typedef eosio::multi_index< N(boost), boost_account>  boost_table;
 
    //   static constexpr uint32_t     max_inflation_rate = 5;  // 5% annual inflation
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
@@ -143,6 +152,7 @@ namespace eosiosystem {
 
          eosio_global_state     _gstate;
          rammarket              _rammarket;
+         jit_bid_singleton      _jitbid;
 
       public:
          system_contract( account_name s );
@@ -225,6 +235,7 @@ namespace eosiosystem {
          void rmvproducer( account_name producer );
 
          void bidname( account_name bidder, account_name newname, asset bid );
+         void bidjit( account_name bidder, asset bid );
 
       private:
          void update_elected_producers( block_timestamp timestamp );

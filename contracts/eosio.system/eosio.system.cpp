@@ -14,10 +14,19 @@ namespace eosiosystem {
     _voters(_self,_self),
     _producers(_self,_self),
     _global(_self,_self),
-    _rammarket(_self,_self)
+    _rammarket(_self,_self),
+    _jitbid(_self,_self)
    {
       //print( "construct system\n" );
       _gstate = _global.exists() ? _global.get() : get_default_parameters();
+      if (!_jitbid.exists()) {
+         jit_bid bid;
+         bid.high_bidder = 0;
+         bid.high_bid = 0;
+         bid.last_bid_time = 0;
+         bid.jit_remains = 100; //TODO: max jit resources, should be configurable
+         _jitbid.set(bid, _self);
+      }
 
       auto itr = _rammarket.find(S(4,RAMCORE));
 
@@ -133,6 +142,31 @@ namespace eosiosystem {
          });
       }
    }
+
+   void system_contract::bidjit( account_name bidder, asset bid ) {
+       require_auth( bidder );
+       eosio_assert( bid.symbol == asset().symbol, "asset must be system token" );
+       eosio_assert( bid.amount > 0, "insufficient bid" );
+
+       jit_bid current = _jitbid.get();
+
+//       eosio_assert( current.high_bid > 0, "this auction has already closed" );
+       eosio_assert( bid.amount - current.high_bid > (current.high_bid / 10), "must increase bid by 10%" );
+       eosio_assert( current.high_bidder != bidder, "account is already highest bidder" );
+       eosio_assert( current.jit_remains > 0, "no jit resources left!" );
+
+
+       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {bidder,N(active)},
+                                                     { bidder, N(eosio.jit), bid, std::string("bid jit ")+(name{bidder}).to_string()  } );
+
+       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.jit),N(active)},
+                                                     { N(eosio.jit), current.high_bidder, asset(current.high_bid),
+                                                     std::string("refund bid to ")+(name{bidder}).to_string()  } );
+       current.high_bidder = bidder;
+       current.high_bid = bid.amount;
+       current.last_bid_time = current_time();
+       _jitbid.set(current, _self);
+    }
 
    /**
     *  Called after a new account is created. This code enforces resource-limits rules
