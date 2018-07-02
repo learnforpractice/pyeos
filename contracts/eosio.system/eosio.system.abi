@@ -40,6 +40,13 @@
         {"name":"bid", "type":"asset"}
       ]
     },{
+      "name": "bidjit",
+      "base": "",
+      "fields": [
+        {"name":"bidder",  "type":"account_name"},
+        {"name":"bid", "type":"asset"}
+      ]
+    },{
       "name": "permission_level_weight",
       "base": "",
       "fields": [

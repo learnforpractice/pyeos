@@ -158,10 +158,11 @@ namespace eosiosystem {
 
        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {bidder,N(active)},
                                                      { bidder, N(eosio.jit), bid, std::string("bid jit ")+(name{bidder}).to_string()  } );
-
-       INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.jit),N(active)},
-                                                     { N(eosio.jit), current.high_bidder, asset(current.high_bid),
-                                                     std::string("refund bid to ")+(name{bidder}).to_string()  } );
+       if (current.high_bidder) {
+          INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(eosio.jit),N(active)},
+                                                        { N(eosio.jit), current.high_bidder, asset(current.high_bid),
+                                                        std::string("refund bid to ")+(name{bidder}).to_string()  } );
+       }
        current.high_bidder = bidder;
        current.high_bid = bid.amount;
        current.last_bid_time = current_time();
@@ -222,7 +223,7 @@ EOSIO_ABI( eosiosystem::system_contract,
      // native.hpp (newaccount definition is actually in eosio.system.cpp)
      (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
      // eosio.system.cpp
-     (setram)(setparams)(setpriv)(rmvproducer)(bidname)
+     (setram)(setparams)(setpriv)(rmvproducer)(bidname)(bidjit)
      // delegate_bandwidth.cpp
      (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
      // voting.cpp

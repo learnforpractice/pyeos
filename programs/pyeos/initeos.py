@@ -134,7 +134,7 @@ class PyEosConsole(InteractiveConsole):
                 else:
                     if line.strip() == 'exit()':
                         break
-                    if line.strip() and self.check_module():
+                    if self.check_module():
                         more = self.push(line)
             except KeyboardInterrupt:
                 self.write("\nKeyboardInterrupt\n")
@@ -276,7 +276,18 @@ def create_system_accounts():
             rr, cost = eosapi.push_actions(actions)
             assert_ret(rr)
 
-def publish_system_contract():
+def update_eosio():
+    contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
+    sys.path.append(os.getcwd())
+    account = 'eosio'
+
+    _path = os.path.join(contracts_path, 'eosio.system', 'eosio.system')
+    wast = _path + '.wast'
+    abi = _path + '.abi'
+    r = eosapi.set_contract(account, wast, abi, 0)
+    assert r
+
+def publish_system_contracts():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
     accounts_map = {'eosio.token':'eosio.token', 'eosio.bios':'eosio.bios', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system'}
@@ -327,7 +338,7 @@ def init():
 
     src_dir = os.path.dirname(os.path.abspath(__file__))
     create_system_accounts()
-    publish_system_contract()
+    publish_system_contracts()
 
 #    from backyard import t
 #    t.deploy_mpy()
