@@ -2,6 +2,58 @@
 
 extern "C" void vm_unload_account(uint64_t account);
 
+using namespace eosiosystem;
+
+bool remove_expired_boost_accounts() {
+   std::vector<uint64_t> v;
+   uint64_t _now = current_time();
+   eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
+
+   for(auto itr=_boost.begin();itr!=_boost.end(); itr++) {
+      if (itr->expiration < _now) {
+         v.push_back(itr->account);
+      }
+   }
+
+   for(uint64_t& a: v) {
+      auto itr = _boost.find(a);
+      if (itr != _boost.end()) {
+         vm_unload_account(a);
+         _boost.erase(itr);
+      }
+   }
+
+   return true;
+}
+
+bool is_boost_account_expired(uint64_t account) {
+   uint64_t _now = current_time();
+   eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
+   auto itr = _boost.find(account);
+   if (itr != _boost.end()) {
+      if (itr->expiration < _now) {
+         _boost.erase(itr);
+         return true;
+      }
+   }
+   return false;
+}
+
+bool is_boost_account(uint64_t account, bool& expired) {
+   uint64_t _now = current_time();
+   eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
+   auto itr = _boost.find(account);
+   expired = false;
+   if (itr != _boost.end()) {
+      if (itr->expiration < _now) {
+         expired = true;
+         _boost.erase(itr);
+      }
+      return true;
+   }
+   return false;
+}
+
 namespace eosiosystem {
 
 system_contract::system_contract( account_name s )

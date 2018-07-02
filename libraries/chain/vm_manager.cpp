@@ -41,6 +41,10 @@ typedef void (*fn_on_boost_account)(void* v, uint64_t account);
 bool is_boost_account(uint64_t account);
 void visit_boost_account(fn_on_boost_account fn, void* param);
 
+//native.cpp
+bool remove_expired_boost_accounts();
+bool is_boost_account_expired(uint64_t account);
+
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
@@ -478,6 +482,8 @@ int vm_manager::setcode(int type, uint64_t account) {
    return itr->second->setcode(account);
 }
 
+bool is_boost_account(uint64_t account, bool& expired);
+
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
 /*
    if (check_new_version(type, vm_names[type])) {
@@ -485,12 +491,26 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    }
 */
    if (type == 0) { //wasm
-      auto itr = preload_account_map.find(receiver);
-      if (itr != preload_account_map.end()) {
-         return itr->second->apply(receiver, account, act);
-      } else if (is_boost_account(receiver)) {
-         type = 3;//accelerating execution by JIT
-      }
+      do {
+         bool expired = false;
+         bool _boosted = false;
+         _boosted = is_boost_account(receiver, expired);
+         if (!_boosted) {
+            break;
+         }
+         auto itr = preload_account_map.find(receiver);
+         if (expired) {
+            if (itr != preload_account_map.end()) {
+               preload_account_map.erase(itr);
+            }
+         } else {
+            if (itr != preload_account_map.end()) {
+               return itr->second->apply(receiver, account, act);
+            } else {
+               type = 3;//accelerating execution by JIT
+            }
+         }
+      } while(false);
    }
 
    auto itr = vm_map.find(type);

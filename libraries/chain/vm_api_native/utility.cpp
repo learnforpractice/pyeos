@@ -3,8 +3,11 @@
 
 using namespace std;
 
+extern "C" uint64_t  current_time();
+
 struct boost_account {
    account_name    account;
+   uint64_t        expiration;
 
    uint64_t primary_key()const { return account; }
 

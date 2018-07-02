@@ -10,6 +10,7 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/dispatcher.hpp>
+#include <eosiolib/currency.hpp>
 
 #define EOSIO_NATIVE_ABI( TYPE, MEMBERS ) \
 extern "C" { \
@@ -28,6 +29,8 @@ extern "C" { \
    } \
 } \
 
+using namespace eosio;
+
 namespace eosiosystem {
    using eosio::permission_level;
    using eosio::public_key;
@@ -36,7 +39,7 @@ namespace eosiosystem {
 
    struct boost_account {
       account_name    account;
-
+      uint64_t        expiration;
       uint64_t primary_key()const { return account; }
 
       EOSLIB_SERIALIZE( boost_account, (account) )
