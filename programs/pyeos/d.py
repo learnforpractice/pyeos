@@ -15,6 +15,27 @@ import debug
 
 from eosapi import *
 
+import pprint
+
+class _safe_key:
+    __slots__ = ['obj']
+    def __init__(self, obj):
+        self.obj = obj
+    def __lt__(self, other):
+        return False
+
+pprint._safe_key = _safe_key
+
+class Pprint(pprint.PrettyPrinter):
+  def _format(self, object, *args, **kwargs):
+    if isinstance(object, str):
+      if len(object) > 60:
+        object = object[:60] + '...'
+    return pprint.PrettyPrinter._format(self, object, *args, **kwargs)
+
+pp = Pprint()
+pp = pp.pprint
+
 def t1():
     abi_file = '../contracts/eosio.token/eosio.token.abi'
     setabi = eosapi.pack_setabi(abi_file, 'eosio.token')
@@ -184,9 +205,10 @@ def parse_log(num, trx):
 #    print('+++++', num, JsonStruct(trx))
     trx = JsonStruct(trx)
     for act in trx.actions:
-        print(act.account, act.name)
+        print(num, act.account, act.name)
         args = eosapi.unpack_args(act.account, act.name, bytes.fromhex(act.data))
-        print(args)
+        pp(args)
+        print()
         continue
         if not act.account == 'eosio':
             continue
@@ -246,4 +268,18 @@ def get_actions(n):
     debug.block_log_test(_path, n, n, parse_log2)
     print(total_contracts)
     print(len(total_contracts))
+
+action_map = {}
+def raw_action_cb(num, act):
+    account, name = struct.unpack('QQ', act[:16])
+    account, name = n2s(account), n2s(name)
+    try:
+        action_map[account][num%100]
+    except KeyError:
+        action_map[account] = len(act)
+
+def get_raw_actions(s, e):
+    _path = 'data-dir.bk/blocks'
+    debug.block_log_get_raw_actions(_path, s, e, raw_action_cb)
+    print(action_map)
 
