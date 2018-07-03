@@ -229,13 +229,17 @@ void vm_manager::preload_accounts(vm_calls* _calls) {
    }
 }
 
-void vm_manager::unload_accounts(uint64_t account) {
+void vm_manager::unload_account(uint64_t account) {
    auto itr = preload_account_map.find(account);
-   if (itr == preload_account_map.end()) {
-      return;
+   if (itr != preload_account_map.end()) {
+      itr->second->unload(account);
+      preload_account_map.erase(itr);
    }
-   itr->second->unload(account);
-   preload_account_map.erase(itr);
+
+   auto _itr = vm_map.find(3);
+   if (_itr != vm_map.end()) {
+      _itr->second->unload(account);
+   }
 }
 
 void vm_manager::on_boost_account(uint64_t account) {
@@ -498,13 +502,11 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
          if (!_boosted) {
             break;
          }
-         auto itr = preload_account_map.find(receiver);
          if (expired) {
-            if (itr != preload_account_map.end()) {
-               wlog("accelerating account ${n} expired, remove it",("n",name(receiver)));
-               preload_account_map.erase(itr);
-            }
+            unload_account(receiver);
+            break;
          } else {
+            auto itr = preload_account_map.find(receiver);
             if (itr != preload_account_map.end()) {
                return itr->second->apply(receiver, account, act);
             } else {
@@ -599,6 +601,6 @@ namespace eosio { namespace chain {
 
 
 extern "C" void vm_unload_account(uint64_t account) {
-   vm_manager::get().unload_accounts(account);
+   vm_manager::get().unload_account(account);
 }
 

@@ -50,7 +50,7 @@ public:
    void on_boost_account(uint64_t account);
    void preload_accounts(vm_calls* _calls);
 
-   void unload_accounts(uint64_t account);
+   void unload_account(uint64_t account);
 
 
 private:
