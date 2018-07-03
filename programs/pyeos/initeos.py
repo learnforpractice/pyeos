@@ -277,6 +277,23 @@ def create_system_accounts():
             assert_ret(rr)
 
 def update_eosio():
+    account = 'eosio'
+    actions = []
+    args = {'payer':'eosio', 'receiver':account, 'quant':"1000.0000 EOS"}
+    args = eosapi.pack_args('eosio', 'buyram', args)
+    act = ['eosio', 'buyram', {'eosio':'active'}, args]
+    actions.append(act)
+    
+    args = {'from': 'eosio',
+     'receiver': account,
+     'stake_net_quantity': '1000.0050 EOS',
+     'stake_cpu_quantity': '1000.0050 EOS',
+     'transfer': 0}
+    args = eosapi.pack_args('eosio', 'delegatebw', args)
+    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    actions.append(act)
+    rr, cost = eosapi.push_actions(actions)
+
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
     account = 'eosio'
@@ -327,7 +344,7 @@ def publish_system_contracts():
                 msg = {"issuer":"eosio","maximum_supply":"10000000000.0000 EOS"}
                 r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})
                 assert r
-                r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"1000.0000 EOS","memo":""},{'eosio':'active'})
+                r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"10000.0000 EOS","memo":""},{'eosio':'active'})
                 assert r
 #                    msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
 #                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})

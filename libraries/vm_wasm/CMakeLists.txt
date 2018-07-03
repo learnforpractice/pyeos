@@ -27,7 +27,7 @@ add_library(vm_wasm_binaryen SHARED
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
-           vm_api.cpp) 
+           vm_api.cpp name.cpp) 
 
 target_compile_options(vm_wasm_binaryen PRIVATE -D_BINARYEN)
 target_link_libraries(vm_wasm_binaryen  PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc)
@@ -42,7 +42,7 @@ add_library(vm_wasm_wavm STATIC
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
-           vm_api.cpp) 
+           vm_api.cpp name.cpp) 
 
 target_compile_options(vm_wasm_wavm     PRIVATE   -D_WAVM)
 target_link_libraries(vm_wasm_wavm       PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc)

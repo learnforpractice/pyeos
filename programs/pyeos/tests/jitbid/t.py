@@ -35,7 +35,9 @@ def cb():
     assert_ret(rr)
 
 def t():
-    msg = {'bidder':'lab', 'bid':"1.0000 EOS"}
+    if eosapi.get_balance('lab') <= 0:
+        eosapi.transfer('eosio', 'lab', 100)
+    msg = {'bidder':'lab', 'bid':"1.3000 EOS"}
     msg = eosapi.pack_args('eosio', 'bidjit', msg)
     act = ['eosio', 'bidjit', {'lab':'active'}, msg]
 
