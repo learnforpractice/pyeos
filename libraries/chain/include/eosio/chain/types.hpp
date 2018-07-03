@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#ifndef __TYPES
-#define __TYPES
+#ifndef __EOSIO_CHAIN_TYPES
+#define __EOSIO_CHAIN_TYPES
 #endif
 
 #include <eosio/chain/name.hpp>

@@ -1,4 +1,6 @@
 
+extern "C" {
+
 void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
    return;
 }
@@ -28,6 +30,8 @@ uint32_t get_blockchain_parameters_packed(char* packed_blockchain_parameters, ui
 }
 
 void activate_feature( int64_t f ) {
+}
+
 }
 
 

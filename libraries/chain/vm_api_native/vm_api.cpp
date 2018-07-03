@@ -41,7 +41,6 @@ static inline apply_context& ctx() {
    return apply_context::ctx();
 }
 
-#define __NO_EOSIOLIB_HEADER_DEFINES
 #include <eosiolib_native/vm_api.h>
 
 #include "action.cpp"

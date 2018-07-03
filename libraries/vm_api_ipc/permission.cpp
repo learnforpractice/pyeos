@@ -3,6 +3,8 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
+extern "C" {
+
 void unpack_provided_keys( flat_set<public_key_type>& keys, const char* pubkeys_data, size_t pubkeys_size ) {
    keys.clear();
    if( pubkeys_size == 0 ) return;
@@ -21,7 +23,9 @@ int32_t check_transaction_authorization( const char* trx_data,     uint32_t trx_
                                  const char* pubkeys_data, uint32_t pubkeys_size,
                                  const char* perms_data,   uint32_t perms_size
                                ) {
-   return false;
+   return ipc_manager::get().check_transaction_authorization(trx_data, trx_size,
+                                    pubkeys_data, pubkeys_size, perms_data, perms_size);
+
 }
 
 int32_t check_permission_authorization( uint64_t account,
@@ -42,3 +46,5 @@ int64_t get_account_creation_time( uint64_t account ) {
    return 0;
 }
 
+
+}

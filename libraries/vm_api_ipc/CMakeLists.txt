@@ -4,7 +4,7 @@ add_library( vm_api_ipc SHARED
 #    rpc_interface_.wrap.cpp
 
     vm_api.cpp
-
+    ipc_manager.cpp
     cpp/RpcService.cpp
     cpp/RpcService_types.cpp
 #    cpp/rpceoslib.cpp

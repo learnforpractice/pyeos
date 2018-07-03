@@ -3,6 +3,8 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
+extern "C" {
+
 void abort() {
    edump(("abort() called"));
    FC_ASSERT( false, "abort() called");
@@ -55,3 +57,6 @@ void check_context_free(bool context_free) {
 bool contracts_console() {
    return false;
 }
+
+}
+

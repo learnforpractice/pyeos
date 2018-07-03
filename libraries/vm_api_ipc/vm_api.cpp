@@ -1,15 +1,5 @@
-#include <eosio/chain/controller.hpp>
-#include <eosio/chain/transaction_context.hpp>
-#include <eosio/chain/producer_schedule.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <eosio/chain/authorization_manager.hpp>
-#include <eosio/chain/resource_limits.hpp>
-/*
-#include <eosio/chain/wasm_interface_private.hpp>
-#include <eosio/chain/wasm_eosio_validation.hpp>
-#include <eosio/chain/wasm_eosio_injection.hpp>
-*/
+#include <eosio/chain/types.hpp>
+
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
 
@@ -18,26 +8,18 @@
 #include <fc/crypto/sha1.hpp>
 #include <fc/io/raw.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <fstream>
-
 #include <fc/crypto/xxhash.h>
 #include <dlfcn.h>
 
-typedef struct { uint16_t v; } float16_t;
-typedef struct { uint32_t v; } float32_t;
-typedef struct { uint64_t v; } float64_t;
-typedef struct { uint64_t v[2]; } float128_t;
+#include <eosio/chain/db_api.hpp>
+#include "ipc_manager.hpp"
 
-
-using namespace fc;
+using namespace eosio::chain;
 
 namespace eosio {
 namespace chain {
 
-#define __NO_EOSIOLIB_HEADER_DEFINES // avoid type conflicts
-#include "vm_api.h"
+#include <eosiolib_native/vm_api.h>
 
 #include "action.cpp"
 #include "chain.cpp"
@@ -48,13 +30,6 @@ namespace chain {
 #include "transaction.cpp"
 #include "print.cpp"
 #include "permission.cpp"
-
-
-#define API() get_vm_api()
-
-#if defined(assert)
-   #undef assert
-#endif
 
 void eosio_assert( bool condition, char* msg ) {
    if( BOOST_UNLIKELY( !condition ) ) {

@@ -3,6 +3,8 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
+extern "C" {
+
 void prints( const char* cstr ) {
 
 }
@@ -49,3 +51,4 @@ void printhex( const void* data, uint32_t datalen ) {
 
 }
 
+}

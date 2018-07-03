@@ -6,7 +6,7 @@ extern "C" {
 
 uint32_t read_action_data( void* msg, uint32_t buffer_size ) {
    auto s = ctx().act.data.size();
-   if( buffer_size == 0 ) return s;
+   if( buffer_size == 0 || msg == NULL) return s;
 
    auto copy_size = std::min( (size_t)buffer_size, s );
    memcpy( msg, ctx().act.data.data(), copy_size );

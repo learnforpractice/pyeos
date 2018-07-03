@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#ifndef __NO_EOSIOLIB_HEADER_DEFINES // avoid type conflicts
+#ifndef __EOSIO_CHAIN_TYPES // avoid type conflicts
 #include <stdint.h>
 
 #ifndef softfloat_types_h //avoid type conflicts in softfloat_types.h
