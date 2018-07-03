@@ -39,10 +39,16 @@ def _create_account(account):
     _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
     act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
     actions.append(act)
-
+    '''
     args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
     args = eosapi.pack_args('eosio', 'buyram', args)
     act = ['eosio', 'buyram', {'eosio':'active'}, args]
+    actions.append(act)
+    '''
+
+    args = {'payer':'eosio', 'receiver':account, 'bytes':64*1024}
+    args = eosapi.pack_args('eosio', 'buyrambytes', args)
+    act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
     actions.append(act)
 
     args = {'from': 'eosio',
