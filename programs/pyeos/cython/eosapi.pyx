@@ -699,25 +699,31 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     '''
     code = struct.pack('QBB', N(account), vmtype, 0)
 
+    actions = []
     if vmtype == 0:
         with open(src_file, 'rb') as f:
             wasm = wast2wasm(f.read())
-            code += pack_bytes(wasm)
+            code_hash = sha256(wasm)
+            old_hash = get_code_hash(account)
+            print(old_hash, code_hash)
+            if code_hash != old_hash:
+                code += pack_bytes(wasm)
+                setcode = ['eosio', 'setcode', [[account, 'active']], code]
+                actions.append(setcode)
     elif vmtype == 1:
         mpy_code = b'\x01'
         mpy_code += mp_compile(src_file)
         code += pack_bytes(mpy_code)
+        setcode = ['eosio', 'setcode', [[account, 'active']], code]
+        actions.append(setcode)
     else:
         raise Exception("unknown code")
 
-    setcode = ['eosio', 'setcode', [[account, 'active']], code]
-
     setabi = pack_setabi(abi_file, account)
-    
-    
     setabi = ['eosio', 'setabi', [[account, 'active']], setabi]
+    actions.append(setabi)
 
-    ret, cost = push_transactions([[setcode, setabi]], sign, compress = True)
+    ret, cost = push_transactions([actions], sign, compress = True)
     if ret:
         if ret[0]['except']:
             raise Exception(ret[0]['except'])
