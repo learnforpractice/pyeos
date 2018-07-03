@@ -84,7 +84,7 @@ namespace eosio { namespace chain {
         _old_eosio_apply = (fn_apply)dlsym(handle, "apply");
     }
     
-   wasm_interface::wasm_interface(vm_type vm)  : my( new wasm_interface_impl(vm) ) {
+   wasm_interface::wasm_interface(vm_type vm)  : my( new wasm_interface_impl(vm) ), vmtype(vm) {
        load_system_contract_v1();
    }
 
@@ -194,8 +194,11 @@ namespace eosio { namespace chain {
          }
          break;
       }
-
-      vm_manager::get().apply(0, context.receiver.value, context.act.account.value, context.act.name.value);
+      int type = 0;
+      if (vmtype == vm_type::wavm) {//for replay
+         type = 3;
+      }
+      vm_manager::get().apply(type, context.receiver.value, context.act.account.value, context.act.name.value);
    }
 
 } } /// eosio::chain

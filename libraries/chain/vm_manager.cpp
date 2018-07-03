@@ -469,7 +469,6 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    calls->preload = preload;
    calls->unload = unload;
 
-   wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    auto __itr = vm_map.find(vm_type);
    if (__itr != vm_map.end()) {
       __itr->second->vm_deinit();

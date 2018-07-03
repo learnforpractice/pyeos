@@ -36,6 +36,7 @@ namespace eosio { namespace chain {
          bool init();
       private:
          unique_ptr<struct wasm_interface_impl> my;
+         vm_type vmtype;
    };
 
 } } // eosio::chain
