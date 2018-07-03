@@ -15,6 +15,7 @@
 #include <appbase/application.hpp>
 #include <appbase/platform.hpp>
 #include <eosio/chain/contract_types.hpp>
+#include <eosio/chain/db_api.hpp>
 
 #include <sys/time.h>
 #include <time.h>
@@ -181,10 +182,19 @@ bool vm_manager::init() {
 
    visit_boost_account(_on_boost_account, this);
 
+   auto itr = vm_map.find(3);
+   if (itr != vm_map.end()) {
+      if (db_api::get().is_account(N(eosio.token))) {
+         itr->second->preload(N(eosio.token));
+      }
+      if (db_api::get().is_account(N(eosio))) {
+         itr->second->preload(N(eosio));
+      }
+   }
+
    if (boost_accounts.size() == 0) {
       return true;
    }
-
 
    boost::thread_group g;
 
@@ -496,6 +506,10 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
 */
    if (type == 0) { //wasm
       do {
+         if (receiver == N(eosio) || receiver == N(eosio.token)) {
+            type = 3;
+            break;
+         }
          bool expired = false;
          bool _boosted = false;
          _boosted = is_boost_account(receiver, expired);
