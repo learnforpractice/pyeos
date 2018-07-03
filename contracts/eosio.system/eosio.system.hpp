@@ -36,7 +36,7 @@ namespace eosiosystem {
 
    struct jit_bid {
      account_name            high_bidder;
-     int64_t                 high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
+     int64_t                 high_bid = 0;
      uint64_t                last_bid_time = 0;
      uint64_t                start_bid_time = 0;
      uint64_t                jit_remains;

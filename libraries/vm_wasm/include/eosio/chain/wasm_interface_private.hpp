@@ -114,7 +114,13 @@ namespace eosio { namespace chain {
             }
          }
          if(need_update) {
-            elog("update code ${n}", ("n", receiver));
+#ifdef _BINARYEN
+            elog("update code in binaryen ${n}", ("n", name(receiver)));
+#endif
+#ifdef _WAVM
+            elog("update code in wavm ${n}", ("n", name(receiver)));
+#endif
+
             auto timer_pause = fc::make_scoped_exit([&](){
                if (!preload) {
                   resume_billing_timer();

@@ -501,12 +501,14 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
          auto itr = preload_account_map.find(receiver);
          if (expired) {
             if (itr != preload_account_map.end()) {
+               wlog("accelerating account ${n} expired, remove it",("n",name(receiver)));
                preload_account_map.erase(itr);
             }
          } else {
             if (itr != preload_account_map.end()) {
                return itr->second->apply(receiver, account, act);
             } else {
+               wlog("executing ${n} by jit", ("n", name(receiver)));
                type = 3;//accelerating execution by JIT
             }
          }

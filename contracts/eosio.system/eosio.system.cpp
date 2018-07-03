@@ -177,7 +177,7 @@ namespace eosiosystem {
        eosio_assert(_boost.find(account) == _boost.end(), "account already accelerated");
       _boost.emplace( N(eosio), [&]( auto& p ) {
             p.account = account;
-            p.expiration = -1; //no expiration
+            p.expiration = uint64_t(-1); //no expiration
       });
       jit_bid bid = _jitbid.get();
       bid.jit_remains -= 1;
@@ -192,14 +192,6 @@ namespace eosiosystem {
       _boost.modify(itr, 0, [&](auto& b ) {
          b.expiration = 0; //will be removed in onblock
       });
-/*
-      _boost.erase(itr);
-*/
-      jit_bid bid = _jitbid.get();
-      bid.jit_remains += 1;
-      _jitbid.set(bid, 0);
-
-//      vm_unload_account(account);
    }
 
    /**

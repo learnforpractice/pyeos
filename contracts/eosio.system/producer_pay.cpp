@@ -15,7 +15,9 @@ namespace eosiosystem {
    const uint32_t blocks_per_hour       = 2 * 3600;
    const uint64_t useconds_per_day      = 24 * 3600 * uint64_t(1000000);
    const uint64_t useconds_per_year     = seconds_per_year*1000000ll;
-
+   const uint64_t useconds_per_jitbid     = 10*uint64_t(1000000);;
+   const uint64_t producer_update_interval = 120;
+   const uint64_t jit_bid_interval =      6*3600 * uint64_t(1000000);
 
    void system_contract::onblock( block_timestamp timestamp, account_name producer ) {
       using namespace eosio;
@@ -43,7 +45,7 @@ namespace eosiosystem {
       }
 
       /// only update block producers once every minute, block_timestamp is in half seconds
-      if( timestamp.slot - _gstate.last_producer_schedule_update.slot <= 120 ) {
+      if( timestamp.slot - _gstate.last_producer_schedule_update.slot <= producer_update_interval ) {
          return;
       }
       update_elected_producers( timestamp );
@@ -67,7 +69,7 @@ namespace eosiosystem {
       uint64_t _now = current_time();
 
       jit_bid bid = _jitbid.get();
-      if (_now - bid.start_bid_time < 6*3600 * uint64_t(1000000)) {//6 hours interval
+      if (_now - bid.start_bid_time < jit_bid_interval) {//6 hours interval
          return;
       }
 
@@ -76,6 +78,7 @@ namespace eosiosystem {
 
       for(auto itr=_boost.begin();itr!=_boost.end(); itr++) {
          if (itr->expiration < _now) {
+            print("acceleration expired:", name{itr->account}, "\n");
             v.push_back(itr->account);
          }
       }
@@ -98,13 +101,15 @@ namespace eosiosystem {
       auto itr = _boost.find(bid.high_bidder);
       if (itr != _boost.end()) {
          _boost.modify( itr, _self, [&](auto& b) {
-            b.expiration += useconds_per_day*7; // 7 days
+            b.expiration += useconds_per_jitbid;
+            print("update bidder, expire at ", b.expiration, "\n");
          });
       } else {
          bid.jit_remains -= 1;
          _boost.emplace( _self, [&]( auto& b ) {
                b.account = bid.high_bidder;
-               b.expiration = _now + useconds_per_day*7;
+               b.expiration = _now + useconds_per_jitbid;
+               print("new bidder ", name{b.account}, " expire at ", b.expiration, "\n");
          });
       }
 
