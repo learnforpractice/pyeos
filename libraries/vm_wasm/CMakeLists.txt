@@ -9,7 +9,7 @@ set(HEADERS
 #reference from https://github.com/BYVoid/uchardet/blob/master/src/symbols.cmake
 set (LINK_FLAGS "")
 
-if (TRUE)
+if (APPLE)
     set(_symbols_list "${CMAKE_CURRENT_SOURCE_DIR}/symbols.list")
     set(LINK_FLAGS "${LINK_FLAGS} -Wl,-exported_symbols_list,'${_symbols_list}'")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL GNU)

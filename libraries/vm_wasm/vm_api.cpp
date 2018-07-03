@@ -19,6 +19,7 @@
 namespace eosio {
 namespace chain {
 
+#define __NO_EOSIOLIB_HEADER_DEFINES
 #include <eosiolib_native/vm_api.h>
 
 

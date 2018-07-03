@@ -56,16 +56,12 @@ namespace chain {
    #undef assert
 #endif
 
-void eosio_assert_( bool condition, char* msg ) {
+void eosio_assert( bool condition, char* msg ) {
    if( BOOST_UNLIKELY( !condition ) ) {
       std::string message( msg );
       edump((message));
       EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
    }
-}
-
-void eosio_assert( bool condition) {
-   eosio_assert_( condition, "" );
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {

@@ -32,7 +32,7 @@ uint32_t  now() {
 }
 
 uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
-   printf("++++++++wasm_call: %s\n", func);
+//   printf("++++++++wasm_call: %s\n", func);
    return get_vm_api()->wasm_call(func, args , argc);
 }
 
