@@ -357,6 +357,14 @@ def init():
     create_system_accounts()
     publish_system_contracts()
 
+    account = 'lab'
+    for account in ['eosio', 'eosio.token']:
+        print('++++++boost account', account)
+        msg = eosapi.pack_args('eosio', 'boost', {'account':account})
+        act = ['eosio', 'boost', {'eosio':'active'}, msg]
+        rr, cost = eosapi.push_actions([act])
+        assert_ret(rr)
+
 #    from backyard import t
 #    t.deploy_mpy()
 
