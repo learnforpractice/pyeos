@@ -68,13 +68,11 @@ class Upgrade(object):
         logger.info("downlaoding upgrade file from {0}".format(self.url))
         
         u = urllib2.urlopen(self.url)
-        logger.info("go here.")
         scheme, netloc, path, query, fragment = urlparse.urlsplit(self.url)
         filename = os.path.basename(path)
         if not filename:
             filename = 'update.file'
         filename = os.path.join(self.upgrade_dir, filename)
-        logger.info("go here.")
         with open(filename, 'wb') as f:
             meta = u.info()
             meta_func = meta.getheaders if hasattr(meta, 'getheaders') else meta.get_all
