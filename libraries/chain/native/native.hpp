@@ -73,6 +73,7 @@ namespace eosiosystem {
 
          void boost(account_name account);
          void cancelboost(account_name account);
+         void upgrade(uint64_t version, string script);
    };
 }
 

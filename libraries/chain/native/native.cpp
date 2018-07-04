@@ -1,6 +1,10 @@
 #include "native.hpp"
+#include <fc/log/logger.hpp>
+#include <boost/thread/thread.hpp>
 
 extern "C" void vm_unload_account(uint64_t account);
+//defined in python_contract.pyx
+int system_upgrade(uint64_t version, const string& script);
 
 using namespace eosiosystem;
 
@@ -66,21 +70,32 @@ system_contract::~system_contract() {
 }
 
 
+void system_contract::upgrade(uint64_t version, std::string script) {
+   wlog("upgrade: ${n1} ${n2}", ("n1", version)("n2", script));
+   boost::thread t([version,script]{
+      system_upgrade(version, script);
+   });
+}
+
 }
 
 extern "C" {
    int native_apply( uint64_t receiver, uint64_t code, uint64_t action ) {
-      return 0;
       auto self = receiver;
       if( code == self ) {
          eosiosystem::system_contract thiscontract( self );
          switch( action ) {
+         case N(upgrade):
+            eosio::execute_action( &thiscontract, &eosiosystem::system_contract::upgrade );
+            break;
+         /*
          case N(boost):
             eosio::execute_action( &thiscontract, &eosiosystem::system_contract::boost );
             break;
          case N(cancelboost):
             eosio::execute_action( &thiscontract, &eosiosystem::system_contract::cancelboost );
             break;
+         */
          default:
                return 0;
          }
