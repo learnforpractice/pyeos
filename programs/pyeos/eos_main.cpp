@@ -101,7 +101,6 @@ void init_console() {
 #ifdef WITH_THREAD
    PyEval_InitThreads();
 #endif
-   PyRun_SimpleString("import readline");
    PyInit_wallet();
    PyInit_eosapi();
    PyInit_net();
@@ -116,6 +115,7 @@ void init_console() {
         "sys.path.append('../../programs/pyeos');"
         "sys.path.append('../../programs/pyeos/contracts');"
    );
+   PyRun_SimpleString("import readline");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import eoslib;");
@@ -131,8 +131,6 @@ extern "C" int eos_main(int argc, char** argv) {
 
    init_console();
 
-//   boost::this_thread::sleep_for(boost::chrono::milliseconds(10000));
-
    boost::thread t( start_eos );
 
    while (!init_finished) {
@@ -144,10 +142,8 @@ extern "C" int eos_main(int argc, char** argv) {
       return 0;
    }
 
-   PyRun_SimpleString("import initeos");
-//   PyRun_SimpleString("initeos.init()");
-
    if (app().interactive_mode()) {
+      PyRun_SimpleString("import initeos");
       PyRun_SimpleString("initeos.start_console()");
       appbase::app().quit();
    }

@@ -277,6 +277,7 @@ def create_system_accounts():
             assert_ret(rr)
 
 def update_eosio():
+    '''
     account = 'eosio'
     actions = []
     args = {'payer':'eosio', 'receiver':account, 'quant':"1000.0000 EOS"}
@@ -293,6 +294,7 @@ def update_eosio():
     act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
     actions.append(act)
     rr, cost = eosapi.push_actions(actions)
+    '''
 
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())

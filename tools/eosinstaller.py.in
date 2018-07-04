@@ -10,7 +10,12 @@ for root, dirs, files in os.walk("${CMAKE_BINARY_DIR}"):
         continue
     for f in files:
         if f.endswith("${CMAKE_SHARED_LIBRARY_SUFFIX}"):
-            print(f)
             src = os.path.join(root, f)
             dst = os.path.join(libs_path, f)
-            shutil.copyfile(src, dst)
+            if not os.path.exists(dst):
+                print(f)
+                shutil.copyfile(src, dst)
+                continue
+            if os.path.getmtime(src) > os.path.getmtime(dst):
+                print(f)
+                shutil.copyfile(src, dst)
