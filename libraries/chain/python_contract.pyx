@@ -24,7 +24,7 @@ cdef extern int contract_debug_apply(unsigned long long receiver, unsigned long 
 cdef extern int system_upgrade(unsigned long long version, const string& script) with gil:
     try:
         mod = imp.new_module('upgrade')
-        print(script)
+        mod.__name__ = 'upgrade'
         exec(script, mod.__dict__)
         mod.upgrade(version)
     except:

@@ -54,9 +54,13 @@ namespace eosiosystem {
      uint64_t                jit_remains;
    };
 
+   struct upgrade {
+     uint64_t            version;
+   };
+
    typedef eosio::multi_index< N(boost), boost_account>  boost_table;
 
-   typedef eosio::singleton<N(jitbid), jit_bid> jit_bid_singleton;
+   typedef eosio::singleton<N(upgrade), upgrade> upgrade_singleton;
 
 
    /*
@@ -65,6 +69,7 @@ namespace eosiosystem {
    class system_contract : public eosio::contract {
       private:
          boost_table            _boost;
+         upgrade_singleton      _upgrade;
       public:
          using eosio::contract::contract;
 

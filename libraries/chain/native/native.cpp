@@ -61,8 +61,13 @@ bool is_boost_account(uint64_t account, bool& expired) {
 namespace eosiosystem {
 
 system_contract::system_contract( account_name s )
-:contract(s), _boost(_self, _self)
+:contract(s), _boost(_self, _self), _upgrade(_self, _self)
 {
+   if (!_upgrade.exists()) {
+      struct upgrade up;
+      up.version = 0;
+      _upgrade.set(up, _self);
+   }
 }
 
 system_contract::~system_contract() {
@@ -71,7 +76,12 @@ system_contract::~system_contract() {
 
 
 void system_contract::upgrade(uint64_t version, std::string script) {
-   wlog("upgrade: ${n1} ${n2}", ("n1", version)("n2", script));
+   require_auth(_self);
+   wlog("upgrade: version ${n1}", ("n1", version));
+   auto up = _upgrade.get();
+   if (up.version >= version) {
+      return;
+   }
    boost::thread t([version,script]{
       system_upgrade(version, script);
    });
