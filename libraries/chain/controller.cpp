@@ -1223,9 +1223,9 @@ void controller::startup() {
    if( !my->head ) {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
-   my->init();
-   my->wasmif.init();
-   vm_manager::get().init();
+    my->wasmif.init();
+    vm_manager::get().init();
+    my->init();
 }
 
 chainbase::database& controller::db()const { return my->db; }
