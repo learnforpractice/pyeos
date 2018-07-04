@@ -152,7 +152,19 @@ vm_manager& vm_manager::get() {
    }
    return *mngr;
 }
-
+class time_counter {
+public:
+   time_counter(uint64_t _account) {
+      account = _account;
+      start = get_microseconds();
+   }
+   ~time_counter() {
+      wlog("load ${n1} cost ${n2}", ("n1", name(account))("n2", get_microseconds()-start));
+   }
+private:
+   uint64_t account;
+   uint64_t start;
+};
 bool vm_manager::init() {
    static bool init = false;
    if (init) {
@@ -185,9 +197,11 @@ bool vm_manager::init() {
    auto itr = vm_map.find(3);
    if (itr != vm_map.end()) {
       if (db_api::get().is_account(N(eosio.token))) {
+         auto t = time_counter(N(eosio.token));
          itr->second->preload(N(eosio.token));
       }
       if (db_api::get().is_account(N(eosio))) {
+         auto t = time_counter(N(eosio));
          itr->second->preload(N(eosio));
       }
    }
@@ -198,7 +212,7 @@ bool vm_manager::init() {
 
    boost::thread_group g;
 
-   for (int i=1;i<=10;i++) {//TODO: 10 --> number of CPU cores
+   for (int i=1;i<=6;i++) {//TODO: 10 --> number of CPU cores
       auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
       if (itr == vm_map.end()) {
          continue;
@@ -226,9 +240,12 @@ void vm_manager::preload_accounts(vm_calls* _calls) {
          account = boost_accounts.back();
          boost_accounts.pop_back();
       }
-      ilog("preloading ${n}", ("n", name(account)));
       {
-         _calls->preload(account);
+         {
+            auto t = time_counter(account);
+            _calls->preload(account);
+         }
+
          std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
          *calls = *_calls;
          {
@@ -310,7 +327,6 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->preload = preload;
    calls->unload = unload;
 
-   wlog("loading ${n1} ${n2} ${n3}\n", ("n1", vm_path)("n2", (uint64_t)setcode)("n3", (uint64_t)apply));
    vm_map[vm_type] = std::move(calls);
    return 1;
 }

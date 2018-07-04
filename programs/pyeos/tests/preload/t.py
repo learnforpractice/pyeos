@@ -22,13 +22,55 @@ def gen_names(n):
         names.append(name)
     return names
 
+def _create_account(account):
+    actions = []
+    newaccount = {'creator': 'eosio',
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': initeos.key1,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': initeos.key2,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+    if not eosapi.get_account(account):
+        _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
+        act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+        actions.append(act)
+    '''
+    args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
+    args = eosapi.pack_args('eosio', 'buyram', args)
+    act = ['eosio', 'buyram', {'eosio':'active'}, args]
+    actions.append(act)
+    '''
+
+    args = {'payer':'eosio', 'receiver':account, 'bytes':128*1024*1024}
+    args = eosapi.pack_args('eosio', 'buyrambytes', args)
+    act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
+    actions.append(act)
+
+    args = {'from': 'eosio',
+     'receiver': account,
+     'stake_net_quantity': '1.0050 EOS',
+     'stake_cpu_quantity': '1.0050 EOS',
+     'transfer': 1}
+    args = eosapi.pack_args('eosio', 'delegatebw', args)
+    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    actions.append(act)
+    rr, cost = eosapi.push_actions(actions)
+    assert_ret(rr)
+
+
 def assert_ret(rr):
     for r in rr:
         if r['except']:
             print(r['except'])
         assert not r['except']
 
-ACCOUNT_COUNT = 100
+ACCOUNT_COUNT = 20 #100
 
 def t():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
@@ -54,45 +96,10 @@ def t1():
         'eosio.token',
         'eosio.vpay',
     ]
-    newaccount = {'creator':'eosio', 
-                  'name': '',
-                  'owner': {
-                            "threshold": 1,
-                            "keys": [
-                                {
-                                    "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                                    "weight": 1
-                                }
-                            ],
-                            "accounts": [],
-                            "waits": []
-                            },
-                  'active':{
-                        "threshold": 1,
-                        "keys": [
-                            {
-                                "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                                "weight": 1
-                            }
-                        ],
-                        "accounts": [],
-                        "waits": []
-                    },
-                }
+    
     for account in systemAccounts:
         if not eosapi.get_account(account):
-            actions = []
-            print('+++++++++create account', account)
-            newaccount['name'] = account
-            _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
-            act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
-            actions.append(act)
-            rr, cost = eosapi.push_actions(actions)
-            for r in rr:
-                if  r['except']:
-                    print(r['except'])
-                assert r and not r['except']
-
+            _create_account(account)
 
 def t2():
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
@@ -112,52 +119,11 @@ def t2():
     with open(abi_file, 'rb') as f:
         abi = f.read()
 
-    newaccount = {'creator':'eosio', 
-                  'name': '',
-                  'owner': {
-                            "threshold": 1,
-                            "keys": [
-                                {
-                                    "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                                    "weight": 1
-                                }
-                            ],
-                            "accounts": [],
-                            "waits": []
-                            },
-                  'active':{
-                        "threshold": 1,
-                        "keys": [
-                            {
-                                "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                                "weight": 1
-                            }
-                        ],
-                        "accounts": [],
-                        "waits": []
-                    },
-                }
-
     for account in accounts:
+        _create_account(account)
+        continue
         if not eosapi.get_account(account):
-            actions = []
-            print('+++++++++create account', account)
-            '''
-            args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
-            args = eosapi.pack_args('eosio', 'buyram', args)
-            act = ['eosio', 'buyram', {'eosio':'active'}, args]
-            actions.append(act)
-            '''
-
-            newaccount['name'] = account
-            _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
-            act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
-            actions.append(act)
-            rr, cost = eosapi.push_actions(actions)
-            for r in rr:
-                if  r['except']:
-                    print(r['except'])
-                assert r and not r['except']
+            _create_account(account)
 
     for account in accounts:
         print('+++++++++code update', account)
@@ -175,10 +141,7 @@ def t2():
         setabi = ['eosio', 'setabi', {account:'active'}, _setabi]
         actions.append(setabi)
         rr, cost = eosapi.push_actions(actions)
-        for r in rr:
-            if  r['except']:
-                print(r['except'])
-            assert r and not r['except']
+        assert_ret(rr)
 
 def t3():
     accounts = gen_names(ACCOUNT_COUNT)
