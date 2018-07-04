@@ -15,7 +15,7 @@ namespace eosiosystem {
    const uint32_t blocks_per_hour       = 2 * 3600;
    const uint64_t useconds_per_day      = 24 * 3600 * uint64_t(1000000);
    const uint64_t useconds_per_year     = seconds_per_year*1000000ll;
-   const uint64_t useconds_per_jitbid     = 10*uint64_t(1000000);;
+   const uint64_t useconds_per_jitbid     = 7 * 24 * 3600 * uint64_t(1000000);
    const uint64_t producer_update_interval = 120;
    const uint64_t jit_bid_interval =      6*3600 * uint64_t(1000000);
 
