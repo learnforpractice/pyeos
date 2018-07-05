@@ -9,7 +9,7 @@
 
 #include <thrift/TDispatchProcessor.h>
 #include <thrift/async/TConcurrentClientSyncInfo.h>
-#include "../../ipc_client/thrift/RpcService_types.h"
+#include "RpcService_types.h"
 
 namespace cpp {
 

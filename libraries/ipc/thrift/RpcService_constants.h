@@ -7,7 +7,7 @@
 #ifndef RpcService_CONSTANTS_H
 #define RpcService_CONSTANTS_H
 
-#include "../../ipc_client/thrift/RpcService_types.h"
+#include "RpcService_types.h"
 
 namespace cpp {
 

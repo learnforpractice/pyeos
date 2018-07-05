@@ -13,10 +13,9 @@
 #include <eosiolib_native/vm_api.h>
 
 #include <eosio/chain/db_api.hpp>
-#include "../ipc_client/thrift/blockingconcurrentqueue.h"
-#include "../ipc_client/thrift/readerwriterqueue.h"
-#include "../ipc_client/thrift/RpcService.h"
-
+#include "thrift/blockingconcurrentqueue.h"
+#include "thrift/readerwriterqueue.h"
+#include "thrift/RpcService.h"
 
 
 using namespace eosio::chain;

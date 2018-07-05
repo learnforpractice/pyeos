@@ -10,12 +10,9 @@
 
 #include <fc/log/logger.hpp>
 #include <eosio/chain/db_api.hpp>
-#include "../../ipc_client/thrift/blockingconcurrentqueue.h"
-#include "../../ipc_client/thrift/readerwriterqueue.h"
-#include "../../ipc_client/thrift/RpcService.h"
-
-#include "../../micropython/mpeoslib.h"
-
+#include "blockingconcurrentqueue.h"
+#include "readerwriterqueue.h"
+#include "RpcService.h"
 
 using namespace eosio::chain;
 

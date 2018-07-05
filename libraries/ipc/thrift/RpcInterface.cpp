@@ -4,7 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#include "../../ipc_server/thrift/RpcInterface.h"
+#include "RpcInterface.h"
 
 namespace cpp {
 

@@ -3,8 +3,8 @@ add_library( ipc_server SHARED
     Server.cpp
     ipc_manager.cpp
     ipc_interface.cpp
-    thrift/RpcService.cpp
-    thrift/RpcService_types.cpp
+    ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService.cpp
+    ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService_types.cpp
 )
 
 
@@ -25,6 +25,7 @@ target_include_directories( ipc_server
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts/eosiolib_native
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/ipc
                             )
 
 install( TARGETS ipc_server 

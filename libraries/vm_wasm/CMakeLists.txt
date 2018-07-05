@@ -3,6 +3,7 @@ set(HEADERS
     ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/Include
     ${CMAKE_SOURCE_DIR}/contracts
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src" )
 
 
@@ -30,7 +31,7 @@ add_library(vm_wasm_binaryen SHARED
            vm_api.cpp name.cpp) 
 
 target_compile_options(vm_wasm_binaryen PRIVATE -D_BINARYEN)
-target_link_libraries(vm_wasm_binaryen  PRIVATE eosiolib_native binaryen wavm-shared softfloat builtins fc)
+target_link_libraries(vm_wasm_binaryen  PRIVATE binaryen wavm-shared softfloat builtins fc)
 
 target_include_directories(vm_wasm_binaryen PRIVATE ${HEADERS})
 

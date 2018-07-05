@@ -5,7 +5,7 @@
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
-#include "../../ipc_server/thrift/RpcInterface.h"
+#include "RpcInterface.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;

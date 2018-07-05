@@ -142,13 +142,13 @@ static const char* vm_libs_path[] = {
    "../libs/libvm_py-1d" DYLIB_SUFFIX,
    "../libs/libvm_ethd" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0d" DYLIB_SUFFIX
-   "../libs/libvm_api_ipcd" DYLIB_SUFFIX
+   "../libs/libipc_serverd" DYLIB_SUFFIX
 #else
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_py-1" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX
-   "../libs/libvm_api_ipc" DYLIB_SUFFIX
+   "../libs/libipc_server" DYLIB_SUFFIX
 #endif
 };
 

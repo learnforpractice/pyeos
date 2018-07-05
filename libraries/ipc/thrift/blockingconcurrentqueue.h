@@ -11,7 +11,7 @@
 #include <memory>
 #include <chrono>
 #include <ctime>
-#include "../../ipc_client/thrift/concurrentqueue.h"
+#include "concurrentqueue.h"
 
 #if defined(_WIN32)
 // Avoid including windows.h in a header; we only need a handful of

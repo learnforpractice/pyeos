@@ -11,7 +11,7 @@
 #include <new>
 #include <cstdint>
 #include <cstdlib>		// For malloc/free/abort & size_t
-#include "../../ipc_client/thrift/atomicops.h"
+#include "atomicops.h"
 #if __cplusplus > 199711L || _MSC_VER >= 1700 // C++11 or VS2012
 #include <chrono>
 #endif
