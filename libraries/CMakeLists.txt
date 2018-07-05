@@ -6,6 +6,7 @@ add_subdirectory( vm_eth )
 
 #add_subdirectory( vm_api_rpc )
 add_subdirectory( vm_api_ipc )
+add_subdirectory( vm_manager )
 
 add_subdirectory( builtins )
 add_subdirectory( softfloat )

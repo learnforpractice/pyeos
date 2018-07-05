@@ -67,13 +67,7 @@ add_library( eosio_chain
 #              evm_interface.cpp
 #              micropython_interface.cpp
               python_contract.wrap.cpp
-
-              vm_manager.cpp
               vm_api_native/vm_api.cpp
-              vm_api_native/utility.cpp
-              vm_api_native/ro_db.cpp
-              vm_api_native/rw_db.cpp
-              native/native.cpp
               ${HEADERS}
              )
 
@@ -84,7 +78,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PUBLIC -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase db_api softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 thrift_static ${OPENSSL_LIBRARIES})
 
 #vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
 #but there are header files depend on vm_py, 
@@ -105,6 +99,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_manager
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/extmod
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build

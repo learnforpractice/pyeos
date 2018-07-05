@@ -170,11 +170,15 @@ namespace eosio { namespace chain {
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
       uint32_t num = context.control.head_block_state()->header.block_num();
-      while (true) {//(num >= 200) {
+      while (num >= 200) {
          if (false) { //(context.receiver == N(eosio)) {
-            my->_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
+            uint64_t act = context.act.name.value;
+            if (act == N(buyram) || act == N(buyrambytes)) {
+               break;
+            }
+//            my->_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
 //            _old_eosio_apply(context.receiver.value, context.act.account.value, context.act.name.value);
-            return;
+//            return;
               //context.act.name == N(buyrambytes) || context.act.name == N(buyram) || context.act.name == N(sellram)
 //            12000 setcode eosio set bios.boot
 //            12247 setcode eosio set back eosio.system

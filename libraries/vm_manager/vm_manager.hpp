@@ -11,6 +11,9 @@
 #include <vm_py_api.h>
 #include <vm_wasm_api.h>
 
+#include <eosio/chain/db_api.hpp>
+
+
 using namespace std;
 
 typedef int (*fn_setcode)(uint64_t account);
@@ -31,12 +34,22 @@ struct vm_calls {
    fn_unload unload;
 };
 
+namespace eosio {
+namespace chain {
+
+#include <eosiolib_native/vm_api.h>
+
 class vm_manager
 {
 public:
    static vm_manager& get();
+   void set_vm_api(struct vm_api* _api);
+   struct vm_api* get_vm_api();
+
    int setcode(int type, uint64_t account);
    int apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
+   int local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
+
    int check_new_version(int vm_type, uint64_t vm_name);
    int load_vm_from_path(int vm_type, const char* vm_path);
    int load_vm(int vm_type, uint64_t vm_name);
@@ -51,12 +64,15 @@ public:
    void preload_accounts(vm_calls* _calls);
 
    void unload_account(uint64_t account);
-
+   bool is_trusted_account(uint64_t account);
 
 private:
    vm_manager();
+   struct vm_api* api;
    vector<uint64_t> boost_accounts;
    map<int, std::unique_ptr<vm_calls>> vm_map;
    map<uint64_t, std::unique_ptr<vm_calls>> preload_account_map;
 };
 
+}
+}

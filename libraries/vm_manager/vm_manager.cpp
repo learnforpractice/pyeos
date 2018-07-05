@@ -1,9 +1,5 @@
 #include "vm_manager.hpp"
 
-#include <eosio/chain/db_api.hpp>
-
-#include <dlfcn.h>
-
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -15,7 +11,6 @@
 #include <appbase/application.hpp>
 #include <appbase/platform.hpp>
 #include <eosio/chain/contract_types.hpp>
-#include <eosio/chain/db_api.hpp>
 
 #include <sys/time.h>
 #include <time.h>
@@ -23,15 +18,27 @@
 
 #include <thread>
 #include <mutex>
+#include <dlfcn.h>
+
 
 using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
 
+static const int TYPE_BINARYEN = 0;
+static const int TYPE_PY = 1;
+static const int TYPE_ETH = 2;
+static const int TYPE_WAVM = 3;
+static const int TYPE_IPC = 4;
+
 namespace eosio {
 namespace chain {
-   void register_vm_api(void* handle);
+   typedef void (*fn_register_vm_api)(struct vm_api* api);
+   void register_vm_api(void* handle) {
+//      fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
+//      _register_vm_api(&_vm_api);
+   }
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
 }
 }
@@ -39,16 +46,12 @@ namespace chain {
 #define WAVM_VM_START_INDEX (0x10000)
 
 typedef void (*fn_on_boost_account)(void* v, uint64_t account);
-bool is_boost_account(uint64_t account);
 void visit_boost_account(fn_on_boost_account fn, void* param);
-
-//native.cpp
-bool remove_expired_boost_accounts();
-bool is_boost_account_expired(uint64_t account);
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
+bool is_boost_account(uint64_t account, bool& expired);
 
 void _on_boost_account(void* v, uint64_t account) {
    vm_manager* mngr = (vm_manager*)v;
@@ -116,16 +119,19 @@ static uint64_t vm_names[] = {
       N(vm.eth.1),
       N(vm.wasm.1),
       N(vm.wavm.1),
+      N(vm.ipc.1),
 #elif defined(__linux__)
       N(vm.wasm.2),
       N(vm.py.2),
       N(vm.eth.2),
       N(vm.wavm.2),
+      N(vm.ipc.2),
 #elif defined(_WIN64)
       N(vm.wasm.3),
       N(vm.py.3),
       N(vm.eth.3),
       N(vm.wavm.3),
+      N(vm.ipc.3),
 #else
    #error Not Supported Platform
 #endif
@@ -137,11 +143,13 @@ static const char* vm_libs_path[] = {
    "../libs/libvm_py-1d" DYLIB_SUFFIX,
    "../libs/libvm_ethd" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0d" DYLIB_SUFFIX
+   "../libs/libvm_api_ipcd" DYLIB_SUFFIX
 #else
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_py-1" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX
+   "../libs/libvm_api_ipc" DYLIB_SUFFIX
 #endif
 };
 
@@ -152,6 +160,7 @@ vm_manager& vm_manager::get() {
    }
    return *mngr;
 }
+
 class time_counter {
 public:
    time_counter(uint64_t _account) {
@@ -165,6 +174,7 @@ private:
    uint64_t account;
    uint64_t start;
 };
+
 bool vm_manager::init() {
    static bool init = false;
    if (init) {
@@ -498,12 +508,28 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    return 1;
 }
 
+bool vm_manager::is_trusted_account(uint64_t account) {
+   return true;
+}
+
+void vm_manager::set_vm_api(struct vm_api* _api) {
+   this->api = _api;
+}
+
+struct vm_api* vm_manager::get_vm_api() {
+   return this->api;
+}
+
 int vm_manager::setcode(int type, uint64_t account) {
 /*
    if (check_new_version(type, vm_names[type])) {
       load_vm(type, vm_names[type]);
    }
 */
+   if (is_trusted_account(account)) {
+   } else {
+      type = TYPE_IPC;
+   }
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
       return -1;
@@ -511,9 +537,19 @@ int vm_manager::setcode(int type, uint64_t account) {
    return itr->second->setcode(account);
 }
 
-bool is_boost_account(uint64_t account, bool& expired);
-
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
+   if (is_trusted_account(account)) {
+      return local_apply(type, receiver, account, act);
+   } else {
+      auto itr = vm_map.find(TYPE_IPC);
+      if (itr == vm_map.end()) {
+         return -1;
+      }
+      return itr->second->apply(receiver, account, act);
+   }
+}
+
+int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
 /*
    if (check_new_version(type, vm_names[type])) {
       load_vm(type, vm_names[type]);

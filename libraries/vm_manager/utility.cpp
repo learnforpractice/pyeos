@@ -11,7 +11,7 @@ struct boost_account {
 
    uint64_t primary_key()const { return account; }
 
-   EOSLIB_SERIALIZE( boost_account, (account) )
+   EOSLIB_SERIALIZE( boost_account, (account)(expiration) )
 };
 
 bool is_boost_account(uint64_t account) {
@@ -30,3 +30,20 @@ void visit_boost_account(fn_on_boost_account fn, void* param) {
       fn(param, itr->account);
    }
 }
+
+
+bool is_boost_account(uint64_t account, bool& expired) {
+   uint64_t _now = current_time();
+   eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
+
+   auto itr = _boost.find(account);
+   expired = false;
+   if (itr != _boost.end()) {
+      if (itr->expiration < _now) {
+         expired = true;
+      }
+      return true;
+   }
+   return false;
+}
+

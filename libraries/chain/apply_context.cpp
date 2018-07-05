@@ -79,11 +79,6 @@ action_trace apply_context::exec_one()
    const auto& cfg = control.get_global_properties().configuration;
    do {
    try {
-      if (receiver == N(eosio)) {
-         if (native_apply( receiver, act.account, act.name )) {
-            break;
-         }
-      }
 
       const auto &a = control.get_account(receiver);
       privileged = a.privileged;

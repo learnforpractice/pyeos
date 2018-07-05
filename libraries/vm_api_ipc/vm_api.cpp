@@ -48,12 +48,6 @@ const char* get_code( uint64_t receiver, size_t* size ) {
 #endif
 }
 
-extern "C" {
-   int split_path(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
-   uint64_t get_action_account();
-   uint64_t string_to_uint64_(const char* str);
-}
-
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
 #if 0
    if (out == NULL || size == 0) {
