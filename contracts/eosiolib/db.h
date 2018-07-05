@@ -64,6 +64,10 @@ int32_t db_lowerbound_i64(account_name code, account_name scope, table_name tabl
 int32_t db_upperbound_i64(account_name code, account_name scope, table_name table, uint64_t id);
 int32_t db_end_i64(account_name code, account_name scope, table_name table);
 
+//for ipc & rpc
+void db_remove_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id );
+void db_update_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
+
 int32_t db_idx64_store(account_name scope, table_name table, account_name payer, uint64_t id, const uint64_t* secondary);
 void db_idx64_update(int32_t iterator, account_name payer, const uint64_t* secondary);
 void db_idx64_remove(int32_t iterator);

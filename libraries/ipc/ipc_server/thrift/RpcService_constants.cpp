@@ -4,7 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#include "RpcService_constants.h"
+#include "../../ipc_server/thrift/RpcService_constants.h"
 
 namespace cpp {
 

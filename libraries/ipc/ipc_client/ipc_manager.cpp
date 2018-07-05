@@ -1,4 +1,5 @@
-#include "ipc_manager.hpp"
+#include "../ipc_client/ipc_manager.hpp"
+
 #include <eosio/chain/db_api.hpp>
 using namespace eosio::chain;
 

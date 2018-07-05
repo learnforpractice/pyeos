@@ -1,4 +1,3 @@
-#include "RpcService.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
@@ -11,10 +10,11 @@
 
 #include <fc/log/logger.hpp>
 #include <eosio/chain/db_api.hpp>
+#include "../../ipc_client/thrift/blockingconcurrentqueue.h"
+#include "../../ipc_client/thrift/readerwriterqueue.h"
+#include "../../ipc_client/thrift/RpcService.h"
 
 #include "../../micropython/mpeoslib.h"
-#include "readerwriterqueue.h"
-#include "blockingconcurrentqueue.h"
 
 
 using namespace eosio::chain;
@@ -200,7 +200,7 @@ extern "C" int start_server() {
       int port = 9191;
      ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
      ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
-     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket("/tmp/pyeos.ipc"));
      ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
      ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
@@ -224,7 +224,8 @@ extern "C" int start_client() {
          delete rpcclient;
       }
       std::string addr("localhost");
-      stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9191));
+//      stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9191));
+      stdcxx::shared_ptr<TTransport> socket(new TSocket("/tmp/pyeos.ipc"));
       stdcxx::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
       stdcxx::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
       rpcclient = new RpcServiceClient(protocol);

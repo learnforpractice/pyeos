@@ -1,3 +1,5 @@
+#include "../ipc_server/rpc_interface.hpp"
+
 #include <Python.h>
 #include <stdio.h>
 #include <boost/thread/thread.hpp>
@@ -6,7 +8,6 @@
 #include <fc/exception/exception.hpp>
 #include <appbase/application.hpp>
 
-#include "rpc_interface.hpp"
 
 typedef void (*fn_init)();
 static fn_init s_init_eos = 0;

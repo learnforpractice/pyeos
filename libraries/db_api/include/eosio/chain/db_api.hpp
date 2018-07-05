@@ -3,13 +3,17 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #pragma once
-#include <eosio/chain/controller.hpp>
-#include <eosio/chain/transaction.hpp>
-#include <eosio/chain/contract_table_objects.hpp>
+
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>
 #include <set>
+
+#include <eosio/chain/account_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/transaction.hpp>
+#include <eosio/chain/contract_table_objects.hpp>
+#include <eosio/chain/exceptions.hpp>
 
 namespace chainbase { class database; }
 
@@ -618,7 +622,7 @@ class db_api {
       bool                          context_free = false;
       bool                          used_context_free_api = false;
 
-      action_trace                                trace;
+//      action_trace                                trace;
 
    private:
 

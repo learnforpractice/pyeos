@@ -22,8 +22,22 @@ void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t 
    ctx().db_update_i64(iterator, payer, (const char*)data, len);
 }
 
+void db_update_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size ) {
+   int itr = ctx().db_find_i64(ctx().get_receiver(), scope, table, id);
+   if (itr >= 0) {
+      ctx().db_update_i64( itr, payer, buffer, buffer_size );
+   }
+}
+
 void db_remove_i64(int32_t iterator) {
    ctx().db_remove_i64(iterator);
+}
+
+void db_remove_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id ) {
+   int itr = ctx().db_find_i64(ctx().get_receiver(), scope, table, id);
+   if (itr >= 0) {
+      ctx().db_remove_i64( itr );
+   }
 }
 
 int32_t db_get_i64(int32_t iterator, void* data, uint32_t len) {

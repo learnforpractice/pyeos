@@ -1,25 +1,21 @@
 ## SORT .cpp by most likely to change / break compile
-add_library( vm_api_ipc SHARED
-#    rpc_interface.cpp
-#    rpc_interface_.wrap.cpp
-
+add_library( ipc_client SHARED
+    Client.cpp
     vm_api.cpp
     ipc_manager.cpp
-    cpp/RpcService.cpp
-    cpp/RpcService_types.cpp
-#    cpp/rpceoslib.cpp
+    thrift/RpcService.cpp
+    thrift/RpcService_types.cpp
 )
 
-message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_LINE}":"${LevelDB_INCLUDE})
-message("++++++++++++++++++" ${CMAKE_CURRENT_LIST_FILE})
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-   target_compile_options(vm_api_ipc PRIVATE -DDEBUG)
+   target_compile_options(ipc_client PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( vm_api_ipc PUBLIC db_api fc thrift_static ${OPENSSL_LIBRARIES})
+target_link_libraries( ipc_client PUBLIC db_api fc thrift_static ${OPENSSL_LIBRARIES})
 
-target_include_directories( vm_api_ipc
+target_include_directories( ipc_client
+                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                             PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
@@ -31,7 +27,7 @@ target_include_directories( vm_api_ipc
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             )
 
-install( TARGETS vm_api_ipc 
+install( TARGETS ipc_client 
    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}

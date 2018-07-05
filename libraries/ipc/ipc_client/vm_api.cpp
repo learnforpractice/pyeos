@@ -12,24 +12,25 @@
 #include <dlfcn.h>
 
 #include <eosio/chain/db_api.hpp>
-#include "ipc_manager.hpp"
+#include "../ipc_client/ipc_manager.hpp"
 
 using namespace eosio::chain;
+using namespace fc;
 
 namespace eosio {
 namespace chain {
 
 #include <eosiolib_native/vm_api.h>
 
-#include "action.cpp"
-#include "chain.cpp"
-#include "system.cpp"
-#include "crypto.cpp"
-#include "db.cpp"
-#include "privileged.cpp"
-#include "transaction.cpp"
-#include "print.cpp"
-#include "permission.cpp"
+#include "../ipc_client/action.cpp"
+#include "../ipc_client/chain.cpp"
+#include "../ipc_client/system.cpp"
+#include "../ipc_client/crypto.cpp"
+#include "../ipc_client/db.cpp"
+#include "../ipc_client/privileged.cpp"
+#include "../ipc_client/transaction.cpp"
+#include "../ipc_client/print.cpp"
+#include "../ipc_client/permission.cpp"
 
 void eosio_assert( bool condition, char* msg ) {
    if( BOOST_UNLIKELY( !condition ) ) {

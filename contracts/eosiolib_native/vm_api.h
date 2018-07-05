@@ -56,6 +56,9 @@ struct vm_api {
    void (*db_update_i64)(int32_t iterator, uint64_t payer, const void* data, uint32_t len);
    void (*db_remove_i64)(int32_t iterator);
 
+   void (*db_update_i64_ex)( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
+   void (*db_remove_i64_ex)( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id );
+
    int32_t (*db_get_i64)(int32_t iterator, void* data, uint32_t len);
    int32_t (*db_get_i64_ex)( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
    const char* (*db_get_i64_exex)( int itr, size_t* buffer_size );
