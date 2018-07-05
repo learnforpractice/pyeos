@@ -34,11 +34,6 @@ static const int TYPE_IPC = 4;
 
 namespace eosio {
 namespace chain {
-   typedef void (*fn_register_vm_api)(struct vm_api* api);
-   void register_vm_api(void* handle) {
-//      fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-//      _register_vm_api(&_vm_api);
-   }
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
 }
 }
@@ -175,6 +170,11 @@ private:
    uint64_t start;
 };
 
+void vm_manager::register_vm_api(void* handle) {
+   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
+   _register_vm_api(this->api);
+}
+
 bool vm_manager::init() {
    static bool init = false;
    if (init) {
@@ -284,7 +284,7 @@ void vm_manager::on_boost_account(uint64_t account) {
 }
 
 vm_manager::vm_manager() {
-   init();
+//   init();
 }
 
 int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
@@ -325,7 +325,7 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
 
    vm_init();
-   register_vm_api(handle);
+   this->register_vm_api(handle);
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;

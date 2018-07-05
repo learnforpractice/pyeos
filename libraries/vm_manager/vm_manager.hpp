@@ -53,6 +53,8 @@ public:
    int check_new_version(int vm_type, uint64_t vm_name);
    int load_vm_from_path(int vm_type, const char* vm_path);
    int load_vm(int vm_type, uint64_t vm_name);
+
+   void register_vm_api(void* handle);
    bool init();
 
    struct vm_wasm_api* get_wasm_vm_api();

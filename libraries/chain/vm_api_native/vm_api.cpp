@@ -53,13 +53,6 @@ static inline apply_context& ctx() {
 #include "print.cpp"
 #include "permission.cpp"
 
-
-#define API() get_vm_api()
-
-#if defined(assert)
-   #undef assert
-#endif
-
 uint64_t get_action_account() {
    return ctx().act.account.value;
 }
@@ -306,6 +299,11 @@ static struct vm_api _vm_api = {
 
 struct vm_api* get_vm_api() {
    return &_vm_api;
+}
+
+void vm_manager_init() {
+   vm_manager::get().set_vm_api(&_vm_api);
+   vm_manager::get().init();
 }
 
 void register_vm_api(void* handle) {

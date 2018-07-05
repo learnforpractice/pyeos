@@ -21,9 +21,9 @@
 
 #include <eosio/chain/eosio_contract.hpp>
 
-#include "vm_manager.hpp"
 
 namespace eosio { namespace chain {
+void vm_manager_init();
 
 using resource_limits::resource_limits_manager;
 
@@ -1224,7 +1224,7 @@ void controller::startup() {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
     my->wasmif.init();
-    vm_manager::get().init();
+    vm_manager_init();
     my->init();
 }
 
