@@ -240,6 +240,7 @@ def assert_ret(rr):
 
 def create_system_accounts():
     systemAccounts = [
+        'eosio.token',
         'eosio.bpay',
         'eosio.msig',
         'eosio.names',
@@ -317,24 +318,14 @@ def publish_system_contracts():
                 r = eosapi.create_account('eosio', account, key1, key2)
                 assert r
 
-        old_code = eosapi.get_code(account)
-        if old_code:
-            old_code = old_code[0]
-        need_update = not old_code
 
         _path = os.path.join(contracts_path, accounts_map[account], accounts_map[account])
-        if old_code:
-            print('+++++++++old_code[:4]', old_code[:4])
-            if old_code[:4] != b'\x00asm':
-                old_code = eosapi.wast2wasm(old_code)
-            wast = _path + '.wast'
-            code = open(wast, 'rb').read()
-            code = eosapi.wast2wasm(code)
-
-            print(len(code), len(old_code), old_code[:20])
-            if code == old_code:
-                need_update = False
-        if need_update:
+        wast = _path + '.wast'
+        code = open(wast, 'rb').read()
+        code = eosapi.wast2wasm(code)
+        hash = eosapi.sha256(code)
+        old_hash = eosapi.get_code_hash(account)
+        if old_hash != hash:
             print('+++++++++code update', account)
             wast = _path + '.wast'
             abi = _path + '.abi'
@@ -342,6 +333,7 @@ def publish_system_contracts():
                 r = eosapi.set_contract(account, wast, abi, 0)
 
             if account == 'eosio.token':
+                print('issue system token...')
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
                 msg = {"issuer":"eosio","maximum_supply":"11000000000000.0000 EOS"}
                 r = eosapi.push_action('eosio.token', 'create', msg, {'eosio.token':'active'})

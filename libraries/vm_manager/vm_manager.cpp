@@ -19,7 +19,7 @@
 #include <thread>
 #include <mutex>
 #include <dlfcn.h>
-
+#include <eosiolib/system.h>
 
 using namespace eosio;
 using namespace eosio::chain;
@@ -40,7 +40,8 @@ namespace chain {
 
 #define WAVM_VM_START_INDEX (0x10000)
 
-typedef void (*fn_on_boost_account)(void* v, uint64_t account);
+
+typedef void (*fn_on_boost_account)(void* v, uint64_t account, uint64_t expiration);
 void visit_boost_account(fn_on_boost_account fn, void* param);
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
@@ -48,8 +49,11 @@ typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 bool is_boost_account(uint64_t account, bool& expired);
 
-void _on_boost_account(void* v, uint64_t account) {
+void _on_boost_account(void* v, uint64_t account, uint64_t expiration) {
    vm_manager* mngr = (vm_manager*)v;
+   if (expiration < fc::time_point::now().time_since_epoch().count()) {
+      return;
+   }
    mngr->on_boost_account(account);
 }
 
@@ -163,7 +167,7 @@ public:
       start = get_microseconds();
    }
    ~time_counter() {
-      wlog("load ${n1} cost ${n2}", ("n1", name(account))("n2", get_microseconds()-start));
+      wlog("loading ${n1} cost ${n2}", ("n1", name(account))("n2", get_microseconds()-start));
    }
 private:
    uint64_t account;
@@ -222,7 +226,17 @@ bool vm_manager::init() {
 
    boost::thread_group g;
 
-   for (int i=1;i<=6;i++) {//TODO: 10 --> number of CPU cores
+
+//   int cpu_num = sysconf(_SC_NPROCESSORS_ONLN);
+
+   int cpu_num = std::thread::hardware_concurrency();
+   if (cpu_num <= 0) {
+      cpu_num = 1;
+   }
+
+   wlog("preloading code in ${n} threads", ("n", cpu_num));
+
+   for (int i=1;i<=cpu_num;i++) {//TODO: 10 --> number of CPU cores
       auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
       if (itr == vm_map.end()) {
          continue;
@@ -565,20 +579,22 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
          bool _boosted = false;
          _boosted = is_boost_account(receiver, expired);
          if (!_boosted) {
+            unload_account(receiver);
             break;
          }
          if (expired) {
             unload_account(receiver);
             break;
-         } else {
-            auto itr = preload_account_map.find(receiver);
-            if (itr != preload_account_map.end()) {
-               return itr->second->apply(receiver, account, act);
-            } else {
-               wlog("executing ${n} by jit", ("n", name(receiver)));
-               type = 3;//accelerating execution by JIT
-            }
          }
+
+         auto itr = preload_account_map.find(receiver);
+         if (itr != preload_account_map.end()) {
+            return itr->second->apply(receiver, account, act);
+         } else {
+            wlog("executing ${n} by jit", ("n", name(receiver)));
+            type = 3;//accelerating execution by JIT
+         }
+
       } while(false);
    }
 

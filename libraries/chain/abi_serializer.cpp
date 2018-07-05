@@ -17,7 +17,7 @@ using namespace boost;
 namespace eosio { namespace chain {
 
    const size_t abi_serializer::max_recursion_depth;
-   fc::microseconds abi_serializer::max_serialization_time = fc::microseconds(15*1000); // 15 ms
+   fc::microseconds abi_serializer::max_serialization_time = fc::microseconds(30*1000); // 30 ms
 
    using boost::algorithm::ends_with;
    using std::string;

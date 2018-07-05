@@ -189,9 +189,10 @@ namespace eosiosystem {
       eosio_assert(is_account(account), "account does not exist");
       auto itr = _boost.find(account);
       eosio_assert( itr != _boost.end(), "account not in list" );
-      _boost.modify(itr, 0, [&](auto& b ) {
-         b.expiration = 0; //will be removed in onblock
-      });
+      _boost.erase(itr);
+      jit_bid bid = _jitbid.get();
+      bid.jit_remains += 1;
+      _jitbid.set(bid, 0);
    }
 
    /**

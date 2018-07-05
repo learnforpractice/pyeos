@@ -22,12 +22,12 @@ bool is_boost_account(uint64_t account) {
    return false;
 }
 
-typedef void (*fn_on_boost_account)(void* v, uint64_t account);
+typedef void (*fn_on_boost_account)(void* v, uint64_t account, uint64_t expiration);
 
 void visit_boost_account(fn_on_boost_account fn, void* param) {
    eosio::multi_index<N(boost), boost_account> _boost_account(N(eosio), N(eosio));
    for (auto itr = _boost_account.begin(); itr != _boost_account.end(); itr++) {
-      fn(param, itr->account);
+      fn(param, itr->account, itr->expiration);
    }
 }
 
