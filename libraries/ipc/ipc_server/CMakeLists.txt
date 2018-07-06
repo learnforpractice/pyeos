@@ -1,7 +1,6 @@
 ## SORT .cpp by most likely to change / break compile
 add_library( ipc_server SHARED
-    Server.cpp
-    ipc_manager.cpp
+    ipc_server.cpp
     ipc_interface.cpp
     ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService.cpp
     ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService_types.cpp

@@ -45,20 +45,21 @@ def _create_account(account):
     act = ['eosio', 'buyram', {'eosio':'active'}, args]
     actions.append(act)
     '''
+    if eosapi.get_code('eosio')[0]:
+        args = {'payer':'eosio', 'receiver':account, 'bytes':64*1024}
+        args = eosapi.pack_args('eosio', 'buyrambytes', args)
+        act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
+        actions.append(act)
+    
+        args = {'from': 'eosio',
+         'receiver': account,
+         'stake_net_quantity': '1.0050 EOS',
+         'stake_cpu_quantity': '1.0050 EOS',
+         'transfer': 1}
+        args = eosapi.pack_args('eosio', 'delegatebw', args)
+        act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+        actions.append(act)
 
-    args = {'payer':'eosio', 'receiver':account, 'bytes':64*1024}
-    args = eosapi.pack_args('eosio', 'buyrambytes', args)
-    act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
-    actions.append(act)
-
-    args = {'from': 'eosio',
-     'receiver': account,
-     'stake_net_quantity': '1.0050 EOS',
-     'stake_cpu_quantity': '1.0050 EOS',
-     'transfer': 1}
-    args = eosapi.pack_args('eosio', 'delegatebw', args)
-    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
-    actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
 

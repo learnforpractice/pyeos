@@ -2,15 +2,19 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef VM_API_IPC_IPC_MANAGER_CPP_
-#define VM_API_IPC_IPC_MANAGER_CPP_
+#ifndef VM_API_IPC_IPC_CLIENT_CPP_
+#define VM_API_IPC_IPC_CLIENT_CPP_
 
-class ipc_manager {
+namespace cpp {
+class RpcServiceClient;
+}
+
+class ipc_client {
 public:
-   static ipc_manager& get() {
-      static ipc_manager* mngr = nullptr;
+   static ipc_client& get() {
+      static ipc_client* mngr = nullptr;
       if (!mngr) {
-         mngr = new ipc_manager();
+         mngr = new ipc_client();
       }
       return *mngr;
    }
@@ -41,9 +45,13 @@ public:
                                     const char* perms_data,   uint32_t perms_size
                                   );
 
+   int start();
+
+private:
+   cpp::RpcServiceClient* rpcclient = nullptr;
 
 };
 
 
 
-#endif /* VM_API_IPC_IPC_MANAGER_CPP_ */
+#endif /* VM_API_IPC_IPC_CLIENT_CPP_ */

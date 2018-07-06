@@ -3,6 +3,9 @@
 #include <eosiolib/print.hpp>
 #include <eosiolib/action.hpp>
 #include <eosio.token/eosio.token.hpp>
+#include <eosiolib/print.hpp>
+
+using namespace eosio;
 
 extern "C" {
 void sayHello() {
@@ -16,6 +19,9 @@ uint64_t mypow(uint64_t base, uint64_t power) {
 
 void apply( uint64_t receiver, uint64_t code, uint64_t action ) {
    auto self = receiver;
+//   char* a = (char*)malloc(1024*1024*1024);
+//   a[10000] = 0;
+//   print("+++++++abc:", uint64_t(a), "\n");
    if( code == self ) {
       switch( action ) {
          case N(sayhello):

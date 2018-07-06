@@ -33,7 +33,7 @@
 #include <eosio/chain/db_api.hpp>
 #include <vm_manager.hpp>
 //#include <appbase/application.hpp>
-#include "ipc_manager.hpp"
+#include "ipc_client.hpp"
 
 namespace eosio {
 namespace chain {

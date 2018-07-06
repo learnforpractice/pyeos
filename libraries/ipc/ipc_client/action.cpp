@@ -18,21 +18,42 @@ uint64_t current_receiver() {
 }
 
 void require_recipient( uint64_t name ) {
-   ipc_manager::get().require_recipient(name);
+   ipc_client::get().require_recipient(name);
 }
 
-void require_auth( uint64_t name ) {
-   ipc_manager::get().require_auth(name);
+void require_auth( uint64_t account ) {
+   auto& act = db_api::get().get_action_object();
+   for( uint32_t i=0; i < act.authorization.size(); i++ ) {
+     if( act.authorization[i].actor == account ) {
+         #warning FIXME: notify server
+//        used_authorizations[i] = true;
+        return;
+     }
+   }
+   EOS_ASSERT( false, missing_auth_exception, "missing authority of ${account}", ("account",account));
 }
 
-void require_auth2( uint64_t name, uint64_t permission ) {
-   ipc_manager::get().require_auth2(name, permission);
+void require_auth2( uint64_t account, uint64_t permission ) {
+   auto& act = db_api::get().get_action_object();
+   for( uint32_t i=0; i < act.authorization.size(); i++ )
+      if( act.authorization[i].actor == account ) {
+         if( act.authorization[i].permission == permission ) {
+               #warning FIXME: notify server
+//            used_authorizations[i] = true;
+            return;
+         }
+      }
+   EOS_ASSERT( false, missing_auth_exception, "missing authority of ${account}/${permission}",
+               ("account",account)("permission",permission) );
 }
 
 bool has_auth( uint64_t account ) {
-   for( const auto& auth : db_api::get().get_action_object().authorization )
-     if( auth.actor == account )
-        return true;
+   auto& act = db_api::get().get_action_object();
+   for( const auto& auth : act.authorization ) {
+      if( auth.actor == account ) {
+         return true;
+      }
+   }
   return false;
 }
 
@@ -41,15 +62,15 @@ bool is_account( uint64_t name ) {
 }
 
 void send_inline(char *data, size_t data_len) {
-   ipc_manager::get().send_inline(data, data_len);
+   ipc_client::get().send_inline(data, data_len);
 }
 
 void send_context_free_inline(char *data, size_t data_len) {
-   ipc_manager::get().send_context_free_inline(data, data_len);
+   ipc_client::get().send_context_free_inline(data, data_len);
 }
 
 uint64_t  publication_time() {
-   return ipc_manager::get().publication_time();
+   return ipc_client::get().publication_time();
 }
 
 }

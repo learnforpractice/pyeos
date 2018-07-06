@@ -1,8 +1,8 @@
 ## SORT .cpp by most likely to change / break compile
 add_executable( ipc_client
-    Client.cpp
+    main.cpp
     vm_api.cpp
-    ipc_manager.cpp
+    ipc_client.cpp
     ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService.cpp
     ${CMAKE_SOURCE_DIR}/libraries/ipc/thrift/RpcService_types.cpp
 )

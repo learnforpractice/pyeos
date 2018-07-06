@@ -23,7 +23,7 @@ int32_t check_transaction_authorization( const char* trx_data,     uint32_t trx_
                                  const char* pubkeys_data, uint32_t pubkeys_size,
                                  const char* perms_data,   uint32_t perms_size
                                ) {
-   return ipc_manager::get().check_transaction_authorization(trx_data, trx_size,
+   return ipc_client::get().check_transaction_authorization(trx_data, trx_size,
                                     pubkeys_data, pubkeys_size, perms_data, perms_size);
 
 }
