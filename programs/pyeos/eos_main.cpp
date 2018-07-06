@@ -48,6 +48,10 @@ extern "C" {
    PyObject* PyInit_db();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
+
+   //vm_manager.cpp
+   void vm_deinit_all();
+
 }
 
 bool is_init_finished() {
@@ -150,6 +154,8 @@ extern "C" int eos_main(int argc, char** argv) {
    while (!shutdown_finished) {
       boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
    }
+
+   vm_deinit_all();
    py_exit();
 
    return 0;

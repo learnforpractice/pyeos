@@ -679,6 +679,14 @@ uint64_t vm_manager::wasm_call(const string& func, vector<uint64_t> args) {
    return _wasm_call(func.c_str(), _args, args.size());
 }
 
+int vm_manager::vm_deinit_all() {
+   for (auto itr = vm_map.begin();itr != vm_map.end();itr++) {
+      itr->second->vm_deinit();
+   }
+   return 1;
+}
+
+
 namespace eosio { namespace chain {
 
    std::vector<uint8_t> _wast_to_wasm( const std::string& wast ) {
@@ -705,3 +713,6 @@ extern "C" void vm_unload_account(uint64_t account) {
    vm_manager::get().unload_account(account);
 }
 
+extern "C" void vm_deinit_all() {
+   vm_manager::get().vm_deinit_all();
+}

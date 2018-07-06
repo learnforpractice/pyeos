@@ -67,7 +67,7 @@ public:
 
    void unload_account(uint64_t account);
    bool is_trusted_account(uint64_t account);
-
+   int vm_deinit_all();
 private:
    vm_manager();
    struct vm_api* api;
