@@ -1,5 +1,6 @@
 #include "ro_db.hpp"
 #include <eosiolib/multi_index.hpp>
+#include <fc/time.hpp>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ void visit_boost_account(fn_on_boost_account fn, void* param) {
 
 
 bool is_boost_account(uint64_t account, bool& expired) {
-   uint64_t _now = current_time();
+   uint64_t _now = fc::time_point::now().time_since_epoch().count();
    eosio::multi_index<N(boost), boost_account> _boost(N(eosio), N(eosio));
 
    auto itr = _boost.find(account);

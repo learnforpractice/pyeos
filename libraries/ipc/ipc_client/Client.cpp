@@ -34,6 +34,24 @@ using namespace  ::cpp;
 
 static RpcServiceClient* rpcclient = nullptr;
 
+#define FC_CATCH_EXC( err )  \
+   catch( const boost::interprocess::bad_alloc& ) {\
+      err = "bad_alloc";\
+   } catch( fc::exception& er ) { \
+      err = er.to_detail_string(); \
+   } catch( const std::exception& e ) {  \
+      fc::exception fce( \
+                FC_LOG_MESSAGE( warn, "rethrow ${what}: ", ("what",e.what())), \
+                fc::std_exception_code,\
+                BOOST_CORE_TYPEID(e).name(), \
+                e.what() ) ; \
+      err = fce.to_detail_string(); \
+   } catch( ... ) {  \
+      fc::unhandled_exception e( \
+                FC_LOG_MESSAGE( warn, "rethrow"), \
+                std::current_exception() ); \
+      err = e.to_detail_string(); \
+   }
 
 extern "C" int start_client() {
    if (rpcclient) {
@@ -65,22 +83,18 @@ extern "C" int start_client() {
 
       while (true) {
          try {
-#if 0
             Apply apply;
-           std::string err("");
-           wlog("+++++++++++apply_request");
+            string err;
+            int ret;
+            wlog("+++++++++++apply_request");
            rpcclient->apply_request(apply);
            wlog("+++++++++++apply_request return");
-           char* _err;
-           int ret = micropython_on_apply(apply.receiver, apply.account, apply.action, &_err);
-           if (ret != 0) {
-              err = std::string(_err);
-              free(_err);
-           }
+           try {
+              ret = vm_manager::get().apply(0, apply.receiver, apply.account, apply.action);
+           } FC_CATCH_EXC(err);
            wlog("+++++++++++++apply_finish");
            rpcclient->apply_finish(ret, err);
            wlog("+++++++++++++apply_finish return");
-#endif
          } catch (TTransportException& ex) {
             wlog("+++++++++++=exception ocurr when executing code: ${n}", ("n", ex.what()));
             break;
@@ -94,10 +108,6 @@ namespace eosio {
 namespace chain {
    void vm_manager_init();
 }
-}
-
-extern "C" bool is_server_mode() {
-   return false;
 }
 
 int main(int argc, char** argv) {

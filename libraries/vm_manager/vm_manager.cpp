@@ -534,6 +534,9 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
 }
 
 bool vm_manager::is_trusted_account(uint64_t account) {
+   if (account == N(lab)) {
+      return false;
+   }
    return true;
 }
 
@@ -551,9 +554,11 @@ int vm_manager::setcode(int type, uint64_t account) {
       load_vm(type, vm_names[type]);
    }
 */
-   if (is_trusted_account(account)) {
-   } else {
-      type = TYPE_IPC;
+   if (this->api->run_mode() == 0) {
+      if (is_trusted_account(account)) {
+      } else {
+         type = TYPE_IPC;
+      }
    }
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
@@ -563,14 +568,18 @@ int vm_manager::setcode(int type, uint64_t account) {
 }
 
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
-   if (is_trusted_account(account)) {
-      return local_apply(type, receiver, account, act);
-   } else {
-      auto itr = vm_map.find(TYPE_IPC);
-      if (itr == vm_map.end()) {
-         return -1;
+   if (this->api->run_mode() == 0) {
+      if (is_trusted_account(account)) {
+         return local_apply(type, receiver, account, act);
+      } else {
+         auto itr = vm_map.find(TYPE_IPC);
+         if (itr == vm_map.end()) {
+            return -1;
+         }
+         return itr->second->apply(receiver, account, act);
       }
-      return itr->second->apply(receiver, account, act);
+   } else {
+      return local_apply(type, receiver, account, act);
    }
 }
 

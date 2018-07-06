@@ -79,6 +79,11 @@ const shared_string& db_api::get_code(uint64_t account) {
    return a.code;
 }
 
+int db_api::get_code_type(uint64_t account) {
+   const auto &a = db.get<account_object, by_name>(account);
+   return a.vm_type;
+}
+
 digest_type db_api::get_code_id(uint64_t account) {
    const auto &a = db.get<account_object, by_name>(account);
    return a.code_version;

@@ -26,6 +26,9 @@ target_include_directories( ipc_server
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/ipc
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
                             )
 
 install( TARGETS ipc_server 

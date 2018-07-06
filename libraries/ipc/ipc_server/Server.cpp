@@ -129,7 +129,7 @@ class RpcServiceHandler : virtual public RpcServiceIf {
 
 
 
-static int on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len) {
+extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len) {
    Apply apply;
    apply.receiver = receiver;
    apply.account = account;
@@ -151,10 +151,6 @@ static int on_apply(uint64_t receiver, uint64_t account, uint64_t action, char**
    memcpy(*err, finish.errMsg.c_str(), finish.errMsg.length());
    *len = finish.errMsg.length();
    return finish.status;
-}
-
-extern "C" bool is_server_mode() {
-   return true;
 }
 
 extern "C" int start_server(const char* ipc_path) {

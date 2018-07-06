@@ -1,4 +1,4 @@
-#include "../ipc_server/rpc_interface.hpp"
+#include "rpc_interface.hpp"
 
 #include <Python.h>
 #include <stdio.h>

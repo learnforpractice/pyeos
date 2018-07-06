@@ -1,26 +1,46 @@
-#include <eosio/chain/types.hpp>
-
+#include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/apply_context.hpp>
+#include <eosio/chain/controller.hpp>
+#include <eosio/chain/transaction_context.hpp>
+#include <eosio/chain/producer_schedule.hpp>
+#include <eosio/chain/exceptions.hpp>
+#include <boost/core/ignore_unused.hpp>
+#include <eosio/chain/authorization_manager.hpp>
+#include <eosio/chain/resource_limits.hpp>
+/*
+#include <eosio/chain/wasm_interface_private.hpp>
+#include <eosio/chain/wasm_eosio_validation.hpp>
+#include <eosio/chain/wasm_eosio_injection.hpp>
+*/
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+//#include <eosio/chain/symbol.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
 #include <fc/io/raw.hpp>
 
+#include <softfloat.hpp>
+//#include <compiler_builtins.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <fstream>
+
 #include <fc/crypto/xxhash.h>
 #include <dlfcn.h>
 
 #include <eosio/chain/db_api.hpp>
-#include "ipc_manager.hpp"
-
 #include <vm_manager.hpp>
-
-using namespace eosio::chain;
-using namespace fc;
+//#include <appbase/application.hpp>
+#include "ipc_manager.hpp"
 
 namespace eosio {
 namespace chain {
+
+static inline apply_context& ctx() {
+   return apply_context::ctx();
+}
 
 #include <eosiolib_native/vm_api.h>
 
@@ -34,37 +54,53 @@ namespace chain {
 #include "print.cpp"
 #include "permission.cpp"
 
-void eosio_assert( bool condition, char* msg ) {
-   if( BOOST_UNLIKELY( !condition ) ) {
-      std::string message( msg );
-      edump((message));
-      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
+uint64_t get_action_account() {
+   return db_api::get().get_action_object().account.value;
+}
+
+extern "C" uint64_t string_to_uint64_(const char* str) {
+   try {
+      return name(str).value;
+   } catch (...) {
    }
+   return 0;
+}
+
+void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
+   FC_ASSERT(false, "fixme");
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {
-   return 0;
-#if 0
    const shared_string& src = db_api::get().get_code(receiver);
    *size = src.size();
    return src.data();
-#endif
+}
+
+int get_code_id( uint64_t account, char* code_id, size_t size ) {
+   digest_type id = db_api::get().get_code_id(account);
+   if (size != sizeof(id)) {
+      return 0;
+   }
+   memcpy(code_id, id._hash, size);
+   return 1;
+}
+
+int has_option(const char* _option) {
+   return false;
+//   return appbase::app().has_option(_option);
 }
 
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
-#if 0
    if (out == NULL || size == 0) {
       return 0;
    }
 
-   std::string s = name(n).to_string();
+   string s = name(n).to_string();
    if (s.length() < size) {
       size = s.length();
    }
    memcpy(out, s.c_str(), size);
    return size;
-#endif
-   return 0;
 }
 
 void resume_billing_timer() {
@@ -107,8 +143,13 @@ static struct vm_api _vm_api = {
    .recover_key = recover_key,
    .assert_recover_key = assert_recover_key,
    .db_store_i64 = db_store_i64,
+   .db_store_i64_ex = db_store_i64_ex,
    .db_update_i64 = db_update_i64,
    .db_remove_i64 = db_remove_i64,
+
+   .db_update_i64_ex = db_update_i64_ex,
+   .db_remove_i64_ex = db_remove_i64_ex,
+
    .db_get_i64 = db_get_i64,
    .db_get_i64_ex = db_get_i64_ex,
    .db_get_i64_exex = db_get_i64_exex,
@@ -232,8 +273,11 @@ static struct vm_api _vm_api = {
    .assert_privileged = assert_privileged,
    .assert_context_free = assert_context_free,
    .get_context_free_data = get_context_free_data,
+
    .get_code = get_code,
-#if 0
+   .set_code = set_code,
+   .get_code_id = get_code_id,
+
    .rodb_remove_i64 = db_api_remove_i64,
 
    .rodb_find_i64 = db_api_find_i64,
@@ -246,15 +290,15 @@ static struct vm_api _vm_api = {
    .rodb_upperbound_i64 = db_api_upperbound_i64,
    .rodb_end_i64 = db_api_end_i64,
 
-   .split_path = split_path,
    .get_action_account = get_action_account,
    .string_to_uint64 = string_to_uint64_,
    .uint64_to_string = uint64_to_string_,
-   .string_to_symbol = string_to_symbol_c,
+//   .string_to_symbol = string_to_symbol_c,
    .resume_billing_timer = resume_billing_timer,
-   .pause_billing_timer = pause_billing_timer
-#endif
+   .pause_billing_timer = pause_billing_timer,
 
+//   .wasm_call = wasm_call,
+//   .has_option = has_option,
    .run_mode = run_mode
 
 };
@@ -263,14 +307,27 @@ struct vm_api* get_vm_api() {
    return &_vm_api;
 }
 
-void register_vm_api(void* handle) {
-   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "register_vm_api");
-   _register_vm_api(&_vm_api);
-}
-
 void vm_manager_init() {
    vm_manager::get().set_vm_api(&_vm_api);
    vm_manager::get().init();
 }
+
+void register_vm_api(void* handle) {
+   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
+   _register_vm_api(&_vm_api);
+}
+
+std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
+   std::string s;
+   in >> s;
+   if (s == "wavm")
+      runtime = eosio::chain::wasm_interface::vm_type::wavm;
+   else if (s == "binaryen")
+      runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+   else
+      in.setstate(std::ios_base::failbit);
+   return in;
+}
+
 
 }}

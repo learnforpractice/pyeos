@@ -1,21 +1,29 @@
 #include <eosio/chain/db_api.hpp>
+#include <fc/exception/exception.hpp>
+
 using namespace eosio::chain;
 
 extern "C" {
 
-void  eosio_assert( uint32_t test, const char* msg );
+void  eosio_assert( uint32_t test, const char* msg ) {
+   if( BOOST_UNLIKELY( !test ) ) {
+      std::string message( msg );
+      edump((message));
+      EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
+   }
+}
 
 int rodb_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   eosio_assert(false, "read only database!");
+   FC_ASSERT(false, "read only database!");
    return -1;
 }
 
 void rodb_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
-   eosio_assert(false, "read only database!");
+   FC_ASSERT(false, "read only database!");
 }
 
 void rodb_remove_i64 ( int itr ) {
-   eosio_assert(false, "read only database!");
+   FC_ASSERT(false, "read only database!");
 }
 
 int rodb_get_i64( int itr, char* buffer, size_t buffer_size ) {
