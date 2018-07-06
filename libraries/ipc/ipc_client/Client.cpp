@@ -17,6 +17,7 @@
 #include "thrift/readerwriterqueue.h"
 #include "thrift/RpcService.h"
 
+#include <vm_manager.hpp>
 
 using namespace eosio::chain;
 
@@ -88,3 +89,21 @@ extern "C" int start_client() {
    }
    return 0;
 }
+
+namespace eosio {
+namespace chain {
+   void vm_manager_init();
+}
+}
+
+extern "C" bool is_server_mode() {
+   return false;
+}
+
+int main(int argc, char** argv) {
+   wlog("hello,world from ipc client");
+   eosio::chain::vm_manager_init();
+   start_client();
+   return 0;
+}
+

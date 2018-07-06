@@ -1,7 +1,34 @@
 #include <eosiolib_native/vm_api.h>
 
-void vm_init() {
+#include <boost/process.hpp>
+#include <boost/thread.hpp>
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+
+using namespace boost::process;
+
+std::unique_ptr<boost::thread> client_monitor_thread;
+std::unique_ptr<boost::thread> server_thread;
+
+extern "C" int start_server(const char* ipc_path);
+
+void vm_init() {
+   client_monitor_thread.reset(new boost::thread([]{
+         ipstream pipe_stream;
+         child c("../libraries/ipc/ipc_client/ipc_client", std_out > pipe_stream);
+         std::string line;
+         while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
+            std::cerr << line << std::endl;
+         }
+         c.wait();
+   }));
+
+   server_thread.reset(new boost::thread([]{
+         start_server("/tmp/pyeos.ipc");
+   }));
 }
 
 void vm_deinit() {

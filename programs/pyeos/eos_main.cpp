@@ -54,6 +54,10 @@ bool is_init_finished() {
    return init_finished;
 }
 
+extern "C" bool is_server_mode() {
+   return true;
+}
+
 void start_eos() {
    try {
       eos_started = true;

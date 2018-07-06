@@ -5,6 +5,8 @@ libs_path = "${CMAKE_BINARY_DIR}/libs"
 if not os.path.exists(libs_path):
     os.mkdir(libs_path)
 
+#EXECS = ["${CMAKE_BINARY_DIR}/libraries/ipc/ipc_client/ipc_client"]
+
 for root, dirs, files in os.walk("${CMAKE_BINARY_DIR}"):
     if root == libs_path:
         continue

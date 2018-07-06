@@ -49,6 +49,8 @@ typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 bool is_boost_account(uint64_t account, bool& expired);
 
+extern "C" bool is_server_mode();
+
 void _on_boost_account(void* v, uint64_t account, uint64_t expiration) {
    vm_manager* mngr = (vm_manager*)v;
    if (expiration < fc::time_point::now().time_since_epoch().count()) {
@@ -142,15 +144,22 @@ static const char* vm_libs_path[] = {
    "../libs/libvm_py-1d" DYLIB_SUFFIX,
    "../libs/libvm_ethd" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0d" DYLIB_SUFFIX
-   "../libs/libipc_serverd" DYLIB_SUFFIX
+//   "../libs/libipc_serverd" DYLIB_SUFFIX
 #else
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_py-1" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
-   "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX
-   "../libs/libipc_server" DYLIB_SUFFIX
+   "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
+//   "../libs/libipc_server" DYLIB_SUFFIX
 #endif
 };
+
+#ifdef DEBUG
+static const char * ipc_server_lib = "../libs/libipc_serverd" DYLIB_SUFFIX;
+#else
+static const char * ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
+#endif
+
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -187,7 +196,7 @@ bool vm_manager::init() {
 
    init = true;
 
-   for (int i=0;i<sizeof(vm_libs_path)/sizeof(vm_libs_path[0]);i++) {
+   for (int i=0;i<sizeof(vm_libs_path)/sizeof(vm_libs_path[0])-1;i++) {
       if (load_vm(i, vm_names[i])) {
          continue;
       }
@@ -220,35 +229,34 @@ bool vm_manager::init() {
       }
    }
 
-   if (boost_accounts.size() == 0) {
-      return true;
-   }
+   if (boost_accounts.size() > 0) {
+      boost::thread_group g;
 
-   boost::thread_group g;
-
-
-//   int cpu_num = sysconf(_SC_NPROCESSORS_ONLN);
-
-   int cpu_num = std::thread::hardware_concurrency();
-   if (cpu_num <= 0) {
-      cpu_num = 1;
-   }
-
-   wlog("preloading code in ${n} threads", ("n", cpu_num));
-
-   for (int i=1;i<=cpu_num;i++) {//TODO: 10 --> number of CPU cores
-      auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
-      if (itr == vm_map.end()) {
-         continue;
-      }
-      if (!itr->second->preload) {
-         continue;
+      int cpu_num = std::thread::hardware_concurrency();
+      if (cpu_num <= 0) {
+         cpu_num = 1;
       }
 
-      const auto _calls = itr->second.get();
-      g.create_thread( boost::bind( &vm_manager::preload_accounts,this, _calls ) );
+      wlog("preloading code in ${n} threads", ("n", cpu_num));
+
+      for (int i=1;i<=cpu_num;i++) {//TODO: 10 --> number of CPU cores
+         auto itr = vm_map.find(WAVM_VM_START_INDEX|i);
+         if (itr == vm_map.end()) {
+            continue;
+         }
+         if (!itr->second->preload) {
+            continue;
+         }
+
+         const auto _calls = itr->second.get();
+         g.create_thread( boost::bind( &vm_manager::preload_accounts,this, _calls ) );
+      }
+      g.join_all();
    }
-   g.join_all();
+
+   if (this->api->run_mode() == 0) {//server
+      load_vm_from_path(4, ipc_server_lib);
+   }
    return true;
 }
 
@@ -265,6 +273,9 @@ void vm_manager::preload_accounts(vm_calls* _calls) {
          boost_accounts.pop_back();
       }
       {
+         if (account == N(eosio) || account == N(eosio.token)) {
+            continue;//already loaded in vm type 3
+         }
          {
             auto t = time_counter(account);
             _calls->preload(account);

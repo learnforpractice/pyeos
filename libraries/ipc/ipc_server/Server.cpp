@@ -153,12 +153,23 @@ static int on_apply(uint64_t receiver, uint64_t account, uint64_t action, char**
    return finish.status;
 }
 
+extern "C" bool is_server_mode() {
+   return true;
+}
 
-extern "C" int start_server() {
+extern "C" int start_server(const char* ipc_path) {
 //   rpc_register_cpp_apply_call();
-   boost::thread eos( [&]{
-      int port = 9191;
-     ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
+   boost::thread eos( [ipc_path]{
+      if (access(ipc_path, F_OK) != -1) {
+         unlink(ipc_path);
+      }
+
+      if (access(ipc_path, F_OK) != -1) {
+         elog("start server failed, ${n} already in use", ("n", ipc_path));
+         return 0;
+      }
+
+      ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
      ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
      ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket("/tmp/pyeos.ipc"));
      ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());

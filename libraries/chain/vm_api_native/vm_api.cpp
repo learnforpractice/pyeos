@@ -118,6 +118,11 @@ void pause_billing_timer() {
    ctx().trx_context.pause_billing_timer();
 }
 
+int run_mode() // 0 for server, 1 for client
+{
+   return 0;
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -297,7 +302,8 @@ static struct vm_api _vm_api = {
    .pause_billing_timer = pause_billing_timer,
 
    .wasm_call = wasm_call,
-   .has_option = has_option
+   .has_option = has_option,
+   .run_mode = run_mode
 
 };
 

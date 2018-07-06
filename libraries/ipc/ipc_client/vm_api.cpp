@@ -12,7 +12,9 @@
 #include <dlfcn.h>
 
 #include <eosio/chain/db_api.hpp>
-#include "../ipc_client/ipc_manager.hpp"
+#include "ipc_manager.hpp"
+
+#include <vm_manager.hpp>
 
 using namespace eosio::chain;
 using namespace fc;
@@ -22,15 +24,15 @@ namespace chain {
 
 #include <eosiolib_native/vm_api.h>
 
-#include "../ipc_client/action.cpp"
-#include "../ipc_client/chain.cpp"
-#include "../ipc_client/system.cpp"
-#include "../ipc_client/crypto.cpp"
-#include "../ipc_client/db.cpp"
-#include "../ipc_client/privileged.cpp"
-#include "../ipc_client/transaction.cpp"
-#include "../ipc_client/print.cpp"
-#include "../ipc_client/permission.cpp"
+#include "action.cpp"
+#include "chain.cpp"
+#include "system.cpp"
+#include "crypto.cpp"
+#include "db.cpp"
+#include "privileged.cpp"
+#include "transaction.cpp"
+#include "print.cpp"
+#include "permission.cpp"
 
 void eosio_assert( bool condition, char* msg ) {
    if( BOOST_UNLIKELY( !condition ) ) {
@@ -71,6 +73,11 @@ void resume_billing_timer() {
 
 void pause_billing_timer() {
 //   ctx().trx_context.pause_billing_timer();
+}
+
+int run_mode() // 0 for server, 1 for client
+{
+   return 1;
 }
 
 static struct vm_api _vm_api = {
@@ -248,6 +255,8 @@ static struct vm_api _vm_api = {
    .pause_billing_timer = pause_billing_timer
 #endif
 
+   .run_mode = run_mode
+
 };
 
 struct vm_api* get_vm_api() {
@@ -257,6 +266,11 @@ struct vm_api* get_vm_api() {
 void register_vm_api(void* handle) {
    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "register_vm_api");
    _register_vm_api(&_vm_api);
+}
+
+void vm_manager_init() {
+   vm_manager::get().set_vm_api(&_vm_api);
+   vm_manager::get().init();
 }
 
 }}
