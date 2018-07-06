@@ -68,6 +68,9 @@ extern "C" int native_apply( uint64_t receiver, uint64_t code, uint64_t action )
 
 action_trace apply_context::exec_one()
 {
+   const auto &a = control.db().get<account_object, by_name>(receiver);
+   control.set_action_object(get_receiver(), act);
+
 //   apply_context::__ctx = this;
    auto cleanup = fc::make_scoped_exit([&](){
       current_context = nullptr;

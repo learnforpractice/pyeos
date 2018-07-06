@@ -55,7 +55,7 @@ void check_context_free(bool context_free) {
 }
 
 bool contracts_console() {
-   return false;
+   return true;
 }
 
 }

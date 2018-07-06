@@ -21,13 +21,15 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
 
 void vm_init() {
    client_monitor_thread.reset(new boost::thread([]{
-         ipstream pipe_stream;
-         child c("../libraries/ipc/ipc_client/ipc_client", std_out > pipe_stream);
-         std::string line;
-         while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
-            std::cerr << line << std::endl;
-         }
-         c.wait();
+         do {
+            ipstream pipe_stream;
+            child c("../libraries/ipc/ipc_client/ipc_client", std_out > pipe_stream);
+            std::string line;
+            while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
+               std::cerr << line << std::endl;
+            }
+            c.wait();
+         } while(false);
    }));
 
    server_thread.reset(new boost::thread([]{

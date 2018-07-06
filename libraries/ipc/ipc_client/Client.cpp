@@ -92,7 +92,7 @@ extern "C" int start_client() {
            try {
               ret = vm_manager::get().apply(0, apply.receiver, apply.account, apply.action);
            } FC_CATCH_EXC(err);
-           wlog("+++++++++++++apply_finish");
+           wlog("+++++++++++++apply_finish ret ${n1} err ${n2}", ("n1", ret)("n2", err));
            rpcclient->apply_finish(ret, err);
            wlog("+++++++++++++apply_finish return");
          } catch (TTransportException& ex) {

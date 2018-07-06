@@ -138,7 +138,7 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
    apply_request_queue.enqueue(apply);
    ApplyFinish finish = {};
 
-   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(10))) {
+   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(100))) {
       std::string errMsg("++++on_apply: execution time out!");
       wlog(errMsg);
       *err = (char*)malloc(errMsg.length());
