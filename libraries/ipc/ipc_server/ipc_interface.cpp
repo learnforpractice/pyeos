@@ -26,6 +26,9 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
 void vm_init() {
    client_monitor_thread.reset(new boost::thread([]{
          do {
+            while (!s_vm_api.app_init_finished()) {
+               boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+            }
             char option[128];
             char cmd[256];
             int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
@@ -47,6 +50,10 @@ void vm_init() {
    }));
 
    server_thread.reset(new boost::thread([]{
+         while (!s_vm_api.app_init_finished()) {
+            boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+         }
+
          char option[128];
          int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
          if (ret) {

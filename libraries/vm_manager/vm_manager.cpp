@@ -346,11 +346,10 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       return 0;
    }
    */
-
    fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
 
-   vm_init();
    this->register_vm_api(handle);
+   vm_init();
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
