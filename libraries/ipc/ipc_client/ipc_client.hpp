@@ -48,7 +48,7 @@ public:
                                     const char* perms_data,   uint32_t perms_size
                                   );
 
-   int start();
+   int start(const char* ipc_path);
 
 private:
    cpp::RpcServiceClient* rpcclient = nullptr;

@@ -155,24 +155,26 @@ int32_t ipc_client::check_transaction_authorization( const char* trx_data,     u
       err = e.to_detail_string(); \
    }
 
-int ipc_client::start() {
-   if (rpcclient) {
-      return 0;
-   }
-
+int ipc_client::start(const char* ipc_path) {
    while (true) {
       if (rpcclient) {
          delete rpcclient;
       }
       std::string addr("localhost");
+//      const char* ipc_path = "/tmp/pyeos.ipc";
 //      stdcxx::shared_ptr<TTransport> socket(new TSocket(addr, 9191));
-      stdcxx::shared_ptr<TTransport> socket(new TSocket("/tmp/pyeos.ipc"));
+      stdcxx::shared_ptr<TTransport> socket(new TSocket(ipc_path));
       stdcxx::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
       stdcxx::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
       rpcclient = new RpcServiceClient(protocol);
 
       while (true) {
          try {
+            if (access(ipc_path, F_OK) == -1) {
+               wlog("waiting for server...");
+               boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+               continue;
+            }
             transport->open();
             break;
          } catch (...) {

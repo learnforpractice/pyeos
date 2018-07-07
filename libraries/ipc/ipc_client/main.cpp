@@ -9,9 +9,15 @@ namespace chain {
 }
 
 int main(int argc, char** argv) {
-   wlog("hello,world from ipc client");
    eosio::chain::vm_manager_init();
-   ipc_client::get().start();
+   const char *ipc_path;
+   if (argc >= 2) {
+      ipc_path = (const char*)argv[1];
+   } else {
+      ipc_path ="/tmp/pyeos.ipc";
+   }
+   wlog("ipc path ${n}", ("n", ipc_path));
+   ipc_client::get().start(ipc_path);
    return 0;
 }
 
