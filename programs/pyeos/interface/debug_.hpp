@@ -42,3 +42,4 @@ void block_log_get_raw_actions_(string& path, int start, int end);
 int block_on_action(int block, PyObject* trx);
 PyObject* block_log_get_block_(string& path, int block_num);
 
+bool hash_option_(const char* option);

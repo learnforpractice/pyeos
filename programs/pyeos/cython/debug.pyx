@@ -44,6 +44,8 @@ cdef extern from "../interface/debug_.hpp":
 
     object block_log_get_block_(string& path, int block_num);
 
+    bool hash_option_(const char* option);
+
 cdef extern from "py/gc.h":
     ctypedef int size_t 
     cdef struct gc_info_t:
@@ -156,3 +158,5 @@ def block_log_get_raw_actions(string& path, start, end, cb):
 def block_log_get_block(string& path, int block_num):
     return block_log_get_block_(path, block_num)
 
+def has_option(option):
+    return hash_option_(option)

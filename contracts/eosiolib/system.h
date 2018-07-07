@@ -84,6 +84,9 @@ extern "C" {
  #endif
    ///@ } systemcapi
 
+   int has_option(const char* _option);
+   int get_option(const char* option, char *result, int size);
+
 #ifdef __cplusplus
 }
 #endif

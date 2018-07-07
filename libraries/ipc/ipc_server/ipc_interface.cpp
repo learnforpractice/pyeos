@@ -17,14 +17,26 @@ std::unique_ptr<boost::thread> client_monitor_thread;
 std::unique_ptr<boost::thread> server_thread;
 std::unique_ptr<boost::process::child> client_process;
 
+static struct vm_api s_vm_api;
+static const char* default_ipc_path = "/tmp/pyeos.ipc";
+
 extern "C" int _start_server(const char* ipc_path);
 extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len);
 
 void vm_init() {
    client_monitor_thread.reset(new boost::thread([]{
          do {
+            char option[128];
+            char cmd[256];
+            int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
+            if (ret) {
+               snprintf(cmd, sizeof(cmd), "../libraries/ipc/ipc_client/ipc_client %s", option);
+            } else {
+               snprintf(cmd, sizeof(cmd), "../libraries/ipc/ipc_client/ipc_client %s", default_ipc_path);
+            }
+
             ipstream pipe_stream;
-            client_process.reset(new child("../libraries/ipc/ipc_client/ipc_client", std_out > pipe_stream));
+            client_process.reset(new child((const char*)cmd, std_out > pipe_stream));
             std::string line;
             while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
                std::cerr << line << std::endl;
@@ -35,7 +47,13 @@ void vm_init() {
    }));
 
    server_thread.reset(new boost::thread([]{
-         _start_server("/tmp/pyeos.ipc");
+         char option[128];
+         int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
+         if (ret) {
+            _start_server(option);
+         } else {
+            _start_server(default_ipc_path);
+         }
    }));
 }
 
@@ -45,7 +63,7 @@ void vm_deinit() {
 }
 
 void vm_register_api(struct vm_api* api) {
-
+   s_vm_api = *api;
 }
 
 int vm_setcode(uint64_t account) {

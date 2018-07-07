@@ -10,6 +10,8 @@
 #include "json.hpp"
 #include "pyobject.hpp"
 
+#include <appbase/application.hpp>
+
 using namespace dev;
 
 using namespace fc;
@@ -267,3 +269,6 @@ PyObject* block_log_get_block_(string& path, int block_num) {
    return py_new_none();
 }
 
+bool hash_option_(const char* option) {
+   return appbase::app().has_option(option);
+}

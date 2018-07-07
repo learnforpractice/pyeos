@@ -7,6 +7,8 @@
 
 #include "vm_api.h"
 
+extern "C" {
+
 void  eosio_assert( uint32_t test, const char* msg ) {
    get_vm_api()->eosio_assert( test, msg );
 }
@@ -36,3 +38,12 @@ uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
    return get_vm_api()->wasm_call(func, args , argc);
 }
 
+int has_option(const char* _option) {
+   return get_vm_api()->has_option(_option);
+}
+
+int get_option(const char* option, char *result, int size) {
+   return get_vm_api()->get_option(option, result, size);
+}
+
+}

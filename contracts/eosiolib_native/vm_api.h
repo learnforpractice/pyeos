@@ -216,6 +216,7 @@ struct vm_api {
 
    uint64_t (*wasm_call)(const char*func, uint64_t* args , int argc);
    int (*has_option)(const char* _option);
+   int (*get_option)(const char* option, char *result, int size);
 
    int (*run_mode)(); // 0 for server, 1 for client
 

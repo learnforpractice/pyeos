@@ -97,6 +97,10 @@ int has_option(const char* _option) {
    return appbase::app().has_option(_option);
 }
 
+int get_option(const char* option, char *result, int size) {
+   return appbase::app().get_option(option, result, size);
+}
+
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
    if (out == NULL || size == 0) {
       return 0;
@@ -303,8 +307,8 @@ static struct vm_api _vm_api = {
 
    .wasm_call = wasm_call,
    .has_option = has_option,
+   .get_option = get_option,
    .run_mode = run_mode
-
 };
 
 struct vm_api* get_vm_api() {
