@@ -28,5 +28,5 @@ To disable debugging, run the following code.
 debug.disable()
 ```
 
-![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/debugging/debugging.png)
+![Smart Contract Debugging](https://raw.githubusercontent.com/learnforpractice/pyeos/master/programs/pyeos/debugging/debugging.png)
 
