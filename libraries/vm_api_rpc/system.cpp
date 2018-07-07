@@ -3,7 +3,7 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-void abort() {
+void eosio_abort() {
    edump(("abort() called"));
    FC_ASSERT( false, "abort() called");
 }

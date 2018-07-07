@@ -758,7 +758,7 @@ public:
    :context_aware_api(true){}
 
    void abort() {
-      API()->abort();
+      API()->eosio_abort();
    }
 
    // Kept as intrinsic rather than implementing on WASM side (using eosio_assert_message and strlen) because strlen is faster on native side.

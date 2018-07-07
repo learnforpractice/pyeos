@@ -248,7 +248,7 @@ static struct vm_api _vm_api = {
    .get_blockchain_parameters_packed = get_blockchain_parameters_packed,
    .activate_feature = activate_feature,
 
-   .abort = abort,
+   .eosio_abort = eosio_abort,
    .eosio_assert = eosio_assert,
    .eosio_assert_message = eosio_assert_message,
    .eosio_assert_code = eosio_assert_code,

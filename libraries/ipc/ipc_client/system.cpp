@@ -5,7 +5,7 @@
 
 extern "C" {
 
-void abort() {
+void eosio_abort() {
    edump(("abort() called"));
    FC_ASSERT( false, "abort() called");
 }

@@ -162,7 +162,7 @@ struct vm_api {
    uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
    void (*activate_feature)( int64_t f );
 
-   void (*abort)();
+   void (*eosio_abort)();
    void (*eosio_assert)( uint32_t test, const char* msg );
    void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len );
    void (*eosio_assert_code)( uint32_t test, uint64_t code );
