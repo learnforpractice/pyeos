@@ -17,7 +17,7 @@ std::unique_ptr<boost::thread> client_monitor_thread;
 std::unique_ptr<boost::thread> server_thread;
 std::unique_ptr<boost::process::child> client_process;
 
-extern "C" int start_server(const char* ipc_path);
+extern "C" int _start_server(const char* ipc_path);
 extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len);
 
 void vm_init() {
@@ -35,7 +35,7 @@ void vm_init() {
    }));
 
    server_thread.reset(new boost::thread([]{
-         start_server("/tmp/pyeos.ipc");
+         _start_server("/tmp/pyeos.ipc");
    }));
 }
 

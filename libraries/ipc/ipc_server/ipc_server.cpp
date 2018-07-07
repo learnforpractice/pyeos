@@ -153,7 +153,7 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
    return finish.status;
 }
 
-extern "C" int start_server(const char* ipc_path) {
+extern "C" int _start_server(const char* ipc_path) {
 //   rpc_register_cpp_apply_call();
    boost::thread eos( [ipc_path]{
       if (access(ipc_path, F_OK) != -1) {
@@ -167,13 +167,14 @@ extern "C" int start_server(const char* ipc_path) {
 
       ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
      ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
-     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket("/tmp/pyeos.ipc"));
+     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(ipc_path));
      ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
      ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
      TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+     wlog("ipc server ready to go ${n}", ("n", ipc_path));
      server.serve();
    } );
-  return 0;
+  return 1;
 }
 
