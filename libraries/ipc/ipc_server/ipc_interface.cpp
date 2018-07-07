@@ -66,7 +66,12 @@ void vm_init() {
 
 void vm_deinit() {
    wlog("vm_deinit");
-   client_process->terminate();
+   if (!client_process) {
+      return;
+   }
+   if (client_process->running()) {
+      client_process->terminate();
+   }
 }
 
 void vm_register_api(struct vm_api* api) {
