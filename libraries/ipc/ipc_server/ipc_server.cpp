@@ -155,26 +155,25 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
 
 extern "C" int _start_server(const char* ipc_path) {
 //   rpc_register_cpp_apply_call();
-   boost::thread eos( [ipc_path]{
-      if (access(ipc_path, F_OK) != -1) {
-         unlink(ipc_path);
-      }
+   if (access(ipc_path, F_OK) != -1) {
+      unlink(ipc_path);
+   }
 
-      if (access(ipc_path, F_OK) != -1) {
-         elog("start server failed, ${n} already in use", ("n", ipc_path));
-         return 0;
-      }
+   if (access(ipc_path, F_OK) != -1) {
+      elog("start server failed, ${n} already in use", ("n", ipc_path));
+      return 0;
+   }
 
-      ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
-     ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
-     ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(ipc_path));
-     ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-     ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+   ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
+  ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
+  ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(ipc_path));
+  ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-     TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-     wlog("ipc server ready to go ${n}", ("n", ipc_path));
-     server.serve();
-   } );
+  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+  wlog("ipc server ready to go ${n}", ("n", ipc_path));
+  server.serve();
+
   return 1;
 }
 
