@@ -48,13 +48,15 @@ uint32_t  now() {
    return 0;
 }
 
+#warning FIXME: checktime
 void checktime() {
-   FC_ASSERT(false, "not implemented!");
+//   FC_ASSERT(false, "not implemented!");
    return;
 }
 
+#warning FIXME: check_context_free
 void check_context_free(bool context_free) {
-   FC_ASSERT(false, "not implemented!");
+//   FC_ASSERT(false, "not implemented!");
 }
 
 bool contracts_console() {
