@@ -39,19 +39,22 @@ void  eosio_exit( int32_t code ) {
 }
 
 uint64_t  current_time() {
+   FC_ASSERT(false, "not implemented!");
    return 0;
 }
 
 uint32_t  now() {
+   FC_ASSERT(false, "not implemented!");
    return 0;
 }
 
 void checktime() {
+   FC_ASSERT(false, "not implemented!");
    return;
 }
 
 void check_context_free(bool context_free) {
-
+   FC_ASSERT(false, "not implemented!");
 }
 
 bool contracts_console() {

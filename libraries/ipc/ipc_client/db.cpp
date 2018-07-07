@@ -24,6 +24,7 @@ int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id
 }
 
 int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
+   FC_ASSERT(false, "not implemented!");
    return -1;//ctx().db_store_i64(code, scope, table, payer, id,  (const char*)data, len);
 }
 
@@ -32,27 +33,16 @@ void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t 
 }
 
 void db_update_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size ) {
-/*
-   int itr = ctx().db_find_i64(ctx().get_receiver(), scope, table, id);
-   if (itr >= 0) {
-      ctx().db_update_i64( itr, payer, buffer, buffer_size );
-   }
-   */
+   FC_ASSERT(false, "not implemented!");
 }
 
 void db_remove_i64(int32_t iterator) {
-   return;//ctx().db_remove_i64(iterator);
+   return ipc_client::get().db_remove_i64(iterator);
 }
 
 void db_remove_i64_ex( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id ) {
-#if 0
-   int itr = ctx().db_find_i64(ctx().get_receiver(), scope, table, id);
-   if (itr >= 0) {
-      ctx().db_remove_i64( itr );
-   }
-#endif
+   FC_ASSERT(false, "not implemented!");
 }
-
 
 int32_t db_get_i64(int32_t iterator, void* data, uint32_t len) {
    return ipc_client::get().db_get_i64(iterator, (char*)data, len);

@@ -11,13 +11,16 @@ class RpcServiceClient;
 
 class ipc_client {
 public:
-   static ipc_client& get() {
+   static inline ipc_client& get() {
       static ipc_client* mngr = nullptr;
       if (!mngr) {
          mngr = new ipc_client();
       }
       return *mngr;
    }
+
+   uint64_t get_receiver();
+
    void require_recipient( uint64_t name );
    void require_auth( uint64_t name );
    void require_auth2( uint64_t name, uint64_t permission );

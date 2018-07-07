@@ -36,7 +36,7 @@ void vm_init() {
 }
 
 void vm_deinit() {
-   printf("vm_wasm finalize\n");
+   printf("vm_wasm vm_deinit\n");
 }
 
 extern "C" struct vm_wasm_api* vm_get_wasm_api() {

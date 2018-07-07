@@ -43,8 +43,10 @@ int64_t get_permission_last_used( uint64_t account, uint64_t permission ) {
 }
 
 int64_t get_account_creation_time( uint64_t account ) {
-   return 0;
+   auto* acct = db_api::get().db.find<account_object, by_name>(account);
+   EOS_ASSERT( acct != nullptr, action_validate_exception,
+               "account '${account}' does not exist", ("account", account) );
+   return time_point(acct->creation_date).time_since_epoch().count();
 }
-
 
 }

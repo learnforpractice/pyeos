@@ -33,6 +33,10 @@ using namespace  ::cpp;
 #include <eosio/chain/db_api.hpp>
 using namespace eosio::chain;
 
+uint64_t ipc_client::get_receiver() {
+   return db_api::get().get_receiver();
+}
+
 void ipc_client::require_recipient( uint64_t name ) {
 
 }
@@ -62,12 +66,9 @@ uint32_t ipc_client::get_active_producers( uint64_t* producers, uint32_t buffer_
 }
 
 int32_t ipc_client::db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
-   /*
-      std::string _buffer(buffer, buffer_size);
-      rpcclient->db_store_i64(scope, table, payer, id, _buffer);
-      return db_api::get().db_find_i64(mp_get_receiver(), scope, table, id);
-   */
-   return -1;
+   std::string _buffer((char*)data, len);
+   rpcclient->db_store_i64(scope, table, payer, id, _buffer);
+   return db_api::get().db_find_i64(get_receiver(), scope, table, id);
 }
 
 void ipc_client::db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
@@ -78,9 +79,8 @@ void ipc_client::db_update_i64( int itr, uint64_t payer, const char* buffer, siz
    uint64_t id;
    db_api::get().db_get_table_i64( itr, code, scope, _payer, table, id );
    std::string _buffer(buffer, buffer_size);
-//   rpcclient->db_update_i64_ex( scope, payer, table, id, _buffer);
+   rpcclient->db_update_i64_ex( scope, payer, table, id, _buffer );
 }
-
 
 void ipc_client::db_remove_i64( int itr ) {
    uint64_t code;
@@ -89,8 +89,8 @@ void ipc_client::db_remove_i64( int itr ) {
    uint64_t table;
    uint64_t id;
    db_api::get().db_get_table_i64( itr, code, scope, payer, table, id );
-//   rpcclient->db_remove_i64_ex(scope, payer, table, id);
-//   db_api::get().db_remove_i64(itr);
+   rpcclient->db_remove_i64_ex(scope, payer, table, id);
+   db_api::get().db_remove_i64_ex(itr);
 }
 
 int32_t ipc_client::db_get_i64(int32_t iterator, void* data, uint32_t len) {

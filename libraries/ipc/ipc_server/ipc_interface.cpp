@@ -30,6 +30,7 @@ void vm_init() {
                std::cerr << line << std::endl;
             }
             client_process->wait();
+            wlog("ipc_client exited.");
          } while(false);
    }));
 
@@ -39,6 +40,7 @@ void vm_init() {
 }
 
 void vm_deinit() {
+   wlog("vm_deinit");
    client_process->terminate();
 }
 
