@@ -1,0 +1,162 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Creating Your First Python Smart Contract &#8212; pyeos  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Smart Contract Debugging" href="smartcontractdebugging.html" />
+    <link rel="prev" title="Building PyEos" href="building.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-your-first-python-smart-contract">
+<span id="creating-your-first-python-smart-contract"></span><h1>Creating Your First Python Smart Contract<a class="headerlink" href="#creating-your-first-python-smart-contract" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="running-pyeos">
+<span id="running-pyeos"></span><h2>Running PyEos<a class="headerlink" href="#running-pyeos" title="Permalink to this headline">¶</a></h2>
+<p>Open a terminal, cd to [PROJECT_DIR]/build/program, run the following command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">pyeos</span><span class="o">/</span><span class="n">pyeos</span> <span class="o">--</span><span class="n">manual</span><span class="o">-</span><span class="n">gen</span><span class="o">-</span><span class="n">block</span> <span class="o">--</span><span class="n">debug</span> <span class="o">-</span><span class="n">i</span>
+</pre></div>
+</div>
+<p>If it’s the first time you start PyEos, PyEos will create a testing wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span> <span class="n">password</span><span class="p">:</span> <span class="n">PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ</span>
+</pre></div>
+</div>
+<p>Since it’s for testing only, password will save to data-dir/data.pkl, So next time you start pyeos for testing, pyeos will unlock wallet for you.</p>
+<p>Also PyEos will import three private key to the wallet, which is useful for testing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3&#39;</span><span class="p">,</span>
+<span class="s1">&#39;5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s&#39;</span><span class="p">,</span>
+<span class="s1">&#39;5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB&#39;</span>
+</pre></div>
+</div>
+<p>Keep in mind that these private key should never be used in real account, otherwise you will lose all of your crypto property in the account.</p>
+<p>Beside that, PyEos will create four important accounts for you:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eosio</span><span class="o">.</span><span class="n">bios</span><span class="p">,</span> <span class="n">eosio</span><span class="o">.</span><span class="n">msig</span><span class="p">,</span> <span class="n">eosio</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="n">eosio</span><span class="o">.</span><span class="n">token</span>
+</pre></div>
+</div>
+<p>and publish their smart contract on testnet.</p>
+<p>Although the above steps will never happen in the real world, but it’s really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.</p>
+</div>
+<div class="section" id="generating-source-code-with-sketch">
+<span id="generating-source-code-with-sketch"></span><h2>Generating source code with sketch<a class="headerlink" href="#generating-source-code-with-sketch" title="Permalink to this headline">¶</a></h2>
+<p>Run the following command in PyEos console,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sketch</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That will create a helloworld directory under your current directory with hello as the testing account name. There are three file generated in the directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helloworld</span><span class="o">.</span><span class="n">py</span>
+<span class="n">helloworld</span><span class="o">.</span><span class="n">abi</span>
+<span class="n">t</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Which helloworld.py is the Python smart contract source code, helloworld.abi is the ABI(Application Binary Interface) file for smart contract, t.py contains code for testing smart contract.</p>
+<p>In addition, sketch can also create a wasm smart contract project for you, just type the following code in PyEos console, and the testing process has no difference with Python smart contract.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sketch</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s1">&#39;helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;cpp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing">
+<span id="testing"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>Now it’s time to run your helloworld smart contract program. Type or copy the following command to the PyEos console:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">helloworld</span> <span class="kn">import</span> <span class="n">t</span>
+<span class="n">t</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You will see the following output on console in green words:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">3289633</span><span class="n">ms</span> <span class="n">thread</span><span class="o">-</span><span class="mi">1</span>   <span class="n">mpeoslib</span><span class="o">.</span><span class="n">cpp</span><span class="p">:</span><span class="mi">63</span>               <span class="nb">print</span>                <span class="p">]</span> <span class="n">hello</span><span class="p">,</span><span class="n">world</span>
+</pre></div>
+</div>
+<p>Congratulations, you have successfully run your first Python smart contract.</p>
+<p>Now you can open helloworld.py for coding. Once it’s done, just run t.test() again,
+there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
+republish to the testnet if it’s been changed during the running of t.test(). You can also edit the testing code in t.py for testing your smart contract. Once it’s done, just run t.test() again, there is no need to run reload(t), PyEos will do the magic for you. That also works at the situation of adding a new function in test.</p>
+<p>There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it’s probably not done yet. Pick up an example you interest in and play with it as you want.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Creating Your First Python Smart Contract</a><ul>
+<li><a class="reference internal" href="#running-pyeos">Running PyEos</a></li>
+<li><a class="reference internal" href="#generating-source-code-with-sketch">Generating source code with sketch</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="building.html" title="previous chapter">Building PyEos</a></li>
+      <li>Next: <a href="smartcontractdebugging.html" title="next chapter">Smart Contract Debugging</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/usage/smartcontractcreation.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, learnforpractice.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/usage/smartcontractcreation.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,372 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>PyEos api overview &#8212; pyeos  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Smart Contract Debugging" href="smartcontractdebugging.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pyeos-api-overview">
+<span id="pyeos-api-overview"></span><h1>PyEos api overview<a class="headerlink" href="#pyeos-api-overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="eosapi-get-info">
+<span id="eosapi-get-info"></span><h2>eosapi.get_info<a class="headerlink" href="#eosapi-get-info" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span> <span class="o">=</span> <span class="n">eosapi</span><span class="o">.</span><span class="n">get_info</span><span class="p">()</span>
+<span class="n">info</span>
+</pre></div>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;server_version&quot;</span><span class="o">:</span> <span class="s2">&quot;00000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;head_block_num&quot;</span><span class="o">:</span> <span class="mi">127</span><span class="p">,</span>
+    <span class="s2">&quot;last_irreversible_block_num&quot;</span><span class="o">:</span> <span class="mi">126</span><span class="p">,</span>
+    <span class="s2">&quot;head_block_id&quot;</span><span class="o">:</span> <span class="s2">&quot;0000007fbd1ff82f29668dfa89d927a0510c657cce292c033496ccaacf04c12a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;head_block_time&quot;</span><span class="o">:</span> <span class="s2">&quot;2018-05-06T07:57:44&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;head_block_producer&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span><span class="o">.</span><span class="n">head_block_time</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;2017-09-23T15:16:18&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span><span class="o">.</span><span class="n">head_block_num</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">18624</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wallet-create">
+<span id="wallet-create"></span><h2>wallet.create<a class="headerlink" href="#wallet-create" title="Permalink to this headline">¶</a></h2>
+<p>PyEos will create a testing wallet for you the first time you start it, but you can also create other wallet wit wallet.create API</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">psw</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">)</span>
+<span class="n">psw</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb&#39;</span>
+</pre></div>
+</div>
+<p>You can see you wallet now. The * behind mywallet means the wallet is unlocked.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span><span class="o">.</span><span class="n">list_wallets</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;mywallet *&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wallet-open-wallet-unlock">
+<span id="wallet-open-wallet-unlock"></span><h2>wallet.open wallet.unlock<a class="headerlink" href="#wallet-open-wallet-unlock" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">)</span>
+<span class="n">wallet</span><span class="o">.</span><span class="n">unlock</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">,</span><span class="s1">&#39;PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wallet-import-key">
+<span id="wallet-import-key"></span><h2>wallet.import_key<a class="headerlink" href="#wallet-import-key" title="Permalink to this headline">¶</a></h2>
+<p>Let’s import the private key of inita. Please refer to <a class="reference external" href="https://github.com/learnforpractice/pyeos#setting-up-a-wallet-and-importing-account-key">Setting up a wallet and importing account key</a> for more information.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span><span class="o">.</span><span class="n">import_key</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">,</span><span class="s1">&#39;5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-create-key">
+<span id="eosapi-create-key"></span><h2>eosapi.create_key<a class="headerlink" href="#eosapi-create-key" title="Permalink to this headline">¶</a></h2>
+<p>Create owner key</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">eosapi</span><span class="o">.</span><span class="n">create_key</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;public&#39;</span><span class="p">:</span> <span class="s1">&#39;EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">:</span> <span class="s1">&#39;5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Create active key</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">eosapi</span><span class="o">.</span><span class="n">create_key</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;public&#39;</span><span class="p">:</span> <span class="s1">&#39;EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">:</span> <span class="s1">&#39;5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Import owner key</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span><span class="o">.</span><span class="n">import_key</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">,</span><span class="s1">&#39;5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Import active key</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wallet</span><span class="o">.</span><span class="n">import_key</span><span class="p">(</span><span class="s1">&#39;mywallet2&#39;</span><span class="p">,</span><span class="s1">&#39;5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-create-account">
+<span id="eosapi-create-account"></span><h2>eosapi.create_account<a class="headerlink" href="#eosapi-create-account" title="Permalink to this headline">¶</a></h2>
+<p>It’s time to create an account, key1 and key2 are the public key you created before.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">key1</span> <span class="o">=</span> <span class="s1">&#39;EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst&#39;</span>
+<span class="n">key2</span> <span class="o">=</span> <span class="s1">&#39;EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL&#39;</span>
+<span class="n">eosapi</span><span class="o">.</span><span class="n">create_account</span><span class="p">(</span><span class="s1">&#39;eosio&#39;</span><span class="p">,</span> <span class="s1">&#39;currency&#39;</span><span class="p">,</span><span class="n">key1</span><span class="p">,</span><span class="n">key2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;transaction_id&quot;</span><span class="o">:</span> <span class="s2">&quot;f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;processed&quot;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s2">&quot;status&quot;</span><span class="o">:</span> <span class="s2">&quot;executed&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;kcpu_usage&quot;</span><span class="o">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;net_usage_words&quot;</span><span class="o">:</span> <span class="mi">44</span><span class="p">,</span>
+        <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_traces&quot;</span><span class="o">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;receiver&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;context_free&quot;</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="s2">&quot;cpu_usage&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;act&quot;</span><span class="o">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;account&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;newaccount&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;authorization&quot;</span><span class="o">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;actor&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;permission&quot;</span><span class="o">:</span> <span class="s2">&quot;active&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">],</span>
+                    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;creator&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;currency&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;owner&quot;</span><span class="o">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;threshold&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="s2">&quot;keys&quot;</span><span class="o">:</span> <span class="p">[</span>
+                                <span class="p">{</span>
+                                    <span class="s2">&quot;key&quot;</span><span class="o">:</span> <span class="s2">&quot;EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst&quot;</span><span class="p">,</span>
+                                    <span class="s2">&quot;weight&quot;</span><span class="o">:</span> <span class="mi">1</span>
+                                <span class="p">}</span>
+                            <span class="p">],</span>
+                            <span class="s2">&quot;accounts&quot;</span><span class="o">:</span> <span class="p">[]</span>
+                        <span class="p">},</span>
+                        <span class="s2">&quot;active&quot;</span><span class="o">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;threshold&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="s2">&quot;keys&quot;</span><span class="o">:</span> <span class="p">[</span>
+                                <span class="p">{</span>
+                                    <span class="s2">&quot;key&quot;</span><span class="o">:</span> <span class="s2">&quot;EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL&quot;</span><span class="p">,</span>
+                                    <span class="s2">&quot;weight&quot;</span><span class="o">:</span> <span class="mi">1</span>
+                                <span class="p">}</span>
+                            <span class="p">],</span>
+                            <span class="s2">&quot;accounts&quot;</span><span class="o">:</span> <span class="p">[]</span>
+                        <span class="p">},</span>
+                        <span class="s2">&quot;recovery&quot;</span><span class="o">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;threshold&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="s2">&quot;keys&quot;</span><span class="o">:</span> <span class="p">[],</span>
+                            <span class="s2">&quot;accounts&quot;</span><span class="o">:</span> <span class="p">[</span>
+                                <span class="p">{</span>
+                                    <span class="s2">&quot;permission&quot;</span><span class="o">:</span> <span class="p">{</span>
+                                        <span class="s2">&quot;actor&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                                        <span class="s2">&quot;permission&quot;</span><span class="o">:</span> <span class="s2">&quot;active&quot;</span>
+                                    <span class="p">},</span>
+                                    <span class="s2">&quot;weight&quot;</span><span class="o">:</span> <span class="mi">1</span>
+                                <span class="p">}</span>
+                            <span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;hex_data&quot;</span><span class="o">:</span> <span class="s2">&quot;0000000000ea30550000001e4d75af4601000000010002934a4748562795f31685de7b0112c3f4428255d42aa8ea420701c29542ede46501000001000000010002376f7109de7a6cf12a8d6c713fa7f4d4df8a9e08ecee47e9001583c7b8fcc9750100000100000000010000000000ea305500000000a8ed32320100&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;console&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;data_access&quot;</span><span class="o">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="o">:</span> <span class="s2">&quot;write&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;code&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;scope&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio.auth&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;sequence&quot;</span><span class="o">:</span> <span class="mi">39</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;_profiling_us&quot;</span><span class="o">:</span> <span class="mi">38</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;deferred_transaction_requests&quot;</span><span class="o">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;read_locks&quot;</span><span class="o">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;write_locks&quot;</span><span class="o">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;account&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;scope&quot;</span><span class="o">:</span> <span class="s2">&quot;eosio.auth&quot;</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;cpu_usage&quot;</span><span class="o">:</span> <span class="mi">102400</span><span class="p">,</span>
+        <span class="s2">&quot;net_usage&quot;</span><span class="o">:</span> <span class="mi">352</span><span class="p">,</span>
+        <span class="s2">&quot;packed_trx_digest&quot;</span><span class="o">:</span> <span class="s2">&quot;373a3125c5728b7feb7a4b5d04330e9de64e5f393123e660ff210ca558864c99&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;region_id&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;cycle_index&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;shard_index&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;_profiling_us&quot;</span><span class="o">:</span> <span class="mi">66</span><span class="p">,</span>
+        <span class="s2">&quot;_setup_profiling_us&quot;</span><span class="o">:</span> <span class="mi">127</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;cost_time&quot;</span><span class="o">:</span> <span class="mi">608</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-produce-block">
+<span id="eosapi-produce-block"></span><h2>eosapi.produce_block<a class="headerlink" href="#eosapi-produce-block" title="Permalink to this headline">¶</a></h2>
+<p>this command is used for generate a block when you are testing your smart contract.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eosapi</span><span class="o">.</span><span class="n">produce_block</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-get-transaction">
+<span id="eosapi-get-transaction"></span><h2>eosapi.get_transaction<a class="headerlink" href="#eosapi-get-transaction" title="Permalink to this headline">¶</a></h2>
+<p>we can test get_transaction now, replace ‘f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba’ with the transcation id in the create_account output, you will notice the output is the same as the output of create_account command above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">eosapi</span><span class="o">.</span><span class="n">get_transaction</span><span class="p">(</span><span class="s1">&#39;f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba&#39;</span><span class="p">)</span>
+<span class="n">r</span>
+<span class="n">r</span><span class="o">.</span><span class="n">transaction</span><span class="o">.</span><span class="n">signatures</span>
+<span class="n">r</span><span class="o">.</span><span class="n">transaction</span><span class="o">.</span><span class="n">packed_trx</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-get-account">
+<span id="eosapi-get-account"></span><h2>eosapi.get_account<a class="headerlink" href="#eosapi-get-account" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span> <span class="o">=</span> <span class="n">eosapi</span><span class="o">.</span><span class="n">get_account</span><span class="p">(</span><span class="s1">&#39;eosio&#39;</span><span class="p">)</span>
+<span class="n">info</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;account_name&quot;</span><span class="p">:</span> <span class="s2">&quot;eosio&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;perm_name&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;owner&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required_auth&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;accounts&quot;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;perm_name&quot;</span><span class="p">:</span> <span class="s2">&quot;owner&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required_auth&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;accounts&quot;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-set-contract">
+<span id="eosapi-set-contract"></span><h2>eosapi.set_contract<a class="headerlink" href="#eosapi-set-contract" title="Permalink to this headline">¶</a></h2>
+<p>Publish python smart contract to the blockchain</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">eosapi</span><span class="o">.</span><span class="n">set_contract</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span><span class="s1">&#39;../../programs/pyeos/contracts/hello/hello.py&#39;</span><span class="p">,</span><span class="s1">&#39;../../contracts/hello/hello.abi&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">r</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="eosapi-get-table">
+<span id="eosapi-get-table"></span><h2>eosapi.get_table<a class="headerlink" href="#eosapi-get-table" title="Permalink to this headline">¶</a></h2>
+<p>…</p>
+</div>
+<div class="section" id="eosapi-push-action">
+<span id="eosapi-push-action"></span><h2>eosapi.push_action<a class="headerlink" href="#eosapi-push-action" title="Permalink to this headline">¶</a></h2>
+<p>…</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyEos api overview</a><ul>
+<li><a class="reference internal" href="#eosapi-get-info">eosapi.get_info</a></li>
+<li><a class="reference internal" href="#wallet-create">wallet.create</a></li>
+<li><a class="reference internal" href="#wallet-open-wallet-unlock">wallet.open wallet.unlock</a></li>
+<li><a class="reference internal" href="#wallet-import-key">wallet.import_key</a></li>
+<li><a class="reference internal" href="#eosapi-create-key">eosapi.create_key</a></li>
+<li><a class="reference internal" href="#eosapi-create-account">eosapi.create_account</a></li>
+<li><a class="reference internal" href="#eosapi-produce-block">eosapi.produce_block</a></li>
+<li><a class="reference internal" href="#eosapi-get-transaction">eosapi.get_transaction</a></li>
+<li><a class="reference internal" href="#eosapi-get-account">eosapi.get_account</a></li>
+<li><a class="reference internal" href="#eosapi-set-contract">eosapi.set_contract</a></li>
+<li><a class="reference internal" href="#eosapi-get-table">eosapi.get_table</a></li>
+<li><a class="reference internal" href="#eosapi-push-action">eosapi.push_action</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="smartcontractdebugging.html" title="previous chapter">Smart Contract Debugging</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/usage/pyeosapi.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, learnforpractice.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/usage/pyeosapi.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
