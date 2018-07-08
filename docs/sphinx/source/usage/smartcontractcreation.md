@@ -63,7 +63,7 @@ sketch.build('helloworld', 'helloworld', 'cpp')
 ### Testing
 
 
-Now it's time to run your helloworld smart contract program. Type or copy the following command to the PyEos console:
+Now it's time to run your helloworld smart contract. Type or copy the following command to the PyEos console:
 
 ```python
 from helloworld import t
@@ -79,7 +79,7 @@ You will see the following output on console in green words:
 Congratulations, you have successfully run your first Python smart contract.
 
 Now you can open helloworld.py for coding. Once it's done, just run t.test() again, 
-there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
+there is no need to run other commands to publish your testing smart contract, the smart contract will be automatically
 republish to the testnet if it's been changed during the running of t.test(). You can also edit the testing code in t.py for testing your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos will do the magic for you. That also works at the situation of adding a new function in test. 
 
 There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
