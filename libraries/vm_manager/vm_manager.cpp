@@ -118,7 +118,6 @@ static uint64_t vm_names[] = {
       N(vm.wasm.1),
       N(vm.py.1),
       N(vm.eth.1),
-      N(vm.wasm.1),
       N(vm.wavm.1),
       N(vm.ipc.1),
 #elif defined(__linux__)
@@ -196,11 +195,25 @@ bool vm_manager::init() {
 
    init = true;
 
-   for (int i=0;i<sizeof(vm_libs_path)/sizeof(vm_libs_path[0])-1;i++) {
-      if (load_vm(i, vm_names[i])) {
+   for (int i=0;i<3;i++) {
+      if (load_vm_from_ram(i, vm_names[i])) {
          continue;
       }
       load_vm_from_path(i, vm_libs_path[i]);
+   }
+
+   load_vm_wavm();
+
+   if (this->api->run_mode() == 0) {//server
+      load_vm_from_path(4, ipc_server_lib);
+   }
+   return true;
+}
+
+int vm_manager::load_vm_wavm() {
+   int default_wavm_index = 3;
+   if (!load_vm_from_ram(default_wavm_index, vm_names[default_wavm_index])) {
+      load_vm_from_path(default_wavm_index, vm_libs_path[default_wavm_index]);
    }
 
    char _path[128];
@@ -253,11 +266,7 @@ bool vm_manager::init() {
       }
       g.join_all();
    }
-
-   if (this->api->run_mode() == 0) {//server
-      load_vm_from_path(4, ipc_server_lib);
-   }
-   return true;
+   return 1;
 }
 
 void vm_manager::preload_accounts(vm_calls* _calls) {
@@ -348,8 +357,15 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    */
    fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
 
+   auto __itr = vm_map.find(vm_type);
+   if (__itr != vm_map.end()) {
+      __itr->second->vm_deinit();
+      dlclose(__itr->second->handle);
+   }
+
    this->register_vm_api(handle);
    vm_init();
+
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
@@ -362,6 +378,9 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->unload = unload;
 
    vm_map[vm_type] = std::move(calls);
+   if (vm_type == 1) { //micropython
+      get_py_vm_api(); //set printer
+   }
    return 1;
 }
 
@@ -394,7 +413,7 @@ int vm_manager::check_new_version(int vm_type, uint64_t vm_name) {
    return 0;
 }
 
-int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
+int vm_manager::load_vm_from_ram(int vm_type, uint64_t vm_name) {
    activatevm vm;
    uint64_t vm_store = N(vmstore);
 
@@ -466,70 +485,14 @@ int vm_manager::load_vm(int vm_type, uint64_t vm_name) {
    out.write(decompressed_data.data(), file_size);
    out.close();
 
-   void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
-   if (handle == NULL) {
-      wlog("++++++++++++++dlopen ${n} failed", ("n", vm_path));
-      return 0;
+   return load_vm_from_path(vm_type, vm_path);
+}
+
+int vm_manager::load_vm(int vm_type) {
+   if (vm_type == 3) { //wavm
+      return load_vm_wavm();
    }
-
-   fn_vm_init vm_init = (fn_vm_init)dlsym(handle, "vm_init");
-   if (vm_init == NULL) {
-      return 0;
-   }
-
-   fn_vm_deinit vm_deinit = (fn_vm_deinit)dlsym(handle, "vm_deinit");
-   if (vm_deinit == NULL) {
-      return 0;
-   }
-
-   fn_setcode setcode = (fn_setcode)dlsym(handle, "vm_setcode");
-   if (setcode == NULL) {
-      return 0;
-   }
-
-   fn_apply apply = (fn_apply)dlsym(handle, "vm_apply");
-   if (apply == NULL) {
-      return 0;
-   }
-
-   fn_preload preload = (fn_preload)dlsym(handle, "vm_preload");
-   /*
-   if (preload == NULL) {
-      return 0;
-   }
-   */
-
-   fn_unload unload = (fn_unload)dlsym(handle, "vm_unload");
-
-
-   vm_init();
-   register_vm_api(handle);
-
-   wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
-
-   std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
-   calls->handle = handle;
-   calls->version = version;
-
-   calls->vm_init = vm_init;
-   calls->vm_deinit = vm_deinit;
-
-   calls->setcode = setcode;
-   calls->apply = apply;
-   calls->preload = preload;
-   calls->unload = unload;
-
-   auto __itr = vm_map.find(vm_type);
-   if (__itr != vm_map.end()) {
-      __itr->second->vm_deinit();
-      dlclose(__itr->second->handle);
-   }
-
-   vm_map[vm_type] = std::move(calls);
-   if (vm_type == 1) { //micropython
-      get_py_vm_api(); //set printer
-   }
-   return 1;
+   return load_vm_from_path(vm_type, vm_libs_path[vm_type]);
 }
 
 bool vm_manager::is_trusted_account(uint64_t account) {
@@ -550,7 +513,7 @@ struct vm_api* vm_manager::get_vm_api() {
 int vm_manager::setcode(int type, uint64_t account) {
 /*
    if (check_new_version(type, vm_names[type])) {
-      load_vm(type, vm_names[type]);
+      load_vm_from_ram(type, vm_names[type]);
    }
 */
    if (this->api->run_mode() == 0) {
@@ -585,7 +548,7 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
 int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
 /*
    if (check_new_version(type, vm_names[type])) {
-      load_vm(type, vm_names[type]);
+      load_vm_from_ram(type, vm_names[type]);
    }
 */
    if (type == 0) { //wasm
