@@ -12,16 +12,24 @@
 #include <eosiolib_native/vm_api.h>
 
 using namespace boost::process;
+using namespace std;
 
-std::unique_ptr<boost::thread> client_monitor_thread;
-std::unique_ptr<boost::thread> server_thread;
-std::unique_ptr<boost::process::child> client_process;
+unique_ptr<boost::thread> client_monitor_thread;
+vector<shared_ptr<boost::thread>> server_threads;
 
-static struct vm_api s_vm_api;
-static const char* default_ipc_path = "/tmp/pyeos.ipc";
+vector<shared_ptr<boost::process::child>> client_processes;
 
-extern "C" int _start_server(const char* ipc_path);
+static struct vm_api s_vm_api = {};
+static const char* default_ipc_path = "/tmp";
+
+extern "C" int _start_server(const char* ipc_file, int vm_type);
 extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len);
+static const char* vm_names[] = {
+      "binaryen",
+      "py",
+      "eth",
+      "wavm",
+};
 
 void vm_init() {
    client_monitor_thread.reset(new boost::thread([]{
@@ -29,48 +37,64 @@ void vm_init() {
             while (!s_vm_api.app_init_finished()) {
                boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
             }
-            char option[128];
-            char cmd[256];
-            int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
-            if (ret) {
-               snprintf(cmd, sizeof(cmd), "../libraries/ipc/ipc_client/ipc_client %s", option);
-            } else {
-               snprintf(cmd, sizeof(cmd), "../libraries/ipc/ipc_client/ipc_client %s", default_ipc_path);
+            for (int vm_type=0;vm_type<4;vm_type++) {
+               char cmd[256];
+               char option[128];
+               static const char* format = "../libraries/ipc/ipc_client/ipc_client %s/%s.ipc %d";
+               int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
+               if (ret) {
+                  snprintf(cmd, sizeof(cmd), format, option, vm_names[vm_type], vm_type);
+               } else {
+                  snprintf(cmd, sizeof(cmd), format, default_ipc_path, vm_names[vm_type], vm_type);
+               }
+               wlog("start ${n}", ("n", cmd));
+               ipstream pipe_stream;
+               shared_ptr<boost::process::child> client_process;
+               client_process.reset(new child((const char*)cmd, std_out > pipe_stream));
+               client_processes.push_back(client_process);
+               /*
+               std::string line;
+               while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
+                  std::cerr << line << std::endl;
+               }
+               */
             }
-
-            ipstream pipe_stream;
-            client_process.reset(new child((const char*)cmd, std_out > pipe_stream));
-            std::string line;
-            while (pipe_stream && std::getline(pipe_stream, line) && !line.empty()) {
-               std::cerr << line << std::endl;
+            for (auto& p: client_processes) {
+               p->wait();
             }
-            client_process->wait();
-            wlog("ipc_client exited.");
          } while(false);
    }));
 
-   server_thread.reset(new boost::thread([]{
-         while (!s_vm_api.app_init_finished()) {
-            boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-         }
+   for (int vm_type=0;vm_type<4;vm_type++) {
+      shared_ptr<boost::thread> server_thread;
+      server_thread.reset(new boost::thread([vm_type]{
+            while (!s_vm_api.app_init_finished()) {
+               boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+            }
 
-         char option[128];
-         int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
-         if (ret) {
-            _start_server(option);
-         } else {
-            _start_server(default_ipc_path);
-         }
-   }));
+            char option[128];
+            char ipc_file[128];
+            int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
+            if (ret) {
+               snprintf(ipc_file, sizeof(ipc_file), "%s/%s.ipc", option, vm_names[vm_type]);
+            } else {
+               snprintf(ipc_file, sizeof(ipc_file), "%s/%s.ipc", default_ipc_path, vm_names[vm_type]);
+            }
+            _start_server(ipc_file, vm_type);
+      }));
+      server_threads.push_back(server_thread);
+   }
 }
 
 void vm_deinit() {
    wlog("vm_deinit");
-   if (!client_process) {
-      return;
-   }
-   if (client_process->running()) {
-      client_process->terminate();
+   for (auto& p: client_processes) {
+      if (!p) {
+         continue;
+      }
+      if (p->running()) {
+         p->terminate();
+      }
    }
 }
 

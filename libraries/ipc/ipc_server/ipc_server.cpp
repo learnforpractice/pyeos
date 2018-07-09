@@ -28,24 +28,31 @@ using namespace ::apache::thrift::server;
 
 using namespace  ::cpp;
 
+using namespace moodycamel;
+
 struct ApplyFinish {
    int32_t status;
    std::string errMsg;
 };
 
-using namespace moodycamel;
-
-//BlockingReaderWriterQueue<Apply> apply_request_queue(1);
-//BlockingReaderWriterQueue<ApplyFinish> apply_finish_queue(1);
-
-BlockingConcurrentQueue<Apply> apply_request_queue;
-BlockingConcurrentQueue<ApplyFinish> apply_finish_queue;
-
-
 class RpcServiceHandler : virtual public RpcServiceIf {
- public:
+private:
+   BlockingConcurrentQueue<Apply> apply_request_queue;
+   BlockingConcurrentQueue<ApplyFinish> apply_finish_queue;
+public:
   RpcServiceHandler() {
-    // Your initialization goes here
+  }
+
+  bool apply(Apply& apply) {
+     apply_request_queue.enqueue(apply);
+     return true;
+  }
+
+  bool apply_wait(ApplyFinish& finish) {
+     if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(100))) {
+        return false;
+     }
+     return true;
   }
 
   void apply_request(Apply& _return) {
@@ -128,6 +135,8 @@ class RpcServiceHandler : virtual public RpcServiceIf {
 };
 
 
+static std::map<int, ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler>> handler_map;
+static std::mutex m1;
 
 extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len) {
    Apply apply;
@@ -135,10 +144,14 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
    apply.account = account;
    apply.action = action;
    wlog("++++++++++++on_apply");
-   apply_request_queue.enqueue(apply);
-   ApplyFinish finish = {};
 
-   if (!apply_finish_queue.wait_dequeue_timed(finish, std::chrono::milliseconds(100))) {
+   int vm_type = db_api::get().get_code_type(receiver);
+
+   auto& handler = handler_map[vm_type];
+   handler->apply(apply);
+
+   ApplyFinish finish = {};
+   if (!handler->apply_wait(finish)) {
       std::string errMsg("++++on_apply: execution time out!");
       wlog(errMsg);
       *err = (char*)malloc(errMsg.length());
@@ -153,7 +166,7 @@ extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t act
    return finish.status;
 }
 
-extern "C" int _start_server(const char* ipc_path) {
+extern "C" int _start_server(const char* ipc_path, int vm_type) {
 //   rpc_register_cpp_apply_call();
    if (access(ipc_path, F_OK) != -1) {
       unlink(ipc_path);
@@ -164,15 +177,21 @@ extern "C" int _start_server(const char* ipc_path) {
       return 0;
    }
 
-   ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(new RpcServiceHandler());
-  ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
-  ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(ipc_path));
-  ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+   ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler;
+   {
+      std::lock_guard<std::mutex> lock(m1);
+      handler.reset(new RpcServiceHandler());
+      handler_map[vm_type] = handler;
+   }
+//   ::apache::thrift::stdcxx::shared_ptr<RpcServiceHandler> handler(handler);
+   ::apache::thrift::stdcxx::shared_ptr<TProcessor> processor(new RpcServiceProcessor(handler));
+   ::apache::thrift::stdcxx::shared_ptr<TServerTransport> serverTransport(new TServerSocket(ipc_path));
+   ::apache::thrift::stdcxx::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+   ::apache::thrift::stdcxx::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  wlog("ipc server ready to go ${n}", ("n", ipc_path));
-  server.serve();
+   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+   wlog("ipc server ready to go ${n}", ("n", ipc_path));
+   server.serve();
 
   return 1;
 }

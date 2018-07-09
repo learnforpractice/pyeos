@@ -307,9 +307,9 @@ struct vm_api* get_vm_api() {
    return &_vm_api;
 }
 
-void vm_manager_init() {
+void vm_manager_init(int vm_type) {
    vm_manager::get().set_vm_api(&_vm_api);
-   vm_manager::get().init();
+   vm_manager::get().load_vm(vm_type);
 }
 
 void register_vm_api(void* handle) {

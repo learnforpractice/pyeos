@@ -626,7 +626,7 @@ void apply_eosio_activatevm(apply_context& context) {
    } else {
       context.db_store_i64(N(eosio), N(eosio), N(eosio), vm.vm_name, (char*)&vm, sizeof(vm));
    }
-   vm_manager::get().load_vm(vm.type, vm.vm_name);
+   vm_manager::get().load_vm_from_ram(vm.type, vm.vm_name);
 }
 
 } } // namespace eosio::chain
