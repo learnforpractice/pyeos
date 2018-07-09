@@ -2,9 +2,12 @@ import os
 import sys
 import time
 import struct
+import debug
 import eosapi
+
 from eosapi import N, push_transactions
 from common import prepare, producer, Sync
+from tools import cpp2wast
 
 def init(wasm=True):
     def init_decorator(func):
@@ -75,3 +78,10 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     setcode = [N('eosio'), N('setcode'), [[account, N('active')]], code]
 
     return push_transactions([[setcode]], sign, compress = True)
+
+def build_native():
+    _src_dir = os.path.dirname(os.path.abspath(__file__))
+    cpp2wast.set_src_path(_src_dir)
+    cpp2wast.build_native('lab.cpp', 'lab')
+    lib_file = os.path.join(_src_dir, 'liblab.dylib')
+    debug.set_debug_contract('lab', lib_file)

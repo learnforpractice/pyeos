@@ -20,3 +20,6 @@ abigen = "${CMAKE_BINARY_DIR}/programs/eosio-abigen/eosio-abigen \
     -context={src_dir} {target}.cpp"
 
 #    -extra-arg=-I${CMAKE_SOURCE_DIR}/include -extra-arg=-I$context_folder \
+
+build_dir = "${CMAKE_BINARY_DIR}"
+root_src_dir = "${CMAKE_SOURCE_DIR}"

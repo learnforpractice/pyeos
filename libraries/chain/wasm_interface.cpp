@@ -115,9 +115,11 @@ namespace eosio { namespace chain {
       }
 
       if (debug_account == ctx.act.account.value) {
-         void *handle;
+         static void *handle = nullptr;
          contract_path = debug_contract_path;
-
+         if (handle) {
+             dlclose(handle);
+         }
          handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
          if (!handle) {
             elog("open dll ${n} failed", ("n", contract_path));
@@ -196,7 +198,7 @@ namespace eosio { namespace chain {
             break;
          }
 
-         if (context.receiver == N(eosio.token) && apply_native(context)) {
+         if (apply_native(context)) {
             return;
          }
          break;

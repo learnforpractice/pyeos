@@ -106,3 +106,34 @@ def build(src_file = 'lab.cpp', force=False):
     return True
 
 
+def build_native(src_file, lib_name, force=False):
+    INCLUDES = "-I{root_src_dir}/contracts/eosio.token/.. \
+    -I{root_src_dir}/externals/magic_get/include \
+    -I{root_src_dir}/contracts \
+    -I{root_src_dir}/libraries/chain/include \
+    -I{root_src_dir}/libraries/fc/include \
+    -I{root_src_dir}/libraries/softfloat/source/include \
+    -I{root_src_dir}/libraries/softfloat/source/8086-SSE \
+    -I{root_src_dir}/libraries/softfloat/build/Linux-x86_64-GCC \
+    -I{src_path}"
+
+    INCLUDES = INCLUDES.format(root_src_dir=tools_config.root_src_dir, src_path=src_path)
+    compile_cmd = 'clang++  -Deosio_token_native_EXPORTS {includes} -Wall -Wno-deprecated-declarations -DDEBUG -g -fPIC   -std=gnu++14 -o {src_file}.o -c {src_path}/{src_file}'
+    compile_cmd = compile_cmd.format(includes=INCLUDES, src_path=src_path, src_file=src_file)
+
+    compile_cmd = shlex.split(compile_cmd)
+    print(compile_cmd)
+
+    ret = subprocess.call(compile_cmd)
+    print('compile_cmd', ret)
+    if ret:
+        return False
+
+    link_cmd = 'clang++  -Wall -Wno-deprecated-declarations -DDEBUG -g -dynamiclib -Wl,-headerpad_max_install_names  -o {src_path}/lib{lib_name}.dylib -install_name @rpath/lib{lib_name}.dylib {src_name}.o -Wl,-rpath,{build_dir}/contracts/eosiolib_native -Wl,-rpath,{build_dir}/libraries/softfloat {build_dir}/contracts/eosiolib_native/libeosiolib_natived.dylib {build_dir}/libraries/softfloat/libsoftfloatd.dylib'
+    link_cmd = link_cmd.format(lib_name=lib_name, src_name=src_file, build_dir=tools_config.build_dir, src_path=src_path)
+    link_cmd = shlex.split(link_cmd)
+    ret = subprocess.call(link_cmd)
+    print('link_cmd', ret)
+    if ret:
+        return False
+
