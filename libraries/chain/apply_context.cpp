@@ -11,6 +11,7 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
 #include <fc/scoped_exit.hpp>
+#include <vm_manager.hpp>
 
 using boost::container::flat_set;
 
@@ -102,7 +103,8 @@ action_trace apply_context::exec_one()
             control.check_action_list( act.account, act.name );
          }
          try {
-            control.get_wasm_interface().apply(a.code_version, a.code, *this);
+              vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
+//            control.get_wasm_interface().apply(a.code_version, a.code, *this);
          } catch ( const wasm_exit& ){}
       }
 
