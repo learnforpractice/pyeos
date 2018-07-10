@@ -12,10 +12,9 @@ def apply(receiver, code, action):
             a1 = a[100]
             a2 = a[101]
             a3 = a[102]
-#            print(a1, a2, a3)
+            print(a1, a2, a3)
         except Exception as e:
             print(e)
-#        print(a1, a2, a3)
         a[100] = 'hello1'
         a[101] = 'hello2'
         a[102] = 'hello3'
