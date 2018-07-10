@@ -16,9 +16,23 @@ from eosapi import N
 from tools import cpp2wast
 
 from common import prepare, producer
+import debug as _debug
 
 print('please make sure you are running the following command before test')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
+
+def init_debug(wasm={1}):
+    def init_decorator(func):
+        def func_wrapper(*args, **kwargs):
+            if wasm:
+                _src_dir = os.path.dirname(os.path.abspath(__file__))
+                cpp2wast.set_src_path(_src_dir)
+                cpp2wast.build_native('{0}.cpp', '{0}')
+                lib_file = os.path.join(_src_dir, 'lib{0}.dylib')
+                _debug.set_debug_contract('{0}', lib_file)
+            return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
 
 def init(wasm={1}):
     def init_decorator(func):
@@ -32,10 +46,18 @@ def init(wasm={1}):
     return init_decorator
 
 @init()
-def test(msg='hello,world'):
+def test(msg='hello,world\\n'):
     with producer:
         r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
         assert r
+
+@init()
+@init_debug()
+def debug(msg='hello,world\\n'):
+    with producer:
+        r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
+        assert r
+
 '''
 py_src = \
 '''from eoslib import *
@@ -56,13 +78,9 @@ extern "C" {{
          switch( action ) {{
             case N(sayhello):
                   size_t size = action_data_size();
-                  if (size > 128) {{
-                      size = 128;
-                  }}
-                  char msg[size+1];
-                  msg[size] = '\\0';
-                  read_action_data(msg, size);
-                  prints(msg);
+                  std::string s(size, 0);
+                  read_action_data((void *)s.c_str(), size);
+                  eosio::print(s);
             break;
          }}
          eosio_exit(0);

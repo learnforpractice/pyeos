@@ -32,6 +32,7 @@ static const int TYPE_ETH = 2;
 static const int TYPE_WAVM = 3;
 static const int TYPE_IPC = 4;
 
+
 namespace eosio {
 namespace chain {
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
@@ -184,7 +185,11 @@ private:
 
 void vm_manager::register_vm_api(void* handle) {
    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-   _register_vm_api(this->api);
+   if (_register_vm_api) {
+      _register_vm_api(this->api);
+   } else {
+      elog("vm_register_api not found!");
+   }
 }
 
 bool vm_manager::init() {

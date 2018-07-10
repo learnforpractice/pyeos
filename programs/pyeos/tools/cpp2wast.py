@@ -107,6 +107,16 @@ def build(src_file = 'lab.cpp', force=False):
 
 
 def build_native(src_file, lib_name, force=False):
+    lib_file_path = "{src_path}/lib{lib_name}.dylib".format(src_path=src_path, lib_name=lib_name)
+    src_file_path = "{src_path}/{src_file}".format(src_path=src_path, src_file=src_file)
+    try:
+        t1 = os.path.getmtime(src_file_path)
+        t2 = os.path.getmtime(lib_file_path)
+        if t1 <= t2:
+            return
+    except:
+        pass
+
     INCLUDES = "-I{root_src_dir}/contracts/eosio.token/.. \
     -I{root_src_dir}/externals/magic_get/include \
     -I{root_src_dir}/contracts \
@@ -132,6 +142,7 @@ def build_native(src_file, lib_name, force=False):
     link_cmd = 'clang++  -Wall -Wno-deprecated-declarations -DDEBUG -g -dynamiclib -Wl,-headerpad_max_install_names  -o {src_path}/lib{lib_name}.dylib -install_name @rpath/lib{lib_name}.dylib {src_name}.o -Wl,-rpath,{build_dir}/contracts/eosiolib_native -Wl,-rpath,{build_dir}/libraries/softfloat {build_dir}/contracts/eosiolib_native/libeosiolib_natived.dylib {build_dir}/libraries/softfloat/libsoftfloatd.dylib'
     link_cmd = link_cmd.format(lib_name=lib_name, src_name=src_file, build_dir=tools_config.build_dir, src_path=src_path)
     link_cmd = shlex.split(link_cmd)
+    print(link_cmd)
     ret = subprocess.call(link_cmd)
     print('link_cmd', ret)
     if ret:

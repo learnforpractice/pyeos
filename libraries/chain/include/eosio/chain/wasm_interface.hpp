@@ -33,6 +33,8 @@ namespace eosio { namespace chain {
          //Calls apply or error on a given code
          void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
          bool apply_native(apply_context& ctx);
+         bool apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
+
          bool init();
       private:
          unique_ptr<struct wasm_interface_impl> my;

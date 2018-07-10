@@ -50,11 +50,15 @@ bool wasm_is_native_contract_enabled_() {
 }
 
 static string debug_contract_path;
-static uint64_t debug_account;
+static uint64_t debug_account = 0;
 
 void set_debug_contract_(string& _account, string& path) {
    debug_account = eosio::chain::string_to_name(_account.c_str());
    debug_contract_path = path;
+}
+
+bool is_native_contract_debug_enabled_() {
+   return debug_account != 0;
 }
 
 namespace eosio { namespace chain {
@@ -104,36 +108,40 @@ namespace eosio { namespace chain {
    //      my->get_instantiated_module(context.act.account, code_id, code)->call(func, args, context);
    //      my->get_instantiated_module(code_id, code, context.trx_context)->call(func, args, context);
    }
+   bool wasm_interface::apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
+      string contract_path;
+      if (debug_account != account) {
+         return false;
+      }
+
+      static void *handle = nullptr;
+      contract_path = debug_contract_path;
+      if (handle) {
+          dlclose(handle);
+      }
+
+      handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+      if (!handle) {
+         elog("open dll ${n} failed", ("n", contract_path));
+         return false;
+      }
+
+      register_vm_api(handle);
+      fn_apply _apply = (fn_apply)dlsym(handle, "apply");
+      if (!_apply) {
+         elog("apply not found in ${n}", ("n", contract_path));
+         return false;
+      }
+      _apply(receiver, account, act);
+      return true;
+   }
 
    bool wasm_interface::apply_native(apply_context& ctx) {
-      string contract_path;
       uint64_t native = N(native);
       fn_apply _apply = nullptr;
 
       if (!_enable_native_contract) {
          return false;
-      }
-
-      if (debug_account == ctx.act.account.value) {
-         static void *handle = nullptr;
-         contract_path = debug_contract_path;
-         if (handle) {
-             dlclose(handle);
-         }
-         handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-         if (!handle) {
-            elog("open dll ${n} failed", ("n", contract_path));
-            return false;
-         }
-
-         register_vm_api(handle);
-         fn_apply _apply = (fn_apply)dlsym(handle, "apply");
-         if (!_apply) {
-            elog("apply not found in ${n}", ("n", contract_path));
-            return false;
-         }
-         _apply(ctx.receiver, ctx.act.account, ctx.act.name);
-         return true;
       }
 
       auto itr = my->native_cache.find(ctx.act.account.value);
@@ -211,3 +219,9 @@ namespace eosio { namespace chain {
    }
 
 } } /// eosio::chain
+
+bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
+   return eosio::chain::apply_context::ctx().control.get_wasm_interface().apply_debug(receiver, account, act);
+}
+
+

@@ -327,7 +327,11 @@ void vm_manager_init() {
 
 void register_vm_api(void* handle) {
    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-   _register_vm_api(&_vm_api);
+   if (_register_vm_api) {
+      _register_vm_api(&_vm_api);
+   } else {
+      elog("vm_register_api not found!");
+   }
 }
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {

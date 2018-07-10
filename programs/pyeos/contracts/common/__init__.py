@@ -87,11 +87,18 @@ def _set_contract(account, wast_file, abi_file):
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
 
+def build_native(account, full_src_path):
+    _src_dir = os.path.dirname(os.path.abspath(full_src_path))
+    cpp2wast.set_src_path(_src_dir)
+    cpp2wast.build_native(account+'.cpp', account)
+    lib_file = os.path.join(_src_dir, 'lib{0}.dylib'.format(account))
+    debug.set_debug_contract(account, lib_file)
+
 def prepare(name, src, abi, full_src_path):
     with producer:
         prepare_(name, src, abi, full_src_path)
 
-def prepare_(name, src, abi, full_src_path):
+def prepare_(account, src, abi, full_src_path):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if src.endswith('.wast'):
         code_type = CODE_TYPE_WAST
@@ -113,11 +120,11 @@ def prepare_(name, src, abi, full_src_path):
         abi = os.path.join(_src_dir, abi)
 
 
-    if not eosapi.get_account(name):
+    if not eosapi.get_account(account):
         print('*'*20, 'create_account')
-        _create_account(name)
+        _create_account(account)
 
-    old_code = eosapi.get_code(name)
+    old_code = eosapi.get_code(account)
     need_update = True
     if old_code:
         old_code = old_code[0]
@@ -138,9 +145,9 @@ def prepare_(name, src, abi, full_src_path):
     if need_update:
         print('Updating contract', src)
         if code_type == 0:
-            _set_contract(name, src, abi)
+            _set_contract(account, src, abi)
         else:
-            r = eosapi.set_contract(name, src, abi, code_type)
+            r = eosapi.set_contract(account, src, abi, code_type)
             assert r, 'set_contract failed'
 
 class Sync(object):

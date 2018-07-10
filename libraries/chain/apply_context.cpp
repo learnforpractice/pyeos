@@ -23,6 +23,8 @@ int py_debug_enabled_() {
    return 0;
 }
 
+bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
+
 namespace eosio { namespace chain {
 
 bool apply_context::get_code(uint64_t _account, std::vector<uint8_t>& v) {
@@ -103,12 +105,13 @@ action_trace apply_context::exec_one()
             control.check_action_list( act.account, act.name );
          }
          try {
-              vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
+              if (a.vm_type == 0 && wasm_apply_debug(receiver.value, act.account.value, act.name.value)) {
+              } else {
+                 vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
+              }
 //            control.get_wasm_interface().apply(a.code_version, a.code, *this);
          } catch ( const wasm_exit& ){}
       }
-
-
    } FC_CAPTURE_AND_RETHROW((_pending_console_output.str()));
    }while(false);
 
