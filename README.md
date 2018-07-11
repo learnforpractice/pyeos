@@ -2,8 +2,9 @@ A Self Evolving Universal Smart Contract Platform Base on The Development of EOS
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
 2. [Creating Your First Python Smart Contract](#creatsmartcontract)
-3. [Smart Contract Debugging](#smartcontractdebugging)
-4. [PyEos api overview](#pyeosapioverview)
+3. [Debugging With Python Smart Contract](#smartcontractdebuggingpython)
+4. [Debugging With C++ Smart Contract](#smartcontractdebuggingcplusplus)
+5. [PyEos api overview](#pyeosapioverview)
 
 <a name="buildingPyEos"></a>
 
@@ -82,7 +83,7 @@ Although the above steps will never happen in the real world, but it's really pr
 Run the following command in PyEos console,
 
 ```
-sketch.build('hello', 'helloworld', 'py')
+sketch.create('hello', 'helloworld', 'py')
 ```
 
 That will create a helloworld directory under your current directory with hello as the testing account name. There are three file generated in the directory:
@@ -98,7 +99,7 @@ Which helloworld.py is the Python smart contract source code, helloworld.abi is 
 In addition, sketch can also create a wasm smart contract project for you, just type the following code in PyEos console, and the testing process has no difference with Python smart contract.
 
 ```
-sketch.build('helloworld', 'helloworld', 'cpp')
+sketch.create('helloworld', 'helloworld', 'cpp')
 ```
 
 ### Testing
@@ -125,7 +126,7 @@ republish to the testnet if it's been changed during the running of t.test(). Yo
 
 There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
 
-<a name="smartcontractdebugging"></a>
+<a name="smartcontractdebuggingpython"></a>
 
 # Smart Contract Debugging
 
@@ -158,6 +159,67 @@ debug.disable()
 ```
 
 ![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/debugging/debugging.png)
+
+<a name="smartcontractdebuggingcplusplus"></a>
+
+# Debugging With C++ Smart Contract
+
+On Eos, C++ Smart Contract code is compile to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now It's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
+
+There is a short video on youtube for quick start:[Smart Contract Debugging](https://youtu.be/7XPgnbjsXkE)
+
+To be brief, here are the steps on debugging a C++ Smart Contract:
+
+### 1. Open pyeos project in Visual Studio Code
+
+### 2. Edit CMAKE_BUILD_TYPE and BUILD_DIR in eosio_build.sh
+
+```
+    BUILD_DIR="${PWD}/build-debug"
+    CMAKE_BUILD_TYPE=Debug
+```
+
+### 3. Build pyeos in VSC terminal
+
+```
+./eosio_build.sh
+```
+
+### 4.Configure debug in Visual Studio Code
+```
+      {
+         "name": "(lldb) Attach pyeos",
+         "type": "cppdbg",
+         "request": "attach",
+         "program": "${workspaceFolder}/build-debug/programs/pyeos/pyeos",
+         "processId": "${command:pickProcess}",
+         "MIMode": "lldb"
+      }
+```
+
+### 5. Launch pyeos
+
+```
+./pyeos/pyeos --manual-gen-block --debug -i
+```
+
+### 6. Attach to pyeos
+
+### 7. Create C++ Smart Contract test code.
+
+```python
+sketch.create('hello', 'helloworld', 'cpp')
+```
+
+### 8. Set breakpoint in test code
+
+### 9. test
+```
+from helloworld import t
+t.debug()
+```
+
+Enjoy it
 
 
 <a name="pyeosapioverview"></a>
