@@ -47,7 +47,7 @@ brew install readline
 Open a terminal, cd to [PROJECT_DIR]/build/program, run the following command
 
 ```
-./pyeos/pyeos --manual-gen-block --debug -i
+./pyeos/pyeos --manual-gen-block --debug -i  --contracts-console
 ```
 
 If it's the first time you start PyEos, PyEos will create a testing wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:
@@ -200,7 +200,7 @@ To be brief, here are the steps on debugging a C++ Smart Contract:
 ### 5. Launch pyeos
 
 ```
-./pyeos/pyeos --manual-gen-block --debug -i
+./pyeos/pyeos --manual-gen-block --debug -i  --contracts-console
 ```
 
 ### 6. Attach to pyeos
@@ -301,7 +301,7 @@ Create owner key
 eosapi.create_key()
 ```
 
-```
+```javascript
 {'public': 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst', 'private': '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s'}
 ```
 
@@ -311,7 +311,7 @@ Create active key
 eosapi.create_key()
 ```
 
-```
+```javascript
 {'public': 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL', 'private': '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'}
 ```
 
@@ -328,136 +328,42 @@ wallet.import_key('mywallet2','5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1u
 ```
 
 #### eosapi.create_account
-It's time to create an account, key1 and key2 are the public key you created before.
-
-```
-key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
-key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
-eosapi.create_account('eosio', 'currency',key1,key2)
-
-```
-
-```javascript
-{
-    "transaction_id": "f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba",
-    "processed": {
-        "status": "executed",
-        "kcpu_usage": 100,
-        "net_usage_words": 44,
-        "id": "f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba",
-        "action_traces": [
-            {
-                "receiver": "eosio",
-                "context_free": false,
-                "cpu_usage": 0,
-                "act": {
-                    "account": "eosio",
-                    "name": "newaccount",
-                    "authorization": [
-                        {
-                            "actor": "eosio",
-                            "permission": "active"
-                        }
-                    ],
-                    "data": {
-                        "creator": "eosio",
-                        "name": "currency",
-                        "owner": {
-                            "threshold": 1,
-                            "keys": [
-                                {
-                                    "key": "EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst",
-                                    "weight": 1
-                                }
-                            ],
-                            "accounts": []
-                        },
-                        "active": {
-                            "threshold": 1,
-                            "keys": [
-                                {
-                                    "key": "EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL",
-                                    "weight": 1
-                                }
-                            ],
-                            "accounts": []
-                        },
-                        "recovery": {
-                            "threshold": 1,
-                            "keys": [],
-                            "accounts": [
-                                {
-                                    "permission": {
-                                        "actor": "eosio",
-                                        "permission": "active"
-                                    },
-                                    "weight": 1
-                                }
-                            ]
-                        }
-                    },
-                    "hex_data": "0000000000ea30550000001e4d75af4601000000010002934a4748562795f31685de7b0112c3f4428255d42aa8ea420701c29542ede46501000001000000010002376f7109de7a6cf12a8d6c713fa7f4d4df8a9e08ecee47e9001583c7b8fcc9750100000100000000010000000000ea305500000000a8ed32320100"
-                },
-                "console": "",
-                "data_access": [
-                    {
-                        "type": "write",
-                        "code": "eosio",
-                        "scope": "eosio.auth",
-                        "sequence": 39
-                    }
-                ],
-                "_profiling_us": 38
-            }
-        ],
-        "deferred_transaction_requests": [],
-        "read_locks": [],
-        "write_locks": [
-            {
-                "account": "eosio",
-                "scope": "eosio.auth"
-            }
-        ],
-        "cpu_usage": 102400,
-        "net_usage": 352,
-        "packed_trx_digest": "373a3125c5728b7feb7a4b5d04330e9de64e5f393123e660ff210ca558864c99",
-        "region_id": 0,
-        "cycle_index": 1,
-        "shard_index": 0,
-        "_profiling_us": 66,
-        "_setup_profiling_us": 127
-    },
-    "cost_time": 608
-}
-```
-#### eosapi.produce_block
-
-this command is used for generate a block when you are testing your smart contract.
-
-```
-eosapi.produce_block()
-```
-
-#### eosapi.get_transaction
-
-we can test get_transaction now, replace 'f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba' with the transcation id in the create_account output, you will notice the output is the same as the output of create_account command above.
 
 ```python
-r = eosapi.get_transaction('f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba')
-r
-r.transaction.signatures
-r.transaction.packed_trx
+key1 = 'EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst'
+key2 = 'EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL'
+eosapi.create_account('eosio', 'currency', key1, key2)
+
 ```
 
 #### eosapi.get_account
 
-```python
-info = eosapi.get_account('eosio')
-info
 ```
+eosapi.get_account('currency')
 ```
+
+```javascript
 {
-    "account_name": "eosio",
+    "account_name": "currency",
+    "head_block_num": 43,
+    "head_block_time": "2018-07-11T09:01:00.500",
+    "privileged": false,
+    "last_code_update": "1970-01-01T00:00:00.000",
+    "created": "2018-07-11T09:01:00.500",
+    "ram_quota": 65206,
+    "net_weight": 10050,
+    "cpu_weight": 10050,
+    "net_limit": {
+        "used": 0,
+        "available": 62988768000,
+        "max": 62988768000
+    },
+    "cpu_limit": {
+        "used": 0,
+        "available": 12013286400,
+        "max": 12013286400
+    },
+    "ram_usage": 3446,
     "permissions": [
         {
             "perm_name": "active",
@@ -466,11 +372,12 @@ info
                 "threshold": 1,
                 "keys": [
                     {
-                        "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+                        "key": "EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst",
                         "weight": 1
                     }
                 ],
-                "accounts": []
+                "accounts": [],
+                "waits": []
             }
         },
         {
@@ -480,15 +387,116 @@ info
                 "threshold": 1,
                 "keys": [
                     {
-                        "key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+                        "key": "EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL",
                         "weight": 1
                     }
                 ],
-                "accounts": []
+                "accounts": [],
+                "waits": []
             }
         }
-    ]
+    ],
+    "total_resources": {
+        "owner": "currency",
+        "net_weight": "1.0050 EOS",
+        "cpu_weight": "1.0050 EOS",
+        "ram_bytes": 65206
+    },
+    "self_delegated_bandwidth": {
+        "from": "currency",
+        "to": "currency",
+        "net_weight": "1.0050 EOS",
+        "cpu_weight": "1.0050 EOS"
+    },
+    "refund_request": null,
+    "voter_info": {
+        "owner": "currency",
+        "proxy": "",
+        "producers": [],
+        "staked": 20100,
+        "last_vote_weight": 0.0,
+        "proxied_vote_weight": 0.0,
+        "is_proxy": 0
+    }
 }
+```
+
+#### eosapi.get_balance
+```
+eosapi.get_balance('eosio')
+```
+return:
+```
+9999999961645.494
+```
+
+#### eosapi.transfer
+```
+eosapi.transfer('eosio', 'currency', 100.6666)
+```
+return:
+```
+True
+```
+
+#### eosapi.push_action
+```python
+eosapi.get_balance('eosio')
+eosapi.get_balance('currency')
+args = {"from":'eosio', "to":'currency', "quantity":'100.6666 EOS', "memo":'hello'}
+r = eosapi.push_action('eosio.token', 'transfer', args, {'eosio':'active'})
+eosapi.get_balance('eosio')
+eosapi.get_balance('currency')
+```
+
+```python
+>>> eosapi.get_balance('eosio')
+9999999961142.162
+>>> eosapi.get_balance('currency')
+513.9996
+>>> args = {"from":'eosio', "to":'currency', "quantity":'100.6666 EOS', "memo":'hello'}
+>>> r = eosapi.push_action('eosio.token', 'transfer', args, {'eosio':'active'})
+>>> eosapi.get_balance('eosio')
+9999999961041.496
+>>> eosapi.get_balance('currency')
+614.6662
+```
+
+the above code is what eosapi.transfer does.
+
+#### eosapi.push_actions
+```python
+r = get_balance('currency')
+print(r)
+args = {"from":'eosio', "to":'currency', "quantity":'100.6666 EOS', "memo":'hello'}
+args = eosapi.pack_args('eosio.token', 'transfer', args)
+act = ['eosio.token', 'transfer', {'eosio':'active'}, args]
+r = eosapi.push_actions([act, act])
+r = eosapi.get_balance('currency')
+print(r)
+```
+
+```python
+>>> r = get_balance('currency')
+>>> print(r)
+211.9998
+>>> args = {"from":'eosio', "to":'currency', "quantity":'100.6666 EOS', "memo":'hello'}
+>>> args = eosapi.pack_args('eosio.token', 'transfer', args)
+>>> act = ['eosio.token', 'transfer', {'eosio':'active'}, args]
+>>> r = eosapi.push_actions([act, act])
+>>> r = eosapi.get_balance('currency')
+>>> print(r)
+413.333
+```
+
+
+#### eosapi.get_transaction
+
+```python
+r = eosapi.get_transaction('f6c43148dfac54105031fbaf966958d36309dd94e665c506eb2769e43febedba')
+r
+r.transaction.signatures
+r.transaction.packed_trx
 ```
 
 #### eosapi.set_contract
@@ -498,13 +506,3 @@ Publish python smart contract to the blockchain
 r = eosapi.set_contract('hello','../../programs/pyeos/contracts/hello/hello.py','../../contracts/hello/hello.abi',1)
 r
 ```
-
-#### eosapi.get_table
-
-...
-
-#### eosapi.push_action
-
-...
-
-
