@@ -111,7 +111,7 @@ class Sketch(object):
         self.force = _force
         self.mkdir(_project_dir)
 
-    def build(self):
+    def create(self):
         self.build_source()
         self.build_abi()
         self.build_test()
@@ -159,9 +159,9 @@ class Sketch(object):
                 print('Creating directory \t:', __path)
                 os.mkdir(__path)
 
-def build(account = 'hello', dir = 'helloworld', lang='py', force=False):
+def create(account = 'hello', dir = 'helloworld', lang='py', force=False):
     s = Sketch(account, dir, lang, force)
-    s.build()
+    s.create()
 
 if __name__ == '__main__':
     usage = "usage: python sketch.py [options]"
@@ -174,5 +174,5 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     print(options, args)
     s = Sketch(options.account, options.dir, options.lang)
-    s.build()
+    s.create()
 

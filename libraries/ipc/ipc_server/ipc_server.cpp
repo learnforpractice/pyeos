@@ -16,7 +16,7 @@
 #include "thrift/blockingconcurrentqueue.h"
 #include "thrift/readerwriterqueue.h"
 #include "thrift/RpcService.h"
-
+#include <mutex>
 
 using namespace eosio::chain;
 
