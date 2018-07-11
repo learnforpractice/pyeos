@@ -254,6 +254,46 @@ def create_account(creator, newaccount, owner_key, active_key, sign=True):
             return JsonStruct(result[0])
     return None
 
+def create_account2(creator, account, owner_key, active_key):
+    actions = []
+    newaccount = {'creator': creator,
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': active_key,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': owner_key,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+
+    _newaccount = pack_args('eosio', 'newaccount', newaccount)
+    act = ['eosio', 'newaccount', {creator:'active'}, _newaccount]
+    actions.append(act)
+
+    if get_code('eosio')[0]:
+        args = {'payer':creator, 'receiver':account, 'bytes':64*1024}
+        args = pack_args('eosio', 'buyrambytes', args)
+        act = ['eosio', 'buyrambytes', {creator:'active'}, args]
+        actions.append(act)
+
+        args = {'from': creator,
+         'receiver': account,
+         'stake_net_quantity': '1.0050 EOS',
+         'stake_cpu_quantity': '1.0050 EOS',
+         'transfer': 1}
+        args = pack_args('eosio', 'delegatebw', args)
+        act = ['eosio', 'delegatebw', {creator:'active'}, args]
+        actions.append(act)
+
+    rr, cost =  push_actions(actions)
+    for r in rr:
+        if r['except']:
+            return False
+    return True
+
 def create_key():
     cdef string pub
     cdef string priv
