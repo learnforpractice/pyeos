@@ -93,7 +93,7 @@ abi_src = \
 '''{
   "actions": [{
       "name": "sayhello",
-      "type": "raw"
+      "type": "string"
     }
   ]
 }
@@ -120,13 +120,15 @@ class Sketch(object):
         if self.project_type == 'py':
             src_file = os.path.join(self.project_dir, self.account+'.py')
             if os.path.exists(src_file) and not self.force:
-                print(f'{self.project_dir} already exists')
                 raise Exception(f'{src_file} already exists')
             print('Creating source file  \t:', src_file)
             with open(src_file, 'w') as f:
                 f.write(py_src.format(self.account))
         elif self.project_type == 'cpp':
             src_file = os.path.join(self.project_dir, self.account+'.cpp')
+            if os.path.exists(src_file) and not self.force:
+                raise Exception(f'{src_file} already exists')
+
             print('Creating source file  \t:', src_file)
             with open(src_file, 'w') as f:
                 f.write(cpp_src.format(self.account))

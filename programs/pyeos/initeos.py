@@ -227,7 +227,7 @@ try:
     from vote import t as vt2
     from native import t as nt
     from vmstore import t as vt
-    from biosboot import t as bb
+#    from biosboot import t as bb
     import d
 except Exception as e:
     traceback.print_exc()
