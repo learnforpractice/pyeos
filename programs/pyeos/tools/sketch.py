@@ -47,16 +47,14 @@ def init(wasm={1}):
 
 @init()
 def test(msg='hello,world\\n'):
-    with producer:
-        r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
-        assert r
+    r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
+    assert r
 
 @init()
 @init_debug()
 def debug(msg='hello,world\\n'):
-    with producer:
-        r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
-        assert r
+    r = eosapi.push_action('{0}', 'sayhello', msg, {{'{0}':'active'}})
+    assert r
 
 '''
 py_src = \
@@ -72,20 +70,20 @@ cpp_src = \
 '''#include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
 extern "C" {{
-   void apply( uint64_t receiver, uint64_t code, uint64_t action ) {{
-      auto self = receiver;
-      if( code == self ) {{
-         switch( action ) {{
-            case N(sayhello):
-                  size_t size = action_data_size();
-                  std::string s(size, 0);
-                  read_action_data((void *)s.c_str(), size);
-                  eosio::print(s);
-            break;
-         }}
-         eosio_exit(0);
-      }}
-   }}
+    void apply( uint64_t receiver, uint64_t code, uint64_t action ) {{
+        auto self = receiver;
+        if( code == self ) {{
+            switch( action ) {{
+                case N(sayhello):
+                    size_t size = action_data_size();
+                    std::string s(size, 0);
+                    read_action_data((void *)s.c_str(), size);
+                    eosio::print(s);
+                    break;
+            }}
+            eosio_exit(0);
+        }}
+    }}
 }}
 '''
 

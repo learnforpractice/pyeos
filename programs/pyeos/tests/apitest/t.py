@@ -71,10 +71,9 @@ def change_owner_key():
 def change_active_key():
     key = 'EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd'
     auth = eosapi.pack_updateauth('test', 'active', 'owner', key, 0)
-    act = [N('eosio'), N('updateauth'), [[N('test'), N('active')]], auth]
-    r = eosapi.push_transactions2([[act]])
+    act = ['eosio', 'updateauth', [['test', 'active']], auth]
+    r = eosapi.push_transactions([[act]])
     assert r
-    eosapi.produce_block()
 
 def create_multisig_account():
     #PW5KKNC8zM2KVLrb1cw4YNXZ69NLK7Fr5B35wHmsPt35tyiYkY4RR

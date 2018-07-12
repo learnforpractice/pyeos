@@ -103,8 +103,11 @@ wallet_manager& get_wm() {
 }
 
 producer_plugin& get_producer_plugin() {
+   return app().get_plugin<eosio::producer_plugin>();
+   /*
    abstract_plugin& plugin = app().get_plugin("eosio::producer_plugin");
    return *static_cast<producer_plugin*>(&plugin);
+   */
 }
 
 inline std::vector<name> sort_names(std::vector<name>&& names) {
@@ -353,11 +356,17 @@ int produce_block_() {
 }
 
 int produce_block_start_() {
-   return get_producer_plugin().produce_block_start();
+   try {
+      return get_producer_plugin().produce_block_start();
+   } FC_LOG_AND_DROP();
+   return -1;
 }
 
 int produce_block_end_() {
-   return get_producer_plugin().produce_block_end();
+   try {
+      return get_producer_plugin().produce_block_end();
+   } FC_LOG_AND_DROP();
+   return -1;
 }
 
 PyObject* create_key_() {
