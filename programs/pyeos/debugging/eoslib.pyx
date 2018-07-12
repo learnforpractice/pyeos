@@ -120,48 +120,6 @@ def require_auth(uint64_t account):
 def require_recipient(uint64_t account):
     return require_recipient_(account)
 
-def db_store_i64(scope, table, payer, id, buffer):
-    db_store_i64_(scope, table, payer, id, buffer, len(buffer))
-
-def db_update_i64(int itr, uint64_t payer, buffer):
-    db_update_i64_(itr, payer, buffer, len(buffer))
-
-def db_remove_i64(int itr):
-    db_remove_i64_(itr)
-
-def db_get_i64( int iterator ):
-    cdef size_t size
-    ret = None
-    size = db_get_i64_( iterator, <char*>0, 0 )
-    if size <= 0:
-        return None
-
-    buffer = bytes(size)
-    size = db_get_i64_( iterator, buffer, size )
-    return buffer
-
-def db_next_i64( int iterator):
-    cdef uint64_t primary = 0
-    itr = db_next_i64_( iterator, &primary )
-    return (itr, primary)
-
-def db_previous_i64( int iterator ):
-    cdef uint64_t primary = 0
-    itr = db_previous_i64_( iterator, &primary )
-    return (itr, primary)
-
-def db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_find_i64_( code, scope, table, id )
-
-def db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_lowerbound_i64_( code, scope, table, id )
-
-def db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ):
-    return db_upperbound_i64_( code, scope, table, id )
-
-def db_end_i64( uint64_t code, uint64_t scope, uint64_t table ):
-    return db_end_i64_( code, scope, table )
-
 def wasm_call2(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args):
     cdef vector[char] result
     return None #wasm_call2_(receiver, file_name, func, args, result);

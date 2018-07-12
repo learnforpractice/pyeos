@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from libcpp cimport bool
 from eostypes_ cimport * 
 import os
+import sys
 import traceback
 
 cdef extern from "<eosio/chain/micropython_interface.hpp>":
@@ -28,6 +29,7 @@ cdef extern from "../interface/debug_.hpp":
     bool wasm_debug_enabled_()
 
     void set_debug_contract_(string& _account, string& path)
+    uint64_t get_debug_contract_();
     int mp_is_account2(string& account)
 
     void wasm_enable_native_contract_(bool b)
@@ -103,10 +105,13 @@ def is_wasm_debug_enabled():
 def set_debug_contract(_account, path):
     if _account or path:
         if not os.path.exists(path):
-            raise Exception(path + " not exists")
-        if not mp_is_account2(_account):
-            raise Exception(path + " not exists")
+            raise Exception(path + " does not exists")
+    if path.endswith('.py'):
+        sys.path.insert(0, path)
     set_debug_contract_(_account, path)
+
+def get_debug_contract():
+    return get_debug_contract_()
 
 def wasm_enable_native_contract(b):
     wasm_enable_native_contract_(b);

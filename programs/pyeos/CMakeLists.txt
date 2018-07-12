@@ -57,9 +57,9 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/db.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/db.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/db.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/db.pyx
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/rodb.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/cython/rodb.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/wrap/rodb.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/rodb.pyx
 )
 
 add_custom_command(
@@ -74,6 +74,12 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.pyx
+)
+
 
 add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
@@ -85,18 +91,15 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
     wrap/eosapi.wrap.cpp 
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
-    wrap/db.wrap.cpp
+    wrap/rodb.wrap.cpp
     wrap/debug.wrap.cpp
     wrap/net.wrap.cpp
 
     debugging/eoslib.wrap.cpp
+    debugging/db.wrap.cpp
     debugging/eoslib_.cpp
-
     )
 
-
-
-    
 if( APPLE )
 target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
     chain_api_plugin history_api_plugin history_plugin

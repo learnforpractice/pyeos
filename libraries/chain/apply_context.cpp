@@ -24,6 +24,7 @@ int py_debug_enabled_() {
 }
 
 bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
+int py_debug_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 
 namespace eosio { namespace chain {
 
@@ -106,6 +107,9 @@ action_trace apply_context::exec_one()
          }
          try {
               if (a.vm_type == 0 && wasm_apply_debug(receiver.value, act.account.value, act.name.value)) {
+//
+              } else if (a.vm_type == 1 && py_debug_apply(receiver.value, act.account.value, act.name.value)) {
+//
               } else {
                  vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
               }

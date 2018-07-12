@@ -22,6 +22,7 @@ void wasm_debug_enable_(int enable);
 bool wasm_debug_enabled_();
 
 void set_debug_contract_(string& _account, string& path);
+uint64_t get_debug_contract_();
 
 int mp_is_account2(string& account);
 

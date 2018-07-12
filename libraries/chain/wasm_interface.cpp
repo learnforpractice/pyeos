@@ -57,6 +57,10 @@ void set_debug_contract_(string& _account, string& path) {
    debug_contract_path = path;
 }
 
+uint64_t get_debug_contract_() {
+   return debug_account;
+}
+
 bool is_native_contract_debug_enabled_() {
    return debug_account != 0;
 }
