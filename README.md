@@ -2,8 +2,8 @@ A Self Evolving Universal Smart Contract Platform Base on The Development of EOS
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
 2. [Creating Your First Python Smart Contract](#creatsmartcontract)
-3. [Debugging With Python Smart Contract](#smartcontractdebuggingpython)
-4. [Debugging With C++ Smart Contract](#smartcontractdebuggingcplusplus)
+3. [Debugging With C++ Smart Contract](#smartcontractdebuggingcplusplus)
+4. [Debugging With Python Smart Contract](#smartcontractdebuggingpython)
 5. [PyEos api overview](#pyeosapioverview)
 
 <a name="buildingPyEos"></a>
@@ -124,49 +124,13 @@ Now you can open helloworld.py for coding. Once it's done, just run t.test() aga
 there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
 republish to the testnet if it's been changed during the running of t.test(). You can also edit the testing code in t.py for testing your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos will do the magic for you. That also works at the situation of adding a new function in test. 
 
-There are a lot of examples in programs/pyeos/contracts. Some of them are still in develop, if the example throws exception, then it's probably not done yet. Pick up an example you interest in and play with it as you want. 
-
-<a name="smartcontractdebuggingpython"></a>
-
-# Smart Contract Debugging
-
-Python smart contract support source level debugging. Developers can debug their smart contract in Eclipse IDE with pydevd Eclipse pluging, other IDE such as Visual Studio Code may also be supported, Please search for online resources to find out how to debug Python source remotely. for pydevd, there is a reference from here [manual_adv_remote_debugger](http://www.pydev.org/manual_adv_remote_debugger.html). After the environment has been successfully setting up, run the following command in PyEos console to enable debugging.
-
-```
-debug.enable()
-```
-
-Set breakpoint at your python smart contract source code in Eclipse. If your Python smart contract source code does not placed in pyeos/contracts directory, them you need to run the following code to specify your source code directory and your smart contract source code file must under directory with the same name.
-
-```
- sys.path.append(<folder where source code directory in>)
-```
-
-Deploy your smart contract to the testnet, Use hello contract in pyeos/contracts as example, set breakpoint at hello.py, and run the following code to call hello.py
-
-```
-from hello import t
-t.test()
-```
-
-Smart contract execution will be stopped when the code at the line of breakpoint is being executed.
-
-
-To disable debugging, run the following code.
-
-```
-debug.disable()
-```
-
-![Smart Contract Debugging](https://github.com/learnforpractice/pyeos/blob/master/programs/pyeos/debugging/debugging.png)
-
 <a name="smartcontractdebuggingcplusplus"></a>
 
 # Debugging With C++ Smart Contract
 
 On Eos, C++ Smart Contract code is compile to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now It's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
 
-There is a short video on youtube for quick start:[Smart Contract Debugging](https://youtu.be/7XPgnbjsXkE)
+There is a short video on youtube for quick start:[C++ Smart Contract Debugging](https://youtu.be/7XPgnbjsXkE)
 
 To be brief, here are the steps on debugging a C++ Smart Contract:
 
@@ -219,8 +183,57 @@ from helloworld import t
 t.debug()
 ```
 
-Enjoy it
+<a name="smartcontractdebuggingpython"></a>
 
+# Python Smart Contract Debugging
+
+There is a short video on youtube about Python Smart Contract for quick start:[Python Smart Contract Debugging](https://youtu.be/eTwx-VTxhfo)
+
+The following steps show how to debug smart contract under programs/pyeos/contracts/hello.
+
+#### 1. Launch PyEos
+```
+./pyeos/pyeos --manual-gen-block --debug -i  --contracts-console
+```
+
+#### 2. Set debug contract
+```
+debug.set_debug_contract('hello', '../../programs/pyeos/contracts/hello/hello.py')
+```
+
+#### 3. Start ptvsd debugger
+```python
+import ptvsd
+ptvsd.enable_attach("12345", address = ('127.0.0.1', 3000))
+ptvsd.wait_for_attach()
+```
+
+#### 4. Attach to ptvsd debugger in Visual Studio Code
+Here is the debug setting:
+
+```javascript
+   {
+      "name": "python Attach (Remote Debug)",
+      "type": "python",
+      "request": "attach",
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "${workspaceFolder}",
+      "port": 3000,
+      "secret": "12345",
+      "host": "localhost"
+   },
+```
+
+
+#### 5. Set breakpoint in hello.py
+
+#### 6. Debugging
+```
+from hello import t
+t.test()
+```
+
+Enjoy it!
 
 <a name="pyeosapioverview"></a>
 
