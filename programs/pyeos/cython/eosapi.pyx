@@ -631,15 +631,15 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             act.account = N(a[0])
             act.name = N(a[1])
             pers = vector[permission_level]()
-            for auth in a[2]:
+            for auth in a[3]:
                 per = permission_level()
                 per.actor = N(auth[0])
                 per.permission = N(auth[1])
                 pers.push_back(per)
             act.authorization = pers
             act.data.resize(0)
-            act.data.resize(len(a[3]))
-            memcpy(act.data.data(), a[3], len(a[3]))
+            act.data.resize(len(a[2]))
+            memcpy(act.data.data(), a[2], len(a[2]))
             v.push_back(act)
         vv.push_back(v)
     if debug_mode_():
@@ -673,7 +673,7 @@ def push_action(contract, action, args, permissions: Dict, sign=True):
     pers = []
     for per in permissions:
         pers.append([per, permissions[per]])
-    act = [contract, action, pers, args]
+    act = [contract, action, args, pers]
     outputs, cost_time = push_transactions([[act]], sign)
     if outputs:
         if outputs[0]['except']:
@@ -687,10 +687,10 @@ def push_actions(actions, sign=True):
     for act in actions:
         _act = [act[0], act[1]]
         pers = []
-        for per in act[2]:
-            pers.append([per, act[2][per]])
+        for per in act[3]:
+            pers.append([per, act[3][per]])
         _act.append(pers)
-        args = act[3]
+        args = act[2]
         if isinstance(args, dict):
             args = pack_args(_act[0], _act[1], args)
         _act.append(args)

@@ -59,7 +59,7 @@ def test2(count):
     import json
     actions = []
     for i in range(count):
-        action = ['auction1', 'sayhello', {'auction1':'active'}, str(i)]
+        action = ['auction1', 'sayhello', str(i), {'auction1':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

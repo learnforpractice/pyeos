@@ -44,7 +44,7 @@ def call_wasm():
 def test2(count):
     actions = []
     for i in range(count):
-        action = ['apitest', 'callwasm', {'apitest':'active'}, str(i)]
+        action = ['apitest', 'callwasm', str(i), {'apitest':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

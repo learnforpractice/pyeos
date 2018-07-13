@@ -38,7 +38,7 @@ def play():
 def test2(count=100):
     actions = []
     for i in range(count):
-        action = ['hello', 'sayhello', {'hello':'active'}, str(i)]
+        action = ['hello', 'sayhello', str(i), {'hello':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

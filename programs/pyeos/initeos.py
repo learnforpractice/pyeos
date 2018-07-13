@@ -274,7 +274,7 @@ def create_system_accounts():
             print('+++++++++create account', account)
             newaccount['name'] = account
             _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
-            act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+            act = ['eosio', 'newaccount', _newaccount, {'eosio':'active'}]
             actions.append(act)
             rr, cost = eosapi.push_actions(actions)
             assert_ret(rr)
@@ -294,7 +294,7 @@ def update_eosio():
      'stake_cpu_quantity': '1000.0050 EOS',
      'transfer': 0}
     args = eosapi.pack_args('eosio', 'delegatebw', args)
-    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    act = ['eosio', 'delegatebw', args, {'eosio':'active'}]
     actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     '''
@@ -357,7 +357,7 @@ def init():
     for account in ['eosio', 'eosio.token']:
         print('++++++boost account', account)
         msg = eosapi.pack_args('eosio', 'boost', {'account':account})
-        act = ['eosio', 'boost', {'eosio':'active'}, msg]
+        act = ['eosio', 'boost', msg, {'eosio':'active'}]
         rr, cost = eosapi.push_actions([act])
         assert_ret(rr)
 

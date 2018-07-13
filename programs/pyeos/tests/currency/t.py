@@ -111,7 +111,7 @@ def test2(count, wasm=False):
     
     actions = []
     for i in range(count):
-        action = ['currency', 'issue', {'vote':'active'}, {"to":"currency","quantity":"1000.0000 CUR","memo":""}]
+        action = ['currency', 'issue', {"to":"currency","quantity":"1000.0000 CUR","memo":""}, {'vote':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)
@@ -175,7 +175,7 @@ def test3(count, d=0):
     actions = []
     for i in range(count):
         currency = 'curre'+n2s(i)
-        action = [currency, 'issue', {'currency':'active'}, {"to":currency,"quantity":"1000.0000 CUD","memo":""}]
+        action = [currency, 'issue', {"to":currency,"quantity":"1000.0000 CUD","memo":""}, {'currency':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

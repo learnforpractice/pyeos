@@ -25,7 +25,7 @@ def test2(count):
     
     actions = []
     for i in range(count):
-        action = ['rpctest', 'sayhello', {'rpctest':'active'}, str(i)]
+        action = ['rpctest', 'sayhello', str(i), {'rpctest':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

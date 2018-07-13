@@ -36,7 +36,7 @@ def test(msg='hello,world', wasm=False):
 def test2(count=1000):
     actions = []
     for i in range(count):
-        action = ['storagetest', 'sayhello', {'storagetest':'active'}, str(i)]
+        action = ['storagetest', 'sayhello', str(i), {'storagetest':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)

@@ -22,7 +22,7 @@ def b():
     account = 'lab'
     print('++++++boost account', account)
     msg = eosapi.pack_args('eosio', 'boost', {'account':account})
-    act = ['eosio', 'boost', {'eosio':'active'}, msg]
+    act = ['eosio', 'boost', msg, {'eosio':'active'}]
     rr, cost = eosapi.push_actions([act])
     assert_ret(rr)
 
@@ -30,7 +30,7 @@ def cb():
     account = 'lab'
     print('++++++cancel boost account', account)
     msg = eosapi.pack_args('eosio', 'cancelboost', {'account':account})
-    act = ['eosio', 'cancelboost', {'eosio':'active'}, msg]
+    act = ['eosio', 'cancelboost', msg, {'eosio':'active'}]
     rr, cost = eosapi.push_actions([act])
     assert_ret(rr)
 
@@ -39,7 +39,7 @@ def t():
         eosapi.transfer('eosio', 'lab', 100)
     msg = {'bidder':'lab', 'bid':"1.3000 EOS"}
     msg = eosapi.pack_args('eosio', 'bidjit', msg)
-    act = ['eosio', 'bidjit', {'lab':'active'}, msg]
+    act = ['eosio', 'bidjit', msg, {'lab':'active'}]
 
     rr, cost = eosapi.push_actions([act])
     assert_ret(rr)

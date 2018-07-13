@@ -38,7 +38,7 @@ def _create_account(account):
                 'waits': []}}
     if not eosapi.get_account(account):
         _newaccount = eosapi.pack_args('eosio', 'newaccount', newaccount)
-        act = ['eosio', 'newaccount', {'eosio':'active'}, _newaccount]
+        act = ['eosio', 'newaccount', _newaccount, {'eosio':'active'}]
         actions.append(act)
     '''
     args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
@@ -49,7 +49,7 @@ def _create_account(account):
 
     args = {'payer':'eosio', 'receiver':account, 'bytes':128*1024*1024}
     args = eosapi.pack_args('eosio', 'buyrambytes', args)
-    act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
+    act = ['eosio', 'buyrambytes', args, {'eosio':'active'}]
     actions.append(act)
 
     args = {'from': 'eosio',
@@ -58,7 +58,7 @@ def _create_account(account):
      'stake_cpu_quantity': '1.0050 EOS',
      'transfer': 1}
     args = eosapi.pack_args('eosio', 'delegatebw', args)
-    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    act = ['eosio', 'delegatebw', args, {'eosio':'active'}]
     actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
@@ -135,10 +135,10 @@ def t2():
         old_hash = eosapi.get_code_hash(account)
         print(old_hash, code_hash)
         if code_hash != old_hash:
-            setcode = ['eosio', 'setcode', {account:'active'}, _setcode]
+            setcode = ['eosio', 'setcode', _setcode, {account:'active'}]
             actions.append(setcode)
 
-        setabi = ['eosio', 'setabi', {account:'active'}, _setabi]
+        setabi = ['eosio', 'setabi', _setabi, {account:'active'}]
         actions.append(setabi)
         rr, cost = eosapi.push_actions(actions)
         assert_ret(rr)
@@ -149,7 +149,7 @@ def t3():
     for account in accounts:
         print('++++++boost account', account)
         msg = eosapi.pack_args('eosio', 'boost', {'account':account})
-        act = ['eosio', 'boost', {'eosio':'active'}, msg]
+        act = ['eosio', 'boost', msg, {'eosio':'active'}]
         actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
@@ -160,7 +160,7 @@ def t4():
     for account in accounts:
         print('++++++boost account', account)
         msg = eosapi.pack_args('eosio', 'cancelboost', {'account':account})
-        act = ['eosio', 'cancelboost', {'eosio':'active'}, msg]
+        act = ['eosio', 'cancelboost', msg, {'eosio':'active'}]
         actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
@@ -196,7 +196,7 @@ def ca(account='aabb111'):
      'stake_cpu_quantity': '3000.0050 EOS',
      'transfer': 1}
     args = eosapi.pack_args('eosio', 'delegatebw', args)
-    act = ['eosio', 'delegatebw', {'eosio':'active'}, args]
+    act = ['eosio', 'delegatebw', args, {'eosio':'active'}]
     actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
@@ -208,7 +208,7 @@ def buyram():
         print('buy ram', account)
         args = {'payer':'eosio', 'receiver':account, 'quant':"1.0000 EOS"}
         args = eosapi.pack_args('eosio', 'buyram', args)
-        act = ['eosio', 'buyram', {'eosio':'active'}, args]
+        act = ['eosio', 'buyram', args, {'eosio':'active'}]
         actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)
@@ -220,7 +220,7 @@ def buyrambytes():
         print('buy ram in bytes', account)
         args = {'payer':'eosio', 'receiver':account, 'bytes':1000000}
         args = eosapi.pack_args('eosio', 'buyrambytes', args)
-        act = ['eosio', 'buyrambytes', {'eosio':'active'}, args]
+        act = ['eosio', 'buyrambytes', args, {'eosio':'active'}]
         actions.append(act)
     rr, cost = eosapi.push_actions(actions)
     assert_ret(rr)

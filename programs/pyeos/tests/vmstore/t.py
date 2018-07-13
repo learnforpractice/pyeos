@@ -143,7 +143,7 @@ def test2(count=100):
 #        action = ['eosio.token', 'create', {'eosio.token':'active'}, msg]
 
         msg = {"from":"eosio", "to":"hello", "quantity":"0.0001 EOS", "memo":"m"}
-        action = ['eosio.token', 'transfer', {'eosio':'active'}, msg]
+        action = ['eosio.token', 'transfer', msg, {'eosio':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)
