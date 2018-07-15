@@ -81,11 +81,7 @@ namespace eosio { namespace chain {
         snprintf(_path, sizeof(_path), "../libs/libeosio_native_v1%s", DYLIB_SUFFIX);
         handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
         if (!handle) {
-            snprintf(_path, sizeof(_path), "../libs/libeosio_native_v1d%s", DYLIB_SUFFIX);
-            handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
-            if (!handle) {
-                return;
-            }
+            return;
         }
         
         register_vm_api(handle);

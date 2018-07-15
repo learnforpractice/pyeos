@@ -64,11 +64,7 @@ namespace eosio { namespace chain {
          snprintf(_path, sizeof(_path), "../libs/lib%s_native%s", s.c_str(), DYLIB_SUFFIX);
          handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
          if (!handle) {
-            snprintf(_path, sizeof(_path), "../libs/lib%s_natived%s", s.c_str(), DYLIB_SUFFIX);
-            handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
-            if (!handle) {
-               return nullptr;
-            }
+        	 return nullptr;
          }
          wlog("loading native contract: ${n1}", ("n1", string(_path)));
 

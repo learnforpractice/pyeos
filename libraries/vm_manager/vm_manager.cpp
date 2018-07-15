@@ -139,27 +139,14 @@ static uint64_t vm_names[] = {
 };
 
 static const char* vm_libs_path[] = {
-#ifdef DEBUG
-   "../libs/libvm_wasm_binaryend" DYLIB_SUFFIX,
-   "../libs/libvm_py-1d" DYLIB_SUFFIX,
-   "../libs/libvm_ethd" DYLIB_SUFFIX,
-   "../libs/libvm_wasm_wavm-0d" DYLIB_SUFFIX
-//   "../libs/libipc_serverd" DYLIB_SUFFIX
-#else
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_py-1" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
 //   "../libs/libipc_server" DYLIB_SUFFIX
-#endif
 };
 
-#ifdef DEBUG
-static const char * ipc_server_lib = "../libs/libipc_serverd" DYLIB_SUFFIX;
-#else
 static const char * ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
-#endif
-
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -212,6 +199,7 @@ bool vm_manager::init() {
    if (this->api->run_mode() == 0) {//server
       load_vm_from_path(4, ipc_server_lib);
    }
+
    return true;
 }
 
@@ -222,11 +210,7 @@ int vm_manager::load_vm_wavm() {
    }
 
    char _path[128];
-#ifdef DEBUG
-   const char* _format = "../libs/libvm_wasm_wavm-%dd" DYLIB_SUFFIX;
-#else
    const char* _format = "../libs/libvm_wasm_wavm-%d" DYLIB_SUFFIX;
-#endif
 
    for (int i=1;i<=10;i++) {
       snprintf(_path, sizeof(_path), _format, i);
