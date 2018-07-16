@@ -51,7 +51,7 @@ extern "C" {
 
    //vm_manager.cpp
    void vm_deinit_all();
-
+   void vm_api_init();
 }
 
 bool is_init_finished() {
@@ -78,8 +78,7 @@ void start_eos() {
       app().register_plugin<chain_api_plugin>();
       app().register_plugin<wallet_api_plugin>();
       app().register_plugin<history_api_plugin>();
-
-
+      app().register_plugin<producer_plugin>();
 
 //      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
       if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
@@ -133,6 +132,7 @@ extern "C" int eos_main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
+   vm_api_init();
    init_console();
 
    boost::thread t( start_eos );

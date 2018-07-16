@@ -6,7 +6,7 @@ add_library( db_api
               db_api.cpp
              )
 
-target_link_libraries( db_api PUBLIC fc chainbase softfloat)
+target_link_libraries( db_api PUBLIC fc chainbase softfloat eosiolib_native)
 
 target_include_directories( db_api
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -15,6 +15,7 @@ target_include_directories( db_api
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
+                            PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             )
 
 set_target_properties( db_api PROPERTIES PUBLIC_HEADER "${HEADERS}" )
