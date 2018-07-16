@@ -40,16 +40,19 @@ namespace eosio { namespace chain {
 
       void init_native_contract() {
          uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
+         fn_apply* native_applies[] = {&_bios_apply, &_msig_apply, &_token_apply, &_eosio_apply, &_exchange_apply};
          for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
             if (!load_native_contract(native_account[i])) {
-               load_native_contract_default(native_account[i]);
+               *native_applies[i] = load_native_contract_default(native_account[i]);
             }
          }
+#if 0
          _bios_apply = native_cache[N(eosio.bios)]->apply;
          _msig_apply = native_cache[N(eosio.msig)]->apply;
          _token_apply = native_cache[N(eosio.token)]->apply;
          _eosio_apply = native_cache[N(eosio)]->apply;
          _exchange_apply = native_cache[N(exchange)]->apply;
+#endif
       }
 
       fn_apply load_native_contract_default(uint64_t _account) {
