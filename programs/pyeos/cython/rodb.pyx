@@ -3,7 +3,7 @@ from libcpp.vector cimport vector
 
 from eostypes_ cimport * 
 
-cdef extern from "eosio/chain/db_api.hpp":
+cdef extern from "eosio/chain/db_api.h":
     int db_api_get_i64( int itr, char* buffer, size_t buffer_size );
     int db_api_next_i64( int itr, uint64_t* primary );
     int db_api_previous_i64( int itr, uint64_t* primary );

@@ -30,7 +30,7 @@
 #include <fc/crypto/xxhash.h>
 #include <dlfcn.h>
 
-#include <eosio/chain/db_api.hpp>
+#include <eosio/chain/db_api.h>
 #include <vm_manager.hpp>
 //#include <appbase/application.hpp>
 #include "ipc_client.hpp"
