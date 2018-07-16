@@ -226,9 +226,48 @@ bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 10
    return true;
 }
 
+struct async_result_visitor : public fc::visitor<PyObject*> {
+   template<typename T>
+   PyObject* operator()(const T& v) const {
+      return python::json::to_string(v);
+   }
+};
+
+void push_transaction_async_(packed_transaction& pt, PyObject** output) {
+    auto rw_api = app().get_plugin<eosio::chain_plugin>().get_read_write_api();
+    chain_apis::read_write::push_transaction_results results;
+    rw_api.push_transaction(variant(pt).get_object(),
+        [output, pt](const fc::static_variant<fc::exception_ptr, chain_apis::read_write::push_transaction_results>& result) mutable {
+    	if (result.contains<fc::exception_ptr>()) {
+				string except = result.get<fc::exception_ptr>()->to_string();
+            	elog("${n}", ("n", except));
+        }
+#if 0
+    	if (result.contains<fc::exception_ptr>()) {
+            	variant v = variant(pt);
+            	mutable_variant_object mv(v);
+				string except = result.get<fc::exception_ptr>()->to_string();
+            	mv("except", except);
+            	*output = python::json::to_string(mv);
+
+            	elog("${n}", ("n", except));
+
+            } else {
+            	*output = result.visit(async_result_visitor());
+            	string s;
+            	s = "except";
+            	PyObject* key = py_new_string(s);
+            	s = "";
+            	PyObject* value = py_new_string(s);
+            	dict_add(*output, key, value);
+            }
+#endif
+        }
+    );
+}
+
 PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {
    vector<signed_transaction* > trxs;
-   vector<fc::variant> outputs;
    packed_transaction::compression_type compression;
    if (compress) {
       compression = packed_transaction::zlib;
@@ -237,6 +276,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
    }
 
    uint64_t cost_time = 0;
+   PyArray _outputs;
 
    try {
       for (auto& v: vv) {
@@ -252,14 +292,26 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 
       for (auto& strx : trxs) {
          auto pt = packed_transaction(std::move(*strx), compression);
-         auto mtrx = std::make_shared<transaction_metadata>(pt);
+         if (async) {
+			 string s;
+        	 PyObject* v;
+        	 push_transaction_async_(pt, &v);
+        	 v = python::json::to_string(pt);
+			 s = "except";
+			 PyObject* key = py_new_string(s);
+			 s = "";
+			 PyObject* value = py_new_string(s);
+			 dict_add(v, key, value);
+        	 _outputs.append(v);
+         } else {
+             auto mtrx = std::make_shared<transaction_metadata>(pt);
+        	 controller& ctrl = get_chain_plugin().chain();
+             uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
+             auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
 
-         controller& ctrl = get_chain_plugin().chain();
-         uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
-         auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
-
-         fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
-         outputs.emplace_back(std::move(pretty_output));
+             fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr );
+             _outputs.append(python::json::to_string(pretty_output));
+         }
       }
    }  FC_LOG_AND_DROP();
 
@@ -271,11 +323,6 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 
    for (auto& st : trxs) {
       delete st;
-   }
-
-   PyArray _outputs;
-   for (auto& output : outputs) {
-      _outputs.append(python::json::to_string(output));
    }
 
    PyArray res;

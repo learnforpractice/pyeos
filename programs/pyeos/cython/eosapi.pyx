@@ -129,6 +129,9 @@ cdef extern from "eosapi_.hpp":
     void get_code_hash_(string& name, string& code_hash)
     void sha256_(string& data, string& hash)
 
+    int has_option(const char* _option);
+    int get_option(const char* option, char *result, int size);
+
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -247,16 +250,29 @@ def transfer(_from, _to, _amount, _memo=''):
         return True
     return False
 
-def create_account(creator, newaccount, owner_key, active_key, sign=True):
-    with producer:
-        result, cost = create_account_(creator, newaccount, owner_key, active_key, sign)
-        if result:
-            return JsonStruct(result[0])
-    return None
+def create_account(creator, account, owner_key, active_key, sign=True):
+    actions = []
+    args = {'creator': creator,
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': active_key,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': owner_key,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+    try:
+        push_action('eosio', 'newaccount', args, {creator:'active'})
+    except:
+        return False
+    return True
 
 def create_account2(creator, account, owner_key, active_key):
     actions = []
-    newaccount = {'creator': creator,
+    args = {'creator': creator,
      'name': account,
      'owner': {'threshold': 1,
                'keys': [{'key': active_key,
@@ -269,14 +285,12 @@ def create_account2(creator, account, owner_key, active_key):
                 'accounts': [],
                 'waits': []}}
 
-    _newaccount = pack_args('eosio', 'newaccount', newaccount)
-    act = ['eosio', 'newaccount', {creator:'active'}, _newaccount]
+    act = ['eosio', 'newaccount', args, {creator:'active'}]
     actions.append(act)
 
     if get_code('eosio')[0]:
         args = {'payer':creator, 'receiver':account, 'bytes':64*1024}
-        args = pack_args('eosio', 'buyrambytes', args)
-        act = ['eosio', 'buyrambytes', {creator:'active'}, args]
+        act = ['eosio', 'buyrambytes', args, {creator:'active'}]
         actions.append(act)
 
         args = {'from': creator,
@@ -284,8 +298,7 @@ def create_account2(creator, account, owner_key, active_key):
          'stake_net_quantity': '1.0050 EOS',
          'stake_cpu_quantity': '1.0050 EOS',
          'transfer': 1}
-        args = pack_args('eosio', 'delegatebw', args)
-        act = ['eosio', 'delegatebw', {creator:'active'}, args]
+        act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
     rr, cost =  push_actions(actions)
@@ -293,6 +306,44 @@ def create_account2(creator, account, owner_key, active_key):
         if r['except']:
             return False
     return True
+
+def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
+    actions = []
+    args = {'creator': creator,
+     'name': account,
+     'owner': {'threshold': 1,
+               'keys': [{'key': active_key,
+                         'weight': 1}],
+               'accounts': [],
+               'waits': []},
+     'active': {'threshold': 1,
+                'keys': [{'key': owner_key,
+                          'weight': 1}],
+                'accounts': [],
+                'waits': []}}
+
+    act = ['eosio', 'newaccount', args, {creator:'active'}]
+    actions.append(act)
+
+    if get_code('eosio')[0]:
+        args = {'payer':'eosio', 'receiver':account, 'quant':"%.4f EOS"%(ram,)}
+        act = ['eosio', 'buyram', args, {'eosio':'active'}]
+        actions.append(act)
+
+        args = {'from': creator,
+         'receiver': account,
+         'stake_net_quantity': '%.4f EOS'%(net,),
+         'stake_cpu_quantity': '%.4f EOS'%(cpu,),
+         'transfer': 1}
+        act = ['eosio', 'delegatebw', args, {creator:'active'}]
+        actions.append(act)
+
+    rr, cost =  push_actions(actions)
+    for r in rr:
+        if r['except']:
+            return False
+    return True
+
 
 def create_key():
     cdef string pub
@@ -642,6 +693,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             memcpy(act.data.data(), a[2], len(a[2]))
             v.push_back(act)
         vv.push_back(v)
+
     if debug_mode_():
         produce_block_start_()
         ret = push_transactions_(vv, sign, skip_flag, _async, compress)
@@ -649,7 +701,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
         produce_block_end_()
         return ret
     else:
-        return push_transactions_(vv, sign, skip_flag, _async, compress)
+        return push_transactions_(vv, sign, skip_flag, True, compress)
 
 def push_action(contract, action, args, permissions: Dict, sign=True):
     '''Publishing message to blockchain
@@ -686,14 +738,16 @@ def push_actions(actions, sign=True):
     _actions = []
     for act in actions:
         _act = [act[0], act[1]]
-        pers = []
-        for per in act[3]:
-            pers.append([per, act[3][per]])
-        _act.append(pers)
+
         args = act[2]
         if isinstance(args, dict):
             args = pack_args(_act[0], _act[1], args)
         _act.append(args)
+
+        pers = []
+        for per in act[3]:
+            pers.append([per, act[3][per]])
+        _act.append(pers)
 
         _actions.append(_act)
 
@@ -748,19 +802,19 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
             print(old_hash, code_hash)
             if code_hash != old_hash:
                 code += pack_bytes(wasm)
-                setcode = ['eosio', 'setcode', [[account, 'active']], code]
+                setcode = ['eosio', 'setcode', code, [[account, 'active']]]
                 actions.append(setcode)
     elif vmtype == 1:
         mpy_code = b'\x01'
         mpy_code += mp_compile(src_file)
         code += pack_bytes(mpy_code)
-        setcode = ['eosio', 'setcode', [[account, 'active']], code]
+        setcode = ['eosio', 'setcode', code, [[account, 'active']]]
         actions.append(setcode)
     else:
         raise Exception("unknown code")
 
     setabi = pack_setabi(abi_file, account)
-    setabi = ['eosio', 'setabi', [[account, 'active']], setabi]
+    setabi = ['eosio', 'setabi', setabi, [[account, 'active']]]
     actions.append(setabi)
 
     ret, cost = push_transactions([actions], sign, compress = True)
@@ -819,4 +873,11 @@ def sha256(string& data):
     sha256_(data, hash)
     return hash
 
+def has_opt(option):
+    return has_option(option)
+
+def get_opt(option):
+    a = bytes(128)
+    n = get_option(option, a, len(a))
+    return a[:n].decode('utf8')
 

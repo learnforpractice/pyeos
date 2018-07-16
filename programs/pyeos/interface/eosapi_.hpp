@@ -128,5 +128,12 @@ void zlib_compress_data_(const string& in, string& out);
 void zlib_decompress_data_(const string& data, string& out);
 bool debug_mode_();
 
-void get_code_hash_(string& name, string& code_hash);
-void sha256_(string& data, string& hash);
+void get_code_hash_(string& name, string& code_hash); // @suppress("Ambiguous problem")
+void sha256_(string& data, string& hash); // @suppress("Ambiguous problem")
+
+extern "C" {
+	int has_option(const char* _option);
+	int get_option(const char* option, char *result, int size);
+}
+
+
