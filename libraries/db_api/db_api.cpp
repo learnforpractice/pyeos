@@ -19,11 +19,28 @@ extern "C" void execution_end();
 
 namespace eosio { namespace chain {
 
-db_api::db_api(const action& a, bool rw)
-: db(fc::path("data-dir/state"), rw ? chainbase::database::read_write: chainbase::database::read_only, config::default_state_size, true),
- act(a)
+#include <eosiolib_native/vm_api.h>
+
+fc::path get_path() {
+   fc::path _path;
+   if (get_vm_api()->has_option("data-dir")) {
+	   char buf[128];
+	   memset(buf, 0, sizeof(buf));
+	   int n = get_vm_api()->get_option("data-dir", buf, sizeof(buf));
+	   _path = buf;
+	   _path /="state";
+   } else {
+	   _path = "data-dir/state";
+   }
+   return _path;
+}
+
+db_api::db_api(const action& a, bool rw) :
+db(get_path(), rw ? chainbase::database::read_write: chainbase::database::read_only, config::default_state_size, true),
+act(a)
 {
    db.add_index<account_index>();
+
    db.add_index<account_sequence_index>();
 
    db.add_index<table_id_multi_index>();
