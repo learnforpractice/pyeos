@@ -24,8 +24,7 @@ using namespace fc;
 #endif
 
 namespace eosio { namespace chain {
-   void register_vm_api(void* handle);
-   typedef void (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+   #include <eosiolib_native/vm_api.h>
 
    struct native_code_cache {
          uint32_t version;
@@ -71,7 +70,6 @@ namespace eosio { namespace chain {
          }
          wlog("loading native contract: ${n1}", ("n1", string(_path)));
 
-         register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 
          std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
@@ -136,7 +134,6 @@ namespace eosio { namespace chain {
             return nullptr;
          }
 
-         register_vm_api(handle);
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 
          std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();

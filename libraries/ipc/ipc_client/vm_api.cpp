@@ -312,11 +312,6 @@ void vm_manager_init(int vm_type) {
    vm_manager::get().load_vm(vm_type);
 }
 
-void register_vm_api(void* handle) {
-   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-   _register_vm_api(&_vm_api);
-}
-
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;
    in >> s;

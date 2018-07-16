@@ -5,13 +5,13 @@
 extern "C" {
 #endif
 
-#ifndef __EOSIO_CHAIN_TYPES // avoid type conflicts
-#include <stdint.h>
-
 #ifndef softfloat_types_h //avoid type conflicts in softfloat_types.h
    typedef struct { uint64_t v; } float64_t;
    typedef struct { uint64_t v[2]; } float128_t;
 #endif
+
+#ifndef __EOSIO_CHAIN_TYPES // avoid type conflicts
+#include <stdint.h>
 
 #include <eosiolib/types.h>
 #include <eosiolib/action.h>
@@ -226,7 +226,15 @@ struct vm_api {
 
 typedef void (*fn_register_vm_api)(struct vm_api* api);
 
-void vm_init();
+typedef int (*fn_setcode)(uint64_t account);
+typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+typedef void (*fn_vm_init)(struct vm_api* api);
+typedef void (*fn_vm_deinit)();
+typedef int (*fn_preload)(uint64_t account);
+typedef int (*fn_unload)(uint64_t account);
+
+
+void vm_init(struct vm_api* api);
 void vm_deinit();
 void vm_register_api(struct vm_api* api);
 

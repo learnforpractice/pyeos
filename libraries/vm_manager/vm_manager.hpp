@@ -16,12 +16,10 @@
 
 using namespace std;
 
-typedef int (*fn_setcode)(uint64_t account);
-typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
-typedef void (*fn_vm_init)();
-typedef void (*fn_vm_deinit)();
-typedef int (*fn_preload)(uint64_t account);
-typedef int (*fn_unload)(uint64_t account);
+namespace eosio {
+namespace chain {
+
+#include <eosiolib_native/vm_api.h>
 
 struct vm_calls {
    uint32_t version;
@@ -34,10 +32,6 @@ struct vm_calls {
    fn_unload unload;
 };
 
-namespace eosio {
-namespace chain {
-
-#include <eosiolib_native/vm_api.h>
 
 class vm_manager
 {
@@ -56,8 +50,7 @@ public:
    int load_vm(int vm_type);
    int load_vm_wavm();
 
-   void register_vm_api(void* handle);
-   bool init();
+   bool init(struct vm_api* api);
 
    struct vm_wasm_api* get_wasm_vm_api();
    struct vm_py_api* get_py_vm_api();

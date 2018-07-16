@@ -31,7 +31,9 @@ static const char* vm_names[] = {
       "wavm",
 };
 
-void vm_init() {
+void vm_init(struct vm_api* api) {
+   s_vm_api = *api;
+
    client_monitor_thread.reset(new boost::thread([]{
          do {
             while (!s_vm_api.app_init_finished()) {
@@ -96,10 +98,6 @@ void vm_deinit() {
          p->terminate();
       }
    }
-}
-
-void vm_register_api(struct vm_api* api) {
-   s_vm_api = *api;
 }
 
 int vm_setcode(uint64_t account) {

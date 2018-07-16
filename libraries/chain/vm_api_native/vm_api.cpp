@@ -317,30 +317,32 @@ static struct vm_api _vm_api = {
    .run_mode = run_mode
 };
 
+
 void vm_manager_init() {
-   vm_manager::get().set_vm_api(&_vm_api);
-   vm_manager::get().init();
+   vm_manager::get().init(&_vm_api);
 }
 
 #include <appbase/platform.hpp>
 #include <dlfcn.h>
 
 extern "C" void vm_api_init() {
-	char _path[128];
-    snprintf(_path, sizeof(_path), "../libs/libeosiolib_native%s", DYLIB_SUFFIX);
-    void* handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+   char _path[128];
+//   libeosio_native
+   vm_register_api(&_vm_api);
+   snprintf(_path, sizeof(_path), "../libs/libeosiolib_native%s", DYLIB_SUFFIX);
+   void* handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
 
-    if (handle == NULL) {
-        elog("loading ${n} failed", ("n", _path));
-    	return;
-    }
+   if (handle == NULL) {
+      elog("loading ${n} failed", ("n", _path));
+      return;
+   }
 
-    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-    if (_register_vm_api) {
-       _register_vm_api(&_vm_api);
-    } else {
-       elog("vm_register_api not found!");
-    }
+   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
+   if (_register_vm_api) {
+      _register_vm_api(&_vm_api);
+   } else {
+      elog("vm_register_api not found!");
+   }
 }
 
 void register_vm_api(void* handle) {

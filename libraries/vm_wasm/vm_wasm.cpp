@@ -18,7 +18,6 @@ namespace eosio {
 
 namespace eosio {
 namespace chain {
-   void register_vm_api(void* handle);
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
    int  wast_to_wasm( const uint8_t* data, size_t size, uint8_t* wasm, size_t wasm_size );
 
@@ -26,10 +25,11 @@ namespace chain {
 }
 
 
-static struct vm_api s_api;
+static struct vm_api s_api = {};
 struct vm_wasm_api s_vm_wasm_api;
 
-void vm_init() {
+void vm_init(struct vm_api* api) {
+   s_api = *api;
    s_vm_wasm_api.wasm_to_wast = eosio::chain::wasm_to_wast;
    s_vm_wasm_api.wast_to_wasm = eosio::chain::wast_to_wasm;
    eosio::chain::wasm_init_api();
@@ -41,10 +41,6 @@ void vm_deinit() {
 
 extern "C" struct vm_wasm_api* vm_get_wasm_api() {
    return &s_vm_wasm_api;
-}
-
-void vm_register_api(struct vm_api* api) {
-   s_api = *api;
 }
 
 struct vm_api* get_vm_api() {

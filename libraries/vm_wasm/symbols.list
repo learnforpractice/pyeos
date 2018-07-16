@@ -1,6 +1,5 @@
 _vm_init
 _vm_deinit
-_vm_register_api
 _vm_setcode
 _vm_apply
 _vm_call

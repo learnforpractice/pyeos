@@ -170,22 +170,15 @@ private:
    uint64_t start;
 };
 
-void vm_manager::register_vm_api(void* handle) {
-   fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
-   if (_register_vm_api) {
-      _register_vm_api(this->api);
-   } else {
-      elog("vm_register_api not found!");
-   }
-}
-
-bool vm_manager::init() {
+bool vm_manager::init(struct vm_api* api) {
    static bool init = false;
    if (init) {
       return true;
    }
 
    init = true;
+
+   this->api = api;
 
    for (int i=0;i<3;i++) {
       if (load_vm_from_ram(i, vm_names[i])) {
@@ -195,11 +188,11 @@ bool vm_manager::init() {
    }
 
    load_vm_wavm();
-
+#if 0
    if (this->api->run_mode() == 0) {//server
       load_vm_from_path(4, ipc_server_lib);
    }
-
+#endif
    return true;
 }
 
@@ -352,8 +345,7 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       dlclose(__itr->second->handle);
    }
 
-   this->register_vm_api(handle);
-   vm_init();
+   vm_init(this->api);
 
    wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
@@ -486,13 +478,9 @@ int vm_manager::load_vm(int vm_type) {
 
 bool vm_manager::is_trusted_account(uint64_t account) {
    if (account == N(lab)) {
-      return false;
+      return true;
    }
    return true;
-}
-
-void vm_manager::set_vm_api(struct vm_api* _api) {
-   this->api = _api;
 }
 
 struct vm_api* vm_manager::get_vm_api() {
@@ -542,10 +530,12 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
 */
    if (type == 0) { //wasm
       do {
+#if 0
          if (receiver == N(eosio) || receiver == N(eosio.token)) {
             type = 3;
             break;
          }
+#endif
          bool expired = false;
          bool _boosted = false;
          _boosted = is_boost_account(receiver, expired);

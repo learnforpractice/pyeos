@@ -5,15 +5,12 @@
 
 static struct vm_api s_api;
 
-void vm_init() {
+void vm_init(struct vm_api* api) {
+   s_api = *api;
 }
 
 void vm_deinit() {
    printf("vm_eth finalize\n");
-}
-
-void vm_register_api(struct vm_api* api) {
-   s_api = *api;
 }
 
 struct vm_api* get_vm_api() {
