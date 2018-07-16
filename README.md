@@ -66,7 +66,7 @@ Also PyEos will import three private key to the wallet, which is useful for test
 '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'
 ```
 
-Keep in mind that these private key should never be used in real account, otherwise you will lose all of your crypto property in the account.
+Keep in mind that these private key should never be used in real account, otherwise you may lose all of your crypto property in the account.
 
 Beside that, PyEos will create four important accounts for you:
 

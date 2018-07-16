@@ -241,6 +241,10 @@ struct vm_api* get_vm_api();
 
 uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 
+
+int has_option(const char* _option);
+int get_option(const char* option, char *result, int size);
+
 #ifdef __cplusplus
 }
 #endif

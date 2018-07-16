@@ -153,6 +153,7 @@
 						exit 1;
 					fi
 					printf "\\tInstalling Dependencies.\\n"
+					printf "${DEP}\\n"
 					if ! "${BREW}" install --force ${DEP}
 					then
 						printf "\\tHomebrew exited with the above errors.\\n"
@@ -233,134 +234,6 @@
 		printf "\\tBoost 1.67.0 successfully installed @ /usr/local.\\n"
 	else
 		printf "\\tBoost 1.67.0 found at /usr/local.\\n"
-	fi
-
-	printf "\\n\\tChecking MongoDB C++ driver installation.\\n"
-    if [ ! -e "/usr/local/lib/libmongocxx-static.a" ]; then
-		if ! cd "${TEMP_DIR}"
-		then
-			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! pkgconfig=$( "${BREW}" list | grep pkg-config )
-		then
-			if ! "${BREW}" install --force pkg-config
-			then
-				printf "\\tHomebrew returned an error installing pkg-config.\\n"
-				printf "\\tExiting now.\\n\\n"
-				exit 1;
-			fi
-			if ! "${BREW}" unlink pkg-config && "${BREW}" link --force pkg-config
-			then
-				printf "\\tHomebrew returned an error linking pkgconfig.\\n"
-				printf "\\tExiting now.\\n\\n"
-				exit 1;
-			fi
-		fi
-		STATUS=$(curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.9.3/mongo-c-driver-1.9.3.tar.gz)
-		if [ "${STATUS}" -ne 200 ]; then
-			if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
-			then
-				printf "\\tUnable to remove file %s/mongo-c-driver-1.9.3.tar.gz.\\n" "${TEMP_DIR}"
-			fi
-			printf "\\tUnable to download MongoDB C driver at this time.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! tar xf mongo-c-driver-1.9.3.tar.gz
-		then
-			printf "\\tUnable to unarchive file mongo-c-driver-1.9.3.tar.gz.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
-		then
-			printf "\\tUnable to remove file mongo-c-driver-1.9.3.tar.gz.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! cd mongo-c-driver-1.9.3
-		then
-			printf "\\tUnable to cd into directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! ./configure --enable-static --with-libbson=bundled --enable-ssl=darwin --disable-automatic-init-and-cleanup --prefix=/usr/local
-		then
-			printf "\\tConfiguring MongoDB C driver has encountered the errors above.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! make -j"${CPU_CORE}"
-		then
-			printf "\\tError compiling MongoDB C driver.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! sudo make install
-		then
-			printf "\\tError installing MongoDB C driver.\\nMake sure you have sudo privileges.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! cd "${TEMP_DIR}"
-		then
-			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.9.3"
-		then
-			printf "\\tUnable to remove directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.2 --depth 1
-		then
-			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! cd "${TEMP_DIR}/mongo-cxx-driver/build"
-		then
-			printf "\\tUnable to enter directory %s/mongo-cxx-driver/build.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
-		then
-			printf "\\tCmake has encountered the above errors building the MongoDB C++ driver.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! make -j"${CPU_CORE}"
-		then
-			printf "\\tError compiling MongoDB C++ driver.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! sudo make install
-		then
-			printf "\\tError installing MongoDB C++ driver.\\nMake sure you have sudo privileges.\\n"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! cd "${TEMP_DIR}"
-		then
-			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		if ! rm -rf "${TEMP_DIR}/mongo-cxx-driver"
-		then
-			printf "\\tUnable to remove directory %s/mongo-cxx-driver.\\n" "${TEMP_DIR}" "${TEMP_DIR}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-		fi
-		printf "\\tMongo C++ driver installed at /usr/local/lib/libmongocxx-static.a.\\n"
-	else
-		printf "\\tMongo C++ driver found at /usr/local/lib/libmongocxx-static.a.\\n"
 	fi
 
 	printf "\\n\\tChecking secp256k1-zkp installation.\\n"

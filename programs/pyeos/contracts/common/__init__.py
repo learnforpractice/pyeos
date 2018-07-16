@@ -95,8 +95,7 @@ def build_native(account, full_src_path):
     debug.set_debug_contract(account, lib_file)
 
 def prepare(name, src, abi, full_src_path):
-    with producer:
-        prepare_(name, src, abi, full_src_path)
+    prepare_(name, src, abi, full_src_path)
 
 def prepare_(account, src, abi, full_src_path):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))

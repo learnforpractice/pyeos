@@ -30,9 +30,10 @@
 #include <fc/crypto/xxhash.h>
 #include <dlfcn.h>
 
-#include <eosio/chain/db_api.hpp>
 #include <vm_manager.hpp>
 #include <appbase/application.hpp>
+
+#include <eosio/chain/db_api.h>
 
 namespace eosio {
 namespace chain {
@@ -316,13 +317,30 @@ static struct vm_api _vm_api = {
    .run_mode = run_mode
 };
 
-struct vm_api* get_vm_api() {
-   return &_vm_api;
-}
-
 void vm_manager_init() {
    vm_manager::get().set_vm_api(&_vm_api);
    vm_manager::get().init();
+}
+
+#include <appbase/platform.hpp>
+#include <dlfcn.h>
+
+extern "C" void vm_api_init() {
+	char _path[128];
+    snprintf(_path, sizeof(_path), "../libs/libeosiolib_native%s", DYLIB_SUFFIX);
+    void* handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+
+    if (handle == NULL) {
+        elog("loading ${n} failed", ("n", _path));
+    	return;
+    }
+
+    fn_register_vm_api _register_vm_api = (fn_register_vm_api)dlsym(handle, "vm_register_api");
+    if (_register_vm_api) {
+       _register_vm_api(&_vm_api);
+    } else {
+       elog("vm_register_api not found!");
+    }
 }
 
 void register_vm_api(void* handle) {
