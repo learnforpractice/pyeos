@@ -49,7 +49,7 @@ fc::logger _log;
 
 namespace eosio {
 
-static appbase::abstract_plugin* _producer_plugin = app().register_plugin("producer_plugin");
+static appbase::abstract_plugin& _producer_plugin = app().register_plugin<producer_plugin>();
 
 chain_plugin& get_chain_plugin() {
     abstract_plugin& plugin = app().get_plugin("eosio::chain_plugin");
@@ -1112,11 +1112,12 @@ void producer_plugin_impl::produce_block() {
    }
    _producer_watermarks[new_bs->header.producer] = chain.head_block_num();
 
+#if 0
    ilog("Produced block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, confirmed: ${confs}]",
         ("p",new_bs->header.producer)("id",fc::variant(new_bs->id).as_string().substr(0,16))
         ("n",new_bs->block_num)("t",new_bs->header.timestamp)
         ("count",new_bs->block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", new_bs->header.confirmed));
-
+#endif
 }
 
 static bool _produce_block_start = false;
