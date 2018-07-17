@@ -499,6 +499,11 @@ int vm_manager::setcode(int type, uint64_t account) {
          type = TYPE_IPC;
       }
    }
+
+   if (account == N(eosio) || account == N(eosio.token)) {
+      type = 3;
+   }
+
    auto itr = vm_map.find(type);
    if (itr == vm_map.end()) {
       return -1;
@@ -530,12 +535,10 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
 */
    if (type == 0) { //wasm
       do {
-#if 0
          if (receiver == N(eosio) || receiver == N(eosio.token)) {
             type = 3;
             break;
          }
-#endif
          bool expired = false;
          bool _boosted = false;
          _boosted = is_boost_account(receiver, expired);
