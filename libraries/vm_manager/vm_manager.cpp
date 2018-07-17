@@ -188,11 +188,11 @@ bool vm_manager::init(struct vm_api* api) {
    }
 
    load_vm_wavm();
-#if 0
+
    if (this->api->run_mode() == 0) {//server
       load_vm_from_path(4, ipc_server_lib);
    }
-#endif
+
    return true;
 }
 
@@ -301,6 +301,9 @@ void vm_manager::on_boost_account(uint64_t account) {
 
 vm_manager::vm_manager() {
 //   init();
+   this->api = nullptr;
+   trusted_accounts[N(eosio)] = N(eosio);
+   trusted_accounts[N(eosio.token)] = N(eosio.token);
 }
 
 int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
@@ -477,10 +480,11 @@ int vm_manager::load_vm(int vm_type) {
 }
 
 bool vm_manager::is_trusted_account(uint64_t account) {
-   if (account == N(lab)) {
+   if (trusted_accounts.find(account) != trusted_accounts.end()) {
       return true;
    }
-   return true;
+   return false;
+
 }
 
 struct vm_api* vm_manager::get_vm_api() {
@@ -632,6 +636,17 @@ int vm_manager::vm_deinit_all() {
 
 void vm_manager::set_vm_api(struct vm_api* _api) {
    this->api = _api;
+}
+
+void vm_manager::add_trusted_account(uint64_t account) {
+   trusted_accounts[account] = account;
+}
+
+void vm_manager::remove_trusted_account(uint64_t account) {
+   auto it = trusted_accounts.find(account);
+   if (it != trusted_accounts.end()) {
+      trusted_accounts.erase(it);
+   }
 }
 
 namespace eosio { namespace chain {

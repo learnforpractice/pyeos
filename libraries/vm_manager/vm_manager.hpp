@@ -63,10 +63,14 @@ public:
    void unload_account(uint64_t account);
    bool is_trusted_account(uint64_t account);
    int vm_deinit_all();
+
+   void add_trusted_account(uint64_t account);
+   void remove_trusted_account(uint64_t account);
 private:
    vm_manager();
    struct vm_api* api;
    vector<uint64_t> boost_accounts;
+   map<uint64_t, uint64_t> trusted_accounts;
    map<int, std::unique_ptr<vm_calls>> vm_map;
    map<uint64_t, std::unique_ptr<vm_calls>> preload_account_map;
 };

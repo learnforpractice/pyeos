@@ -272,3 +272,42 @@ PyObject* block_log_get_block_(string& path, int block_num) {
 bool hash_option_(const char* option) {
    return appbase::app().has_option(option);
 }
+
+#include <eosio/chain/resource_limits.hpp>
+#include <eosio/chain/resource_limits_private.hpp>
+using namespace eosio::chain::resource_limits;
+using namespace eosio::chain;
+
+uint64_t usage_accumulator_new_() {
+   return (uint64_t)(new usage_accumulator());
+}
+
+void usage_accumulator_add_(uint64_t p, uint64_t units, uint32_t ordinal, uint32_t window_size) {
+   usage_accumulator * acc = (usage_accumulator*)p;
+   acc->add(units, ordinal, window_size);
+}
+
+void usage_accumulator_get_(uint64_t p, uint64_t& value_ex, uint64_t& consumed) {
+   usage_accumulator * acc = (usage_accumulator*)p;
+   value_ex = acc->value_ex;
+   consumed = acc->consumed;
+}
+
+void usage_accumulator_release_(uint64_t p) {
+   usage_accumulator * acc = (usage_accumulator*)p;
+   delete acc;
+}
+
+uint64_t acc_get_used_(uint64_t value_ex) {
+   return resource_limits::impl::downgrade_cast<int64_t>(resource_limits::impl::integer_divide_ceil((__uint128_t)value_ex * 172800, (__uint128_t)1000000));
+}
+
+#include <vm_manager.hpp>
+
+void add_trusted_account_(uint64_t account) {
+   vm_manager::get().add_trusted_account(account);
+}
+
+void remove_trusted_account_(uint64_t account) {
+   vm_manager::get().remove_trusted_account(account);
+}
