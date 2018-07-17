@@ -1,6 +1,9 @@
 #include <vm_manager.hpp>
 #include "ipc_client.hpp"
 
+#include <unistd.h>
+
+#include <appbase/application.hpp>
 
 namespace eosio {
 namespace chain {
@@ -8,20 +11,20 @@ namespace chain {
 }
 }
 
-int main(int argc, char** argv) {
-   const char *ipc_path;
-   if (argc != 3) {
-      wlog("usage: ipc_client <ipc path> <vm index>");
-      return -1;
-   }
+using namespace appbase;
 
-   int vm_type = strtol(argv[2],NULL, 10);
-   ipc_path = (const char*)argv[1];
+int main(int argc, char** argv) {
+
+   appbase::app().initialize<>(argc, argv);
+   string _vm_type = app().get_option("vm-index");
+   string _ipc_dir = app().get_option("ipc-dir");
+
+   int vm_type = strtol(_vm_type.c_str(),NULL, 10);
 
    eosio::chain::vm_manager_init(vm_type);
 
-   wlog("ipc path ${n}", ("n", ipc_path));
-   ipc_client::get().start(ipc_path);
+   wlog("ipc client ${n1} started, ipc path ${n2}", ("n1", getpid())("n2", _ipc_dir));
+   ipc_client::get().start(_ipc_dir.c_str());
    return 0;
 }
 

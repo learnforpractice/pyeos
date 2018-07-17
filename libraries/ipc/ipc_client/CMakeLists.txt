@@ -12,7 +12,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(ipc_client PRIVATE -DDEBUG)
 endif()
 
-target_link_libraries( ipc_client PUBLIC db_api vm_manager thrift_static)
+target_link_libraries( ipc_client PUBLIC db_api vm_manager appbase thrift_static)
 
 target_include_directories( ipc_client
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"

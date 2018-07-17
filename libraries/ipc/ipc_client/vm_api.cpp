@@ -35,6 +35,8 @@
 //#include <appbase/application.hpp>
 #include "ipc_client.hpp"
 
+#include <appbase/application.hpp>
+
 namespace eosio {
 namespace chain {
 
@@ -86,8 +88,11 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
 }
 
 int has_option(const char* _option) {
-   return false;
-//   return appbase::app().has_option(_option);
+   return appbase::app().has_option(_option);
+}
+
+int get_option(const char* option, char *result, int size) {
+   return appbase::app().get_option(option, result, size);
 }
 
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
@@ -299,6 +304,8 @@ static struct vm_api _vm_api = {
 
 //   .wasm_call = wasm_call,
 //   .has_option = has_option,
+   .has_option = has_option,
+   .get_option = get_option,
    .run_mode = run_mode
 
 };
@@ -310,6 +317,8 @@ struct vm_api* get_vm_api() {
 void vm_manager_init(int vm_type) {
    vm_manager::get().set_vm_api(&_vm_api);
    vm_manager::get().load_vm(vm_type);
+//eosiolib_native/eosiolib.cpp
+   vm_register_api(&_vm_api);
 }
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {

@@ -20,7 +20,8 @@ vector<shared_ptr<boost::thread>> server_threads;
 vector<shared_ptr<boost::process::child>> client_processes;
 
 static struct vm_api s_vm_api = {};
-static const char* default_ipc_path = "/tmp";
+static const char* default_ipc_dir = "/tmp";
+static const char* default_data_dir = "data-dir";
 
 extern "C" int _start_server(const char* ipc_file, int vm_type);
 extern "C" int server_on_apply(uint64_t receiver, uint64_t account, uint64_t action, char** err, int* len);
@@ -41,14 +42,18 @@ void vm_init(struct vm_api* api) {
             }
             for (int vm_type=0;vm_type<4;vm_type++) {
                char cmd[256];
-               char option[128];
-               static const char* format = "../libraries/ipc/ipc_client/ipc_client %s/%s.ipc %d";
-               int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
-               if (ret) {
-                  snprintf(cmd, sizeof(cmd), format, option, vm_names[vm_type], vm_type);
-               } else {
-                  snprintf(cmd, sizeof(cmd), format, default_ipc_path, vm_names[vm_type], vm_type);
-               }
+               char ipc_dir[128];
+               char data_dir[128];
+
+               strcpy(ipc_dir, default_ipc_dir);
+               strcpy(data_dir, default_data_dir);
+
+               static const char* format = "../libraries/ipc/ipc_client/ipc_client --data-dir %s --config-dir %s --ipc-dir %s/%s.ipc --vm-index %d";
+               s_vm_api.get_option("ipc-dir", ipc_dir, sizeof(ipc_dir));
+               s_vm_api.get_option("data-dir", data_dir, sizeof(data_dir));
+
+               snprintf(cmd, sizeof(cmd), format, data_dir, data_dir, ipc_dir, vm_names[vm_type], vm_type);
+
                wlog("start ${n}", ("n", cmd));
                ipstream pipe_stream;
                shared_ptr<boost::process::child> client_process;
@@ -76,11 +81,11 @@ void vm_init(struct vm_api* api) {
 
             char option[128];
             char ipc_file[128];
-            int ret = s_vm_api.get_option("ipc-path", option, sizeof(option));
+            int ret = s_vm_api.get_option("ipc-dir", option, sizeof(option));
             if (ret) {
                snprintf(ipc_file, sizeof(ipc_file), "%s/%s.ipc", option, vm_names[vm_type]);
             } else {
-               snprintf(ipc_file, sizeof(ipc_file), "%s/%s.ipc", default_ipc_path, vm_names[vm_type]);
+               snprintf(ipc_file, sizeof(ipc_file), "%s/%s.ipc", default_ipc_dir, vm_names[vm_type]);
             }
             _start_server(ipc_file, vm_type);
       }));
