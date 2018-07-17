@@ -233,37 +233,38 @@ struct async_result_visitor : public fc::visitor<PyObject*> {
    }
 };
 
+#include <mutex>
+#include <condition_variable>
+
+std::shared_ptr<std::mutex> m(new std::mutex());
+std::shared_ptr<std::condition_variable> cv(new std::condition_variable());
+
 void push_transaction_async_(packed_transaction& pt, PyObject** output) {
-    auto rw_api = app().get_plugin<eosio::chain_plugin>().get_read_write_api();
-    chain_apis::read_write::push_transaction_results results;
-    rw_api.push_transaction(variant(pt).get_object(),
-        [output, pt](const fc::static_variant<fc::exception_ptr, chain_apis::read_write::push_transaction_results>& result) mutable {
-    	if (result.contains<fc::exception_ptr>()) {
-				string except = result.get<fc::exception_ptr>()->to_string();
-            	elog("${n}", ("n", except));
-        }
-#if 0
-    	if (result.contains<fc::exception_ptr>()) {
-            	variant v = variant(pt);
-            	mutable_variant_object mv(v);
-				string except = result.get<fc::exception_ptr>()->to_string();
-            	mv("except", except);
-            	*output = python::json::to_string(mv);
 
-            	elog("${n}", ("n", except));
+   bool ready = false;
+   bool *p = &ready;
+   appbase::app().get_io_service().post([pt, p](){
+      auto rw_api = app().get_plugin<eosio::chain_plugin>().get_read_write_api();
+      chain_apis::read_write::push_transaction_results results;
+      rw_api.push_transaction(variant(pt).get_object(),
+          [pt, p](const fc::static_variant<fc::exception_ptr, chain_apis::read_write::push_transaction_results>& result) mutable {
+           if (result.contains<fc::exception_ptr>()) {
+                 string except = result.get<fc::exception_ptr>()->to_string();
+                 elog("${n}", ("n", except));
+           }
+           {
+              std::unique_lock<std::mutex> lk(*m);
+              *p = true;
+           }
+           cv->notify_one();
+       });
+   });
 
-            } else {
-            	*output = result.visit(async_result_visitor());
-            	string s;
-            	s = "except";
-            	PyObject* key = py_new_string(s);
-            	s = "";
-            	PyObject* value = py_new_string(s);
-            	dict_add(*output, key, value);
-            }
-#endif
-        }
-    );
+   Py_BEGIN_ALLOW_THREADS
+   std::unique_lock<std::mutex> lk(*m);
+   cv->wait(lk, [p]{return *p;});
+   Py_END_ALLOW_THREADS
+
 }
 
 PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {

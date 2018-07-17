@@ -627,6 +627,9 @@ int vm_manager::vm_deinit_all() {
    return 1;
 }
 
+void vm_manager::set_vm_api(struct vm_api* _api) {
+   this->api = _api;
+}
 
 namespace eosio { namespace chain {
 
