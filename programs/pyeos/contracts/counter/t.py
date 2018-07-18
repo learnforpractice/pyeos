@@ -2,11 +2,11 @@ import time
 import wallet
 import eosapi
 import initeos
-import db
+import rodb as db
 
 from eosapi import N
 
-from common import prepare, producer
+from common import prepare
 
 def init(func):
     def func_wrapper(*args, **kwargs):
@@ -26,9 +26,8 @@ def test(name=None):
 
     print('counter begin: ', counter_begin)
 
-    with producer:
-        r = eosapi.push_action('counter', 'count', '', {'counter':'active'})
-        assert r
+    r = eosapi.push_action('counter', 'count', '', {'counter':'active'})
+    assert r
 
     counter_end = 0
     itr = db.find_i64(code, code, code, counter_id)

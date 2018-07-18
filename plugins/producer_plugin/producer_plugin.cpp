@@ -52,10 +52,8 @@ namespace eosio {
 static appbase::abstract_plugin& _producer_plugin = app().register_plugin<producer_plugin>();
 
 chain_plugin& get_chain_plugin() {
-    abstract_plugin& plugin = app().get_plugin("eosio::chain_plugin");
-   return *static_cast<chain_plugin*>(&plugin);
+    return app().get_plugin<eosio::chain_plugin>();
 }
-
 
 using namespace eosio::chain;
 using namespace eosio::chain::plugin_interface;
@@ -304,13 +302,14 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
          if( chain.head_block_state()->header.timestamp.next().to_time_point() >= fc::time_point::now() )
             _production_enabled = true;
 
-
+#if 0
          if( fc::time_point::now() - block->timestamp < fc::minutes(5) || (block->block_num() % 1000 == 0) ) {
             ilog("Received block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, conf: ${confs}, latency: ${latency} ms]",
                  ("p",block->producer)("id",fc::variant(block->id()).as_string().substr(8,16))
                  ("n",block_header::num_from_id(block->id()))("t",block->timestamp)
                  ("count",block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", block->confirmed)("latency", (fc::time_point::now() - block->timestamp).count()/1000 ) );
          }
+#endif
       }
 
       std::vector<std::tuple<packed_transaction_ptr, bool, next_function<transaction_trace_ptr>>> _pending_incoming_transactions;

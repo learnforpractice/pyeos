@@ -751,8 +751,8 @@ def push_actions(actions, sign=True):
 
         _actions.append(_act)
 
-    return push_transactions([_actions], sign)
-
+    ret, cost = push_transactions([_actions], sign)
+    return ret[0], cost
 
 def push_evm_action(eth_address, args, permissions: Dict, sign=True):
     cdef string contract_

@@ -15,11 +15,10 @@ CODE_TYPE_WAST = 0
 CODE_TYPE_PY = 1
 CODE_TYPE_EVM = 2
 
-def assert_ret(rr):
-    for r in rr:
-        if r['except']:
-            print(r['except'])
-        assert not r['except']
+def assert_ret(r):
+    if r['except']:
+        print(r['except'])
+    assert not r['except']
 
 def _create_account(account):
     actions = []

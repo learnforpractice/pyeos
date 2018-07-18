@@ -7,6 +7,7 @@ import pickle
 import traceback
 
 import db
+import rodb
 import net
 import wallet
 import eosapi
@@ -18,11 +19,10 @@ from code import InteractiveConsole
 from tools import sketch
 from imp import reload
 
-producer = eosapi.Producer()
-
-sys.path.insert(0, '/Applications/Eclipse.app/Contents//Eclipse/plugins/org.python.pydev_5.9.2.201708151115/pysrc')
 tests = os.path.join(os.path.dirname(__file__), 'tests')
 sys.path.insert(0, tests)
+
+debug.add_trusted_account('hello')
 
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.
@@ -53,7 +53,35 @@ plugin = eosio::history_api_plugin
 
 '''
 
+
+
 genesis = '''
+{
+  "initial_timestamp": "2018-06-08T08:08:08.888",
+  "initial_key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+  "initial_configuration": {
+    "max_block_net_usage": 1048576,
+    "target_block_net_usage_pct": 1000,
+    "max_transaction_net_usage": 524288,
+    "base_per_transaction_net_usage": 12,
+    "net_usage_leeway": 500,
+    "context_free_discount_net_usage_num": 20,
+    "context_free_discount_net_usage_den": 100,
+    "max_block_cpu_usage": 200000,
+    "target_block_cpu_usage_pct": 1000,
+    "max_transaction_cpu_usage": 300000,
+    "min_transaction_cpu_usage": 100,
+    "max_transaction_lifetime": 3600,
+    "deferred_trx_expiration_window": 600,
+    "max_transaction_delay": 3888000,
+    "max_inline_action_size": 4096,
+    "max_inline_action_depth": 4,
+    "max_authority_depth": 6
+  }
+}
+'''
+
+genesis2 = '''
 {
   "initial_timestamp": "2018-06-08T08:08:08.888",
   "initial_key": "EOS7EarnUhcyYqmdnPon8rm7mBCTnBoot6o7fE2WzjvEX2TdggbL3",
@@ -157,22 +185,28 @@ psw = None
 
 def init_wallet():
     global psw
-    if not os.path.exists('data-dir/mywallet.wallet'):
+    
+    data_dir = 'data-dir'
+    if eosapi.has_opt('data-dir'):
+        data_dir = eosapi.get_opt('data-dir')
+
+    psw_file = os.path.join(data_dir, 'data.pkl')
+    wallet.set_dir(data_dir)
+    if not os.path.exists(os.path.join(data_dir, 'mywallet.wallet')):
         psw = wallet.create('mywallet')
         print('wallet password:', psw)
-
-        with open('data-dir/data.pkl', 'wb') as f:
-            print('test wallet password save to data-dir/data.pkl')
+        with open(psw_file, 'wb') as f:
+            print('test wallet password save to', psw_file)
             pickle.dump(psw, f)
 
     wallet.open('mywallet')
     if not psw:
-        with open('data-dir/data.pkl', 'rb') as f:
+        with open(psw_file, 'rb') as f:
             psw = pickle.load(f)
     wallet.unlock('mywallet',psw)
     wallet.set_timeout(60*60*24)
 
-    priv_keys = [   
+    priv_keys = [
                     '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
                     '5JEcwbckBCdmji5j8ZoMHLEUS8TqQiqBG1DRx1X9DN124GUok9s',
                     '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB',
@@ -234,11 +268,10 @@ try:
 except Exception as e:
     traceback.print_exc()
 
-def assert_ret(rr):
-    for r in rr:
-        if r['except']:
-            print(r['except'])
-        assert not r['except']
+def assert_ret(r):
+    if r['except']:
+        print(r['except'])
+    assert not r['except']
 
 def create_system_accounts():
     systemAccounts = [
@@ -309,17 +342,15 @@ def update_eosio():
     r = eosapi.set_contract(account, wast, abi, 0)
     assert r
 
-def publish_system_contracts():
+def publish_system_contracts(accounts_map):
     contracts_path = os.path.join(os.getcwd(), '..', 'contracts')
     sys.path.append(os.getcwd())
-    accounts_map = {'eosio.token':'eosio.token', 'eosio.bios':'eosio.bios', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system'}
+#    accounts_map = {'eosio.token':'eosio.token', 'eosio.msig':'eosio.msig', 'eosio':'eosio.system'}
     for account in accounts_map:
         print('account', account)
         if not eosapi.get_account(account):
-            with producer:
-                r = eosapi.create_account('eosio', account, key1, key2)
-                assert r
-
+            r = eosapi.create_account('eosio', account, key1, key2)
+            assert r
 
         _path = os.path.join(contracts_path, accounts_map[account], accounts_map[account])
         wast = _path + '.wast'
@@ -331,9 +362,9 @@ def publish_system_contracts():
             print('+++++++++code update', account)
             wast = _path + '.wast'
             abi = _path + '.abi'
-            with producer:
-                r = eosapi.set_contract(account, wast, abi, 0)
-
+            r = eosapi.set_contract(account, wast, abi, 0)
+            print(wast, abi)
+            time.sleep(1.0)
             if account == 'eosio.token':
                 print('issue system token...')
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
@@ -351,8 +382,11 @@ def init():
 
     src_dir = os.path.dirname(os.path.abspath(__file__))
     create_system_accounts()
-    publish_system_contracts()
+    publish_system_contracts({'eosio.token':'eosio.token'})
+    publish_system_contracts({'eosio.msig':'eosio.msig'})
+    publish_system_contracts({'eosio':'eosio.system'})
 
+    '''
     account = 'lab'
     for account in ['eosio', 'eosio.token']:
         print('++++++boost account', account)
@@ -360,7 +394,8 @@ def init():
         act = ['eosio', 'boost', msg, {'eosio':'active'}]
         rr, cost = eosapi.push_actions([act])
         assert_ret(rr)
-
+    '''
+    
 #    from backyard import t
 #    t.deploy_mpy()
 
