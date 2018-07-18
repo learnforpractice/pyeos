@@ -319,6 +319,7 @@ static struct vm_api _vm_api = {
 
 
 void vm_manager_init() {
+   vm_register_api(&_vm_api);
    vm_manager::get().init(&_vm_api);
 }
 

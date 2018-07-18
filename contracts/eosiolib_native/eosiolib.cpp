@@ -23,12 +23,15 @@ namespace eosio {
 } /// namespace eosio
 
 #include "vm_api.h"
-static struct vm_api s_api;
+static struct vm_api* s_api;
 void vm_register_api(struct vm_api* api) {
-   s_api = *api;
+   s_api = api;
 }
 
 struct vm_api* get_vm_api() {
-   return &s_api;
+   if (!s_api) {
+      throw std::runtime_error("vm api not specified!");
+   }
+   return s_api;
 }
 

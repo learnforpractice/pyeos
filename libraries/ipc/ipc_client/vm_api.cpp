@@ -315,10 +315,10 @@ struct vm_api* get_vm_api() {
 }
 
 void vm_manager_init(int vm_type) {
+   vm_register_api(&_vm_api);
    vm_manager::get().set_vm_api(&_vm_api);
    vm_manager::get().load_vm(vm_type);
 //eosiolib_native/eosiolib.cpp
-   vm_register_api(&_vm_api);
 }
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
