@@ -24,12 +24,19 @@
 #include <unistd.h>
 #include <Python.h>
 
+#include <mutex>
+#include <condition_variable>
+
+//std::shared_ptr<std::mutex> m(new std::mutex());
+
+
 using namespace appbase;
 using namespace eosio;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
-static bool eos_started = false;
+static std::condition_variable cv;
+static std::mutex cv_m;
 
 static int g_argc = 0;
 static char** g_argv = NULL;
@@ -46,6 +53,7 @@ extern "C" {
 //only used in debug
    PyObject* PyInit_eoslib();
    PyObject* PyInit_db();
+   PyObject* PyInit_rodb();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
 
@@ -58,43 +66,6 @@ bool is_init_finished() {
    return init_finished;
 }
 
-void start_eos() {
-   try {
-      eos_started = true;
-      app().set_version(eosio::nodeos::config::version);
-/*
-      app().register_plugin("net_plugin");
-      app().register_plugin("http_plugin");
-
-      app().register_plugin("chain_plugin");
-      app().register_plugin("producer_plugin");
-
-      app().register_plugin("chain_api_plugin");
-      app().register_plugin("wallet_api_plugin");
-      app().register_plugin("history_plugin");
-      app().register_plugin("history_api_plugin");
-*/
-      app().register_plugin<history_plugin>();
-      app().register_plugin<chain_api_plugin>();
-      app().register_plugin<wallet_api_plugin>();
-      app().register_plugin<history_api_plugin>();
-      app().register_plugin<producer_plugin>();
-
-//      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
-      if(!app().initialize<chain_plugin, http_plugin, net_plugin, producer_plugin>(g_argc, g_argv)) {
-         init_finished = true;
-         shutdown_finished = true;
-         return;
-      }
-
-      app().startup();
-      init_finished = true;
-      app().exec();
-
-   } FC_LOG_AND_DROP();
-   init_finished = true;
-   shutdown_finished = true;
-}
 
 void init_console() {
 //   init_api();
@@ -110,6 +81,7 @@ void init_console() {
 
    PyInit_eoslib();
    PyInit_db();
+   PyInit_rodb();
    PyInit_debug();
    PyInit_python_contract();
 
@@ -128,6 +100,26 @@ void init_console() {
 
 }
 
+void start_eos() {
+   try {
+      app().startup();
+      wlog("+++++++++++app().startup() done!");
+      {
+          //std::lock_guard<std::mutex> lk(cv_m);
+      }
+      cv.notify_all();
+      init_finished = true;
+      app().exec();
+   } FC_LOG_AND_DROP();
+   wlog("+++++++++++app exec done!!");
+   {
+       //std::lock_guard<std::mutex> lk(cv_m);
+   }
+   cv.notify_all();
+   init_finished = true;
+   shutdown_finished = true;
+}
+
 extern "C" int eos_main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
@@ -135,26 +127,48 @@ extern "C" int eos_main(int argc, char** argv) {
    vm_api_init();
    init_console();
 
-   boost::thread t( start_eos );
 
-   while (!init_finished) {
-         boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+   app().set_version(eosio::nodeos::config::version);
+   app().register_plugin<history_plugin>();
+   app().register_plugin<history_api_plugin>();
+
+   app().register_plugin<chain_api_plugin>();
+   app().register_plugin<wallet_api_plugin>();
+   app().register_plugin<producer_plugin>();
+
+//      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
+   try {
+      try {
+         if(!app().initialize<chain_plugin, http_plugin, net_plugin, history_plugin, producer_plugin>(g_argc, g_argv)) {
+            return -1;
+         }
+      } FC_LOG_AND_RETHROW();
+   } catch (...) {
+      return -1;
    }
 
-   //print help
-   if (shutdown_finished) {
+   bool readonly = app().has_option("read-only");
+   if (readonly) {
+      wlog("+++++++++read only mode");
+      PyRun_SimpleString("import initeos");
+      PyRun_SimpleString("initeos.start_console()");
+      py_exit();
       return 0;
    }
 
+   std::unique_lock<std::mutex> lk(cv_m);
+   boost::thread t(start_eos);
+   cv.wait(lk);
+
+   wlog("running console...");
    if (app().interactive_mode()) {
       PyRun_SimpleString("import initeos");
       PyRun_SimpleString("initeos.start_console()");
       appbase::app().quit();
    }
-   while (!shutdown_finished) {
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-   }
 
+   cv.wait(lk);
+   wlog("exiting...");
    vm_deinit_all();
    py_exit();
 

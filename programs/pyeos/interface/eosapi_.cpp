@@ -31,6 +31,13 @@
 
 #include <vm_manager.hpp>
 
+#include <mutex>
+#include <condition_variable>
+
+static std::shared_ptr<std::mutex> m(new std::mutex());
+static std::shared_ptr<std::condition_variable> cv(new std::condition_variable());
+
+
 using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
@@ -80,13 +87,11 @@ string convert_from_eth_address(string& eth_address) {
 }
 
 chain_plugin& get_chain_plugin() {
-   abstract_plugin& plugin = app().get_plugin("eosio::chain_plugin");
-   return *static_cast<chain_plugin*>(&plugin);
+   return app().get_plugin<eosio::chain_plugin>();
 }
 
 history_plugin& get_history_plugin() {
-   abstract_plugin& plugin = app().get_plugin("eosio::history_plugin");
-   return *static_cast<history_plugin*>(&plugin);
+   return app().get_plugin<eosio::history_plugin>();
 }
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
@@ -94,8 +99,7 @@ uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 controller& get_db() { return get_chain_plugin().chain(); }
 
 wallet_plugin& get_wallet_plugin() {
-   abstract_plugin& plugin = app().get_plugin("eosio::wallet_plugin");
-   return *static_cast<wallet_plugin*>(&plugin);
+   return app().get_plugin<eosio::wallet_plugin>();
 }
 
 wallet_manager& get_wm() {
@@ -233,38 +237,56 @@ struct async_result_visitor : public fc::visitor<PyObject*> {
    }
 };
 
-#include <mutex>
-#include <condition_variable>
+#include <chrono>
+using namespace std::chrono_literals;
 
-std::shared_ptr<std::mutex> m(new std::mutex());
-std::shared_ptr<std::condition_variable> cv(new std::condition_variable());
-
-void push_transaction_async_(packed_transaction& pt, PyObject** output) {
+PyObject* push_transaction_async_(packed_transaction& pt) {
 
    bool ready = false;
    bool *p = &ready;
-   appbase::app().get_io_service().post([pt, p](){
-      auto rw_api = app().get_plugin<eosio::chain_plugin>().get_read_write_api();
-      chain_apis::read_write::push_transaction_results results;
-      rw_api.push_transaction(variant(pt).get_object(),
-          [pt, p](const fc::static_variant<fc::exception_ptr, chain_apis::read_write::push_transaction_results>& result) mutable {
-           if (result.contains<fc::exception_ptr>()) {
-                 string except = result.get<fc::exception_ptr>()->to_string();
-                 elog("${n}", ("n", except));
-           }
-           {
-              std::unique_lock<std::mutex> lk(*m);
-              *p = true;
-           }
-           cv->notify_one();
-       });
+
+   std::shared_ptr<packed_transaction> ppt = std::make_shared<packed_transaction>();
+   *ppt = pt;
+
+   std::shared_ptr<string> ss = std::make_shared<string>();
+   std::shared_ptr<PyObject*> output = std::make_shared<PyObject*>();
+
+   appbase::app().get_io_service().post([ppt, p, ss, output](){
+      app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [p, ss, output](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
+         if (result.contains<fc::exception_ptr>()) {
+            *ss = result.get<fc::exception_ptr>()->to_string();
+            elog("${n}", ("n", *ss));
+            PyDict dict;
+            string key("except");
+            dict.add(key, *ss);
+            *output = dict.get();
+         } else {
+            auto trx_trace_ptr = result.get<transaction_trace_ptr>();
+            auto v = get_db().to_variant_with_abi(*trx_trace_ptr);
+            *output = python::json::to_string(v);
+         }
+
+         {
+            std::lock_guard<std::mutex> lk(*m);
+            *p = true;
+         }
+         cv->notify_one();
+      });
    });
 
+   bool ret;
    Py_BEGIN_ALLOW_THREADS
    std::unique_lock<std::mutex> lk(*m);
-   cv->wait(lk, [p]{return *p;});
+   ret = cv->wait_for(lk, 5000ms, [p]{return *p;});
+   if (!ret) {
+      PyDict dict;
+      string key("except");
+      string value("wait for async transaction time out!");
+      dict.add(key, value);
+      *output = dict.get();
+   }
    Py_END_ALLOW_THREADS
-
+   return *output;
 }
 
 PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {
@@ -292,21 +314,15 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
       auto& rw = get_chain_plugin().get_read_write_api();
 
       for (auto& strx : trxs) {
+         PyObject* v;
+         v = python::json::to_string(*strx);
          auto pt = packed_transaction(std::move(*strx), compression);
          if (async) {
-			 string s;
-        	 PyObject* v;
-        	 push_transaction_async_(pt, &v);
-        	 v = python::json::to_string(pt);
-			 s = "except";
-			 PyObject* key = py_new_string(s);
-			 s = "";
-			 PyObject* value = py_new_string(s);
-			 dict_add(v, key, value);
+        	 v = push_transaction_async_(pt);
         	 _outputs.append(v);
          } else {
              auto mtrx = std::make_shared<transaction_metadata>(pt);
-        	 controller& ctrl = get_chain_plugin().chain();
+             controller& ctrl = get_chain_plugin().chain();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
              auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
 
