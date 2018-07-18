@@ -438,11 +438,9 @@ PyObject* create_key_() {
 }
 
 PyObject* get_public_key_(string& wif_key) {
-   auto priv_key = eosio::utilities::wif_to_key(wif_key);
-   if (!priv_key) {
-      return py_new_none();
-   }
-   string pub_key = priv_key->get_public_key().to_base58();
+   private_key_type priv(wif_key);
+
+   string pub_key = string(priv.get_public_key());
    return py_new_string(pub_key);
 }
 

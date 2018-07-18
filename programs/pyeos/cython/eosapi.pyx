@@ -338,12 +338,11 @@ def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
         act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
-    rr, cost =  push_actions(actions)
-    for r in rr:
-        if r['except']:
-            return False
-    return True
+    r, cost = push_actions(actions)
 
+    if r and not r['except']:
+        return True
+    return False
 
 def create_key():
     cdef string pub
