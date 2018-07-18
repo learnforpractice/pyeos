@@ -31,6 +31,7 @@ static const int TYPE_PY = 1;
 static const int TYPE_ETH = 2;
 static const int TYPE_WAVM = 3;
 static const int TYPE_IPC = 4;
+static const int TYPE_NATIVE = 5;
 
 
 namespace eosio {
@@ -147,6 +148,7 @@ static const char* vm_libs_path[] = {
 };
 
 static const char * ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
+static const char * vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -190,8 +192,10 @@ bool vm_manager::init(struct vm_api* api) {
    load_vm_wavm();
 
    if (this->api->run_mode() == 0) {//server
-      load_vm_from_path(4, ipc_server_lib);
+      load_vm_from_path(TYPE_IPC, ipc_server_lib);
    }
+
+   load_vm_from_path(TYPE_NATIVE, vm_native_lib);
 
    return true;
 }
@@ -537,6 +541,10 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
       load_vm_from_ram(type, vm_names[type]);
    }
 */
+   if (vm_map[TYPE_NATIVE]->apply(receiver, account, act)) {
+      return 1;
+   }
+
    if (type == 0) { //wasm
       do {
          if (receiver == N(eosio) || receiver == N(eosio.token)) {
