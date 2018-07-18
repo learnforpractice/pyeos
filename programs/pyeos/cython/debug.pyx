@@ -185,8 +185,8 @@ def acc_add(uint64_t p, uint64_t units, uint32_t ordinal, uint32_t window_size):
     return usage_accumulator_add_(p, units, ordinal, window_size)
 
 def acc_get(uint64_t p):
-    cdef uint64_t value_ex
-    cdef uint64_t consumed
+    cdef uint64_t value_ex = 0
+    cdef uint64_t consumed = 0
     usage_accumulator_get_(p, value_ex, consumed)
     return (value_ex, consumed)
 
@@ -201,7 +201,7 @@ def add_trusted_account(account):
         account = eosapi.s2n(account)
     add_trusted_account_(account)
 
-def remove_trusted_account(uint64_t account):
+def remove_trusted_account(account):
     if not isinstance(account, int):
         account = eosapi.s2n(account)
     remove_trusted_account_(account);

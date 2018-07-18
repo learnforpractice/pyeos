@@ -212,6 +212,12 @@ def parse_log(num, trx):
         pp(args)
         print()
         '''
+        if act.name == 'setprods':
+            args = eosapi.unpack_args(act.account, act.name, bytes.fromhex(act.data))
+            pp(args)
+            print()
+        continue
+
         if not act.account == 'eosio':
             continue
         if not act.name in ['newaccount','buyrambytes','delegatebw']:
@@ -296,4 +302,30 @@ def get_raw_actions(s, e):
     _path = 'data-dir.bk/blocks'
     debug.block_log_get_raw_actions(_path, s, e, raw_action_cb)
     print(action_map)
+
+def acc_test(units):
+    acc = debug.acc_new()
+    debug.acc_add(acc, 100, 1000, 172800)
+    v, c = debug.acc_get(acc)
+    print(v, c)
+
+    debug.acc_add(acc, units, 1001, 172800)
+    v, c = debug.acc_get(acc)
+    print(v, c)
+
+
+    debug.acc_release(acc)
+
+def acc_test2(value_ex):
+    
+    a = debug.acc_get_used(value_ex)
+    b = 0
+    for i in range(1000):
+        b = debug.acc_get_used(value_ex+i)
+        if a != b:
+            print(i)
+            break
+    print(a, b)
+
+
 

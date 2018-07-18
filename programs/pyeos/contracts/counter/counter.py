@@ -8,7 +8,7 @@ def count():
     itr = db.find_i64(code, code, code, counter_id)
     if itr >= 0: # value exists, update it
         counter = db.get_i64(itr)
-        print('old counter', counter)
+        print('old counter', int.from_bytes(counter, 'little'))
         counter = int.from_bytes(counter, 'little')
         counter += 1
         counter = int.to_bytes(counter, 4, 'little')

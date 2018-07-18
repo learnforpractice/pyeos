@@ -23,6 +23,8 @@ tests = os.path.join(os.path.dirname(__file__), 'tests')
 sys.path.insert(0, tests)
 
 debug.add_trusted_account('hello')
+debug.add_trusted_account('counter')
+
 
 config = '''
 # Track only transactions whose scopes involve the listed accounts. Default is to track all transactions.

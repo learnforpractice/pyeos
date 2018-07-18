@@ -27,7 +27,7 @@ def test(name=None):
     print('counter begin: ', counter_begin)
 
     r = eosapi.push_action('counter', 'count', '', {'counter':'active'})
-    assert r
+    assert r and not r['except'] 
 
     counter_end = 0
     itr = db.find_i64(code, code, code, counter_id)
@@ -59,8 +59,11 @@ def test2(count=100):
         action = ['hello', 'sayhello', str(i), {'hello':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
-    assert ret
+    r, cost = eosapi.push_actions(actions, True)
+    if r['except'] :
+        print(r['except'])
+    assert r and not r['except'] 
+
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
     eosapi.produce_block()
     
