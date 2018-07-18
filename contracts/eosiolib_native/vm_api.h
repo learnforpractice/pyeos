@@ -5,10 +5,7 @@
 extern "C" {
 #endif
 
-#ifndef softfloat_types_h //avoid type conflicts in softfloat_types.h
-   typedef struct { uint64_t v; } float64_t;
-   typedef struct { uint64_t v[2]; } float128_t;
-#endif
+#include <softfloat_types.h>
 
 #ifndef __EOSIO_CHAIN_TYPES // avoid type conflicts
 #include <stdint.h>
