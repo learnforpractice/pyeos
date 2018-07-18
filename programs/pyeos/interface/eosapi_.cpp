@@ -249,21 +249,17 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
    *ppt = pt;
 
    std::shared_ptr<string> ss = std::make_shared<string>();
-   std::shared_ptr<PyObject*> output = std::make_shared<PyObject*>();
+   std::shared_ptr<fc::mutable_variant_object> output = std::make_shared<fc::mutable_variant_object>();
 
    appbase::app().get_io_service().post([ppt, p, ss, output](){
-      app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [p, ss, output](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
+      app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [p, output](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
          if (result.contains<fc::exception_ptr>()) {
-            *ss = result.get<fc::exception_ptr>()->to_string();
-            elog("${n}", ("n", *ss));
-            PyDict dict;
-            string key("except");
-            dict.add(key, *ss);
-            *output = dict.get();
+            string s = result.get<fc::exception_ptr>()->to_string();
+            (*output)("except", s);
          } else {
             auto trx_trace_ptr = result.get<transaction_trace_ptr>();
             auto v = get_db().to_variant_with_abi(*trx_trace_ptr);
-            *output = python::json::to_string(v);
+            (*output)(v.get_object());
          }
 
          {
@@ -274,19 +270,11 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
       });
    });
 
-   bool ret;
    Py_BEGIN_ALLOW_THREADS
    std::unique_lock<std::mutex> lk(*m);
-   ret = cv->wait_for(lk, 5000ms, [p]{return *p;});
-   if (!ret) {
-      PyDict dict;
-      string key("except");
-      string value("wait for async transaction time out!");
-      dict.add(key, value);
-      *output = dict.get();
-   }
+   cv->wait(lk, [p]{return *p;});
    Py_END_ALLOW_THREADS
-   return *output;
+   return python::json::to_string(*output);
 }
 
 PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {
