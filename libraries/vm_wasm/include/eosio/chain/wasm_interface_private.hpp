@@ -1,6 +1,6 @@
 #pragma once
 
-#include <eosio/chain/wasm_interface.hpp>
+#include "wasm_interface.hpp"
 
 #ifdef _WAVM
 #include <eosio/chain/webassembly/wavm.hpp>
@@ -14,6 +14,7 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/transaction_context.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <fc/scoped_exit.hpp>
 #include <fc/io/fstream.hpp>
@@ -24,22 +25,14 @@
 #include "WAST/WAST.h"
 #include "IR/Validate.h"
 
+#include <mutex>
+
 #include <dlfcn.h>
 
 using namespace fc;
 using namespace eosio::chain::webassembly;
 using namespace IR;
 using namespace Runtime;
-
-#if defined(__APPLE__) && defined(__MACH__)
-   #define NATIVE_PLATFORM 1
-#elif defined(__linux__)
-   #define NATIVE_PLATFORM 2
-#elif defined(_WIN64)
-   #define NATIVE_PLATFORM 3
-#else
-   #error Not Supported Platform
-#endif
 
 void resume_billing_timer();
 void pause_billing_timer();
@@ -54,12 +47,6 @@ const char* db_api_get_i64_exex( int itr, size_t* buffer_size );
 
 namespace eosio { namespace chain {
 #include <eosiolib_native/vm_api.h>
-
-   struct native_code_cache {
-         uint32_t version;
-         void *handle;
-         fn_apply apply;
-   };
 
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
@@ -92,75 +79,92 @@ namespace eosio { namespace chain {
 
       std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver, bool preload = false )
       {
-         size_t size = 0;
-         const char* code;
-         char code_id[8*4];
+         {
+            size_t size = 0;
+            const char* code;
+            char code_id[8*4];
 
-         code = get_code( receiver, &size );
-         get_code_id(receiver, code_id, sizeof(code_id));
-         if (size <= 0) {
-            return instantiation_cache.end()->second;
-         }
+            std::lock_guard<std::mutex> lock(m);
 
-         auto it = instantiation_cache.find(receiver);
-         bool need_update = 0;
-         if (it == instantiation_cache.end()) {
-            need_update = true;
-         }
-         if (!need_update) {
-            if (0 != memcmp(code_id, it->second->code_id, sizeof(code_id))) {
-               need_update = true;
+            code = get_code( receiver, &size );
+            get_code_id(receiver, code_id, sizeof(code_id));
+            if (size <= 0) {
+               EOS_ASSERT(false, asset_type_exception, "code size should not be zero");
             }
-         }
-         if(need_update) {
-#ifdef _BINARYEN
-            elog("update code in binaryen ${n}", ("n", name(receiver)));
-#endif
-#ifdef _WAVM
-            elog("update code in wavm ${n}", ("n", name(receiver)));
-#endif
 
-            auto timer_pause = fc::make_scoped_exit([&](){
-               if (!preload) {
-                  resume_billing_timer();
+            auto it = instantiation_cache.find(receiver);
+            if (it != instantiation_cache.end()) {
+               if (0 == memcmp(code_id, it->second->code_id, sizeof(code_id))) {
+                  return it->second;
                }
-            });
-            if (!preload) {
-               pause_billing_timer();
             }
-            IR::Module module;
-            try {
-               Serialization::MemoryInputStream stream((const U8*)code, size);
-               WASM::serialize(stream, module);
-               module.userSections.clear();
-            } catch(const Serialization::FatalSerializationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-            } catch(const IR::ValidationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-            }
-
-            wasm_injections::wasm_binary_injection injector(module);
-            injector.inject();
-
-            std::vector<U8> bytes;
-            try {
-               Serialization::ArrayOutputStream outstream;
-               WASM::serialize(outstream, module);
-               bytes = outstream.getBytes();
-            } catch(const Serialization::FatalSerializationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-            } catch(const IR::ValidationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
-            }
-            instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
-//            it = instantiation_cache.emplace(receiver, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
-            it = instantiation_cache.find(receiver);
-            memcpy(it->second->code_id, code_id, sizeof(code_id));
          }
-         return it->second;
+
+
+#ifdef _BINARYEN
+         auto timer_pause = fc::make_scoped_exit([&](){
+            if (!preload) {
+               resume_billing_timer();
+            }
+         });
+         if (!preload) {
+            pause_billing_timer();
+         }
+         return load_module(receiver, code, size);
+#endif
+
+#ifdef _WAVM
+         elog("update code in wavm ${n}", ("n", name(receiver)));
+         if (preload) {
+            return load_module(receiver, code, size);
+         }
+
+         boost::thread t(boost::bind(&wasm_interface_impl::load_module_async, this, receiver, code, size));
+
+         return instantiation_cache.end()->second;
+#endif
+      }
+
+
+       void load_module_async(uint64_t receiver, const char* code, size_t size) {
+          load_module(receiver, code, size);
+          //send a transaction to indicate that module is loaded by BP.
+       }
+
+      std::unique_ptr<wasm_instantiated_module_interface>& load_module(uint64_t receiver, const char* code, size_t size) {
+         IR::Module module;
+         try {
+            Serialization::MemoryInputStream stream((const U8*)code, size);
+            WASM::serialize(stream, module);
+            module.userSections.clear();
+         } catch(const Serialization::FatalSerializationException& e) {
+            EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+         } catch(const IR::ValidationException& e) {
+            EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+         }
+
+         wasm_injections::wasm_binary_injection injector(module);
+         injector.inject();
+
+         std::vector<U8> bytes;
+         try {
+            Serialization::ArrayOutputStream outstream;
+            WASM::serialize(outstream, module);
+            bytes = outstream.getBytes();
+         } catch(const Serialization::FatalSerializationException& e) {
+            EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+         } catch(const IR::ValidationException& e) {
+            EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+         }
+         {
+            std::lock_guard<std::mutex> lock(m);
+            instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
+            return instantiation_cache.find(receiver)->second;
+         }
       }
 
       int unload_module(uint64_t account) {
+         std::lock_guard<std::mutex> lock(m);
          auto it = instantiation_cache.find(account);
          if (it != instantiation_cache.end()) {
             instantiation_cache.erase(it);
@@ -169,15 +173,17 @@ namespace eosio { namespace chain {
          return 0;
       }
 
-
       std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module()
       {
          const uint64_t receiver = 0;
-
-         auto it = instantiation_cache.find(receiver);
-         if (it != instantiation_cache.end()) {
-            return it->second;
+         {
+            std::lock_guard<std::mutex> lock(m);
+            auto it = instantiation_cache.find(receiver);
+            if (it != instantiation_cache.end()) {
+               return it->second;
+            }
          }
+
          string wast;
          fc::read_file_contents("../../programs/pyeos/contracts/lab/lab.wast", wast);
          std::vector<uint8_t> wasm = wast_to_wasm(wast);
@@ -206,67 +212,15 @@ namespace eosio { namespace chain {
          } catch(const IR::ValidationException& e) {
             EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
          }
-         instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
-//            it = instantiation_cache.emplace(receiver, runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module))).first;
-         it = instantiation_cache.find(receiver);
-         return it->second;
-      }
 
-      void init_native_contract() {
-         uint64_t native_account[] = {N(eosio.bios), N(eosio.msig), N(eosio.token), N(eosio)/*eosio.system*/, N(exchange)};
-         for (int i=0; i<sizeof(native_account)/sizeof(native_account[0]); i++) {
-            load_native_contract(native_account[i]);
+         {
+            std::lock_guard<std::mutex> lock(m);
+            instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
+            return instantiation_cache.find(receiver)->second;
          }
       }
-
-      fn_apply load_native_contract(uint64_t _account) {
-         string contract_path;
-         uint64_t native = N(native);
-         void *handle = nullptr;
-         char _name[64];
-         snprintf(_name, sizeof(_name), "%s.%d", name(_account).to_string().c_str(), NATIVE_PLATFORM);
-         uint64_t __account = NN(_name);
-
-         int itr = db_api_find_i64(native, native, native, __account);
-         if (itr < 0) {
-            return nullptr;
-         }
-
-         size_t native_size = 0;
-         const char* code = db_api_get_i64_exex(itr, &native_size);
-         uint32_t version = *(uint32_t*)code;
-
-         char native_path[64];
-         sprintf(native_path, "%s.%d",name(__account).to_string().c_str(), version);
-
-         wlog("loading native contract:\t ${n}", ("n", native_path));
-
-         struct stat _s;
-         if (stat(native_path, &_s) == 0) {
-            //
-         } else {
-            std::ofstream out(native_path, std::ios::binary | std::ios::out);
-            out.write(&code[4], native_size - 4);
-            out.close();
-         }
-         contract_path = native_path;
-
-         handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-         if (!handle) {
-            return nullptr;
-         }
-         fn_apply _apply = (fn_apply)dlsym(handle, "apply");
-
-         std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
-         _cache->version = version;
-         _cache->handle = handle;
-         _cache->apply = _apply;
-   //      native_cache.emplace(_account, std::move(_cache));
-         native_cache[_account] =  std::move(_cache);
-         return _apply;
-      }
+      std::mutex m;
       std::unique_ptr<wasm_runtime_interface> runtime_interface;
-      map<uint64_t, std::unique_ptr<native_code_cache>> native_cache;
       map<uint64_t, std::unique_ptr<wasm_instantiated_module_interface>> instantiation_cache;
    };
 

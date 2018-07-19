@@ -191,8 +191,10 @@ bool vm_manager::init(struct vm_api* api) {
 
    load_vm_wavm();
 
-   if (this->api->run_mode() == 0) {//server
-      load_vm_from_path(TYPE_IPC, ipc_server_lib);
+   if (!get_vm_api()->has_option("no-ipc")) {
+      if (this->api->run_mode() == 0) {//server
+         load_vm_from_path(TYPE_IPC, ipc_server_lib);
+      }
    }
 
    load_vm_from_path(TYPE_NATIVE, vm_native_lib);
@@ -504,7 +506,9 @@ int vm_manager::setcode(int type, uint64_t account) {
    if (this->api->run_mode() == 0) {
       if (is_trusted_account(account)) {
       } else {
-         type = TYPE_IPC;
+         if (vm_map.find(TYPE_IPC) != vm_map.end()) {
+            type = TYPE_IPC;
+         }
       }
    }
 
@@ -520,19 +524,15 @@ int vm_manager::setcode(int type, uint64_t account) {
 }
 
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
-   if (this->api->run_mode() == 0) {
-      if (is_trusted_account(account)) {
-         return local_apply(type, receiver, account, act);
-      } else {
-         auto itr = vm_map.find(TYPE_IPC);
-         if (itr == vm_map.end()) {
-            return -1;
-         }
-         return itr->second->apply(receiver, account, act);
-      }
+   if (is_trusted_account(account)) {
+
    } else {
-      return local_apply(type, receiver, account, act);
+      auto itr = vm_map.find(TYPE_IPC);
+      if (itr != vm_map.end()) {
+         type = TYPE_IPC;
+      }
    }
+   return local_apply(type, receiver, account, act);
 }
 
 int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
@@ -568,9 +568,16 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
             return itr->second->apply(receiver, account, act);
          } else {
             wlog("executing ${n} by jit", ("n", name(receiver)));
-            type = 3;//accelerating execution by JIT
+            //accelerating execution by JIT
+            //may fall if code is still in loading, if so, execute it in binaryen
+            //if code was executed in wavm in one BP but executed in binaryen in the next BP,
+            //there is a small probability that the next BP can not execute all the code in one block time
+            //at the situation of network overloading, that may cause a fork and BP will lose some revenue
+            //a vote on jit loading can solve this problem.
+            if (vm_map[TYPE_WAVM]->apply(receiver, account, act)) {
+               return 1;
+            }
          }
-
       } while(false);
    }
 
