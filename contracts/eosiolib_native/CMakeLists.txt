@@ -31,7 +31,7 @@ target_include_directories(eosiolib_native PRIVATE ${Boost_INCLUDE_DIR}
     PRIVATE ${CMAKE_SOURCE_DIR}/contracts/eosiolib
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/fc/include
-
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/softfloat/source/include
 )
 
 add_executable ( st test/main.cpp )
