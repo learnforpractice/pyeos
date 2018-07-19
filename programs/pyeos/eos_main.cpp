@@ -113,11 +113,11 @@ void start_eos() {
    } FC_LOG_AND_DROP();
    wlog("+++++++++++app exec done!!");
    {
-       //std::lock_guard<std::mutex> lk(cv_m);
+       std::lock_guard<std::mutex> lk(cv_m);
+       init_finished = true;
+       shutdown_finished = true;
    }
    cv.notify_all();
-   init_finished = true;
-   shutdown_finished = true;
 }
 
 extern "C" int eos_main(int argc, char** argv) {
@@ -167,7 +167,7 @@ extern "C" int eos_main(int argc, char** argv) {
       appbase::app().quit();
    }
 
-   cv.wait(lk);
+   cv.wait(lk, [](){return shutdown_finished;});
    wlog("exiting...");
    vm_deinit_all();
    py_exit();
