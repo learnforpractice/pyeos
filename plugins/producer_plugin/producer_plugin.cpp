@@ -302,14 +302,14 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
          if( chain.head_block_state()->header.timestamp.next().to_time_point() >= fc::time_point::now() )
             _production_enabled = true;
 
-#if 0
-         if( fc::time_point::now() - block->timestamp < fc::minutes(5) || (block->block_num() % 1000 == 0) ) {
-            ilog("Received block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, conf: ${confs}, latency: ${latency} ms]",
-                 ("p",block->producer)("id",fc::variant(block->id()).as_string().substr(8,16))
-                 ("n",block_header::num_from_id(block->id()))("t",block->timestamp)
-                 ("count",block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", block->confirmed)("latency", (fc::time_point::now() - block->timestamp).count()/1000 ) );
+         if (appbase::app().has_option("print-incoming-block")) {
+            if( fc::time_point::now() - block->timestamp < fc::minutes(5) || (block->block_num() % 1000 == 0) ) {
+               ilog("Received block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, conf: ${confs}, latency: ${latency} ms]",
+                    ("p",block->producer)("id",fc::variant(block->id()).as_string().substr(8,16))
+                    ("n",block_header::num_from_id(block->id()))("t",block->timestamp)
+                    ("count",block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", block->confirmed)("latency", (fc::time_point::now() - block->timestamp).count()/1000 ) );
+            }
          }
-#endif
       }
 
       std::vector<std::tuple<packed_transaction_ptr, bool, next_function<transaction_trace_ptr>>> _pending_incoming_transactions;
@@ -430,6 +430,8 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
+         ("print-incoming-block", "read only mode")
+         ("print-producer-log", "read only mode")
          ("manual-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
          ("gen-empty-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
          ("enable-stale-production,e", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
@@ -1111,12 +1113,12 @@ void producer_plugin_impl::produce_block() {
    }
    _producer_watermarks[new_bs->header.producer] = chain.head_block_num();
 
-#if 0
-   ilog("Produced block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, confirmed: ${confs}]",
-        ("p",new_bs->header.producer)("id",fc::variant(new_bs->id).as_string().substr(0,16))
-        ("n",new_bs->block_num)("t",new_bs->header.timestamp)
-        ("count",new_bs->block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", new_bs->header.confirmed));
-#endif
+   if (appbase::app().has_option("print-producer-log")) {
+      ilog("Produced block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, confirmed: ${confs}]",
+           ("p",new_bs->header.producer)("id",fc::variant(new_bs->id).as_string().substr(0,16))
+           ("n",new_bs->block_num)("t",new_bs->header.timestamp)
+           ("count",new_bs->block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", new_bs->header.confirmed));
+   }
 }
 
 static bool _produce_block_start = false;

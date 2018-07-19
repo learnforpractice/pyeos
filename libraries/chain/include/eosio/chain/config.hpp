@@ -12,6 +12,9 @@ namespace eosio { namespace chain { namespace config {
 
 typedef __uint128_t uint128_t;
 
+const static auto default_code_update_interval    = 10*60; //10 minutes;
+
+
 const static auto default_blocks_dir_name    = "blocks";
 const static auto reversible_blocks_dir_name = "reversible";
 const static auto default_reversible_cache_size = 340*1024*1024ll;/// 1MB * 340 blocks based on 21 producer BFT delay
@@ -28,6 +31,7 @@ const static uint64_t producers_account_name = N(eosio.prods);
 // Active permission of producers account requires greater than 2/3 of the producers to authorize
 const static uint64_t majority_producers_permission_name = N(prod.major); // greater than 1/2 of producers needed to authorize
 const static uint64_t minority_producers_permission_name = N(prod.minor); // greater than 1/3 of producers needed to authorize0
+const static uint64_t single_producers_permission_name = N(prod.single); // greater than 1/21 of producers needed to authorize0
 
 const static uint64_t eosio_auth_scope       = N(eosio.auth);
 const static uint64_t eosio_all_scope        = N(eosio.all);
