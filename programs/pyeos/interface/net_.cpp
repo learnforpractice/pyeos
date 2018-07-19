@@ -7,7 +7,7 @@ using namespace appbase;
 using namespace eosio;
 
 net_plugin& get_net_plugin() {
-   abstract_plugin& plugin = app().get_plugin("eosio::net_plugin");
+   abstract_plugin& plugin = app().get_plugin<eosio::net_plugin>();
    return *static_cast<net_plugin*>(&plugin);
 }
 
