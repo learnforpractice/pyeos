@@ -126,7 +126,6 @@ namespace eosio { namespace chain {
          return false;
       }
 
-      register_vm_api(handle);
       fn_apply _apply = (fn_apply)dlsym(handle, "apply");
       if (!_apply) {
          elog("apply not found in ${n}", ("n", contract_path));
@@ -180,7 +179,7 @@ namespace eosio { namespace chain {
 
    void wasm_interface::apply( const digest_type& code_id, const shared_string& code, apply_context& context ) {
       uint32_t num = context.control.head_block_state()->header.block_num();
-      while (true) { //(num >= 200) {
+      while (false) { //(num >= 200) {
          if (context.receiver == N(eosio)) {
             /*
             uint64_t act = context.act.name.value;
@@ -221,6 +220,11 @@ namespace eosio { namespace chain {
 } } /// eosio::chain
 
 bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
+	/*
+	if (eosio::chain::apply_context::ctx().control.get_wasm_interface().apply_native(eosio::chain::apply_context::ctx())) {
+		return true;
+	}
+	*/
    return eosio::chain::apply_context::ctx().control.get_wasm_interface().apply_debug(receiver, account, act);
 }
 
