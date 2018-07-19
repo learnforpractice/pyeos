@@ -26,7 +26,7 @@
 
 #include <eosio/chain/micropython_interface.hpp>
 #include <eosio/chain/evm_interface.hpp>
-
+#include <appbase/application.hpp>
 #include "vm_manager.hpp"
 
 namespace eosio { namespace chain {
@@ -146,6 +146,13 @@ void apply_eosio_setcode(apply_context& context) {
    const auto& account = db.get<account_object,by_name>(act.account);
    if (account.locked) {
       throw FC_EXCEPTION( fc::exception, "code in ${n} has been locked on", ("n", act.account));
+   }
+
+   if (!appbase::app().debug_mode()) {
+      if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
+         throw FC_EXCEPTION( fc::exception, "code update in less than 10minutes from the previous update");
+      }
+
    }
 
    check_account_lock_status( context, act.account );
