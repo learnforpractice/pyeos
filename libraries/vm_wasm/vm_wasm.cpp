@@ -53,8 +53,7 @@ int vm_setcode(uint64_t account) {
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   wasm_apply(receiver, account, act);
-   return 0;
+   return wasm_apply(receiver, account, act);
 }
 
 int vm_preload(uint64_t account) {
