@@ -15,6 +15,7 @@
 #include <eosio/chain/transaction_context.hpp>
 #include <eosio/chain/wast_to_wasm.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/bind.hpp>
 
 #include <fc/scoped_exit.hpp>
 #include <fc/io/fstream.hpp>
@@ -79,11 +80,11 @@ namespace eosio { namespace chain {
 
       std::unique_ptr<wasm_instantiated_module_interface>& get_instantiated_module( const uint64_t& receiver, bool preload = false )
       {
-         {
-            size_t size = 0;
-            const char* code;
-            char code_id[8*4];
+         size_t size = 0;
+         const char* code;
+         char code_id[8*4];
 
+         {
             std::lock_guard<std::mutex> lock(m);
 
             code = get_code( receiver, &size );
