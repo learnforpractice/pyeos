@@ -220,13 +220,11 @@ int vm_manager::load_vm_wavm() {
 
    auto itr = vm_map.find(3);
    if (itr != vm_map.end()) {
-      if (db_api::get().is_account(N(eosio.token))) {
-         auto t = time_counter(N(eosio.token));
-         itr->second->preload(N(eosio.token));
-      }
-      if (db_api::get().is_account(N(eosio))) {
-         auto t = time_counter(N(eosio));
-         itr->second->preload(N(eosio));
+      for (uint64_t account : {N(eosio.token), N(eosio)}) {
+         if (db_api::get().is_account(account) && db_api::get().get_code(account).size() > 0) {
+            auto t = time_counter(account);
+            itr->second->preload(account);
+         }
       }
    }
 
