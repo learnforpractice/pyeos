@@ -1,0 +1,37 @@
+{
+   "version": "eosio::abi/1.0",
+   "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+   }],
+  "structs": [{
+      "name": "votejit",
+      "base": "",
+      "fields": [
+        {"name":"producer", "type":"account_name"},
+        {"name":"account", "type":"account_name"},
+        {"name":"last_code_update", "type":"int64"}
+      ]
+    },{
+      "name": "clearjit",
+      "base": "",
+      "fields": [
+        {"name":"producer", "type":"account_name"},
+        {"name":"account", "type":"account_name"},
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "votejit",
+      "type": "votejit",
+      "ricardian_contract": ""
+    },{
+      "name": "clearjit",
+      "type": "clearjit",
+      "ricardian_contract": ""
+    }
+  ],
+  "tables": [],
+  "ricardian_clauses": [],
+  "abi_extensions": []
+}

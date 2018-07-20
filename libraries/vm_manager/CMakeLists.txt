@@ -8,7 +8,7 @@ add_library( vm_manager
               vm_manager.cpp
              )
 
-target_link_libraries( vm_manager PRIVATE fc appbase db_api)
+target_link_libraries( vm_manager PRIVATE fc appbase db_api eosio_prods_static)
 
 target_include_directories( vm_manager
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"

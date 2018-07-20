@@ -1075,7 +1075,7 @@ struct controller_impl {
 
       update_permission( authorization.get_permission({config::producers_account_name,
                                                        config::single_producers_permission_name}),
-                         calculate_threshold( 1, 21 ) /* more than one-third */                       );
+                         calculate_threshold( 1, 21 ) /*  1/21 */                       );
       //TODO: Add tests
    }
 

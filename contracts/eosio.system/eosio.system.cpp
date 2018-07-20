@@ -28,6 +28,14 @@ namespace eosiosystem {
          bid.start_bid_time = current_time();
          bid.jit_remains = 100; //TODO: max jit resources, should be configurable
          _jitbid.set(bid, _self);
+         _boost.emplace( _self, [&]( auto& b ) {
+               b.account = N(eosio);
+               b.expiration = -1;
+         });
+         _boost.emplace( _self, [&]( auto& b ) {
+               b.account = N(eosio.token);
+               b.expiration = -1;
+         });
       }
 
       auto itr = _rammarket.find(S(4,RAMCORE));

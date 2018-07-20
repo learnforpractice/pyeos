@@ -51,6 +51,10 @@ typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 bool is_boost_account(uint64_t account, bool& expired);
 
+//eosio.prods.cpp
+extern "C" bool is_jit_account_activated(uint64_t account);
+
+
 extern "C" bool is_server_mode();
 
 void _on_boost_account(void* v, uint64_t account, uint64_t expiration) {
@@ -558,6 +562,10 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
          }
          if (expired) {
             unload_account(receiver);
+            break;
+         }
+
+         if (!is_jit_account_activated(receiver)) {
             break;
          }
 

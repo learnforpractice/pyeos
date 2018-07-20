@@ -33,6 +33,7 @@ namespace eosio { namespace chain {
 void apply_eosio_setcode_py(apply_context& context);
 void apply_eosio_setcode_evm(apply_context& context);
 void apply_eosio_setcode_rpc(apply_context& context);
+extern "C" bool jit_account_deactivate(uint64_t account);
 
 uint128_t transaction_id_to_sender_id( const transaction_id_type& tid ) {
    fc::uint128_t _id(tid._hash[3], tid._hash[2]);
@@ -152,10 +153,11 @@ void apply_eosio_setcode(apply_context& context) {
       if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
          throw FC_EXCEPTION( fc::exception, "code update in less than 10minutes from the previous update");
       }
-
    }
 
    check_account_lock_status( context, act.account );
+
+   jit_account_deactivate(act.account.value);
 
    if (act.vmtype == 1) {
       apply_eosio_setcode_py(context);
