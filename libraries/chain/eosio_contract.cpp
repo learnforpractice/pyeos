@@ -159,20 +159,11 @@ void apply_eosio_setcode(apply_context& context) {
 
    jit_account_deactivate(act.account.value);
 
-   if (act.vmtype == 1) {
-      apply_eosio_setcode_py(context);
-      return;
-   } else if (act.vmtype == 2) {
-      apply_eosio_setcode_evm(context);
-      return;
-   } else if (act.vmtype == 3) {
-      apply_eosio_setcode_rpc(context);
-      return;
-   }
    context.require_authorization(act.account);
 
-   FC_ASSERT( act.vmtype == 0 );
+//   FC_ASSERT( act.vmtype == 0 );
    FC_ASSERT( act.vmversion == 0 );
+   FC_ASSERT(act.code.size() > 0);
 
    fc::sha256 code_id; /// default ID == 0
 
@@ -196,9 +187,7 @@ void apply_eosio_setcode(apply_context& context) {
       a.last_code_update = context.control.pending_block_time();
       a.code_version = code_id;
       a.code.resize( code_size );
-      if( code_size > 0 )
-         memcpy( a.code.data(), act.code.data(), code_size );
-
+      memcpy( a.code.data(), act.code.data(), code_size );
    });
 
    const auto& account_sequence = db.get<account_sequence_object, by_name>(act.account);
@@ -209,55 +198,9 @@ void apply_eosio_setcode(apply_context& context) {
    if (new_size != old_size) {
       context.trx_context.add_ram_usage( act.account, new_size - old_size );
    }
-   vm_manager::get().setcode(0, act.account);
+   vm_manager::get().setcode(act.vmtype, act.account);
 }
 
-void apply_eosio_setcode_py(apply_context& context) {
-   auto& db = context.db;
-   auto  act = context.act.data_as<setcode>();
-   context.require_authorization(act.account);
-
-   FC_ASSERT( act.vmtype == 1 );
-   FC_ASSERT( act.vmversion == 0 );
-
-   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
-
-   if (act.code.size() > 5*1024) {
-      elog("++++act.code.size() ${n}", ("n", act.code.size()));
-      throw FC_EXCEPTION( fc::exception, "code size must be <= 5KB, actual code size is ${n}", ("n", act.code.size()));
-   }
-
-   const auto& account = db.get<account_object,by_name>(act.account);
-
-   int64_t code_size = (int64_t)act.code.size();
-   int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
-   int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
-
-   FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
-//   wlog( "set code: ${size}", ("size",act.code.size()));
-   db.modify( account, [&]( auto& a ) {
-      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-      #warning TODO: update setcode message to include the hash, then validate it in validate
-      a.vm_type = act.vmtype;
-      a.last_code_update = context.control.pending_block_time();
-      a.code_version = code_id;
-      a.code.resize( code_size );
-      if( code_size > 0 )
-         memcpy( a.code.data(), act.code.data(), code_size );
-
-   });
-
-   const auto& account_sequence = db.get<account_sequence_object, by_name>(act.account);
-   db.modify( account_sequence, [&]( auto& aso ) {
-      aso.code_sequence += 1;
-   });
-
-   if (new_size != old_size) {
-      context.trx_context.add_ram_usage( act.account, new_size - old_size );
-   }
-   vm_manager::get().setcode(1, act.account);
-   //   micropython_interface::get().on_setcode(act.account, act.code);
-}
 
 void apply_eosio_setcode_evm(apply_context& context) {
    auto& db = context.db;
@@ -308,49 +251,6 @@ void apply_eosio_setcode_evm(apply_context& context) {
       context.trx_context.add_ram_usage( act.account, new_size - old_size );
    }
 }
-
-void apply_eosio_setcode_rpc(apply_context& context) {
-   auto& db = context.db;
-   auto  act = context.act.data_as<setcode>();
-   context.require_authorization(act.account);
-
-   FC_ASSERT( act.vmtype == 3);
-   FC_ASSERT( act.vmversion == 0 );
-
-   auto code_id = fc::sha256::hash( act.code.data(), (uint32_t)act.code.size() );
-
-   const auto& account = db.get<account_object,by_name>(act.account);
-
-
-   int64_t code_size = (int64_t)act.code.size();
-   int64_t old_size = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
-   int64_t new_size = code_size * config::setcode_ram_bytes_multiplier;
-
-   FC_ASSERT( account.code_version != code_id, "contract is already running this version of code" );
-//   wlog( "set code: ${size}", ("size",act.code.size()));
-   db.modify( account, [&]( auto& a ) {
-      /** TODO: consider whether a microsecond level local timestamp is sufficient to detect code version changes*/
-      #warning TODO: update setcode message to include the hash, then validate it in validate
-      a.vm_type = act.vmtype;
-      a.last_code_update = context.control.pending_block_time();
-      a.code_version = code_id;
-      a.code.resize( code_size );
-      a.last_code_update = context.control.pending_block_time();
-      memcpy( a.code.data(), act.code.data(), code_size );
-
-   });
-
-   const auto& account_sequence = db.get<account_sequence_object, by_name>(act.account);
-   db.modify( account_sequence, [&]( auto& aso ) {
-      aso.code_sequence += 1;
-   });
-
-   if (new_size != old_size) {
-      context.trx_context.add_ram_usage( act.account, new_size - old_size );
-   }
-}
-
-
 
 void apply_eosio_setabi(apply_context& context) {
    auto& db  = context.db;

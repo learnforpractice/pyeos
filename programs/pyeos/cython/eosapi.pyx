@@ -810,7 +810,10 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
         setcode = ['eosio', 'setcode', code, [[account, 'active']]]
         actions.append(setcode)
     else:
-        raise Exception("unknown code")
+        _code = open(src_file, 'rb').read()
+        code += pack_bytes(_code)
+        setcode = ['eosio', 'setcode', code, [[account, 'active']]]
+        actions.append(setcode)
 
     setabi = pack_setabi(abi_file, account)
     setabi = ['eosio', 'setabi', setabi, [[account, 'active']]]

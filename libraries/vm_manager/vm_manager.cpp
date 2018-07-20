@@ -26,12 +26,13 @@ using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
 
-static const int TYPE_BINARYEN = 0;
-static const int TYPE_PY = 1;
-static const int TYPE_ETH = 2;
-static const int TYPE_WAVM = 3;
-static const int TYPE_IPC = 4;
-static const int TYPE_NATIVE = 5;
+static const int VM_TYPE_BINARYEN = 0;
+static const int VM_TYPE_PY = 1;
+static const int VM_TYPE_ETH = 2;
+static const int VM_TYPE_WAVM = 3;
+static const int VM_TYPE_IPC = 4;
+static const int VM_TYPE_NATIVE = 5;
+static const int VM_TYPE_CPYTHON = 6;
 
 
 namespace eosio {
@@ -153,6 +154,7 @@ static const char* vm_libs_path[] = {
 
 static const char * ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
 static const char * vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
+static const char * vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -197,11 +199,13 @@ bool vm_manager::init(struct vm_api* api) {
 
    if (!get_vm_api()->has_option("no-ipc")) {
       if (this->api->run_mode() == 0) {//server
-         load_vm_from_path(TYPE_IPC, ipc_server_lib);
+         load_vm_from_path(VM_TYPE_IPC, ipc_server_lib);
       }
    }
 
-   load_vm_from_path(TYPE_NATIVE, vm_native_lib);
+   load_vm_from_path(VM_TYPE_NATIVE, vm_native_lib);
+
+   load_vm_from_path(VM_TYPE_CPYTHON, vm_cpython_lib);
 
    return true;
 }
@@ -356,9 +360,9 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       dlclose(__itr->second->handle);
    }
 
+   wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    vm_init(this->api);
 
-   wlog("+++++++++++loading ${n1} cost: ${n2}", ("n1",vm_path)("n2", get_microseconds() - start));
    std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
    calls->version = 0;
    calls->handle = handle;
@@ -508,8 +512,8 @@ int vm_manager::setcode(int type, uint64_t account) {
    if (this->api->run_mode() == 0) {
       if (is_trusted_account(account)) {
       } else {
-         if (vm_map.find(TYPE_IPC) != vm_map.end()) {
-            type = TYPE_IPC;
+         if (vm_map.find(VM_TYPE_IPC) != vm_map.end()) {
+            type = VM_TYPE_IPC;
          }
       }
    }
@@ -529,9 +533,9 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
    if (is_trusted_account(account)) {
 
    } else {
-      auto itr = vm_map.find(TYPE_IPC);
+      auto itr = vm_map.find(VM_TYPE_IPC);
       if (itr != vm_map.end()) {
-         type = TYPE_IPC;
+         type = VM_TYPE_IPC;
       }
    }
    return local_apply(type, receiver, account, act);
@@ -543,7 +547,7 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
       load_vm_from_ram(type, vm_names[type]);
    }
 */
-   if (vm_map[TYPE_NATIVE]->apply(receiver, account, act)) {
+   if (vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act)) {
       return 1;
    }
 
@@ -580,7 +584,7 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
             //there is a small probability that the next BP can not execute all the code in one block time
             //at the situation of network overloading, that may cause a fork and BP will lose some revenue
             //a vote on jit loading can solve this problem.
-            if (vm_map[TYPE_WAVM]->apply(receiver, account, act)) {
+            if (vm_map[VM_TYPE_WAVM]->apply(receiver, account, act)) {
                return 1;
             }
          }

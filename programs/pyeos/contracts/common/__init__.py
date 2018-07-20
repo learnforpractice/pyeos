@@ -93,17 +93,15 @@ def build_native(account, full_src_path):
     lib_file = os.path.join(_src_dir, 'lib{0}.dylib'.format(account))
     debug.set_debug_contract(account, lib_file)
 
-def prepare(name, src, abi, full_src_path):
-    prepare_(name, src, abi, full_src_path)
-
-def prepare_(account, src, abi, full_src_path):
+def prepare(account, src, abi, full_src_path, code_type = None):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
-    if src.endswith('.wast'):
-        code_type = CODE_TYPE_WAST
-    elif src.endswith('.py'):
-        code_type = CODE_TYPE_PY
-    else:
-        raise Exception('unknown code type')
+    if not code_type:
+        if src.endswith('.wast'):
+            code_type = CODE_TYPE_WAST
+        elif src.endswith('.py'):
+            code_type = CODE_TYPE_PY
+        else:
+            raise Exception('unknown code type')
 
     if code_type == 0:
         cpp2wast.set_src_path(_src_dir)
