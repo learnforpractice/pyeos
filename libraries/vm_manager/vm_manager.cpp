@@ -692,6 +692,10 @@ namespace eosio { namespace chain {
       return std::string((char*)v.data(), wast_size);
    }
 
+   std::string _wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names )
+   {
+      return _wasm_to_wast(data, size);
+   }
 }
 }
 

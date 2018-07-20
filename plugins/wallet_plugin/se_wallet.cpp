@@ -352,7 +352,7 @@ flat_set<public_key_type> se_wallet::list_public_keys() {
    return keys;
 }
 
-bool se_wallet::import_key(string wif_key) {
+bool se_wallet::import_key(string wif_key, bool save) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the Secure Enclave wallet");
 }
 

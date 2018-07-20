@@ -194,10 +194,7 @@ namespace std {
  * @return true - if equal
  * @return false - if unequal
  */
-bool inline operator==(const checksum256& lhs, const checksum256& rhs) {
-   return memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
-}
-
+bool operator==(const checksum256& lhs, const checksum256& rhs);
 /**
  * Equality Operator for checksum160
  *
@@ -207,9 +204,7 @@ bool inline operator==(const checksum256& lhs, const checksum256& rhs) {
  * @return true - if equal
  * @return false - if unequal
  */
-bool operator==(const checksum160& lhs, const checksum160& rhs) {
-   return memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
-}
+bool operator==(const checksum160& lhs, const checksum160& rhs);
 
 /**
  * Equality Operator for checksum160
@@ -220,6 +215,4 @@ bool operator==(const checksum160& lhs, const checksum160& rhs) {
  * @return true - if unequal
  * @return false - if equal
  */
-bool operator!=(const checksum160& lhs, const checksum160& rhs) {
-   return memcmp(&lhs, &rhs, sizeof(lhs)) != 0;
-}
+bool operator!=(const checksum160& lhs, const checksum160& rhs);

@@ -12,7 +12,7 @@ namespace detail {
 struct se_wallet_impl;
 }
 
-class se_wallet final : public wallet_api {
+class se_wallet : public wallet_api {
    public:
       se_wallet();
       ~se_wallet();
@@ -28,11 +28,13 @@ class se_wallet final : public wallet_api {
       map<public_key_type, private_key_type> list_keys() override;
       flat_set<public_key_type> list_public_keys() override;
 
-      bool import_key(string wif_key) override;
+      bool import_key(string wif_key, bool save) override;
       string create_key(string key_type) override;
       bool remove_key(string key) override;
 
       optional<signature_type> try_sign_digest(const digest_type digest, const public_key_type public_key) override;
+
+      void    save_wallet_file(string wallet_filename) override {}
 
    private:
       std::unique_ptr<detail::se_wallet_impl> my;

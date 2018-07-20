@@ -1661,6 +1661,8 @@ void controller::set_action_object(const account_name& receiver, const action& a
          memcpy(act_obj.data.data(), act.data.data(), act.data.size());
       });
    } FC_LOG_AND_DROP();
+}
+
 void controller::validate_db_available_size() const {
    const auto free = db().get_segment_manager()->get_free_memory();
    const auto guard = my->conf.state_guard_size;

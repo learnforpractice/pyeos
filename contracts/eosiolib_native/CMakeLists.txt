@@ -10,13 +10,14 @@ print.cpp
 privileged.cpp
 system.cpp
 transaction.cpp
-
 math/fabs.cpp
 math/pow.cpp
 math/sqrt.cpp
 math/scalbn.cpp
 
 double.hpp
+
+../eosiolib/types.cpp
 ) #exchange_state.cpp
 
 target_link_libraries( eosiolib_native PUBLIC softfloat)

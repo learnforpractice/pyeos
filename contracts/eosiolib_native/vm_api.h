@@ -90,16 +90,16 @@ struct vm_api {
    int32_t (*db_idx128_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t* primary);
 
    int32_t (*db_idx128_end)(uint64_t code, uint64_t scope, uint64_t table);
-   int32_t (*db_idx256_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const void* data, size_t data_len );
+   int32_t (*db_idx256_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* data, size_t data_len );
    void (*db_idx256_update)(int32_t iterator, uint64_t payer, const void* data, size_t data_len);
    void (*db_idx256_remove)(int32_t iterator);
    int32_t (*db_idx256_next)(int32_t iterator, uint64_t* primary);
 
    int32_t (*db_idx256_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx256_find_primary)(uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t primary);
-   int32_t (*db_idx256_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const void* data, size_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t primary);
+   int32_t (*db_idx256_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const uint128_t* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
    int32_t (*db_idx256_end)(uint64_t code, uint64_t scope, uint64_t table);
    int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float64_t* secondary);
    void (*db_idx_double_update)(int32_t iterator, uint64_t payer, const float64_t* secondary);

@@ -15,5 +15,6 @@ std::string  wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names 
 std::vector<uint8_t> _wast_to_wasm( const std::string& wast );
 std::string  _wasm_to_wast( const std::vector<uint8_t>& wasm );
 std::string  _wasm_to_wast( const uint8_t* data, uint64_t size );
+std::string  _wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names);
 
 } } /// eosio::chain

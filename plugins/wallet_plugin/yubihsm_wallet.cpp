@@ -315,7 +315,7 @@ flat_set<public_key_type> yubihsm_wallet::list_public_keys() {
    return keys;
 }
 
-bool yubihsm_wallet::import_key(string wif_key) {
+bool yubihsm_wallet::import_key(string wif_key, bool save) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the YubiHSM wallet");
 }
 

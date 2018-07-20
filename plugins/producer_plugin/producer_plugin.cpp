@@ -1231,7 +1231,8 @@ int producer_plugin::produce_block_start() {
    _produce_block_start = true;
 
    if (my->_manual_gen_block) {
-      _start_block_result = my->start_block();
+      bool last;
+      _start_block_result = my->start_block(last);
       return 0;
 //      ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
