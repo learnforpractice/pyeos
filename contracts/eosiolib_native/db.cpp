@@ -149,11 +149,11 @@ int32_t db_idx128_end(uint64_t code, uint64_t scope, uint64_t table) {
    return get_vm_api()->db_idx128_end(code, scope, table);
 }
 
-int32_t db_idx256_store(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const void* data, uint32_t data_len ) {
+int32_t db_idx256_store(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* data, uint32_t data_len ) {
    return get_vm_api()->db_idx256_store(scope, table, payer, id, data, data_len );
 }
 
-void db_idx256_update(int32_t iterator, uint64_t payer, const void* data, uint32_t data_len) {
+void db_idx256_update(int32_t iterator, uint64_t payer, const uint128_t* data, uint32_t data_len) {
    get_vm_api()->db_idx256_update(iterator, payer, data, data_len);
 }
 
@@ -169,19 +169,19 @@ int32_t db_idx256_previous(int32_t iterator, uint64_t* primary) {
    return get_vm_api()->db_idx256_previous(iterator, primary);
 }
 
-int32_t db_idx256_find_primary(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t primary) {
+int32_t db_idx256_find_primary(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, uint32_t data_len, uint64_t primary) {
    return get_vm_api()->db_idx256_find_primary(code, scope, table, data, data_len, primary);
 }
 
-int32_t db_idx256_find_secondary(uint64_t code, uint64_t scope, uint64_t table, const void* data, uint32_t data_len, uint64_t* primary) {
+int32_t db_idx256_find_secondary(uint64_t code, uint64_t scope, uint64_t table, const uint128_t* data, uint32_t data_len, uint64_t* primary) {
    return get_vm_api()->db_idx256_find_secondary(code, scope, table, data, data_len, primary);
 }
 
-int32_t db_idx256_lowerbound(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t* primary) {
+int32_t db_idx256_lowerbound(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, uint32_t data_len, uint64_t* primary) {
    return get_vm_api()->db_idx256_lowerbound(code, scope, table, data, data_len, primary);
 }
 
-int32_t db_idx256_upperbound(uint64_t code, uint64_t scope, uint64_t table, void* data, uint32_t data_len, uint64_t* primary) {
+int32_t db_idx256_upperbound(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, uint32_t data_len, uint64_t* primary) {
    return get_vm_api()->db_idx256_upperbound(code, scope, table, data, data_len, primary);
 }
 

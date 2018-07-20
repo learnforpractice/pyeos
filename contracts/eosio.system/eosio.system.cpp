@@ -30,11 +30,11 @@ namespace eosiosystem {
          _jitbid.set(bid, _self);
          _boost.emplace( _self, [&]( auto& b ) {
                b.account = N(eosio);
-               b.expiration = -1;
+               b.expiration = (uint64_t)-1;
          });
          _boost.emplace( _self, [&]( auto& b ) {
                b.account = N(eosio.token);
-               b.expiration = -1;
+               b.expiration = (uint64_t)-1;
          });
       }
 

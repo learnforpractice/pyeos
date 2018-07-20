@@ -109,14 +109,14 @@ int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
       }
 
 #define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
-      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const void* data, size_t data_len) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const ARR_ELEMENT_TYPE* data, size_t data_len) {\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.store(scope, table, payer, id, (const ARR_ELEMENT_TYPE*)data);\
       }\
       void db_##IDX##_update( int iterator, uint64_t payer, const void* data, size_t data_len ) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.update(iterator, payer, (const ARR_ELEMENT_TYPE*)data);\
@@ -124,26 +124,26 @@ int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
       void db_##IDX##_remove( int iterator ) {\
          return ctx().IDX.remove(iterator);\
       }\
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const void* data, size_t data_len, uint64_t* primary ) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.find_secondary(code, scope, table, (const ARR_ELEMENT_TYPE*)data, *primary);\
       }\
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t primary ) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t primary ) {\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.find_primary(code, scope, table, (ARR_ELEMENT_TYPE*)data, primary);\
       }\
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary ) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.lowerbound_secondary(code, scope, table, (ARR_ELEMENT_TYPE*)data, *primary);\
       }\
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, void* data, size_t data_len, uint64_t* primary ) {\
-         FC_ASSERT( data_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE,\
+      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
+         FC_ASSERT( data_len == ARR_SIZE,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
          return ctx().IDX.upperbound_secondary(code, scope, table, (ARR_ELEMENT_TYPE*)data, *primary);\
