@@ -50,12 +50,27 @@ namespace eosio { namespace chain {
       );
    }
 
+   auto pack_unpack_raw() {
+      return std::make_pair<abi_serializer::unpack_function, abi_serializer::pack_function>(
+         []( fc::datastream<const char*>& stream, bool is_array, bool is_optional) -> fc::variant  {
+               vector<char> v(stream.remaining());
+               stream.read(v.data(), v.size());
+               return variant(v);
+         },
+         []( const fc::variant& var, fc::datastream<char*>& ds, bool is_array, bool is_optional ){
+               auto v = var.as<vector<char>>();
+               ds.write( v.data(), v.size() );
+         }
+      );
+   }
+
    abi_serializer::abi_serializer( const abi_def& abi, const fc::microseconds& max_serialization_time ) {
       configure_built_in_types();
       set_abi(abi, max_serialization_time);
    }
 
    void abi_serializer::configure_built_in_types() {
+      built_in_types.emplace("raw",                pack_unpack_raw());
 
       built_in_types.emplace("bool",                      pack_unpack<uint8_t>());
       built_in_types.emplace("int8",                      pack_unpack<int8_t>());
