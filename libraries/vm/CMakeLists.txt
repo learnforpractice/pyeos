@@ -1,0 +1,4 @@
+add_subdirectory( vm_py )
+add_subdirectory( vm_wasm )
+add_subdirectory( vm_eth )
+add_subdirectory( vm_native )

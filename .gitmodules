@@ -9,10 +9,6 @@
        path = libraries/ethereum
        url = https://github.com/learnforpractice/cpp-ethereum
        branch = develop-eos
-[submodule "libraries/vm_py"]
-	path = libraries/vm_py
-	url = https://github.com/learnforpractice/micropython
-	branch = master
 [submodule "contracts/musl/upstream"]
 	path = contracts/musl/upstream
 	url = https://github.com/EOSIO/musl.git
@@ -49,3 +45,6 @@
 [submodule "cmake/polly"]
 	path = cmake/polly
 	url = https://github.com/learnforpractice/polly
+[submodule "libraries/vm/vm_py"]
+	path = libraries/vm/vm_py
+	url = https://github.com/learnforpractice/micropython

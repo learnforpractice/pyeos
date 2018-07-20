@@ -96,13 +96,13 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_manager
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/extmod
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_wasm
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/extmod
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/ports/unix
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/ports/unix/build
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/magic_get/include
                             )

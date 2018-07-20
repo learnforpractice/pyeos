@@ -3,8 +3,8 @@ set(HEADERS
     ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/Include
     ${CMAKE_SOURCE_DIR}/contracts
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src" )
+    ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
+    ${CMAKE_SOURCE_DIR}/externals/binaryen/src )
 
 
 #reference from https://github.com/BYVoid/uchardet/blob/master/src/symbols.cmake

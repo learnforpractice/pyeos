@@ -17,9 +17,9 @@ target_include_directories( vm_manager
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_wasm
+                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/py
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/magic_get/include
                             )
