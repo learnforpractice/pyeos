@@ -258,7 +258,7 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
             (*output)("except", s);
          } else {
             auto trx_trace_ptr = result.get<transaction_trace_ptr>();
-            auto v = get_db().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(30*1000));
+            auto v = get_db().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(300*1000));
             (*output)(v.get_object());
          }
 
@@ -298,7 +298,6 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          }
          gen_transaction(*trx, sign, 10000000, compression);
       }
-      cost_time = get_microseconds();
       auto rw = get_chain_plugin().get_read_write_api();
 
       for (auto& strx : trxs) {
@@ -306,25 +305,24 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          v = python::json::to_string(*strx);
          auto pt = packed_transaction(std::move(*strx), compression);
          if (async) {
-        	 v = push_transaction_async_(pt);
+            uint64_t cost = get_microseconds();
+            v = push_transaction_async_(pt);
+            cost_time += (get_microseconds() - cost);
         	 _outputs.append(v);
          } else {
              auto mtrx = std::make_shared<transaction_metadata>(pt);
              controller& ctrl = get_chain_plugin().chain();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
+
+             uint64_t cost = get_microseconds();
              auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
+             cost_time += (get_microseconds() - cost);
 
              fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr, fc::microseconds(30*1000) );
              _outputs.append(python::json::to_string(pretty_output));
          }
       }
    }  FC_LOG_AND_DROP();
-
-   if (cost_time == 0) {
-      //
-   } else {
-      cost_time = get_microseconds() - cost_time;
-   }
 
    for (auto& st : trxs) {
       delete st;
