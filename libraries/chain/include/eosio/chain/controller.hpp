@@ -59,6 +59,7 @@ namespace eosio { namespace chain {
             bool                     read_only              =  false;
             bool                     force_all_checks       =  false;
             bool                     contracts_console      =  false;
+            bool                     skip_signature_check   =  false;
 
             genesis_state            genesis;
             wasm_interface::vm_type  wasm_runtime = chain::config::default_wasm_runtime;
