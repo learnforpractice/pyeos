@@ -1,10 +1,6 @@
 [submodule "programs/snapshot"]
 	path = programs/snapshot
 	url = https://github.com/EOSIO/genesis.git
-[submodule "libraries/python"]
-	path = libraries/python
-	url = https://github.com/learnforpractice/cpython
-	branch = v3.6.4-cmake
 [submodule "libraries/ethereum"]
        path = libraries/ethereum
        url = https://github.com/learnforpractice/cpp-ethereum
@@ -48,3 +44,11 @@
 [submodule "libraries/vm/vm_py"]
 	path = libraries/vm/vm_py
 	url = https://github.com/learnforpractice/micropython
+[submodule "libraries/python-ss"]
+	path = libraries/python-ss
+	url = https://github.com/learnforpractice/cpython
+	branch = python-v3.6.3-single-thread
+[submodule "libraries/python"]
+	path = libraries/python
+	url = https://github.com/learnforpractice/cpython
+	branch = v3.6.4-cmake

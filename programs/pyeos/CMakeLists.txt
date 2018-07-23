@@ -81,14 +81,18 @@ add_custom_command(
 )
 
 
-add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
-    interface/wallet_.cpp interface/pyobject.cpp
-    interface/math_.cpp  
+add_library(pyeos-shared
+    main.cpp
+    interface/json.cpp
+    interface/eosapi_.cpp
+    interface/wallet_.cpp
+    interface/pyobject.cpp
+    interface/math_.cpp
     interface/debug_.cpp
 #    interface/wasm_.cpp
     interface/net_.cpp
 
-    wrap/eosapi.wrap.cpp 
+    wrap/eosapi.wrap.cpp
     wrap/wallet.wrap.cpp
     wrap/pyobject.wrap.cpp
     wrap/rodb.wrap.cpp
@@ -139,7 +143,7 @@ target_include_directories( pyeos-shared
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/http_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/producer_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/http_client_plugin/include
-                              PRIVATE ${CMAKE_BINARY_DIR}/programs/nodeos
+                              PUBLIC ${CMAKE_BINARY_DIR}/programs/nodeos
                            )
 
 
