@@ -51,8 +51,14 @@ bool wasm_is_native_contract_enabled_() {
 
 static string debug_contract_path;
 static uint64_t debug_account = 0;
+static void *native_handle = nullptr;
+static eosio::chain::fn_apply native_apply = nullptr;
 
 void set_debug_contract_(string& _account, string& path) {
+   if (native_handle) {
+      dlclose(native_handle);
+      native_handle = nullptr;
+   }
    debug_account = eosio::chain::string_to_name(_account.c_str());
    debug_contract_path = path;
 }
@@ -114,24 +120,22 @@ namespace eosio { namespace chain {
          return false;
       }
 
-      static void *handle = nullptr;
       contract_path = debug_contract_path;
-      if (handle) {
-          dlclose(handle);
+
+      if (!native_handle) {
+         native_handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+         if (!native_handle) {
+            elog("open dll ${n} failed", ("n", contract_path));
+            return false;
+         }
+         native_apply = (fn_apply)dlsym(native_handle, "apply");
       }
 
-      handle = dlopen(contract_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-      if (!handle) {
-         elog("open dll ${n} failed", ("n", contract_path));
-         return false;
-      }
-
-      fn_apply _apply = (fn_apply)dlsym(handle, "apply");
-      if (!_apply) {
+      if (!native_apply) {
          elog("apply not found in ${n}", ("n", contract_path));
          return false;
       }
-      _apply(receiver, account, act);
+      native_apply(receiver, account, act);
       return true;
    }
 

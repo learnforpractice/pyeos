@@ -120,6 +120,9 @@ namespace eosio { namespace chain {
             return load_module(receiver, code, size);
          }
 
+         auto& mod = load_module(receiver, code, size);
+         return mod;
+
          boost::thread t(boost::bind(&wasm_interface_impl::load_module_async, this, receiver, code, size));
 
          return instantiation_cache.end()->second;
@@ -160,7 +163,11 @@ namespace eosio { namespace chain {
          {
             std::lock_guard<std::mutex> lock(m);
             instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));
-            return instantiation_cache.find(receiver)->second;
+            auto it = instantiation_cache.find(receiver);
+            char code_id[8*4];
+            get_code_id(receiver, code_id, sizeof(code_id));
+            memcpy(it->second->code_id, code_id, sizeof(code_id));
+            return it->second;
          }
       }
 
