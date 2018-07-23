@@ -119,6 +119,10 @@ include(ProjectLibFF)
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 set(Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+   set(DEBUG_FLAG CACHE "d")
+endif()
+
 IF( WIN32 )
   SET(BOOST_ROOT $ENV{BOOST_ROOT})
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries

@@ -33,6 +33,7 @@ static const int VM_TYPE_WAVM = 3;
 static const int VM_TYPE_IPC = 4;
 static const int VM_TYPE_NATIVE = 5;
 static const int VM_TYPE_CPYTHON = 6;
+static const int VM_TYPE_CPYTHON_SS = 7;
 
 
 namespace eosio {
@@ -152,9 +153,10 @@ static const char* vm_libs_path[] = {
 //   "../libs/libipc_server" DYLIB_SUFFIX
 };
 
-static const char * ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
-static const char * vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
-static const char * vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
+static const char *ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
+static const char *vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
+static const char *vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
+static const char *vm_cpython_ss_lib = "../libs/libvm_cpython_ss" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -206,6 +208,7 @@ bool vm_manager::init(struct vm_api* api) {
    load_vm_from_path(VM_TYPE_NATIVE, vm_native_lib);
 
    load_vm_from_path(VM_TYPE_CPYTHON, vm_cpython_lib);
+   load_vm_from_path(VM_TYPE_CPYTHON_SS, vm_cpython_ss_lib);
 
    return true;
 }
@@ -232,6 +235,9 @@ int vm_manager::load_vm_wavm() {
          if (db_api::get().is_account(account) && db_api::get().get_code(account).size() > 0) {
             auto t = time_counter(account);
             itr->second->preload(account);
+            std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
+            *calls = *itr->second;
+            preload_account_map[account] = std::move(calls);
          }
       }
    }
@@ -547,16 +553,14 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
       load_vm_from_ram(type, vm_names[type]);
    }
 */
+#if 1
    if (vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act)) {
       return 1;
    }
+#endif
 
    if (type == 0) { //wasm
       do {
-         if (receiver == N(eosio) || receiver == N(eosio.token)) {
-            type = 3;
-            break;
-         }
          bool expired = false;
          bool _boosted = false;
          _boosted = is_boost_account(receiver, expired);

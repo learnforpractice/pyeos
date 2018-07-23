@@ -42,7 +42,7 @@ namespace eosio { namespace chain {
    int wasm_interface::apply( uint64_t receiver, uint64_t account, uint64_t act ) {
       try {
          auto& module = my->get_instantiated_module(receiver);
-         if (!module) {
+         if (!module.get()) {
             return 0;
          }
          module->apply(receiver, account, act);
