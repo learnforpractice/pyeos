@@ -22,8 +22,8 @@ from imp import reload
 tests = os.path.join(os.path.dirname(__file__), 'tests')
 sys.path.insert(0, tests)
 
-debug.add_trusted_account('hello')
-debug.add_trusted_account('counter')
+#debug.add_trusted_account('hello')
+#debug.add_trusted_account('counter')
 
 
 config = '''
@@ -69,9 +69,9 @@ genesis = '''
     "net_usage_leeway": 500,
     "context_free_discount_net_usage_num": 20,
     "context_free_discount_net_usage_den": 100,
-    "max_block_cpu_usage": 200000,
+    "max_block_cpu_usage": 350000,
     "target_block_cpu_usage_pct": 1000,
-    "max_transaction_cpu_usage": 300000,
+    "max_transaction_cpu_usage": 150000,
     "min_transaction_cpu_usage": 100,
     "max_transaction_lifetime": 3600,
     "deferred_trx_expiration_window": 600,

@@ -106,8 +106,8 @@ def build(src_file = 'lab.cpp', force=False):
     return True
 
 
-def build_native(src_file, lib_name, force=False):
-    lib_file_path = "{src_path}/lib{lib_name}.dylib".format(src_path=src_path, lib_name=lib_name)
+def build_native(src_file, lib_name, force=False, debug=True):
+    lib_file_path = "{src_path}/lib{lib_name}{dylib_suffix}".format(src_path=src_path, lib_name=lib_name, dylib_suffix=tools_config.dylib_suffix)
     src_file_path = "{src_path}/{src_file}".format(src_path=src_path, src_file=src_file)
     try:
         t1 = os.path.getmtime(src_file_path)
@@ -139,12 +139,16 @@ def build_native(src_file, lib_name, force=False):
     if ret:
         return False
 
-    link_cmd = 'clang++  -Wall -Wno-deprecated-declarations -DDEBUG -g -dynamiclib -Wl,-headerpad_max_install_names  -o {src_path}/lib{lib_name}.dylib -install_name @rpath/lib{lib_name}.dylib {src_name}.o -Wl,-rpath,{build_dir}/contracts/eosiolib_native -Wl,-rpath,{build_dir}/libraries/softfloat {build_dir}/contracts/eosiolib_native/libeosiolib_natived.dylib {build_dir}/libraries/softfloat/libsoftfloatd.dylib'
-    link_cmd = link_cmd.format(lib_name=lib_name, src_name=src_file, build_dir=tools_config.build_dir, src_path=src_path)
+    if debug:
+        link_cmd = 'clang++  -Wall -Wno-deprecated-declarations -DDEBUG -g -dynamiclib -Wl,-headerpad_max_install_names  -o {src_path}/lib{lib_name}{dylib_suffix} -install_name @rpath/lib{lib_name}{dylib_suffix} {src_name}.o -Wl,-rpath,{build_dir}/contracts/eosiolib_native -Wl,-rpath,{build_dir}/libraries/softfloat {build_dir}/contracts/eosiolib_native/libeosiolib_native{dylib_suffix} {build_dir}/libraries/softfloat/libsoftfloat{dylib_suffix}'
+    else:
+        link_cmd = 'clang++  -Wall -Wno-deprecated-declarations -dynamiclib -Wl,-headerpad_max_install_names  -o {src_path}/lib{lib_name}{dylib_suffix} -install_name @rpath/lib{lib_name}{dylib_suffix} {src_name}.o -Wl,-rpath,{build_dir}/contracts/eosiolib_native -Wl,-rpath,{build_dir}/libraries/softfloat {build_dir}/contracts/eosiolib_native/libeosiolib_native{dylib_suffix} {build_dir}/libraries/softfloat/libsoftfloat{dylib_suffix}'
+
+    link_cmd = link_cmd.format(lib_name=lib_name, src_name=src_file, build_dir=tools_config.build_dir, src_path=src_path, dylib_suffix=tools_config.dylib_suffix)
     link_cmd = shlex.split(link_cmd)
     print(link_cmd)
     ret = subprocess.call(link_cmd)
     print('link_cmd', ret)
+
     if ret:
         return False
-

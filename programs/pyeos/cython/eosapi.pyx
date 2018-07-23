@@ -30,9 +30,9 @@ cdef extern from "<eosio/chain/wast_to_wasm.hpp>":
 
 cdef extern from "<eosio/chain/contract_types.hpp>" namespace "eosio::chain":
     cdef cppclass setcode:
-        uint64_t                     account;
-        unsigned char                            vmtype;
-        unsigned char                            vmversion;
+        uint64_t                                account;
+        unsigned char                           vmtype;
+        unsigned char                           vmversion;
         vector[char]                            code;
 
 cdef extern from "<fc/io/raw.hpp>" namespace "fc::raw":
