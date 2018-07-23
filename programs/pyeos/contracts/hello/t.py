@@ -42,10 +42,37 @@ def test2(count=100):
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions, True)
-    print(ret)
     assert ret and not ret['except']
-    print(ret)
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init
+def tt(count=1000):
+    actions = []
+    for i in range(count):
+        args = {"from":'eosio', "to":'eosio.ram', "quantity":'%.4f EOS'%(0.01,), "memo":'hello'}
+        action = ['eosio.token', 'transfer', args, {'eosio':'active'}]
+        actions.append(action)
+
+    ret, cost = eosapi.push_actions(actions)
+    print(cost)
+    print(ret['except'])
+    assert ret and not ret['except']
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init
+def ttt(count=200):
+    actions = []
+    for i in range(count):
+        args = {"from":'eosio', "to":'eosio.ram', "quantity":'%.4f EOS'%(0.01,), "memo":str(i)}
+        args = eosapi.pack_args('eosio.token', 'transfer', args)
+        action = ['eosio.token', 'transfer', args, [['eosio','active']]]
+        actions.append([action])
+
+    ret, cost = eosapi.push_transactions(actions)
+
+    assert ret
+    print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
 
 @init
 def test3(count=100):

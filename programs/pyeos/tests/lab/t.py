@@ -6,8 +6,21 @@ import debug
 import eosapi
 
 from eosapi import N, push_transactions
-from common import prepare, producer, Sync
+from common import prepare, Sync
 from tools import cpp2wast
+
+def init_debug(wasm=True):
+    def init_decorator(func):
+        def func_wrapper(*args, **kwargs):
+            if wasm:
+                _src_dir = os.path.dirname(os.path.abspath(__file__))
+                cpp2wast.set_src_path(_src_dir)
+                cpp2wast.build_native('lab.cpp', 'lab', debug=False)
+                lib_file = os.path.join(_src_dir, 'liblab.dylib')
+                debug.set_debug_contract('lab', lib_file)
+            return func(*args, **kwargs)
+        return func_wrapper
+    return init_decorator
 
 def init(wasm=True):
     def init_decorator(func):
@@ -27,9 +40,8 @@ sync = Sync(_account = 'lab', _dir = _dir, _ignore = ['lab.py'])
 
 @init(True)
 def test(msg='hello,world'):
-    with producer:
-        r = eosapi.push_action('lab', 'sayhello', msg, {'lab':'active'})
-        assert r
+    r = eosapi.push_action('lab', 'sayhello', msg, {'lab':'active'})
+    assert r
 
 @init()
 def deploy():
@@ -43,15 +55,16 @@ def deploy_mpy():
 def test2(count=100):
     import time
     import json
-
     actions = []
     for i in range(count):
         action = ['lab', 'sayhello', str(i), {'lab':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions)
     assert ret
-    eosapi.produce_block()
+    print(ret['elapsed'])
+    print(cost)
+
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
@@ -82,6 +95,19 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
 def build_native():
     _src_dir = os.path.dirname(os.path.abspath(__file__))
     cpp2wast.set_src_path(_src_dir)
-    cpp2wast.build_native('lab.cpp', 'lab')
+    cpp2wast.build_native('lab.cpp', 'lab', debug=False)
     lib_file = os.path.join(_src_dir, 'liblab.dylib')
     debug.set_debug_contract('lab', lib_file)
+
+@init()
+@init_debug()
+def test3(count=200):
+    actions = []
+    for i in range(count):
+        action = ['counter', 'count', str(i), [['counter','active']]]
+        actions.append([action])
+
+    ret, cost = eosapi.push_transactions(actions)
+
+    assert ret
+    print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))

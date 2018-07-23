@@ -120,25 +120,17 @@ def prepare(account, src, abi, full_src_path, code_type = None):
         print('*'*20, 'create_account')
         _create_account(account)
 
-    old_code = eosapi.get_code(account)
-    need_update = True
-    if old_code:
-        old_code = old_code[0]
-        with open(src, 'rb') as f:
-            code = f.read()
-        if code_type == CODE_TYPE_WAST:
-            code = eosapi.wast2wasm(code)
-            old_code = eosapi.wast2wasm(old_code)
-            if code == old_code:
-                need_update = False
-        elif CODE_TYPE_PY == code_type:
-            code = eosapi.mp_compile(src)
-            if code == old_code[1:]:
-                need_update = False
-        elif (code == old_code[1:] or code == old_code):
-            need_update = False
+    with open(src, 'rb') as f:
+        code = f.read()
+    if code_type == CODE_TYPE_WAST:
+        code = eosapi.wast2wasm(code)
+    elif CODE_TYPE_PY == code_type:
+        code = b'\x01'
+        code += eosapi.mp_compile(src)
 
-    if need_update:
+    code_hash = eosapi.sha256(code)
+    old_hash = eosapi.get_code_hash(account)
+    if code_hash != old_hash:
         print('Updating contract', src)
         if code_type == 0:
             _set_contract(account, src, abi)

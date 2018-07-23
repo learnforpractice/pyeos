@@ -23,3 +23,4 @@ abigen = "${CMAKE_BINARY_DIR}/programs/eosio-abigen/eosio-abigen \
 
 build_dir = "${CMAKE_BINARY_DIR}"
 root_src_dir = "${CMAKE_SOURCE_DIR}"
+dylib_suffix = "${DEBUG_FLAG}${CMAKE_SHARED_LIBRARY_SUFFIX}"

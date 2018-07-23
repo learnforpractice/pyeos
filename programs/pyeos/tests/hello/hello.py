@@ -1,28 +1,23 @@
 import db
-from eoslib import N, read_action
-import logging
+from eoslib import *
 
-def sayHello():
-    n = N('hello')
-    id = N('name')
+def count():
+    code = N('counter')
+    counter_id = N('counter')
 
-    name = read_action()
-    print('hello', name)
-    code = n
-    scope = n
-    table = n
-    payer = n
-    itr = db.find_i64(code, scope, table, id)
-    if itr >= 0: # value exist, update it
-        old_name = db.get_i64(itr)
-        print('helloooooooo,', old_name)
-        db.update_i64(itr, payer, name)
+    itr = db.find_i64(code, code, code, counter_id)
+    if itr >= 0: # value exists, update it
+        counter = db.get_i64(itr)
+#        print('old  counter', int.from_bytes(counter, 'little'))
+        counter = int.from_bytes(counter, 'little')
+        counter += 1
+        counter = int.to_bytes(counter, 4, 'little')
+        db.update_i64(itr, code, counter)
     else:
-        db.store_i64(scope, table, payer, id, name)
+        counter = int.to_bytes(1, 4, 'little')
+        db.store_i64(code, code, code, counter_id, counter)
 
 def apply(receiver, code, action):
-    print("+++++++++++++++hello from cython")
-    if action == N('sayhello'):
-        sayHello()
-    elif action == N('play'):
-        play()
+    if action == N('count'):
+        count()
+
