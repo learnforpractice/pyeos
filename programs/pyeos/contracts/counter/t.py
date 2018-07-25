@@ -19,7 +19,7 @@ def init(wasm=0):
                 prepare('counter', 'counter.wast', 'counter.abi', __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('counter', 'counter.py', 'counter.abi', __file__)
+                prepare('counter', 'counter.py', 'counter.abi', __file__, 7)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
@@ -50,7 +50,7 @@ def test(name=None):
     assert counter_begin + 1 == counter_end
 
 @init()
-def test2(count=100, msg='wasm'):
+def test2(count=1000, msg='wasm'):
     import time
     import json
 

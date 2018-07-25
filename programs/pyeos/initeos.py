@@ -115,22 +115,26 @@ class PyEosConsole(InteractiveConsole):
         super(PyEosConsole, self).__init__(locals=locals, filename="<console>")
 
     def check_module(self):
-        for module in sys.modules.values():
+        for k in sys.modules:
+            module = sys.modules[k]
             if not hasattr(module, '__file__'):
                 continue
-            if module.__file__.endswith('.py'):
-                try:
-                    t1 = os.path.getmtime(module.__file__)
-                    t2 = os.path.getmtime(module.__cached__)
-                except Exception as e:
-                    continue
-                try:
-                    if t1 > t2:
-                        print('Reloading ', module.__file__)
-                        imp.reload(module)
-                except Exception as e:
-                    traceback.print_exc()
-                    return False
+            if not module.__file__.endswith('.py'):
+                continue
+
+            try:
+                t1 = os.path.getmtime(module.__file__)
+                t2 = os.path.getmtime(module.__cached__)
+            except Exception as e:
+                continue
+
+            try:
+                if t1 > t2:
+                    print('Reloading ', module.__file__)
+                    imp.reload(module)
+            except Exception as e:
+                traceback.print_exc()
+                return False
         return True
 
     def interact(self, banner=None, exitmsg=None):
@@ -156,6 +160,7 @@ class PyEosConsole(InteractiveConsole):
                     prompt = sys.ps2
                 else:
                     prompt = sys.ps1
+
                 try:
                     line = self.raw_input(prompt)
                 except EOFError:
@@ -164,8 +169,9 @@ class PyEosConsole(InteractiveConsole):
                 else:
                     if line.strip() == 'exit()':
                         break
-                    if self.check_module():
-                        more = self.push(line)
+                    if line.strip():
+                        self.check_module()
+                    more = self.push(line)
             except KeyboardInterrupt:
                 self.write("\nKeyboardInterrupt\n")
                 self.resetbuffer()
@@ -265,6 +271,7 @@ try:
     from vote import t as vt2
     from native import t as nt
     from vmstore import t as vt
+    from inspector import t as it
 #    from biosboot import t as bb
     import d
 except Exception as e:
