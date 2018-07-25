@@ -4,38 +4,46 @@
 
 #include <eosiolib_native/vm_api.h>
 
+#include "inspector.hpp"
+
 static struct vm_api* s_api;
 
 extern "C" {
 PyObject* PyInit_eoslib();
 PyObject* PyInit_db();
 PyObject* PyInit_vm_cpython();
+PyObject* PyInit__struct(void);
 }
 
-int init_cpython();
 int cpython_setcode(uint64_t account, string& code);
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
+int init_function_whitelist();
 
-void get_code(uint64_t account, string& code) {
+      void get_code(uint64_t account, string& code) {
    size_t size;
    const char* _code = get_vm_api()->get_code(account, &size);
    code = string(_code, size);
 }
 
-int init_cpython_() {
-   Py_InitializeEx(0);
-   PyInit_vm_cpython();
-   return 1;
-}
-
 void vm_init(struct vm_api* api) {
    s_api = api;
    vm_register_api(api);
+   init_injected_apis();
+
+   Py_NoSiteFlag = 1;
+   PyImport_AppendInittab("_struct", PyInit__struct);
+
    Py_InitializeEx(0);
-   PyRun_SimpleString("import sys;sys.path.append('/Users/newworld/dev/pyeos/libraries/python-ss/Lib')");
+
+   PyImport_ImportModule("_struct");
+
+   PyRun_SimpleString("import struct");
    PyInit_eoslib();
    PyInit_db();
    PyInit_vm_cpython();
+   init_function_whitelist();
+
+   enable_injected_apis_();
 }
 
 void vm_deinit() {

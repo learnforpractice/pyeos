@@ -26,8 +26,10 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx
 )
 
-add_library(vm_cpython_ss SHARED 
+add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
+            inspector.cpp
+            opcode.cc
             db.wrap.cpp
             eoslib_.cpp
             eoslib.wrap.cpp
