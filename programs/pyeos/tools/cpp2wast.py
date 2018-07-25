@@ -128,7 +128,11 @@ def build_native(src_file, lib_name, force=False):
     -I{src_path}"
 
     INCLUDES = INCLUDES.format(root_src_dir=tools_config.root_src_dir, src_path=src_path)
-    compile_cmd = 'clang++  -Deosio_token_native_EXPORTS {includes} -Wall -Wno-deprecated-declarations -DDEBUG -g -fPIC   -std=gnu++14 -o {src_file}.o -c {src_path}/{src_file}'
+    if debug:
+        compile_cmd = 'clang++  -Deosio_token_native_EXPORTS {includes} -Wall -Wno-deprecated-declarations -DDEBUG -g -fPIC   -std=gnu++14 -o {src_file}.o -c {src_path}/{src_file}'
+    else:
+        compile_cmd = 'clang++  -Deosio_token_native_EXPORTS {includes} -Wall -Wno-deprecated-declarations -fPIC -std=gnu++14 -o {src_file}.o -c {src_path}/{src_file}'
+
     compile_cmd = compile_cmd.format(includes=INCLUDES, src_path=src_path, src_file=src_file)
 
     compile_cmd = shlex.split(compile_cmd)
