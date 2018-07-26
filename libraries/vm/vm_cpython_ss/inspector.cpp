@@ -19,6 +19,7 @@ struct opcode_map
 extern struct opcode_map _opcode_map[];
 
 inspector::inspector() {
+   current_module = nullptr;
    current_account = 0;
    opcode_blacklist.resize(158, 0);//158
 //   opcode_blacklist[IMPORT_NAME] = 1;
@@ -49,7 +50,7 @@ void inspector::set_current_account(uint64_t account) {
 
 
 int inspector::inspect_function(PyObject* func) {
-   printf("++++++inspector::inspect_function: %p\n", func);
+//   printf("++++++inspector::inspect_function: %p\n", func);
    return py_inspect_function(func);
    return function_whitelist.find(func) != function_whitelist.end();
 }
@@ -94,11 +95,11 @@ int inspector::inspect_getattr(PyObject* v, PyObject* name) {
 }
 
 int inspector::add_account_function(uint64_t account, PyObject* func) {
-   auto it = accounts_info.find(account);
-   if (it == accounts_info.end()) {
-      auto _new_map = std::make_unique<account_info>();
-      accounts_info[account] = std::move(_new_map);
-      it = accounts_info.find(account);
+   auto it = accounts_info_map.find(account);
+   if (it == accounts_info_map.end()) {
+      auto _new_map = std::make_shared<account_info>();
+      accounts_info_map[account] = _new_map;
+      it = accounts_info_map.find(account);
    }
    it->second->account_functions[func] = func;
    return 1;
@@ -115,18 +116,18 @@ int inspector::inspect_opcode(int opcode) {
 }
 
 void inspector::add_code_object_to_current_account(PyCodeObject* co) {
-   auto it = accounts_info.find(current_account);
-   if (it == accounts_info.end()) {
+   auto it = accounts_info_map.find(current_account);
+   if (it == accounts_info_map.end()) {
       auto _new_map = std::make_unique<account_info>();
-      accounts_info[current_account] = std::move(_new_map);
-      it = accounts_info.find(current_account);
+      accounts_info_map[current_account] = std::move(_new_map);
+      it = accounts_info_map.find(current_account);
    }
    it->second->code_objects[co] = 1;
 }
 
 int inspector::is_code_object_in_current_account(PyCodeObject* co) {
-   auto it = accounts_info.find(current_account);
-   if (it == accounts_info.end()) {
+   auto it = accounts_info_map.find(current_account);
+   if (it == accounts_info_map.end()) {
       return 0;
    }
 
@@ -139,6 +140,68 @@ int inspector::is_code_object_in_current_account(PyCodeObject* co) {
 
 void inspector::set_current_module(PyObject* mod) {
    current_module = mod;
+}
+
+void inspector::memory_trace_start() {
+
+}
+
+void inspector::memory_trace_stop() {
+
+}
+
+void inspector::memory_trace_alloc(void* ptr, size_t new_size) {
+   if (!current_account) {
+      return;
+   }
+
+   auto _account_info = accounts_info_map.find(current_account);
+   if (_account_info == accounts_info_map.end()) {
+      return;
+   }
+
+   auto _memory_info = std::make_unique<account_memory_info>();
+   _memory_info->size = new_size;
+   _memory_info->info = _account_info->second;
+
+   memory_info_map[ptr] = std::move(_memory_info);
+}
+
+void inspector::memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size) {
+   if (!current_account) {
+      return;
+   }
+
+   auto _account_info = accounts_info_map.find(current_account);
+   if (_account_info == accounts_info_map.end()) {
+      return;
+   }
+
+   auto it = memory_info_map.find(old_ptr);
+   it->second->info->total_used_memory -= it->second->size;
+   it->second->info->total_used_memory += new_size;
+
+   if (old_ptr == new_ptr) {
+      it->second->size = new_size;
+   } else {
+      memory_info_map.erase(it);
+      auto _memory_info = std::make_unique<account_memory_info>();
+      _memory_info->size = new_size;
+      _memory_info->info = _account_info->second;
+      memory_info_map[new_ptr] = std::move(_memory_info);
+   }
+}
+
+void inspector::memory_trace_free(void* ptr) {
+   if (!current_account) {
+      return;
+   }
+   auto it = memory_info_map.find(ptr);
+   if (it == memory_info_map.end()) {
+      return;
+   }
+   it->second->info->total_used_memory -= it->second->size;
+   memory_info_map.erase(it);
 }
 
 void whitelist_function_(PyObject* func) {
@@ -215,6 +278,26 @@ int is_code_object_in_current_account_(PyCodeObject* co) {
    return inspector::get().is_code_object_in_current_account(co);
 }
 
+void memory_trace_start_() {
+   inspector::get().memory_trace_start();
+}
+
+void memory_trace_stop_() {
+   inspector::get().memory_trace_stop();
+}
+
+void memory_trace_alloc_(void* ptr, size_t new_size) {
+   inspector::get().memory_trace_alloc(ptr, new_size);
+}
+
+void memory_trace_realloc_(void* old_ptr, void* new_ptr, size_t new_size) {
+   inspector::get().memory_trace_realloc(old_ptr, new_ptr, new_size);
+}
+
+void memory_trace_free_(void* ptr) {
+   inspector::get().memory_trace_free(ptr);
+}
+
 int check_time_() {
    try {
       get_vm_api()->checktime();
@@ -243,6 +326,13 @@ void init_injected_apis() {
    apis->inspect_getattr = inspect_getattr_;
 
    apis->inspect_opcode = inspect_opcode_;
+
+   apis->memory_trace_start = memory_trace_start_;
+   apis->memory_trace_stop = memory_trace_stop_;
+   apis->memory_trace_alloc = memory_trace_alloc_;
+   apis->memory_trace_realloc = memory_trace_realloc_;
+   apis->memory_trace_free = memory_trace_free_;
+
    apis->check_time = check_time_;
 
    apis->add_code_object_to_current_account = add_code_object_to_current_account_;

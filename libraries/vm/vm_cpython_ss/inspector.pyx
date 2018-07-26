@@ -56,14 +56,23 @@ cdef extern string get_c_string(object s):
     return s
 
 cdef extern int py_inspect_function(object func):
-    print('++++py_inspect_function',func)
+#    print('++++py_inspect_function',func)
     if func in function_whitelist:
         return 1
     return 0
 
-cdef extern int py_inspect_setattr(object v, object name):
+ModuleType = type(db)
+
+cdef extern int py_inspect_setattr(v, name):
 #    print('++++++++py_inspect_setattr:',v, name)
-    return 1
+    if name == '__init__':
+        return 1
+    if name.startswith('__'):
+        return 0
+    if ModuleType == type(v):
+        if __current_module != v:
+            return 0
+    return 0
 
 cdef extern int py_inspect_getattr(object v, object name):
     if __current_module == v:

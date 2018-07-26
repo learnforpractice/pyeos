@@ -7,6 +7,7 @@ from libcpp.map cimport map
 import db
 import eoslib
 import struct
+import _tracemalloc
 
 import vm
 import inspector
@@ -75,7 +76,9 @@ def load_module(account, code):
         enable_create_code_object_(1)
         co = compile(code, name, 'exec')
         if validate(co.co_code):
+            _tracemalloc.start()
             builtin_exec_(co, module.__dict__, module.__dict__)
+            _tracemalloc.stop()
         else:
             py_modules[account] = dummy()
         return module

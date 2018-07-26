@@ -24,8 +24,20 @@ using namespace std;
 
 class account_info {
 public:
+   account_info() {
+      total_used_memory = 0;
+      account = 0;
+   }
+
    map<PyObject*, PyObject*> account_functions;
    map<PyCodeObject*, int> code_objects;
+   int total_used_memory;
+   uint64_t account;
+};
+
+struct account_memory_info {
+   std::shared_ptr<account_info> info;
+   size_t size;
 };
 
 class inspector {
@@ -58,6 +70,12 @@ public:
 
    void set_current_module(PyObject* mod);
 
+   void memory_trace_start();
+   void memory_trace_stop();
+   void memory_trace_alloc(void* ptr, size_t new_size);
+   void memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size);
+   void memory_trace_free(void* ptr);
+
 private:
    PyObject* current_module;
    uint64_t current_account;
@@ -66,7 +84,8 @@ private:
 
    map<PyObject*, PyObject*> function_whitelist;
    vector<int> opcode_blacklist;//158
-   map<uint64_t, std::unique_ptr<account_info>> accounts_info;
+   map<uint64_t, std::shared_ptr<account_info>> accounts_info_map;
+   map<void*, std::unique_ptr<account_memory_info>> memory_info_map;
 };
 
 //account_functions
