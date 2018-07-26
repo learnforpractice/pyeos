@@ -15,6 +15,13 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/inspector.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/inspector.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/inspector.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/inspector.pyx
+)
+
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx
@@ -28,6 +35,7 @@ add_custom_command(
 
 add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
+            inspector.wrap.cpp
             inspector.cpp
             opcode.cc
             db.wrap.cpp

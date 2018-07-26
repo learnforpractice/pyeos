@@ -6,6 +6,9 @@ using namespace std;
 
 //vm_cpython.pyx
 string get_c_string(PyObject* s);
+int py_inspect_getattr(PyObject* v, PyObject* name);
+int py_inspect_setattr(PyObject* v, PyObject* name);
+int py_inspect_function(PyObject* func);
 
 struct opcode_map
 {
@@ -16,6 +19,7 @@ struct opcode_map
 extern struct opcode_map _opcode_map[];
 
 inspector::inspector() {
+   current_account = 0;
    opcode_blacklist.resize(158, 0);//158
 //   opcode_blacklist[IMPORT_NAME] = 1;
    opcode_blacklist[CALL_FUNCTION] = 1;
@@ -39,8 +43,14 @@ inspector& inspector::get() {
    return *inst;
 }
 
+void inspector::set_current_account(uint64_t account) {
+   current_account = account;
+}
+
+
 int inspector::inspect_function(PyObject* func) {
-   printf("inspect function %p\n", func);
+   printf("++++++inspector::inspect_function: %p\n", func);
+   return py_inspect_function(func);
    return function_whitelist.find(func) != function_whitelist.end();
 }
 
@@ -59,30 +69,38 @@ int inspector::inspect_import_name(const string& name) {
 }
 
 int inspector::whitelist_attr(const char* name) {
-
+   return 1;
 }
 
-int inspector::inspect_attr(PyObject* name) {
+int inspector::inspect_setattr(PyObject* v, PyObject* name) {
+   return py_inspect_setattr(v, name);
+
    string _name = get_c_string(name);
-   printf("++++++++++inspect_attr: %s \n", _name.c_str());
+   printf("++++++++++inspect_setattr: %s \n", _name.c_str());
    if (_name == "__init__") {
       return true;
    }
 
    if (_name.size() >= 2 && _name[0] == '_' && _name[1] == '_') {
-      printf("inspect_attr failed\n");
+      printf("inspect_setattr failed\n");
       return false;
    }
 
    return true;
 }
 
+int inspector::inspect_getattr(PyObject* v, PyObject* name) {
+   return py_inspect_getattr(v, name);
+}
+
 int inspector::add_account_function(uint64_t account, PyObject* func) {
-   if (account_functions.find(account) == account_functions.end()) {
-      auto _new_map = std::make_unique<map<PyObject*, PyObject*>>();
-      account_functions[account] = std::move(_new_map);
+   auto it = accounts_info.find(account);
+   if (it == accounts_info.end()) {
+      auto _new_map = std::make_unique<account_info>();
+      accounts_info[account] = std::move(_new_map);
+      it = accounts_info.find(account);
    }
-   (*account_functions[account])[func] = func;
+   it->second->account_functions[func] = func;
    return 1;
 }
 
@@ -94,6 +112,33 @@ int inspector::whitelist_opcode(int opcode) {
 int inspector::inspect_opcode(int opcode) {
    printf("inspect opcode %s \n", opcode_map[opcode]);
    return !opcode_blacklist[opcode];
+}
+
+void inspector::add_code_object_to_current_account(PyCodeObject* co) {
+   auto it = accounts_info.find(current_account);
+   if (it == accounts_info.end()) {
+      auto _new_map = std::make_unique<account_info>();
+      accounts_info[current_account] = std::move(_new_map);
+      it = accounts_info.find(current_account);
+   }
+   it->second->code_objects[co] = 1;
+}
+
+int inspector::is_code_object_in_current_account(PyCodeObject* co) {
+   auto it = accounts_info.find(current_account);
+   if (it == accounts_info.end()) {
+      return 0;
+   }
+
+   auto& code_objs = it->second->code_objects;
+   if (code_objs.find(co) == code_objs.end()) {
+      return 0;
+   }
+   return 1;
+}
+
+void inspector::set_current_module(PyObject* mod) {
+   current_module = mod;
 }
 
 void whitelist_function_(PyObject* func) {
@@ -117,8 +162,12 @@ int whitelist_attr_(const char* name) {
    return 0;
 }
 
-int inspect_attr_(PyObject* name) {
-   return inspector::get().inspect_attr(name);
+int inspect_setattr_(PyObject* v, PyObject* name) {
+   return inspector::get().inspect_setattr(v, name);
+}
+
+int inspect_getattr_(PyObject* v, PyObject* name) {
+   return inspector::get().inspect_getattr(v, name);
 }
 
 int whitelist_opcode_(int opcode) {
@@ -150,6 +199,22 @@ void enable_create_code_object_(int enable) {
    }
 }
 
+void set_current_account_(uint64_t account) {
+   inspector::get().set_current_account(account);
+}
+
+void set_current_module_(PyObject* mod) {
+   inspector::get().set_current_module(mod);
+}
+
+void add_code_object_to_current_account_(PyCodeObject* co) {
+   inspector::get().add_code_object_to_current_account(co);
+}
+
+int is_code_object_in_current_account_(PyCodeObject* co) {
+   return inspector::get().is_code_object_in_current_account(co);
+}
+
 int check_time_() {
    try {
       get_vm_api()->checktime();
@@ -174,10 +239,13 @@ void init_injected_apis() {
 
 
    apis->whitelist_attr = whitelist_attr_;
-   apis->inspect_attr = inspect_attr_;
+   apis->inspect_setattr = inspect_setattr_;
+   apis->inspect_getattr = inspect_getattr_;
 
    apis->inspect_opcode = inspect_opcode_;
    apis->check_time = check_time_;
+
+   apis->add_code_object_to_current_account = add_code_object_to_current_account_;
 }
 
 void enable_injected_apis_() {

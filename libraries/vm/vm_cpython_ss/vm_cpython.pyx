@@ -8,6 +8,9 @@ import db
 import eoslib
 import struct
 
+import vm
+import inspector
+
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
 
@@ -19,34 +22,21 @@ cdef extern from "vm_cpython.h":
     void enable_opcode_inspector_(int enable);
 
     object builtin_exec_(object source, object globals, object locals);
+
     void inspect_set_status_(int status);
     void enable_create_code_object_(int enable);
-
-py_modules = {}
-
-cdef extern int init_function_whitelist():
-    for _dict in [db.__dict__, eoslib.__dict__, struct.__dict__, int.__dict__]:
-        for k in _dict:
-            v = _dict[k]
-            if callable(v):
-                print('+++++++++',v)
-                whitelist_function_(v)
-    whitelist = [    int.from_bytes, 
-                     int.to_bytes, 
-                     hasattr, 
-                     getattr, 
-                     setattr, 
-                     getattr(globals()['__builtins__'], 'print'),
-                 ]
-    for bltin in whitelist:
-        whitelist_function_(bltin)
+    void set_current_account_(uint64_t account);
+    void set_current_module_(object mod);
 
 def _get_code(uint64_t account):
     cdef string code
     get_code(account,  code)
     return code
 
-ModuleType = type(db)
+__current_module = None
+py_modules = {}
+
+ModuleType = type(inspector)
 
 def new_module(name):
     return ModuleType(name)
@@ -74,74 +64,58 @@ def validate(code):
             return False
     return True
 
-'''
-def _load_module(account, code):
-    try:
-        module = new_module(eoslib.n2s(account))
-        ret = builtin_exec_(code, module.__dict__, module.__dict__)
-#        exec(code, module.__dict__)
-#        del module.__dict__['__builtins__']
-        if ret:
-            py_modules[account] = module
-        else:
-            py_modules[account] = dummy()
-        return module
-    except Exception as e:
-        enable_opcode_inspector_(0)
-        print(e)
-    return None
-'''
-
-def _load_module(account, code):
-    enable_create_code_object_(1)
+def load_module(account, code):
+    print('++++load_module')
     try:
         name = eoslib.n2s(account)
         module = new_module(name)
+        inspector.set_current_module(module)
+
+        enable_injected_apis_(1)
+        enable_create_code_object_(1)
         co = compile(code, name, 'exec')
         if validate(co.co_code):
-            exec(co, module.__dict__)
-            py_modules[account] = module
+            builtin_exec_(co, module.__dict__, module.__dict__)
         else:
             py_modules[account] = dummy()
         return module
     except Exception as e:
-        enable_opcode_inspector_(0)
-        print(e)
+        inspector.enable_opcode_inspector(0)
+        print('vm.load_module', e)
     return None
 
-
-cdef extern string get_c_string(object s):
-    return s
-
 cdef extern int cpython_setcode(uint64_t account, string& code):
+    set_current_account_(account)
     if account in py_modules:
         del py_modules[account]
-    if _load_module(account, code):
+
+    enable_injected_apis_(1)
+    enable_create_code_object_(1)
+    ret = load_module(account, code)
+
+    if ret:
         return 1
     return 0
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action):
-    print("++++cpython_apply")
-    try:
-        apply = None
-        if receiver in py_modules:
-            apply = py_modules[receiver].apply
-        else:
-            code = _get_code(receiver)
-            mod = _load_module(receiver, code)
-            if mod:
-                apply = mod.apply
-        print('++++++++apply:', apply)
-        if apply:
-            enable_create_code_object_(0)
-            enable_injected_apis_(1)
-            apply(receiver, account, action)
-            enable_create_code_object_(1)
-            enable_injected_apis_(0)
-            return 1;
+    set_current_account_(receiver)
+    mod = None
+    if receiver in py_modules:
+        mod = py_modules[receiver]
+    else:
+        code = _get_code(receiver)
+        mod = load_module(receiver, code)
+    if not mod:
         return 0
-    except:
-        enable_create_code_object_(1)
-        enable_injected_apis_(0)
-#        print(e)
-    return 0
+
+    inspector.set_current_module(mod)
+
+    enable_injected_apis_(1)
+    enable_create_code_object_(0)
+
+    ret = vm.apply(mod, receiver, account, action)
+
+    enable_create_code_object_(1)
+    enable_injected_apis_(0)
+
+    return ret

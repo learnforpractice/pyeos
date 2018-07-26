@@ -12,6 +12,7 @@ extern "C" {
 PyObject* PyInit_eoslib();
 PyObject* PyInit_db();
 PyObject* PyInit_vm_cpython();
+PyObject* PyInit_inspector();
 PyObject* PyInit__struct(void);
 }
 
@@ -19,7 +20,7 @@ int cpython_setcode(uint64_t account, string& code);
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 int init_function_whitelist();
 
-      void get_code(uint64_t account, string& code) {
+void get_code(uint64_t account, string& code) {
    size_t size;
    const char* _code = get_vm_api()->get_code(account, &size);
    code = string(_code, size);
@@ -40,6 +41,7 @@ void vm_init(struct vm_api* api) {
    PyRun_SimpleString("import struct");
    PyInit_eoslib();
    PyInit_db();
+   PyInit_inspector();
    PyInit_vm_cpython();
    init_function_whitelist();
 
