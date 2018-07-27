@@ -33,12 +33,20 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
+    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx
+)
+
+
 add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
             inspector.wrap.cpp
             inspector.cpp
             opcode.cc
             db.wrap.cpp
+            test.wrap.cpp
             eoslib_.cpp
             eoslib.wrap.cpp
             vm_cpython.cpp)

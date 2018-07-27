@@ -19,8 +19,12 @@ cdef extern from "vm_cpython.h":
     void get_code(uint64_t account, string& code)
 
     void enable_injected_apis_(int enabled)
-    void whitelist_function_(object func)
     void enable_opcode_inspector_(int enable);
+
+    void enable_filter_set_attr_(int enable);
+    void enable_filter_get_attr_(int enable);
+
+    void whitelist_function_(object func)
 
     object builtin_exec_(object source, object globals, object locals);
 
@@ -28,6 +32,8 @@ cdef extern from "vm_cpython.h":
     void enable_create_code_object_(int enable);
     void set_current_account_(uint64_t account);
     void set_current_module_(object mod);
+    
+    
 
 def _get_code(uint64_t account):
     cdef string code
@@ -46,13 +52,37 @@ class dummy:
     def apply(self, a,b,c):
         pass
 
+class _sandbox:
+    def __enter__(self):
+        _tracemalloc.start()
+
+#        enable_opcode_inspector_(1)
+
+        enable_injected_apis_(1)
+        enable_create_code_object_(0)
+        enable_filter_set_attr_(1)
+        enable_filter_get_attr_(1)
+
+    def __exit__(self, type, value, traceback):
+        _tracemalloc.stop()
+
+#        enable_opcode_inspector_(0)
+
+        enable_injected_apis_(0)
+        enable_create_code_object_(1)
+        enable_filter_set_attr_(0)
+        enable_filter_get_attr_(0)
+
+sandbox = _sandbox()
+
 '''
 #define CALL_FUNCTION           131
 #define CALL_FUNCTION_KW        141
 #define CALL_FUNCTION_EX        142
 #define SETUP_WITH              143
 '''
-opcodes = [131, 141, 142, 143]
+#opcodes = [131, 141, 142, 143]
+opcodes = []
 opcode_blacklist = [False for i in range(255)]
 for opcode in opcodes:
     opcode_blacklist[opcode] = True
@@ -71,19 +101,14 @@ def load_module(account, code):
         name = eoslib.n2s(account)
         module = new_module(name)
         inspector.set_current_module(module)
-
-        enable_injected_apis_(1)
-        enable_create_code_object_(1)
         co = compile(code, name, 'exec')
         if validate(co.co_code):
-            _tracemalloc.start()
             builtin_exec_(co, module.__dict__, module.__dict__)
-            _tracemalloc.stop()
+            py_modules[account] = module
         else:
             py_modules[account] = dummy()
         return module
     except Exception as e:
-        inspector.enable_opcode_inspector(0)
         print('vm.load_module', e)
     return None
 
@@ -91,9 +116,6 @@ cdef extern int cpython_setcode(uint64_t account, string& code):
     set_current_account_(account)
     if account in py_modules:
         del py_modules[account]
-
-    enable_injected_apis_(1)
-    enable_create_code_object_(1)
     ret = load_module(account, code)
 
     if ret:
@@ -113,12 +135,8 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     inspector.set_current_module(mod)
 
-    enable_injected_apis_(1)
-    enable_create_code_object_(0)
-
-    ret = vm.apply(mod, receiver, account, action)
-
-    enable_create_code_object_(1)
-    enable_injected_apis_(0)
+    ret = 0
+    with sandbox:
+        ret = vm.apply(mod, receiver, account, action)
 
     return ret

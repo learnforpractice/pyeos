@@ -95,6 +95,9 @@ void init_injected_apis();
 void enable_injected_apis_(int enabled);
 void enable_opcode_inspector_(int enable);
 
+void enable_filter_set_attr_(int enable);
+void enable_filter_get_attr_(int enable);
+
 void whitelist_function_(PyObject* func);
 int inspect_function_(PyObject* func);
 
@@ -113,6 +116,6 @@ void set_current_account_(uint64_t account);
 void set_current_module_(PyObject* mod);
 
 //object.c
-extern "C" int attr_is_function(PyObject* v, PyObject* name);
+extern "C" int filter_attr(PyObject* v, PyObject* name);
 
 #endif /* LIBRARIES_VM_VM_CPYTHON_SS_INSPECTOR_HPP_ */

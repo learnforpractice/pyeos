@@ -1,66 +1,81 @@
 import db
 from eoslib import N, read_action
 
+def assert_success(func):
+    def func_wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            print('++++test:', func, 'FAILED!')
+            assert False
+        print('++++test:', func, 'PASSED!')
+        return True
+    return func_wrapper
+
+def assert_failed(func):
+    def func_wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            print('++++test:', func, 'PASSED!')
+            return True
+        print('++++test:', func, 'FAILED!')
+        return False
+    return func_wrapper
+
+
+@assert_failed
+def test_getattr():
+    print('++++++++++++++++++++', 'test_getattr begin')
+    a = db.__builtins__
+    print(a)
+    print('++++++++++++++++++++', 'test_getattr end')
+
+@assert_failed
 def test_setattr():
-    try:
-        db.__ab = 'abc'
-        print(db.__ab)
-    except Exception as e:
-        print(e)
+    db.get_i64 = 'abc'
 
-    try:
-        db.get_i64 = 'abc'
-    except Exception as e:
-        print(e)
-
+@assert_failed
 def test_code_object():
-    try:
-        (lambda fc=(
-            lambda n: [
-                c for c in 
-                    ().__class__.__bases__[0].__subclasses__() 
-                    if c.__name__ == n
-                ][0]
-            ):
-            fc("function")(
-                fc("code")(
-                0,
-                0,
-                0,
-                0,
-                0,
-                b"KABOOM",
-                (None,),
-                (),
-                (),
-                '',
-                '',
-                1,
-                b'',
-                (),
-                ()
-                ),{}
-            )()
-        )()
-    except Exception as e:
-        print(e)
+    type(test_code_object.__code__)(0, 0, 0, 0, 0, b'', (), (), (), '', '', 1, b'')
+
 '''
 code(argcount, kwonlyargcount, nlocals, stacksize, flags, codestring,
          constants, names, varnames, filename, name, firstlineno,
          lnotab[, freevars[, cellvars]])
 '''
 
-def test_attr():
-    try:
-        type(test_attr.__code__)(0, 0, 0, 0, 0, b'', (), (), (), '', '', 1, b'')
-    except Exception as e:
-        print(e)
+@assert_failed
+def test_code_object2():
+    (lambda fc=(
+        lambda n: [
+            c for c in 
+                ().__class__.__bases__[0].__subclasses__() 
+                if c.__name__ == n
+            ][0]
+        ):
+        fc("function")(
+            fc("code")(
+            0,
+            0,
+            0,
+            0,
+            0,
+            b"KABOOM",
+            (None,),
+            (),
+            (),
+            '',
+            '',
+            1,
+            b'',
+            (),
+            ()
+            ),{}
+        )()
+    )()
 
-    try:
-        test_attr.__code__ = None
-    except Exception as e:
-        print(e)
-
+@assert_success
 def test_builtin_types():
     a = {}
     a = dict()
@@ -69,12 +84,51 @@ def test_builtin_types():
     a = [1, 2, 3]
     print(a[1])
 
+@assert_failed
+def test_builtins():
+    __builtins__['pow']()
+
+@assert_failed
+def test_call_with_key_words():
+    kwargs = {}
+    exec(test_call_with_key_words.__code__, **kwargs)
+
+def fake_func():
+    pass
+
+class A():
+    pass
+
+@assert_failed
+def test_change_builtin_module():
+    a = 'abc'
+    a.fake_func = fake_func
+
+@assert_success
+def test_change_builtin_module2():
+    a = A()
+    a.fake_func = fake_func
+
+
+@assert_failed
+def test_import():
+    import struct
+    import pickle
+
+
 def apply(receiver, code, action):
-    print('hello,world')
-    try:
+    test_getattr()
+    if 0:
         test_setattr()
+
         test_code_object()
-        test_attr()
+        test_code_object2()
+    
         test_builtin_types()
-    except Exception as e:
-        print('++++++++', e)
+        test_builtins()
+
+        test_call_with_key_words()
+
+        test_change_builtin_module()
+        test_change_builtin_module2()
+        test_import()

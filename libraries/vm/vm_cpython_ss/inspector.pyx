@@ -23,7 +23,7 @@ cdef extern from "vm_cpython.h":
     void enable_create_code_object_(int enable);
     void set_current_account_(uint64_t account);
 
-    int attr_is_function(object v, object name);
+    int filter_attr(object v, object name);
 
 function_whitelist = {}
 cdef extern int init_function_whitelist():
@@ -55,10 +55,14 @@ def add_function_to_white_list(func):
 cdef extern string get_c_string(object s):
     return s
 
-cdef extern int py_inspect_function(object func):
+cdef extern int py_inspect_function(func):
 #    print('++++py_inspect_function',func)
     if func in function_whitelist:
         return 1
+
+    if type(func.__self__) in [str, list, int]:
+        return 1
+
     return 0
 
 ModuleType = type(db)
@@ -74,12 +78,11 @@ cdef extern int py_inspect_setattr(v, name):
             return 0
     return 0
 
-cdef extern int py_inspect_getattr(object v, object name):
+cdef extern int py_inspect_getattr(v, name):
+#    print('+++++++++py_inspect_getattr:',v, name)
     if __current_module == v:
         return 1
-    return attr_is_function(v, name)
-    print('+++++++++py_inspect_getattr:',v, name)
-    return 1
+    return filter_attr(v, name)
 
 def enable_create_code_object(enable):
     enable_create_code_object_(enable)

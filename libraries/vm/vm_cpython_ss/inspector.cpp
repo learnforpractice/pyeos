@@ -23,9 +23,9 @@ inspector::inspector() {
    current_account = 0;
    opcode_blacklist.resize(158, 0);//158
 //   opcode_blacklist[IMPORT_NAME] = 1;
-   opcode_blacklist[CALL_FUNCTION] = 1;
-   opcode_blacklist[CALL_FUNCTION_KW] = 1;
-   opcode_blacklist[CALL_FUNCTION_EX] = 1;
+//   opcode_blacklist[CALL_FUNCTION] = 1;
+//   opcode_blacklist[CALL_FUNCTION_KW] = 1;
+//   opcode_blacklist[CALL_FUNCTION_EX] = 1;
 
    import_name_whitelist["struct"] = 1;
    import_name_whitelist["_struct"] = 1;
@@ -47,7 +47,6 @@ inspector& inspector::get() {
 void inspector::set_current_account(uint64_t account) {
    current_account = account;
 }
-
 
 int inspector::inspect_function(PyObject* func) {
 //   printf("++++++inspector::inspect_function: %p\n", func);
@@ -262,6 +261,22 @@ void enable_create_code_object_(int enable) {
    }
 }
 
+void enable_filter_set_attr_(int enable) {
+   if (enable) {
+      get_injected_apis()->enable_filter_set_attr = 1;
+   } else {
+      get_injected_apis()->enable_filter_set_attr = 0;
+   }
+}
+
+void enable_filter_get_attr_(int enable) {
+   if (enable) {
+      get_injected_apis()->enable_filter_get_attr = 1;
+   } else {
+      get_injected_apis()->enable_filter_get_attr = 0;
+   }
+}
+
 void set_current_account_(uint64_t account) {
    inspector::get().set_current_account(account);
 }
@@ -313,6 +328,8 @@ void init_injected_apis() {
    apis->status = 0;
    apis->enable_create_code_object = 0;
    apis->enable_opcode_inspect = 0;
+   apis->enable_filter_set_attr = 0;
+   apis->enable_filter_get_attr = 0;
 
    apis->whitelist_function = whitelist_function_;
    apis->inspect_function = inspect_function_;
@@ -324,6 +341,7 @@ void init_injected_apis() {
    apis->whitelist_attr = whitelist_attr_;
    apis->inspect_setattr = inspect_setattr_;
    apis->inspect_getattr = inspect_getattr_;
+
 
    apis->inspect_opcode = inspect_opcode_;
 
