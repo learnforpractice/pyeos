@@ -97,7 +97,10 @@ def fake_func():
     pass
 
 class A():
-    pass
+    def __init__(self):
+        pass
+    def sayHello(self):
+        print('hello from A')
 
 @assert_failed
 def test_change_builtin_module():
@@ -109,26 +112,57 @@ def test_change_builtin_module2():
     a = A()
     a.fake_func = fake_func
 
+@assert_success
+def test_change_builtin_module3():
+    a = A()
+    a.sayHello()
 
 @assert_failed
 def test_import():
-    import struct
     import pickle
 
 
+def test_crash1():
+    raise SystemExit
+
+def test_crash2():
+    i=''
+    for _ in range(9**6):i=filter(int,i)
+    del i
+
+def assert_failed(func):
+    def func_wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            print('++++test:', func, 'PASSED!')
+            return True
+        print('++++test:', func, 'FAILED!')
+        return False
+    return func_wrapper
+def test_recursive_call():
+    test_recursive_call()
+    f = lambda f:f(f)
+    f(f)
+
 def apply(receiver, code, action):
-    test_getattr()
+#    test_crash1()
+#    test_crash2()
+    test_recursive_call()
+
     if 0:
+        test_getattr()
         test_setattr()
 
         test_code_object()
         test_code_object2()
-    
+
         test_builtin_types()
         test_builtins()
 
         test_call_with_key_words()
 
         test_change_builtin_module()
+        test_change_builtin_module3()
         test_change_builtin_module2()
         test_import()
