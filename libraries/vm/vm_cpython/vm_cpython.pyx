@@ -35,12 +35,12 @@ def _load_module(account, code):
         logging.exception(e)
     return None
 
-cdef extern int cpython_setcode(uint64_t account, string& code) with gil:
+cdef extern int cpython_setcode(uint64_t account, string& code):
     if _load_module(account, code):
         return 1
     return 0
 
-cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) with gil:
+cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action):
     try:
         if receiver in py_modules:
             co = py_modules[receiver]
