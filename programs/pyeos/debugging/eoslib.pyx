@@ -64,6 +64,9 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int db_idx_double_next( int iterator, uint64_t& primary  )
     int db_idx_double_previous( int iterator, uint64_t& primary )
 
+    void pack_bytes_(string& _in, string& out);
+    void unpack_bytes_(string& _in, string& out);
+
 cdef extern from "eoslib_.hpp" namespace "eosio::chain":
     uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args, vector[char]& result);
 
@@ -138,3 +141,12 @@ def hash64(data, uint64_t seed = 0):
     return XXH64(data, len(data), seed)
 
 
+def pack_bytes(string& _in):
+    cdef string out
+    pack_bytes_(_in, out)
+    return <bytes>out
+
+def unpack_bytes(string& _in):
+    cdef string out
+    unpack_bytes_(_in, out)
+    return <bytes>out
