@@ -54,7 +54,6 @@ class dummy:
 
 class _sandbox:
     def __enter__(self):
-        _tracemalloc.start()
 
 #        enable_opcode_inspector_(1)
 
@@ -64,7 +63,6 @@ class _sandbox:
         enable_filter_get_attr_(1)
 
     def __exit__(self, type, value, traceback):
-        _tracemalloc.stop()
 
 #        enable_opcode_inspector_(0)
 
@@ -124,14 +122,17 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     set_current_account_(account)
     if account in py_modules:
         del py_modules[account]
-    ret = load_module(account, code)
 
+    _tracemalloc.start()
+    ret = load_module(account, code)
+    _tracemalloc.stop()
     if ret:
         return 1
     return 0
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
     set_current_account_(receiver)
+    _tracemalloc.start()
     mod = None
     if receiver in py_modules:
         mod = py_modules[receiver]
@@ -139,6 +140,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
         code = _get_code(receiver)
         mod = load_module(receiver, code)
     if not mod:
+        _tracemalloc.stop()
         return 0
 
     inspector.set_current_module(mod)
@@ -146,5 +148,6 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     ret = 0
     with sandbox:
         ret = vm.apply(mod, receiver, account, action)
-
+    
+    _tracemalloc.stop()
     return ret

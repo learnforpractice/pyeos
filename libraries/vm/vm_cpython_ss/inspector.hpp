@@ -76,6 +76,8 @@ public:
    void memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size);
    void memory_trace_free(void* ptr);
 
+   int inspect_memory();
+
 private:
    PyObject* current_module;
    uint64_t current_account;

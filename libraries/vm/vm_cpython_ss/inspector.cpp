@@ -97,6 +97,7 @@ int inspector::add_account_function(uint64_t account, PyObject* func) {
    auto it = accounts_info_map.find(account);
    if (it == accounts_info_map.end()) {
       auto _new_map = std::make_shared<account_info>();
+      _new_map->account = current_account;
       accounts_info_map[account] = _new_map;
       it = accounts_info_map.find(account);
    }
@@ -118,6 +119,7 @@ void inspector::add_code_object_to_current_account(PyCodeObject* co) {
    auto it = accounts_info_map.find(current_account);
    if (it == accounts_info_map.end()) {
       auto _new_map = std::make_unique<account_info>();
+      _new_map->account = current_account;
       accounts_info_map[current_account] = std::move(_new_map);
       it = accounts_info_map.find(current_account);
    }
@@ -158,25 +160,30 @@ void inspector::memory_trace_alloc(void* ptr, size_t new_size) {
    if (_account_info == accounts_info_map.end()) {
       return;
    }
+//   printf("++++++++++memory_trace_alloc %lld %p %d\n", current_account, ptr, new_size);
+   memory_info_map[ptr] = std::make_unique<account_memory_info>();
 
-   auto _memory_info = std::make_unique<account_memory_info>();
+   auto& _memory_info = memory_info_map[ptr];
+   _account_info->second->total_used_memory += new_size;
    _memory_info->size = new_size;
    _memory_info->info = _account_info->second;
 
-   memory_info_map[ptr] = std::move(_memory_info);
+//   memory_info_map[ptr] = std::move(_memory_info);
 }
 
 void inspector::memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size) {
    if (!current_account) {
       return;
    }
-
    auto _account_info = accounts_info_map.find(current_account);
    if (_account_info == accounts_info_map.end()) {
       return;
    }
 
    auto it = memory_info_map.find(old_ptr);
+   if (it == memory_info_map.end()) {
+      return;
+   }
    it->second->info->total_used_memory -= it->second->size;
    it->second->info->total_used_memory += new_size;
 
@@ -195,12 +202,26 @@ void inspector::memory_trace_free(void* ptr) {
    if (!current_account) {
       return;
    }
+//   printf("++++++++++memory_trace_free %p\n", ptr);
    auto it = memory_info_map.find(ptr);
    if (it == memory_info_map.end()) {
       return;
    }
    it->second->info->total_used_memory -= it->second->size;
+//   printf("+++memory_trace_free: total_used_memory %lld %d \n", it->second->info->account, it->second->info->total_used_memory);
    memory_info_map.erase(it);
+}
+
+int inspector::inspect_memory() {
+   if (!current_account) {
+      return 1;
+   }
+   auto _account_info = accounts_info_map.find(current_account);
+   if (_account_info == accounts_info_map.end()) {
+      return 1;
+   }
+//   printf("++++++_account_info->second->total_used_memory %lld %d \n", current_account, _account_info->second->total_used_memory);
+   return _account_info->second->total_used_memory <=100*1024;
 }
 
 void whitelist_function_(PyObject* func) {
@@ -313,6 +334,10 @@ void memory_trace_free_(void* ptr) {
    inspector::get().memory_trace_free(ptr);
 }
 
+int inspect_memory_() {
+   return inspector::get().inspect_memory();
+}
+
 int check_time_() {
    try {
       get_vm_api()->checktime();
@@ -351,6 +376,7 @@ void init_injected_apis() {
    apis->memory_trace_realloc = memory_trace_realloc_;
    apis->memory_trace_free = memory_trace_free_;
 
+   apis->inspect_memory = inspect_memory_;
    apis->check_time = check_time_;
 
    apis->add_code_object_to_current_account = add_code_object_to_current_account_;
