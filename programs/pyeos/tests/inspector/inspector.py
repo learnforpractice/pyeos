@@ -175,8 +175,20 @@ def test_context_manager():
     with EvilCM():
         raise Exception()
 
+@assert_failed
+def test_memory_out():
+    a = bytes(100*1024)
+
+@assert_success
+def test_memory_out2():
+    for i in range(10):
+        a = bytes(30*1024)
+        del a
+
 def apply(receiver, code, action):
-    a = open('a.txt', 'wb')
+    test_memory_out()
+    test_memory_out2()
+
 #    test_crash1()
 #    test_crash2()
 #    test_recursive_call()
