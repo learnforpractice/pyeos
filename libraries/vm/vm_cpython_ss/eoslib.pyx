@@ -1,8 +1,8 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
-
-# ccython: c_string_type=str, c_string_encoding=ascii
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
