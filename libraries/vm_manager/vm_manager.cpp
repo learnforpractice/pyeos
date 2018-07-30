@@ -528,7 +528,7 @@ int vm_manager::setcode(int type, uint64_t account) {
 
    if (type == 0) {
       if (account == N(eosio) || account == N(eosio.token)) {
-         type = 3;
+         //type = 3;
       }
    }
 
