@@ -60,7 +60,7 @@ cdef extern int py_inspect_function(func):
     if func in function_whitelist:
         return 1
 
-    if type(func.__self__) in [str, list, int]:
+    if type(func.__self__) in [str, list, int, dict]:
         return 1
 
     return 0
