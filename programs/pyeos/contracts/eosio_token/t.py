@@ -13,9 +13,10 @@ import traceback
 from eosapi import N, mp_compile, pack_bytes, pack_setabi, push_transactions
 from common import prepare, producer
 
-def init(func):
+def init(func, wasm=True):
     def func_wrapper(*args, **kwargs):
-        prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
+        if not wasm:
+            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
         func(*args, **kwargs)
     return func_wrapper
 
@@ -42,7 +43,7 @@ def test2(count=100):
         action = ['eosio.token', 'sayhello', str(i), {'eosio.token':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions)
     assert ret and not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
@@ -54,7 +55,7 @@ def test3(count=100):
         action = ['eosio.token','issue',{"to":"eosio","quantity":"1.0000 EOS","memo":str(i)},{'eosio':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions)
     assert ret and not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
@@ -65,6 +66,8 @@ def test4(count=100):
         action = ['eosio.token','transfer',{"from":"eosio", "to":"hello", "quantity":"0.0010 EOS", "memo":str(i)},{'eosio':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
-    assert ret and not ret['except']
+    ret, cost = eosapi.push_actions(actions)
+    if ret['except']:
+        print(ret['except'])
+    assert not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
