@@ -17,15 +17,14 @@ class asset(object):
         self.symbol = symbol
 
     def pack(self):
-        result = struct.pack('Q', self.amount)
-        result += self.symbol
-        return result
+        buffer = bytearray(16)
+        struct.pack_into('Q8s', buffer, 0, self.amount, self.symbol)
+        return bytes(buffer)
 
     @classmethod
     def unpack(cls, data):
         a = asset()
-        a.amount, = struct.unpack('Q', data[:8])
-        a.symbol = data[8:]
+        a.amount, a.symbol = struct.unpack('Q8s', data)
         return a
 
 class multi_index(object):
@@ -51,17 +50,20 @@ class currency_stats(object):
         return to_symbol_name(self.supply.symbol)
 
     def pack(self):
-        result = self.supply.pack()
-        result += self.max_supply.pack()
-        result += struct.pack('Q', self.issuer)
-        return result
+        result = bytearray(40)
+        s1 = self.supply
+        s2 = self.max_supply
+        struct.pack_into('Q8sQ8sQ', result, 0, s1.amount, s1.symbol, s2.amount, s2.symbol, self.issuer)
+        return bytes(result)
 
     @classmethod
     def unpack(cls, data):
         cs = currency_stats()
-        cs.supply = asset.unpack(data[:16])
-        cs.max_supply = asset.unpack(data[16:32])
-        cs.issuer, = struct.unpack('Q', data[32:40])
+        s1 = asset()
+        s2 = asset()
+        s1.amount, s1.symbol, s2.amount, s2.symbol, cs.issuer = struct.unpack_from('Q8sQ8sQ', data)
+        cs.supply = s1
+        cs.max_supply = s2
         return cs
 
 class transfer(object):
@@ -72,18 +74,13 @@ class transfer(object):
         self.memo = None
 
     def unpack(self, msg):
-        self._from, self.to, self.amount = struct.unpack('QQQ', msg)
-        self.symbol = msg[24:32].decode('utf8')
-        self.memo = eoslib.unpack(msg[32:])
+        self._from, self.to, self.amount, self.symbol = struct.unpack('QQQ8s', msg)
+        self.memo = eoslib.unpack_bytes(msg[32:])
 
     def pack(self):
-        result = struct.pack('QQQ', self._from, self.to, self.amount)
-        result += self.symbol
+        result = struct.pack('QQQ8s', self._from, self.to, self.amount, self.symbol)
         result += eoslib.pack_bytes(self.memo)
         return result
-
-    def p(self):
-        print(eoslib.n2s(self._from), eoslib.n2s(self.to), self.amount, self.precision, self.symbol, self.memo)
 
 '''
     {"name":"to", "type":"account_name"},
@@ -104,9 +101,6 @@ class issue(object):
         self.symbol = msg[16:24]
         self.memo = eoslib.unpack_bytes(msg[24:])
 
-    def p(self):
-        print(eoslib.n2s(self.to), self.amount, self.symbol)
-
 '''
     {"name":"issuer", "type":"account_name"},
     {"name":"maximum_supply", "type":"asset"}
@@ -120,11 +114,7 @@ class create():
     
     def unpack(self):
         msg = eoslib.read_action()
-        self.issuer, self.amount = struct.unpack('QQ', msg)
-        self.symbol = msg[16:24]
-
-    def p(self):
-        print(eoslib.n2s(self.issuer), self.amount, self.symbol)
+        self.issuer, self.amount, self.symbol = struct.unpack('QQ8s', msg)
 
 '''
 {"name":"to", "type":"account_name"},
@@ -171,11 +161,9 @@ class Balance(object):
 def apply(receiver, account, act):
 
     if act == N('create'):
+        eoslib.require_auth(code)
         msg = eoslib.read_action()
-        print('++++++++++++++:', msg)
-        issuer, amount = struct.unpack('QQ', msg[:16])
-        symbol = msg[16:24]
-
+        issuer, amount, symbol = struct.unpack('QQ8s', msg)
         table_id = N('stat')
         payer = code
         primary_key = scope = to_symbol_name(symbol)
@@ -184,17 +172,14 @@ def apply(receiver, account, act):
         if it >= 0:
             raise Exception('currency has already been created')
 
-        result = struct.pack('Q', 0)
-        result += symbol
-        result += struct.pack('Q', amount)
-        result += symbol
-        result += struct.pack('Q', issuer)
+        result = bytearray(40)
+        struct.pack_into('Q8sQ8sQ', result, 0, 0, symbol, amount, symbol, issuer)
+        result = bytes(result)
         db.store_i64(scope, table_id, payer, primary_key, result)
 
     elif act == N('issue'):
         msg = eoslib.read_action()
-        _to, amount = struct.unpack('QQ', msg[:16])
-        symbol = msg[16:24]
+        _to, amount, symbol = struct.unpack('QQ8s', msg[:24])
         memo = eoslib.unpack_bytes(msg[24:])
 
         table_id = N('stat')
@@ -207,8 +192,10 @@ def apply(receiver, account, act):
 
         data = db.get_i64(it)
         cs = currency_stats.unpack(data)
+        eoslib.require_auth(cs.issuer)
 #        print(cs.supply.amount)
         cs.supply.amount += amount
+        assert cs.supply.amount < cs.max_supply.amount
         db.update_i64(it, payer, cs.pack())
 
         table_id = N('accounts')
@@ -224,9 +211,8 @@ def apply(receiver, account, act):
             db.store_i64(_to, table_id, _to, symbol_name, a.pack())
     elif act == N('transfer'):
         msg = eoslib.read_action()
-        _from, to, amount = struct.unpack('QQQ', msg[:24])
+        _from, to, amount, symbol = struct.unpack('QQQ8s', msg[:32])
         eoslib.require_auth(_from)
-        symbol = msg[24:32]
         memo = eoslib.unpack_bytes(msg[32:])
         a1 = Balance(_from, symbol)
         a2 = Balance(to, symbol)
