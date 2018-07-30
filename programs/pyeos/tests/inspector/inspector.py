@@ -8,7 +8,7 @@ def assert_success(func):
         except Exception as e:
             print('++++test:', func, 'FAILED!')
             assert False
-        print('++++test:', func, 'PASSED!')
+        print('++++test:', func, 'PASSED! ')
         return True
     return func_wrapper
 
@@ -17,6 +17,7 @@ def assert_failed(func):
         try:
             func(*args, **kwargs)
         except Exception as e:
+            print('exception:', e)
             print('++++test:', func, 'PASSED!')
             return True
         print('++++test:', func, 'FAILED!')
@@ -121,6 +122,10 @@ def test_change_builtin_module3():
 def test_import():
     import pickle
 
+@assert_failed
+def test_import2():
+    __import__("db")
+
 
 def test_crash1():
     raise SystemExit
@@ -130,25 +135,57 @@ def test_crash2():
     for _ in range(9**6):i=filter(int,i)
     del i
 
-def assert_failed(func):
-    def func_wrapper(*args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except Exception as e:
-            print('++++test:', func, 'PASSED!')
-            return True
-        print('++++test:', func, 'FAILED!')
-        return False
-    return func_wrapper
+@assert_failed
 def test_recursive_call():
-    test_recursive_call()
     f = lambda f:f(f)
     f(f)
 
+@assert_failed
+def test_delete1():
+    del db.__builtins__
+
+@assert_failed
+def test_delete2():
+#call PyObject_SetAttr(owner, name, (PyObject *)NULL);
+    del db.find_i64
+
+@assert_success
+def test_delete3():
+#call PyObject_SetAttr(owner, name, (PyObject *)NULL);
+    a = {1:2}
+    del a[1]
+
+@assert_failed
+def test_reload():
+    import imp
+    imp.reload(db)
+
+class EvilCM(object):
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        print(dir(tb))
+        print('++++++++++++++++++:', exc_type, exc, tb)
+        print(tb.tb_next.tb_frame.f_locals)
+#        tb.tb_next.tb_frame.f_locals['open_file']('w00t', 'w').write('yay!\n')
+        return True
+
+@assert_failed
+def test_context_manager():
+    with EvilCM():
+        raise Exception()
+
 def apply(receiver, code, action):
+    a = open('a.txt', 'wb')
 #    test_crash1()
 #    test_crash2()
-    test_recursive_call()
+#    test_recursive_call()
+#    test_delete()
+#    test_delete3()
+#    test_reload()
+#    test_context_manager()
+#    test_import2()
+    print(int.to_bytes)
 
     if 0:
         test_getattr()
