@@ -702,7 +702,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
     else:
         return push_transactions_(vv, sign, skip_flag, True, compress)
 
-def push_action(contract, action, args, permissions: Dict, sign=True):
+def push_action(contract, action, args, permissions: Dict, _async=False, sign=True):
     '''Publishing message to blockchain
 
     Args:
@@ -725,7 +725,7 @@ def push_action(contract, action, args, permissions: Dict, sign=True):
     for per in permissions:
         pers.append([per, permissions[per]])
     act = [contract, action, args, pers]
-    outputs, cost_time = push_transactions([[act]], sign)
+    outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async)
     if outputs:
         if outputs[0]['except']:
             raise Exception(outputs[0]['except'])
