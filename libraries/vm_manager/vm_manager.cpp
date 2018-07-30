@@ -233,11 +233,13 @@ int vm_manager::load_vm_wavm() {
    if (itr != vm_map.end()) {
       for (uint64_t account : {N(eosio.token), N(eosio)}) {
          if (db_api::get().is_account(account) && db_api::get().get_code(account).size() > 0) {
-            auto t = time_counter(account);
-            itr->second->preload(account);
-            std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
-            *calls = *itr->second;
-            preload_account_map[account] = std::move(calls);
+            if (db_api::get().get_code_type(account) == 0) {
+               auto t = time_counter(account);
+               itr->second->preload(account);
+               std::unique_ptr<vm_calls> calls = std::make_unique<vm_calls>();
+               *calls = *itr->second;
+               preload_account_map[account] = std::move(calls);
+            }
          }
       }
    }
@@ -524,8 +526,10 @@ int vm_manager::setcode(int type, uint64_t account) {
       }
    }
 
-   if (account == N(eosio) || account == N(eosio.token)) {
-      type = 3;
+   if (type == 0) {
+      if (account == N(eosio) || account == N(eosio.token)) {
+         type = 3;
+      }
    }
 
    auto itr = vm_map.find(type);
@@ -553,7 +557,7 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
       load_vm_from_ram(type, vm_names[type]);
    }
 */
-#if 1
+#if 0
    if (vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act)) {
       return 1;
    }
