@@ -29,8 +29,10 @@ def _load_module(account, code):
     try:
         name = eoslib.n2s(account)
         co = compile(code, name, 'exec')
-        py_modules[account] = co
-        return co
+        module = imp.new_module(name)
+        exec(co, module.__dict__)
+        py_modules[account] = module
+        return module
     except Exception as e:
         logging.exception(e)
     return None
@@ -43,17 +45,13 @@ cdef extern int cpython_setcode(uint64_t account, string& code):
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action):
     try:
         if receiver in py_modules:
-            co = py_modules[receiver]
-            module = imp.new_module(eoslib.n2s(receiver))
-            exec(co, module.__dict__)
+            module = py_modules[receiver]
             module.apply(receiver, account, action)
             return 1
         code = _get_code(receiver)
-        co = _load_module(receiver, code)
-        if not co:
+        module = _load_module(receiver, code)
+        if not module:
             return 0
-        module = imp.new_module(eoslib.n2s(receiver))
-        exec(co, module.__dict__)
         module.apply(receiver, account, action)
         return 1
     except Exception as e:
