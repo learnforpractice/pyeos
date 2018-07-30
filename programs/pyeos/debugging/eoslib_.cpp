@@ -1,6 +1,7 @@
 #include "eoslib_.hpp"
 
 #include <eosio/chain/name.hpp>
+#include <fc/io/raw.hpp>
 
 extern "C" {
    void  eosio_assert( uint32_t test, const char* msg );
@@ -104,4 +105,17 @@ int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_end_i64( code, scope, table );
 }
 
+/*
+void pack_bytes_(string& in, string& out) {
+   string raw(in.c_str(),in.length());
+   std::vector<char> o = fc::raw::pack<string>(raw);
+   fc::raw::pack<std::vector<char>>(o);
+   out = string(o.begin(), o.end());
+}
 
+void unpack_bytes_(string& in, string& out) {
+   string raw(in.c_str(),in.length());
+   std::vector<char> v(raw.begin(), raw.end());
+   out = fc::raw::unpack<string>(v);
+}
+*/
