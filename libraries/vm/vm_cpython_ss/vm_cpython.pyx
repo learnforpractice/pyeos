@@ -75,13 +75,18 @@ class _sandbox:
 
 sandbox = _sandbox()
 
+
 '''
 #define CALL_FUNCTION           131
 #define CALL_FUNCTION_KW        141
 #define CALL_FUNCTION_EX        142
 #define SETUP_WITH              143
+#define DELETE_NAME              91
+#define RAISE_VARARGS           130
 '''
+
 #opcodes = [131, 141, 142, 143]
+#opcodes = [91,130]
 opcodes = []
 opcode_blacklist = [False for i in range(255)]
 for opcode in opcodes:
@@ -103,7 +108,10 @@ def load_module(account, code):
         inspector.set_current_module(module)
         co = compile(code, name, 'exec')
         if validate(co.co_code):
-            builtin_exec_(co, module.__dict__, module.__dict__)
+            bltins = dict.copy(__builtins__.__dict__)
+            _dict = module.__dict__
+            _dict['__builtins__'] = bltins
+            builtin_exec_(co, _dict, _dict)
             py_modules[account] = module
         else:
             py_modules[account] = dummy()
@@ -112,7 +120,7 @@ def load_module(account, code):
         print('vm.load_module', e)
     return None
 
-cdef extern int cpython_setcode(uint64_t account, string& code):
+cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     set_current_account_(account)
     if account in py_modules:
         del py_modules[account]
@@ -122,7 +130,7 @@ cdef extern int cpython_setcode(uint64_t account, string& code):
         return 1
     return 0
 
-cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action):
+cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
     set_current_account_(receiver)
     mod = None
     if receiver in py_modules:
