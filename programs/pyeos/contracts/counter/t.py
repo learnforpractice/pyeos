@@ -19,7 +19,7 @@ def init(wasm=0):
                 prepare('counter', 'counter.wast', 'counter.abi', __file__)
                 return func(*args, **kwargs)
             else:
-                prepare('counter', 'counter.py', 'counter.abi', __file__, 7)
+                prepare('counter', 'counter.py', 'counter.abi', __file__, 6)
                 return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
