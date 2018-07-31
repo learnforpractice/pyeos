@@ -183,7 +183,7 @@ def apply(receiver, account, act):
             raise Exception('currency has already been created')
         cs.issuer = issuer
         cs.max_supply.amount = amount
-        cs.store()
+        cs.store(_code)
 
     elif act == N('issue'):
         msg = eoslib.read_action()
