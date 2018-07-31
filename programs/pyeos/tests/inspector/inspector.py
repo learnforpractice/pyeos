@@ -185,9 +185,25 @@ def test_memory_out2():
         a = bytes(30*1024)
         del a
 
+
+@assert_success
+def test_base_exception():
+    try:
+        raise BaseException('')
+    except Exception:
+        print('oops')
+
+@assert_success
+def test_base_exception2():
+    try:
+        raise BaseException('')
+    except:
+        print('oops')
+
 def apply(receiver, code, action):
-    test_memory_out()
-    test_memory_out2()
+    test_base_exception()
+#    test_memory_out()
+#    test_memory_out2()
 
 #    test_crash1()
 #    test_crash2()

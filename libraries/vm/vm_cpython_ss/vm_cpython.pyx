@@ -32,8 +32,6 @@ cdef extern from "vm_cpython.h":
     void enable_create_code_object_(int enable);
     void set_current_account_(uint64_t account);
     void set_current_module_(object mod);
-    
-    
 
 def _get_code(uint64_t account):
     cdef string code
@@ -130,6 +128,21 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
         return 1
     return 0
 
+cdef int __apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action):
+    enable_injected_apis_(1)
+    enable_create_code_object_(0)
+    enable_filter_set_attr_(1)
+    enable_filter_get_attr_(1)
+
+    vm.apply(mod, receiver, account, action)
+
+    enable_injected_apis_(0)
+    enable_create_code_object_(1)
+    enable_filter_set_attr_(0)
+    enable_filter_get_attr_(0)
+
+    return 1
+
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
     set_current_account_(receiver)
     _tracemalloc.start()
@@ -145,9 +158,11 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     inspector.set_current_module(mod)
 
-    ret = 0
-    with sandbox:
-        ret = vm.apply(mod, receiver, account, action)
-    
+    ret = 1
+    try:
+        __apply(mod, receiver, account, action)
+    except:
+        print('++++++++error!')
+        ret = 0
     _tracemalloc.stop()
     return ret
