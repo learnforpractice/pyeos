@@ -76,6 +76,8 @@ public:
    void memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size);
    void memory_trace_free(void* ptr);
 
+   void inspect_obj_creation(PyTypeObject* type);
+
    int inspect_memory();
 
 private:
@@ -88,6 +90,7 @@ private:
    vector<int> opcode_blacklist;//158
    map<uint64_t, std::shared_ptr<account_info>> accounts_info_map;
    map<void*, std::unique_ptr<account_memory_info>> memory_info_map;
+   map<PyTypeObject*, int> type_whitelist_map;
 };
 
 //account_functions

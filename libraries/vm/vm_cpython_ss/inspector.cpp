@@ -34,6 +34,68 @@ inspector::inspector() {
    for (int i=0;_opcode_map[i].index != 0;i++) {
       opcode_map[_opcode_map[i].index] = _opcode_map[i].name;
    }
+
+   type_whitelist_map[&PyBaseObject_Type] = 1;
+   type_whitelist_map[&PyType_Type] = 1;
+   type_whitelist_map[&_PyWeakref_RefType] = 1;
+   type_whitelist_map[&_PyWeakref_CallableProxyType] = 1;
+   type_whitelist_map[&_PyWeakref_ProxyType] = 1;
+   type_whitelist_map[&PyLong_Type] = 1;
+   type_whitelist_map[&PyBool_Type] = 1;
+   type_whitelist_map[&PyByteArray_Type] = 1;
+   type_whitelist_map[&PyBytes_Type] = 1;
+   type_whitelist_map[&PyList_Type] = 1;
+   type_whitelist_map[&_PyNone_Type] = 1;
+   type_whitelist_map[&_PyNotImplemented_Type] = 1;
+   type_whitelist_map[&PyTraceBack_Type] = 1;
+   type_whitelist_map[&PySuper_Type] = 1;
+   type_whitelist_map[&PyRange_Type] = 1;
+   type_whitelist_map[&PyDict_Type] = 1;
+   type_whitelist_map[&PyDictKeys_Type] = 1;
+   type_whitelist_map[&PyDictValues_Type] = 1;
+   type_whitelist_map[&PyDictItems_Type] = 1;
+   type_whitelist_map[&PyODict_Type] = 1;
+   type_whitelist_map[&PyODictKeys_Type] = 1;
+   type_whitelist_map[&PyODictItems_Type] = 1;
+   type_whitelist_map[&PyODictValues_Type] = 1;
+   type_whitelist_map[&PyODictIter_Type] = 1;
+   type_whitelist_map[&PySet_Type] = 1;
+   type_whitelist_map[&PyUnicode_Type] = 1;
+   type_whitelist_map[&PySlice_Type] = 1;
+   type_whitelist_map[&PyStaticMethod_Type] = 1;
+   type_whitelist_map[&PyComplex_Type] = 1;
+   type_whitelist_map[&PyFloat_Type] = 1;
+   type_whitelist_map[&PyFrozenSet_Type] = 1;
+   type_whitelist_map[&PyProperty_Type] = 1;
+   type_whitelist_map[&_PyManagedBuffer_Type] = 1;
+   type_whitelist_map[&PyMemoryView_Type] = 1;
+   type_whitelist_map[&PyTuple_Type] = 1;
+   type_whitelist_map[&PyEnum_Type] = 1;
+   type_whitelist_map[&PyReversed_Type] = 1;
+   type_whitelist_map[&PyStdPrinter_Type] = 1;
+//   type_whitelist_map[&PyCode_Type] = 1;
+   type_whitelist_map[&PyFrame_Type] = 1;
+   type_whitelist_map[&PyCFunction_Type] = 1;
+   type_whitelist_map[&PyMethod_Type] = 1;
+   type_whitelist_map[&PyFunction_Type] = 1;
+   type_whitelist_map[&PyDictProxy_Type] = 1;
+   type_whitelist_map[&PyGen_Type] = 1;
+   type_whitelist_map[&PyGetSetDescr_Type] = 1;
+   type_whitelist_map[&PyWrapperDescr_Type] = 1;
+   type_whitelist_map[&_PyMethodWrapper_Type] = 1;
+   type_whitelist_map[&PyEllipsis_Type] = 1;
+   type_whitelist_map[&PyMemberDescr_Type] = 1;
+   type_whitelist_map[&_PyNamespace_Type] = 1;
+   type_whitelist_map[&PyCapsule_Type] = 1;
+   type_whitelist_map[&PyLongRangeIter_Type] = 1;
+   type_whitelist_map[&PyCell_Type] = 1;
+   type_whitelist_map[&PyInstanceMethod_Type] = 1;
+   type_whitelist_map[&PyClassMethodDescr_Type] = 1;
+   type_whitelist_map[&PyMethodDescr_Type] = 1;
+   type_whitelist_map[&PyCallIter_Type] = 1;
+   type_whitelist_map[&PySeqIter_Type] = 1;
+   type_whitelist_map[&PyCoro_Type] = 1;
+   type_whitelist_map[&_PyCoroWrapper_Type] = 1;
 }
 
 inspector& inspector::get() {
@@ -43,6 +105,11 @@ inspector& inspector::get() {
    }
    return *inst;
 }
+
+void inspector::inspect_obj_creation(PyTypeObject* type) {
+
+}
+
 
 void inspector::set_current_account(uint64_t account) {
    current_account = account;
