@@ -693,7 +693,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             v.push_back(act)
         vv.push_back(v)
 
-    if debug_mode_():
+    if has_opt('manual-gen-block'):
         produce_block_start_()
         ret = push_transactions_(vv, sign, skip_flag, _async, compress)
         time.sleep(0.5)
@@ -733,7 +733,7 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
         return outputs[0]
     return None
 
-def push_actions(actions, sign=True):
+def push_actions(actions, _async=False, sign=True):
     _actions = []
     for act in actions:
         _act = [act[0], act[1]]
@@ -750,7 +750,7 @@ def push_actions(actions, sign=True):
 
         _actions.append(_act)
 
-    ret, cost = push_transactions([_actions], sign)
+    ret, cost = push_transactions([_actions], sign, 0, _async)
     return ret[0], cost
 
 def push_evm_action(eth_address, args, permissions: Dict, sign=True):
