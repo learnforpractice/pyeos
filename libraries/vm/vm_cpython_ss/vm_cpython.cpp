@@ -19,6 +19,7 @@ PyObject* PyInit__struct(void);
 int cpython_setcode(uint64_t account, string& code);
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 int init_function_whitelist();
+extern "C" PyThreadState *Py_NewInterpreterEx(void);
 
 void get_code(uint64_t account, string& code) {
    size_t size;
@@ -35,19 +36,48 @@ void vm_init(struct vm_api* api) {
 
    Py_NoSiteFlag = 1;
    PyImport_AppendInittab("_struct", PyInit__struct);
+   PyImport_AppendInittab("eoslib", PyInit_eoslib);
+   PyImport_AppendInittab("db", PyInit_db);
+   PyImport_AppendInittab("inspector", PyInit_inspector);
+   PyImport_AppendInittab("vm_cpython", PyInit_vm_cpython);
 
    Py_InitializeEx(0);
 
+//   PyInit_eoslib();
+//   PyInit_db();
+//   PyInit_inspector();
+//   PyInit_vm_cpython();
+//   init_function_whitelist();
+
+
+   PyThreadState *mainstate, *substate;
+#ifdef WITH_THREAD
+   PyGILState_STATE gilstate;
+#endif
+
+   mainstate = PyThreadState_Get();
+
+#ifdef WITH_THREAD
+   PyEval_InitThreads();
+   PyEval_ReleaseThread(mainstate);
+
+   gilstate = PyGILState_Ensure();
+#endif
+
+   PyThreadState_Swap(NULL);
+
+   substate = Py_NewInterpreterEx();
+
    PyImport_ImportModule("_struct");
+   PyImport_ImportModule("eoslib");
+   PyImport_ImportModule("db");
+   PyImport_ImportModule("inspector");
+   PyImport_ImportModule("vm_cpython");
+//   enable_injected_apis_();
 
-   PyRun_SimpleString("import struct");
-   PyInit_eoslib();
-   PyInit_db();
-   PyInit_inspector();
-   PyInit_vm_cpython();
    init_function_whitelist();
-
-   enable_injected_apis_();
+   /*
+*/
 }
 
 void vm_deinit() {
