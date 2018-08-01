@@ -39,9 +39,6 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx
 )
 
-set(PYTHON_SS_LIB "${CMAKE_SOURCE_DIR}/libraries/python-ss/libpython3.6m.a")
-
-
 add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
             inspector.wrap.cpp
@@ -55,9 +52,8 @@ add_library(vm_cpython_ss SHARED
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native db_api ${PYTHON_SS_LIB})
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native db_api python3-ss)
 
-add_dependencies(vm_cpython_ss python3)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
