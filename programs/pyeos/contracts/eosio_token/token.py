@@ -190,7 +190,7 @@ def apply(receiver, account, act):
         _to, amount, symbol = struct.unpack('QQ8s', msg[:24])
         memo = eoslib.unpack_bytes(msg[24:])
         cs = currency_stats(symbol)
-        assert cs.issuer
+        assert cs.issuer, 'currency does not exists'
         eoslib.require_auth(cs.issuer)
         cs.supply.amount += amount
         assert cs.supply.amount < cs.max_supply.amount
