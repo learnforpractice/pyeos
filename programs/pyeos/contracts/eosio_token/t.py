@@ -16,7 +16,7 @@ from common import prepare, producer
 def init(func, wasm=False):
     def func_wrapper(*args, **kwargs):
         if not wasm:
-            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
+            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 7)
         func(*args, **kwargs)
     return func_wrapper
 
@@ -36,20 +36,9 @@ def transfer():
     msg = {"from":"eosio", "to":"hello", "quantity":"1.0000 EOS", "memo":"m"}
     r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
 
-@init
-def test2(count=100):
-    actions = []
-    for i in range(count):
-        action = ['eosio.token', 'sayhello', str(i), {'eosio.token':'active'}]
-        actions.append(action)
-
-    ret, cost = eosapi.push_actions(actions)
-    assert ret and not ret['except']
-    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-
 
 @init
-def test3(count=100):
+def test1(count=100):
     actions = []
     for i in range(count):
         action = ['eosio.token','issue',{"to":"eosio","quantity":"1.0000 EOS","memo":str(i)},{'eosio':'active'}]
@@ -60,7 +49,7 @@ def test3(count=100):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
-def test4(count=100):
+def test2(count=100):
     actions = []
     for i in range(count):
         action = ['eosio.token','transfer',{"from":"eosio", "to":"hello", "quantity":"0.0010 EOS", "memo":str(i)},{'eosio':'active'}]
