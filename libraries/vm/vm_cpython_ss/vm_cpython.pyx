@@ -130,9 +130,7 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     if account in py_modules:
         del py_modules[account]
 
-    _tracemalloc.start()
     ret = load_module(account, code)
-    _tracemalloc.stop()
     if ret:
         return 1
     return 0
@@ -143,7 +141,6 @@ cdef extern int cython_apply(object mod, unsigned long long receiver, unsigned l
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
     set_current_account_(receiver)
-    _tracemalloc.start()
     mod = None
     if receiver in py_modules:
         mod = py_modules[receiver]
@@ -151,7 +148,6 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
         code = _get_code(receiver)
         mod = load_module(receiver, code)
     if not mod:
-        _tracemalloc.stop()
         return 0
 
     inspector.set_current_module(mod)
@@ -162,5 +158,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     except:
         print('++++++++error!')
         ret = 0
-    _tracemalloc.stop()
     return ret
+
+_tracemalloc.start()
+

@@ -106,10 +106,12 @@ inspector& inspector::get() {
    return *inst;
 }
 
-void inspector::inspect_obj_creation(PyTypeObject* type) {
-
+int inspector::inspect_obj_creation(PyTypeObject* type) {
+   if (type_whitelist_map.find(type) != type_whitelist_map.end()) {
+      return 1;
+   }
+   return 0;
 }
-
 
 void inspector::set_current_account(uint64_t account) {
    current_account = account;
@@ -160,6 +162,17 @@ bool compile_string(Py_UNICODE * wstr, Py_ssize_t size, string& str) {
 }
 
 int inspector::inspect_setattr(PyObject* v, PyObject* name) {
+   Py_ssize_t size;
+   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, &size);
+   if (!wstr) {
+      return 0;
+   }
+
+   if (size >= 2 && wstr[0] == '_' && wstr[1] == '_') {
+      printf("inspect_setattr failed\n");
+      return 0;
+   }
+
    if (current_module == v) {
       return 1;
    }
@@ -169,12 +182,6 @@ int inspector::inspect_setattr(PyObject* v, PyObject* name) {
       return 1;
    }
    return 0;
-
-   Py_ssize_t size;
-   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, &size);
-   if (!wstr) {
-      return 0;
-   }
 
    string s("__init__");
    if (compile_string(wstr, size, s)) {
@@ -193,6 +200,27 @@ int inspector::inspect_setattr(PyObject* v, PyObject* name) {
 }
 
 int inspector::inspect_getattr(PyObject* v, PyObject* name) {
+
+   Py_ssize_t size;
+   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, &size);
+   if (!wstr) {
+      return 0;
+   }
+
+   string s("__init__");
+   if (compile_string(wstr, size, s)) {
+      return 1;
+   }
+
+   if (size >= 2 && wstr[0] == '_' && wstr[1] == '_') {
+      printf("inspect_getattr failed\n");
+      return 0;
+   }
+
+   if (current_module == v) {
+      return 1;
+   }
+
    PyObject* cls = (PyObject*)Py_TYPE(v);
    if (is_class_in_current_account(cls)) {
       return 1;
@@ -478,6 +506,10 @@ int inspect_memory_() {
    return inspector::get().inspect_memory();
 }
 
+int inspect_obj_creation_(PyTypeObject* type) {
+   return inspector::get().inspect_obj_creation(type);
+}
+
 int check_time_() {
    try {
       get_vm_api()->checktime();
@@ -495,6 +527,7 @@ void init_injected_apis() {
    apis->enable_opcode_inspect = 0;
    apis->enable_filter_set_attr = 0;
    apis->enable_filter_get_attr = 0;
+   apis->enable_inspect_obj_creation = 0;
 
    apis->whitelist_function = whitelist_function_;
    apis->inspect_function = inspect_function_;
@@ -519,6 +552,9 @@ void init_injected_apis() {
    apis->memory_trace_free = memory_trace_free_;
 
    apis->inspect_memory = inspect_memory_;
+
+   apis->inspect_obj_creation = inspect_obj_creation_;
+
    apis->check_time = check_time_;
 
    apis->add_code_object_to_current_account = add_code_object_to_current_account_;
