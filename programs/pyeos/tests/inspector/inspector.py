@@ -7,12 +7,15 @@ def assert_success(func):
             func(*args, **kwargs)
         except Exception as e:
             print('++++test:', func, 'FAILED!')
-            assert False
+            return False
+        except:
+            print('++++test:', func, 'FAILED!', 'unknown exception!')
+            return False
         print('++++test:', func, 'PASSED! ')
         return True
     return func_wrapper
 
-def assert_failed(func):
+def assert_failure(func):
     def func_wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -20,23 +23,26 @@ def assert_failed(func):
             print('exception:', e)
             print('++++test:', func, 'PASSED!')
             return True
+        except:
+            print('++++test:', func, 'PASSED!', 'unknow exception!')
+            return True
         print('++++test:', func, 'FAILED!')
         return False
     return func_wrapper
 
 
-@assert_failed
+@assert_failure
 def test_getattr():
     print('++++++++++++++++++++', 'test_getattr begin')
     a = db.__builtins__
     print(a)
     print('++++++++++++++++++++', 'test_getattr end')
 
-@assert_failed
+@assert_failure
 def test_setattr():
     db.get_i64 = 'abc'
 
-@assert_failed
+@assert_failure
 def test_code_object():
     type(test_code_object.__code__)(0, 0, 0, 0, 0, b'', (), (), (), '', '', 1, b'')
 
@@ -46,7 +52,7 @@ code(argcount, kwonlyargcount, nlocals, stacksize, flags, codestring,
          lnotab[, freevars[, cellvars]])
 '''
 
-@assert_failed
+@assert_failure
 def test_code_object2():
     (lambda fc=(
         lambda n: [
@@ -85,11 +91,11 @@ def test_builtin_types():
     a = [1, 2, 3]
     print(a[1])
 
-@assert_failed
+@assert_failure
 def test_builtins():
     __builtins__['pow']()
 
-@assert_failed
+@assert_failure
 def test_call_with_key_words():
     kwargs = {}
     exec(test_call_with_key_words.__code__, **kwargs)
@@ -103,7 +109,7 @@ class A():
     def sayHello(self):
         print('hello from A')
 
-@assert_failed
+@assert_failure
 def test_change_builtin_module():
     a = 'abc'
     a.fake_func = fake_func
@@ -118,33 +124,39 @@ def test_change_builtin_module3():
     a = A()
     a.sayHello()
 
-@assert_failed
+@assert_failure
+def test_change_builtin_module4():
+    a = A()
+    print(a.__class__)
+
+@assert_failure
 def test_import():
     import pickle
 
-@assert_failed
+@assert_failure
 def test_import2():
     __import__("db")
 
-
+@assert_failure
 def test_crash1():
     raise SystemExit
 
+@assert_failure
 def test_crash2():
     i=''
     for _ in range(9**6):i=filter(int,i)
     del i
 
-@assert_failed
+@assert_failure
 def test_recursive_call():
     f = lambda f:f(f)
     f(f)
 
-@assert_failed
+@assert_failure
 def test_delete1():
     del db.__builtins__
 
-@assert_failed
+@assert_failure
 def test_delete2():
 #call PyObject_SetAttr(owner, name, (PyObject *)NULL);
     del db.find_i64
@@ -155,7 +167,7 @@ def test_delete3():
     a = {1:2}
     del a[1]
 
-@assert_failed
+@assert_failure
 def test_reload():
     import imp
     imp.reload(db)
@@ -170,14 +182,14 @@ class EvilCM(object):
 #        tb.tb_next.tb_frame.f_locals['open_file']('w00t', 'w').write('yay!\n')
         return True
 
-@assert_failed
+@assert_failure
 def test_context_manager():
     with EvilCM():
         raise Exception()
 
-@assert_failed
+@assert_failure
 def test_memory_out():
-    a = bytes(100*1024)
+    a = bytes(600*1024)
 
 @assert_success
 def test_memory_out2():
@@ -199,36 +211,46 @@ def test_base_exception2():
     try:
         raise BaseException('')
     except:
-        print('oops')
+        print('oopss')
 
 def apply(receiver, code, action):
-    test_base_exception()
-#    test_memory_out()
-#    test_memory_out2()
+    if 1:
+        test_crash2()
+    #    test_base_exception()
+        test_base_exception2()
+        test_memory_out()
+        test_memory_out2()
 
-#    test_crash1()
-#    test_crash2()
-#    test_recursive_call()
-#    test_delete()
-#    test_delete3()
-#    test_reload()
-#    test_context_manager()
-#    test_import2()
-    print(int.to_bytes)
+    if 1:
+        test_crash1()
+    #    test_crash2()
+        test_recursive_call()
+    
+        test_delete1()
+        test_delete2()
+        test_delete3()
+    if 1:
+        test_reload()
+        test_context_manager()
+        test_import2()
 
-    if 0:
-        test_getattr()
-        test_setattr()
+#----------------------------
+    
+    test_getattr()
+    test_setattr()
 
-        test_code_object()
-        test_code_object2()
+#    test_code_object()
+    test_code_object2()
 
-        test_builtin_types()
-        test_builtins()
+    test_builtin_types()
+    test_builtins()
+#--------------------------
 
-        test_call_with_key_words()
+    test_call_with_key_words()
 
-        test_change_builtin_module()
-        test_change_builtin_module3()
-        test_change_builtin_module2()
-        test_import()
+    test_change_builtin_module()
+    test_change_builtin_module2()
+    test_change_builtin_module3()
+    test_change_builtin_module4()
+
+    test_import()
