@@ -33,6 +33,7 @@ void vm_init(struct vm_api* api) {
    init_injected_apis();
 
    setenv("PYTHONHOME", "../../libraries/python-ss/dist", 1);
+   setenv("PYTHONPATH", "../../libraries/python-ss/dist/lib/python3.6", 1);
 
    Py_NoSiteFlag = 1;
    PyImport_AppendInittab("_struct", PyInit__struct);

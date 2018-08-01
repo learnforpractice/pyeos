@@ -171,7 +171,7 @@ int inspector::inspect_setattr(PyObject* v, PyObject* name) {
    return 0;
 
    Py_ssize_t size;
-   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, size);
+   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, &size);
    if (!wstr) {
       return 0;
    }

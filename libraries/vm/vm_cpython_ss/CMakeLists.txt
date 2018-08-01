@@ -52,7 +52,7 @@ add_library(vm_cpython_ss SHARED
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native db_api python3-ss)
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native db_api)
 
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
