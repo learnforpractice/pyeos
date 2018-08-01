@@ -67,17 +67,6 @@ cdef extern int py_inspect_function(func):
 
 ModuleType = type(db)
 
-cdef extern int py_inspect_setattr(v, name):
-#    print('++++++++py_inspect_setattr:',v, name)
-    if name == '__init__':
-        return 1
-    if name.startswith('__'):
-        return 0
-    if ModuleType == type(v):
-        if __current_module != v:
-            return 0
-    return 0
-
 cdef extern int py_inspect_getattr(v, name):
 #    print('+++++++++py_inspect_getattr:',v, name)
     if __current_module == v:

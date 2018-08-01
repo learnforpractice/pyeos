@@ -31,6 +31,8 @@ public:
 
    map<PyObject*, PyObject*> account_functions;
    map<PyCodeObject*, int> code_objects;
+   map<PyObject*, int> class_objects;
+
    int total_used_memory;
    uint64_t account;
 };
@@ -60,6 +62,9 @@ public:
 
    int whitelist_opcode(int opcode);
    int inspect_opcode(int opcode);
+
+   int inspect_build_class(PyObject* cls);
+   int is_class_in_current_account(PyObject* obj);
 
    int add_account_function(uint64_t account, PyObject* func);
 

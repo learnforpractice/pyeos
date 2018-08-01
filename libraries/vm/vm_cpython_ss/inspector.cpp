@@ -113,6 +113,14 @@ void inspector::inspect_obj_creation(PyTypeObject* type) {
 
 void inspector::set_current_account(uint64_t account) {
    current_account = account;
+
+   auto it = accounts_info_map.find(account);
+   if (it == accounts_info_map.end()) {
+      auto _new_map = std::make_shared<account_info>();
+      _new_map->account = account;
+      accounts_info_map[account] = _new_map;
+      it = accounts_info_map.find(account);
+   }
 }
 
 int inspector::inspect_function(PyObject* func) {
@@ -139,25 +147,87 @@ int inspector::whitelist_attr(const char* name) {
    return 1;
 }
 
-int inspector::inspect_setattr(PyObject* v, PyObject* name) {
-   return py_inspect_setattr(v, name);
-
-   string _name = get_c_string(name);
-   printf("++++++++++inspect_setattr: %s \n", _name.c_str());
-   if (_name == "__init__") {
-      return true;
-   }
-
-   if (_name.size() >= 2 && _name[0] == '_' && _name[1] == '_') {
-      printf("inspect_setattr failed\n");
+bool compile_string(Py_UNICODE * wstr, Py_ssize_t size, string& str) {
+   if (size != str.size()) {
       return false;
    }
-
+   for(int i=0;i<size;i++) {
+      if (wstr[i] != str[i]) {
+         return false;
+      }
+   }
    return true;
 }
 
+int inspector::inspect_setattr(PyObject* v, PyObject* name) {
+   if (current_module == v) {
+      return 1;
+   }
+
+   PyObject* cls = (PyObject*)Py_TYPE(v);
+   if (is_class_in_current_account(cls)) {
+      return 1;
+   }
+   return 0;
+
+   Py_ssize_t size;
+   Py_UNICODE * wstr = PyUnicode_AsUnicodeAndSize(name, size);
+   if (!wstr) {
+      return 0;
+   }
+
+   string s("__init__");
+   if (compile_string(wstr, size, s)) {
+      return 1;
+   }
+
+
+   if (size >= 2 && wstr[0] == '_' && wstr[1] == '_') {
+      printf("inspect_setattr failed\n");
+      return 0;
+   } else {
+      return 1;
+   }
+
+   return 1;
+}
+
 int inspector::inspect_getattr(PyObject* v, PyObject* name) {
+   PyObject* cls = (PyObject*)Py_TYPE(v);
+   if (is_class_in_current_account(cls)) {
+      return 1;
+   }
    return py_inspect_getattr(v, name);
+}
+
+int inspector::inspect_build_class(PyObject* cls) {
+   PyFrameObject *f = PyThreadState_GET()->frame;
+   if (f != NULL) {
+      auto it = accounts_info_map.find(current_account);
+      if (it == accounts_info_map.end()) {
+         printf("+++inspect_build_class account not found!");
+         return 0;
+      }
+
+      auto& info = it->second;
+      if (info->code_objects.find(f->f_code) != info->code_objects.end()) {
+         printf("-----add cls to info %p\n", cls);
+         info->class_objects[cls] = 1;
+         return 1;
+      } else {
+         printf("-----add cls to info %p, code object not in current account\n", cls);
+      }
+   }
+   return 0;
+}
+
+int inspector::is_class_in_current_account(PyObject* cls) {
+   auto it = accounts_info_map.find(current_account);
+   if (it != accounts_info_map.end()) {
+      auto& info = it->second;
+      return info->class_objects.find(cls) != info->class_objects.end();
+   }
+   return 0;
 }
 
 int inspector::add_account_function(uint64_t account, PyObject* func) {
@@ -184,12 +254,6 @@ int inspector::inspect_opcode(int opcode) {
 
 void inspector::add_code_object_to_current_account(PyCodeObject* co) {
    auto it = accounts_info_map.find(current_account);
-   if (it == accounts_info_map.end()) {
-      auto _new_map = std::make_unique<account_info>();
-      _new_map->account = current_account;
-      accounts_info_map[current_account] = std::move(_new_map);
-      it = accounts_info_map.find(current_account);
-   }
    it->second->code_objects[co] = 1;
 }
 
@@ -288,7 +352,7 @@ int inspector::inspect_memory() {
       return 1;
    }
 //   printf("++++++_account_info->second->total_used_memory %lld %d \n", current_account, _account_info->second->total_used_memory);
-   return _account_info->second->total_used_memory <=100*1024;
+   return _account_info->second->total_used_memory <=500*1024;
 }
 
 void whitelist_function_(PyObject* func) {
@@ -327,6 +391,15 @@ int whitelist_opcode_(int opcode) {
 
 int inspect_opcode_(int opcode) {
    return inspector::get().inspect_opcode(opcode);
+}
+
+int inspect_build_class_(PyObject* cls) {
+   return inspector::get().inspect_build_class(cls);
+}
+
+int is_class_in_current_account_(PyObject* obj) {
+   PyObject* cls = PyObject_GetAttrString(obj, "__class__");
+   return inspector::get().is_class_in_current_account(cls);
 }
 
 void enable_injected_apis_(int enabled) {
@@ -437,6 +510,8 @@ void init_injected_apis() {
 
    apis->inspect_opcode = inspect_opcode_;
 
+   apis->inspect_build_class = inspect_build_class_;
+
    apis->memory_trace_start = memory_trace_start_;
    apis->memory_trace_stop = memory_trace_stop_;
    apis->memory_trace_alloc = memory_trace_alloc_;
@@ -447,8 +522,4 @@ void init_injected_apis() {
    apis->check_time = check_time_;
 
    apis->add_code_object_to_current_account = add_code_object_to_current_account_;
-}
-
-void enable_injected_apis_() {
-   get_injected_apis()->enabled = true;
 }
