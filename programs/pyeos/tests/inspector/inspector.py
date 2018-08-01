@@ -189,6 +189,7 @@ def test_memory_out2():
 @assert_success
 def test_base_exception():
     try:
+        print('raise BaseException')
         raise BaseException('')
     except Exception:
         print('oops')
