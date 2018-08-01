@@ -76,8 +76,6 @@ void vm_init(struct vm_api* api) {
 //   enable_injected_apis_();
 
    init_function_whitelist();
-   /*
-*/
 }
 
 void vm_deinit() {
@@ -106,5 +104,27 @@ int vm_unload(uint64_t account) {
    return 0;
 }
 
+extern int cython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
 
+int vm_cpython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action) {
+   enable_injected_apis_(1);
+   enable_create_code_object_(0);
+   enable_filter_set_attr_(1);
+   enable_filter_get_attr_(1);
+   int ret = 0;
+   try {
+      ret = cython_apply(mod, receiver, account, action);
+   } catch (...) {
+      enable_injected_apis_(0);
+      enable_create_code_object_(1);
+      enable_filter_set_attr_(0);
+      enable_filter_get_attr_(0);
+      throw;
+   }
+   enable_injected_apis_(0);
+   enable_create_code_object_(1);
+   enable_filter_set_attr_(0);
+   enable_filter_get_attr_(0);
+   return ret;
+}
 

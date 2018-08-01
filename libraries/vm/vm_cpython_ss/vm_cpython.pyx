@@ -33,6 +33,8 @@ cdef extern from "vm_cpython.h":
     void set_current_account_(uint64_t account);
     void set_current_module_(object mod);
 
+    int vm_cpython_apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
+
 def _get_code(uint64_t account):
     cdef string code
     get_code(account,  code)
@@ -102,7 +104,14 @@ def load_module(account, code):
         name = eoslib.n2s(account)
         module = new_module(name)
         inspector.set_current_module(module)
+
+        enable_injected_apis_(1);
+        enable_create_code_object_(1);
+        enable_filter_set_attr_(0);
+        enable_filter_get_attr_(0);
+
         co = compile(code, name, 'exec')
+        
         if validate(co.co_code):
             bltins = dict.copy(__builtins__.__dict__)
             _dict = module.__dict__
@@ -128,19 +137,8 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
         return 1
     return 0
 
-cdef int __apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action):
-    enable_injected_apis_(1)
-    enable_create_code_object_(0)
-    enable_filter_set_attr_(1)
-    enable_filter_get_attr_(1)
-
+cdef extern int cython_apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action):
     vm.apply(mod, receiver, account, action)
-
-    enable_injected_apis_(0)
-    enable_create_code_object_(1)
-    enable_filter_set_attr_(0)
-    enable_filter_get_attr_(0)
-
     return 1
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
@@ -160,7 +158,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     ret = 1
     try:
-        __apply(mod, receiver, account, action)
+        vm_cpython_apply(mod, receiver, account, action)
     except:
         print('++++++++error!')
         ret = 0

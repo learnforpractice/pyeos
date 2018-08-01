@@ -12,3 +12,4 @@ void set_current_account_(uint64_t account);
 
 //bltinmodule.c
 extern "C" PyObject* builtin_exec_(PyObject *source, PyObject *globals, PyObject *locals);
+int vm_cpython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
