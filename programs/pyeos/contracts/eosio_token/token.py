@@ -21,7 +21,6 @@ class asset(object):
         struct.pack_into('Q8s', buffer, 0, self.amount, self.symbol)
         return bytes(buffer)
 
-    @classmethod
     def unpack(cls, data):
         a = asset()
         a.amount, a.symbol = struct.unpack('Q8s', data)
@@ -83,62 +82,6 @@ class currency_stats(multi_index):
         s2 = self.max_supply
         s1.amount, s1.symbol, s2.amount, s2.symbol, self.issuer = struct.unpack_from('Q8sQ8sQ', data)
         return True
-
-class transfer(object):
-    def __init__(self):
-        self._from, self.to, self.amount = 0, 0, 0
-
-        self.symbol = None
-        self.memo = None
-
-    def unpack(self, msg):
-        self._from, self.to, self.amount, self.symbol = struct.unpack('QQQ8s', msg)
-        self.memo = eoslib.unpack_bytes(msg[32:])
-
-    def pack(self):
-        result = struct.pack('QQQ8s', self._from, self.to, self.amount, self.symbol)
-        result += eoslib.pack_bytes(self.memo)
-        return result
-
-'''
-    {"name":"to", "type":"account_name"},
-    {"name":"quantity", "type":"asset"},
-    {"name":"memo", "type":"string"}
-'''
-
-class issue(object):
-    def __init__(self):
-        self.unpack()
-
-    def pack(self):
-        pass
-
-    def unpack(self):
-        msg = eoslib.read_action()
-        self.to, self.amount = struct.unpack('QQ', msg)
-        self.symbol = msg[16:24]
-        self.memo = eoslib.unpack_bytes(msg[24:])
-
-'''
-    {"name":"issuer", "type":"account_name"},
-    {"name":"maximum_supply", "type":"asset"}
-'''
-class create():
-    def __init__(self):
-        self.unpack()
-
-    def pack(self):
-        pass
-    
-    def unpack(self):
-        msg = eoslib.read_action()
-        self.issuer, self.amount, self.symbol = struct.unpack('QQ8s', msg)
-
-'''
-{"name":"to", "type":"account_name"},
-{"name":"quantity", "type":"asset"},
-{"name":"memo", "type":"string"}
-'''
 
 class Balance(multi_index):
     def __init__(self, owner, symbol):
