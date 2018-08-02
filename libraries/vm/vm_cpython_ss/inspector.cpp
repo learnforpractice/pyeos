@@ -10,7 +10,12 @@ int py_inspect_getattr(PyObject* v, PyObject* name);
 int py_inspect_setattr(PyObject* v, PyObject* name);
 int py_inspect_function(PyObject* func);
 
-extern "C" PyTypeObject PyStructType;
+extern "C" {
+   extern PyTypeObject PyStructType;
+   extern PyTypeObject PyFileIO_Type;
+   extern PyTypeObject PyBufferedReader_Type;
+   extern PyTypeObject PyTextIOWrapper_Type;
+}
 
 struct opcode_map
 {
@@ -98,8 +103,23 @@ inspector::inspector() {
    type_whitelist_map[&PySeqIter_Type] = 1;
    type_whitelist_map[&PyCoro_Type] = 1;
    type_whitelist_map[&_PyCoroWrapper_Type] = 1;
+
    type_whitelist_map[(PyTypeObject*)PyExc_Exception] = 1;
    type_whitelist_map[(PyTypeObject*)PyExc_TypeError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_MemoryError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_AttributeError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_RecursionError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_OSError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_AssertionError] = 1;
+
+
+
+   type_whitelist_map[(PyTypeObject*)PyExc_NameError] = 1;
+
+   type_whitelist_map[&PyFileIO_Type] = 1; //FIXME: dangerous type
+   type_whitelist_map[&PyBufferedReader_Type] = 1;
+   type_whitelist_map[&PyTextIOWrapper_Type] = 1;
+
    type_whitelist_map[&PyStructType] = 1;
 }
 
@@ -252,7 +272,7 @@ int inspector::inspect_build_class(PyObject* cls) {
 
       auto& info = it->second;
       if (info->code_objects.find(f->f_code) != info->code_objects.end()) {
-         printf("-----add cls to info %p\n", cls);
+//         printf("-----add cls to info %p\n", cls);
          info->class_objects[cls] = 1;
          return 1;
       } else {
