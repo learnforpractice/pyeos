@@ -10,6 +10,8 @@ int py_inspect_getattr(PyObject* v, PyObject* name);
 int py_inspect_setattr(PyObject* v, PyObject* name);
 int py_inspect_function(PyObject* func);
 
+extern "C" PyTypeObject PyStructType;
+
 struct opcode_map
 {
    int index;
@@ -96,6 +98,9 @@ inspector::inspector() {
    type_whitelist_map[&PySeqIter_Type] = 1;
    type_whitelist_map[&PyCoro_Type] = 1;
    type_whitelist_map[&_PyCoroWrapper_Type] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_Exception] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_TypeError] = 1;
+   type_whitelist_map[&PyStructType] = 1;
 }
 
 inspector& inspector::get() {
@@ -110,7 +115,15 @@ int inspector::inspect_obj_creation(PyTypeObject* type) {
    if (type_whitelist_map.find(type) != type_whitelist_map.end()) {
       return 1;
    }
+   if (is_class_in_current_account((PyObject*)type)) {
+      return 1;
+   }
    return 0;
+}
+
+int inspector::add_type_to_whitelist(PyTypeObject* type) {
+   type_whitelist_map[type] = 1;
+   return 1;
 }
 
 void inspector::set_current_account(uint64_t account) {

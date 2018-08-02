@@ -82,6 +82,7 @@ public:
    void memory_trace_free(void* ptr);
 
    int inspect_obj_creation(PyTypeObject* type);
+   int add_type_to_whitelist(PyTypeObject* type);
 
    int inspect_memory();
 
