@@ -213,7 +213,17 @@ def test_base_exception2():
     except:
         print('oopss')
 
+@assert_failure
+def test_create_module():
+    module = type(db)
+    for i in range(10):
+        mod = module("abc")
+
 def apply(receiver, code, action):
+#    Exception()
+#    KeyboardInterrupt()
+#    return
+    test_create_module()
     if 1:
         test_crash2()
     #    test_base_exception()
