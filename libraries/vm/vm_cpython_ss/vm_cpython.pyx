@@ -102,30 +102,21 @@ def load_module(account, code):
     print('++++load_module')
     try:
         name = eoslib.n2s(account)
-        module = new_module(name)
-        inspector.set_current_module(module)
 
-        enable_injected_apis_(1);
-        enable_create_code_object_(1);
-        enable_filter_set_attr_(0);
-        enable_filter_get_attr_(0);
-
+        enable_injected_apis_(1)
+        enable_create_code_object_(1)
+        enable_filter_set_attr_(0)
+        enable_filter_get_attr_(0)
         co = compile(code, name, 'exec')
-
+        ret = co
         if validate(co.co_code):
-            bltins = dict.copy(__builtins__.__dict__)
-            _dict = module.__dict__
-            _dict['__builtins__'] = bltins
-            _tracemalloc.start()
-            builtin_exec_(co, _dict, _dict)
-            _tracemalloc.stop()
-            py_modules[account] = module
+            py_modules[account] = co
         else:
-            py_modules[account] = dummy()
-        return module
+            py_modules[account] = None
+            ret = None
+        return ret
     except Exception as e:
         print('vm.load_module', e)
-    _tracemalloc.stop()
     return None
 
 cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
@@ -146,23 +137,29 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     set_current_account_(receiver)
     mod = None
     if receiver in py_modules:
-        mod = py_modules[receiver]
+        co = py_modules[receiver]
     else:
         code = _get_code(receiver)
-        mod = load_module(receiver, code)
-    if not mod:
+        co = load_module(receiver, code)
+    if not co:
         return 0
 
-    inspector.set_current_module(mod)
+    name = eoslib.n2s(receiver)
+    module = new_module(name)
+    inspector.set_current_module(module)
+
+    bltins = dict.copy(__builtins__.__dict__)
+    _dict = module.__dict__
+    _dict['__builtins__'] = bltins
 
     ret = 1
     try:
         _tracemalloc.start()
-        vm_cpython_apply(mod, receiver, account, action)
+        builtin_exec_(co, _dict, _dict)
+        vm_cpython_apply(module, receiver, account, action)
     except:
         print('++++++++error!')
         ret = 0
     _tracemalloc.stop()
     return ret
-
 
