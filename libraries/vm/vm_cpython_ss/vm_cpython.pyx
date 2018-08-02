@@ -111,18 +111,21 @@ def load_module(account, code):
         enable_filter_get_attr_(0);
 
         co = compile(code, name, 'exec')
-        
+
         if validate(co.co_code):
             bltins = dict.copy(__builtins__.__dict__)
             _dict = module.__dict__
             _dict['__builtins__'] = bltins
+            _tracemalloc.start()
             builtin_exec_(co, _dict, _dict)
+            _tracemalloc.stop()
             py_modules[account] = module
         else:
             py_modules[account] = dummy()
         return module
     except Exception as e:
         print('vm.load_module', e)
+    _tracemalloc.stop()
     return None
 
 cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
@@ -154,11 +157,12 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     ret = 1
     try:
+        _tracemalloc.start()
         vm_cpython_apply(mod, receiver, account, action)
     except:
         print('++++++++error!')
         ret = 0
+    _tracemalloc.stop()
     return ret
 
-_tracemalloc.start()
 
