@@ -11,7 +11,7 @@ def to_symbol_name(s):
     n = int.from_bytes(s, 'little')
     return n>>8
 
-class asset(object):
+class Asset(object):
     def __init__(self, amount=0, symbol=None):
         self.amount = amount
         self.symbol = symbol
@@ -22,7 +22,7 @@ class asset(object):
         return bytes(buffer)
 
     def unpack(cls, data):
-        a = asset()
+        a = Asset()
         a.amount, a.symbol = struct.unpack('Q8s', data)
         return a
 
@@ -61,8 +61,8 @@ class currency_stats(multi_index):
         self.primary_key = scope = to_symbol_name(symbol)
         multi_index.__init__(self, _code, scope, table_id)
 
-        self.supply = asset(0, symbol)
-        self.max_supply =asset(0, symbol)
+        self.supply = Asset(0, symbol)
+        self.max_supply =Asset(0, symbol)
         self.issuer = 0
 
         self.load()
@@ -86,7 +86,7 @@ class currency_stats(multi_index):
 class Balance(multi_index):
     def __init__(self, owner, symbol):
         self.owner = owner
-        self.a = asset(0, symbol)
+        self.a = Asset(0, symbol)
         self.symbol_name = to_symbol_name(symbol)
 
         table_id = N('accounts')
@@ -146,6 +146,8 @@ def apply(receiver, account, act):
         msg = eoslib.read_action()
         _from, to, amount, symbol = struct.unpack('QQQ8s', msg[:32])
         eoslib.require_auth(_from)
+        assert eoslib.is_account( to )
+        
         memo = eoslib.unpack_bytes(msg[32:])
         a1 = Balance(_from, symbol)
         a2 = Balance(to, symbol)
