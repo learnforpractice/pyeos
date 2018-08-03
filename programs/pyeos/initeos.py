@@ -273,6 +273,7 @@ try:
     from vmstore import t as vt
     from inspector import t as it
     from eosio_token import t as tt
+    from softfloat import t as st
 
 #    from biosboot import t as bb
     import d
