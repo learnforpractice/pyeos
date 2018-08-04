@@ -271,7 +271,7 @@ try:
     from vote import t as vt2
     from native import t as nt
     from vmstore import t as vt
-    from inspector import t as it
+#    from inspector import t as it
     from eosio_token import t as tt
 
 #    from biosboot import t as bb

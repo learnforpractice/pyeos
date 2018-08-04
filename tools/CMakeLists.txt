@@ -24,4 +24,4 @@ add_custom_target( eosinstall ALL
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/eosinstaller.py ${CMAKE_BINARY_DIR}/programs/pyeos/pyeos
 )
 
-add_dependencies(eosinstall pyeos eosio_chain eosiolib_native vm_native vm_cpython vm_cpython_ss vm_wasm_wavm vm_wasm_binaryen cleos nodeos keosd ipc_server ipc_client vm_manager eosio_native)
+add_dependencies(eosinstall pyeos eosio_chain eosiolib_native vm_native vm_cpython vm_wasm_wavm vm_wasm_binaryen cleos nodeos keosd ipc_server ipc_client vm_manager eosio_native)
