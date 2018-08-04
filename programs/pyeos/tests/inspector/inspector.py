@@ -219,11 +219,19 @@ def test_create_module():
     for i in range(10):
         mod = module("abc")
 
+@assert_failure
+def test_set_func():
+    a = db.get_i64
+    a.a = 123
+
 def apply(receiver, code, action):
 #    Exception()
 #    KeyboardInterrupt()
 #    return
-    test_create_module()
+#    test_create_module()
+    test_set_func()
+    return
+
     if 1:
         test_crash2()
     #    test_base_exception()
