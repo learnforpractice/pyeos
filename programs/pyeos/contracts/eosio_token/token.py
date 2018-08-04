@@ -114,43 +114,51 @@ class Balance(multi_index):
     def unpack(self, data):
         self.a.amount, self.a.symbol = struct.unpack('Q8s', data)
 
+def _create(msg):
+    eoslib.require_auth(_code)
+    issuer, amount, symbol = struct.unpack('QQ8s', msg)
+
+    cs = currency_stats(symbol)
+    if cs.issuer:
+        raise Exception('currency has already been created')
+    cs.issuer = issuer
+    cs.max_supply.amount = amount
+    cs.store(_code)
+
+def _issue(msg):
+    _to, amount, symbol = struct.unpack('QQ8s', msg[:24])
+#        memo = eoslib.unpack_bytes(msg[24:])
+    cs = currency_stats(symbol)
+    assert cs.issuer, 'currency does not exists'
+    eoslib.require_auth(cs.issuer)
+    cs.supply.amount += amount
+    assert cs.supply.amount < cs.max_supply.amount
+    cs.store(cs.issuer)
+
+    acc = Balance(_to, symbol)
+    acc.add(amount, cs.issuer)
+
+def _transfer(msg):
+    _from, to, amount, symbol = struct.unpack('QQQ8s', msg[:32])
+    eoslib.require_auth(_from)
+#        memo = eoslib.unpack_bytes(msg[32:])
+    a1 = Balance(_from, symbol)
+    a2 = Balance(to, symbol)
+    a1.sub(amount)
+    a2.add(amount, _from)
+
+def transfer():
+    msg = eoslib.call_get_args()
+    _transfer(msg)
 
 def apply(receiver, account, act):
     if act == N('create'):
-        eoslib.require_auth(_code)
         msg = eoslib.read_action()
-        issuer, amount, symbol = struct.unpack('QQ8s', msg)
-
-        cs = currency_stats(symbol)
-        if cs.issuer:
-            raise Exception('currency has already been created')
-        cs.issuer = issuer
-        cs.max_supply.amount = amount
-        cs.store()
-
+        _create(msg)
     elif act == N('issue'):
         msg = eoslib.read_action()
-        _to, amount, symbol = struct.unpack('QQ8s', msg[:24])
-        memo = eoslib.unpack_bytes(msg[24:])
-        cs = currency_stats(symbol)
-        assert cs.issuer, 'currency does not exists'
-        eoslib.require_auth(cs.issuer)
-        cs.supply.amount += amount
-        assert cs.supply.amount < cs.max_supply.amount
-        cs.store(cs.issuer)
-
-        acc = Balance(_to, symbol)
-        acc.add(amount, cs.issuer)
-
+        _issue(msg)
     elif act == N('transfer'):
         msg = eoslib.read_action()
-        _from, to, amount, symbol = struct.unpack('QQQ8s', msg[:32])
-        eoslib.require_auth(_from)
-        assert eoslib.is_account( to )
-        
-        memo = eoslib.unpack_bytes(msg[32:])
-        a1 = Balance(_from, symbol)
-        a2 = Balance(to, symbol)
-        a1.sub(amount)
-        a2.add(amount, _from)
+        _transfer(msg)
 
