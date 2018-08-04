@@ -11,6 +11,7 @@ extern "C" PyObject* PyInit_vm_cpython();
 int init_cpython();
 int cpython_setcode(uint64_t account, string& code);
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
+int cpython_call(uint64_t account, uint64_t func);
 
 void get_code(uint64_t account, string& code) {
    size_t size;
@@ -45,6 +46,10 @@ int vm_setcode(uint64_t account) {
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return cpython_apply(receiver, account, act);
+}
+
+int vm_call(uint64_t account, uint64_t func) {
+   return cpython_call(account, func);
 }
 
 

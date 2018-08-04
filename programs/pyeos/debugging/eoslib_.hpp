@@ -40,6 +40,11 @@ int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table );
 void pack_bytes_(string& in, string& out);
 void unpack_bytes_(string& in, string& out);
 
+int call_set_args_(string& args);
+int call_get_args_(string& args);
+
+uint64_t call_(uint64_t account, uint64_t func);
+
 //interface/wasm_.cpp
 namespace eosio { namespace chain {
    uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result);

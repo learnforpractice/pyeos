@@ -40,7 +40,7 @@ cdef extern int cpython_setcode(uint64_t account, string& code) with gil:
         return 1
     return 0
 
-cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) with gil:
+cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action) with gil:
     try:
         if receiver in py_modules:
             py_modules[receiver].apply(receiver, account, action)
@@ -50,6 +50,23 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
         if not mod:
             return 0
         mod.apply(receiver, account, action)
+        return 1
+    except Exception as e:
+        logging.exception(e)
+    return 0
+
+cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:
+    try:
+        if receiver in py_modules:
+            mod = py_modules[receiver]
+        else:
+            code = _get_code(receiver)
+            mod = _load_module(receiver, code)
+        if not mod:
+            return 0
+        _func = eoslib.n2s(func)
+        _func = getattr(mod, _func)
+        _func()
         return 1
     except Exception as e:
         logging.exception(e)

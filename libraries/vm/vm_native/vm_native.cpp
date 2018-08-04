@@ -26,3 +26,6 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return eosio::chain::native_interface::get().apply(receiver, account, act);
 }
 
+int vm_call(uint64_t account, uint64_t func) {
+   return 0;
+}

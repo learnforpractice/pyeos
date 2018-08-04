@@ -29,6 +29,10 @@ extern "C" {
    int32_t db_lowerbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
    int32_t db_upperbound_i64(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
    int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table);
+
+   int call_set_args(const char* args , int len);
+   int call_get_args(char* args , int len);
+   uint64_t call(uint64_t account, uint64_t func);
 }
 
 using namespace eosio::chain;
@@ -103,6 +107,22 @@ int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t 
 
 int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table ) {
    return db_end_i64( code, scope, table );
+}
+
+int call_set_args_(string& args) {
+   return call_set_args(args.c_str(), args.size());
+}
+
+int call_get_args_(string& args) {
+   int args_size = call_get_args(nullptr, 0);
+   vector<char> _args(args_size);
+   call_get_args(_args.data(), _args.size());
+   args = string(_args.data(), _args.size());
+   return _args.size();
+}
+
+uint64_t call_(uint64_t account, uint64_t func) {
+   return call(account, func);
 }
 
 /*

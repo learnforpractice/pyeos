@@ -27,3 +27,6 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return 0;
 }
 
+int vm_call(uint64_t account, uint64_t func) {
+   return 0;
+}

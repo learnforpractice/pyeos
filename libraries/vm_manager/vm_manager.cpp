@@ -354,6 +354,11 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
       return 0;
    }
 
+   fn_call _call = (fn_call)dlsym(handle, "vm_call");
+   if (_call == NULL) {
+      return 0;
+   }
+
    fn_preload preload = (fn_preload)dlsym(handle, "vm_preload");
    /*
    if (preload == NULL) {
@@ -378,6 +383,7 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->vm_deinit = vm_deinit;
    calls->setcode = setcode;
    calls->apply = apply;
+   calls->call = _call;
    calls->preload = preload;
    calls->unload = unload;
 
@@ -549,6 +555,12 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
       }
    }
    return local_apply(type, receiver, account, act);
+}
+
+int vm_manager::call(uint64_t account, uint64_t func) {
+   int type = db_api::get().get_code_type(account);
+   auto itr = vm_map.find(type);
+   return itr->second->call(account, func);
 }
 
 int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {

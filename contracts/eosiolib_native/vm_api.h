@@ -212,6 +212,15 @@ struct vm_api {
    void (*pause_billing_timer)();
 
    uint64_t (*wasm_call)(const char*func, uint64_t* args , int argc);
+
+   int (*call_set_args)(const char* args , int len);
+   int (*call_get_args)(char* args , int len);
+
+   int (*call)(uint64_t account, uint64_t func);
+
+   int (*call_set_results)(const char* result , int len);
+   int (*call_get_results)(char* result , int len);
+
    int (*has_option)(const char* _option);
    int (*get_option)(const char* option, char *result, int size);
    int (*app_init_finished)();
@@ -225,6 +234,8 @@ typedef void (*fn_register_vm_api)(struct vm_api* api);
 
 typedef int (*fn_setcode)(uint64_t account);
 typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
+typedef int (*fn_call)(uint64_t account, uint64_t func);
+
 typedef void (*fn_vm_init)(struct vm_api* api);
 typedef void (*fn_vm_deinit)();
 typedef int (*fn_preload)(uint64_t account);
@@ -237,7 +248,7 @@ void vm_register_api(struct vm_api* api);
 
 int vm_setcode(uint64_t account);
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act);
-uint64_t vm_call(const char* act, uint64_t* args, int argc);
+int vm_call(uint64_t account, uint64_t func);
 
 int vm_preload(uint64_t account);
 int vm_unload(uint64_t account);

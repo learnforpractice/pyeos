@@ -132,6 +132,60 @@ int run_mode() // 0 for server, 1 for client
    return 0;
 }
 
+uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
+   vector<uint64_t> _args;
+   for (int i=0;i<argc;i++) {
+      _args.push_back(args[i]);
+   }
+   return vm_manager::get().wasm_call(string(func), _args);
+}
+
+static vector<char> s_args;
+static vector<char> s_results;
+
+int call_set_args(const char* args , int len) {
+   if (args == NULL || len <=0) {
+      return 0;
+   }
+   s_args.resize(len);
+   memcpy(s_args.data(), args, len);
+   return 1;
+}
+
+
+int call_get_args(char* args , int len) {
+   if (args == NULL || len <=0) {
+      return s_args.size();
+   }
+
+   int copy_len = std::min(s_args.size(), (size_t)len);
+   memcpy(args, s_args.data(), copy_len);
+   return copy_len;
+}
+
+int call(uint64_t account, uint64_t func) {
+   s_results.resize(0);
+   return vm_manager::get().call(account, func);
+}
+
+int call_set_results(const char* result , int len) {
+   if (result == NULL || len <=0) {
+      return 0;
+   }
+   s_results.resize(len);
+   memcpy(s_results.data(), result, len);
+   return 1;
+}
+
+int call_get_results(char* result , int len) {
+   if (result == NULL || len <= 0) {
+      return s_results.size();
+   }
+   int copy_len = std::min(s_results.size(), (size_t)len);
+   memcpy(result, s_results.data(), copy_len);
+   return copy_len;
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -311,16 +365,27 @@ static struct vm_api _vm_api = {
    .pause_billing_timer = pause_billing_timer,
 
    .wasm_call = wasm_call,
+
+   .call_set_args = call_set_args,
+   .call_get_args = call_get_args,
+   .call = call,
+   .call_set_results = call_set_results,
+   .call_get_results = call_get_results,
+
    .has_option = has_option,
    .get_option = get_option,
    .app_init_finished = app_init_finished,
-   .run_mode = run_mode
+   .run_mode = run_mode,
+
 };
 
 
 void vm_manager_init() {
    vm_register_api(&_vm_api);
    vm_manager::get().init(&_vm_api);
+
+   s_args.reserve(256);
+   s_results.reserve(256);
 }
 
 #include <appbase/platform.hpp>

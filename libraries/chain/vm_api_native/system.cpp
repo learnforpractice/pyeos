@@ -59,13 +59,4 @@ bool contracts_console() {
    return ctx().control.contracts_console();
 }
 
-uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
-   vector<uint64_t> _args;
-   for (int i=0;i<argc;i++) {
-      _args.push_back(args[i]);
-   }
-   return vm_manager::get().wasm_call(string(func), _args);
-}
-
-
 }

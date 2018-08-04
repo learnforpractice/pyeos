@@ -38,6 +38,26 @@ uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
    return get_vm_api()->wasm_call(func, args , argc);
 }
 
+uint64_t call(uint64_t account, uint64_t func) {
+   return get_vm_api()->call(account, func);
+}
+
+int call_get_args(char* args , int len) {
+   return get_vm_api()->call_get_args(args, len);
+}
+
+int call_set_args(const char* args , int len) {
+   return get_vm_api()->call_set_args(args, len);
+}
+
+int call_set_results(const char* result , int len) {
+   return get_vm_api()->call_set_results(result, len);
+}
+
+int call_get_results(char* result , int len) {
+   return get_vm_api()->call_get_results(result, len);
+}
+
 int has_option(const char* _option) {
    return get_vm_api()->has_option(_option);
 }

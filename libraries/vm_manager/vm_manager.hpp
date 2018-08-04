@@ -28,6 +28,7 @@ struct vm_calls {
    fn_vm_deinit vm_deinit;
    fn_setcode setcode;
    fn_apply apply;
+   fn_call call;
    fn_preload preload;
    fn_unload unload;
 };
@@ -42,6 +43,8 @@ public:
 
    int setcode(int type, uint64_t account);
    int apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
+   int call(uint64_t account, uint64_t func);
+
    int local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
 
    int check_new_version(int vm_type, uint64_t vm_name);
