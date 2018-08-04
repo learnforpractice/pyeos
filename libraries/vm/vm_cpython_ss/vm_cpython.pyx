@@ -148,9 +148,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     module = new_module(name)
     inspector.set_current_module(module)
 
-    bltins = dict.copy(__builtins__.__dict__)
     _dict = module.__dict__
-    _dict['__builtins__'] = bltins
 
     ret = 1
     try:
@@ -160,6 +158,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     except:
         print('++++++++error!')
         ret = 0
+    del module
     _tracemalloc.stop()
     return ret
 
