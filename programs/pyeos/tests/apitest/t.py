@@ -12,20 +12,20 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('apitest', 'apitest.py', 'apitest.abi', __file__)
+        prepare('apitest', 'apitest.py', 'apitest.abi', __file__, 6)
         return func(*args, **kwargs)
     return func_wrapper
 
 @init
 def test():
     with producer:
-        r = eosapi.push_action('apitest','dbtest','',{'apitest':'active'})
+        r = eosapi.push_action('apitest','sayhello','',{'apitest':'active'})
         assert r
 
 @init
 def inline_send():
     with producer:
-        r = eosapi.push_action('apitest', 'inlinesend', '', {'hello':'active','apitest':'active'})
+        r = eosapi.push_action('apitest', 'inlinesend', '', {'apitest':'active'})
         assert r
 
 @init

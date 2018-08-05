@@ -41,7 +41,7 @@ def init(wasm=False):
 
 @init()
 def test(msg='hello,world\n'):
-    r = eosapi.push_action('call', 'sayhello', msg, {'call':'active'})
+    r = eosapi.push_action('call', 'sayhello', msg, {'call':'active', 'eosio':'active'})
     assert r
 
 @init()

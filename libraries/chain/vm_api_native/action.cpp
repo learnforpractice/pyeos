@@ -43,7 +43,7 @@ bool is_account( uint64_t name ) {
    return ctx().is_account(name);
 }
 
-void send_inline(char *data, size_t data_len) {
+void send_inline(const char *data, size_t data_len) {
    //TODO: Why is this limit even needed? And why is it not consistently checked on actions in input or deferred transactions
    FC_ASSERT( data_len < ctx().control.get_global_properties().configuration.max_inline_action_size,
               "inline action too big" );

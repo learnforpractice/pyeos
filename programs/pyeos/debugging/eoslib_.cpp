@@ -33,6 +33,8 @@ extern "C" {
    int call_set_args(const char* args , int len);
    int call_get_args(char* args , int len);
    uint64_t call(uint64_t account, uint64_t func);
+
+   void send_inline(const char *serialized_action, size_t size);
 }
 
 using namespace eosio::chain;
@@ -123,6 +125,12 @@ int call_get_args_(string& args) {
 
 uint64_t call_(uint64_t account, uint64_t func) {
    return call(account, func);
+}
+
+int send_inline_(action& act) {
+   vector<char> data = fc::raw::pack<action>(act);
+   send_inline(data.data(), data.size());
+   return 1;
 }
 
 /*

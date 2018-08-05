@@ -3,10 +3,13 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
 
+import struct
+
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
 
 cdef extern from "<stdlib.h>":
+    void memcpy(char* dst, char* src, size_t len)
     char * malloc(size_t size)
     void free(char* ptr)
 
@@ -19,6 +22,18 @@ cdef extern from "<fc/crypto/xxhash.h>":
 
 cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
+
+    cdef cppclass permission_level:
+        permission_level()
+        uint64_t    actor
+        uint64_t permission
+
+    cdef cppclass action:
+        action()
+        uint64_t                    account
+        uint64_t                    name
+        vector[permission_level]    authorization
+        vector[char]                data
 
     bool is_account_( uint64_t account )
     uint64_t s2n_(const char* str);
@@ -71,6 +86,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int call_get_args_(string& args);
 
     uint64_t call_(uint64_t account, uint64_t func);
+    int send_inline_(action& act);
 
 cdef extern from "eoslib_.hpp" namespace "eosio::chain":
     uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args, vector[char]& result);
@@ -166,3 +182,43 @@ def call_get_args():
 
 def call(uint64_t account, uint64_t func):
     return call_(account, func)
+
+def send_inline(contract, act, args: bytes, permissions):
+    cdef action _act
+    cdef permission_level per
+    cdef uint64_t _account
+    cdef uint64_t action_name
+
+    if isinstance(contract, str):
+        _account = s2n_(contract)
+    else:
+        _account = contract
+
+    if isinstance(act, str):
+        action_name = s2n_(act)
+    else:
+        action_name = act
+
+    _act.account = _account
+    _act.name = action_name
+    _act.data.resize(len(args))
+
+    memcpy(_act.data.data(), args, len(args))
+
+    for key in permissions:
+        per.actor = s2n_(key)
+        per.permission = s2n(permissions[key])
+        _act.authorization.push_back(per)
+
+    return send_inline_(_act)
+
+def transfer(_from, _to, _amount, _memo=''):
+    _from = s2n('eosio')
+    _to = s2n('hello')
+    symbol=bytearray(8)
+    symbol[0] = 4
+    symbol[1] = ord('E')
+    symbol[2] = ord('O')
+    symbol[3] = ord('S')
+    args = struct.pack('QQQ8s%ds'%(len(_memo),), _from, _to, _amount, symbol, _memo)
+    return send_inline('eosio.token', 'transfer', args, {_from:'active'})

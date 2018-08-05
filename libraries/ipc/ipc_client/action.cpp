@@ -61,7 +61,7 @@ bool is_account( uint64_t name ) {
    return db_api::get().is_account(name);
 }
 
-void send_inline(char *data, size_t data_len) {
+void send_inline(const char *data, size_t data_len) {
    ipc_client::get().send_inline(data, data_len);
 }
 

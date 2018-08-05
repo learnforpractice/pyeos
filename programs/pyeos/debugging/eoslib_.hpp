@@ -12,8 +12,10 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <eosio/chain/action.hpp>
 
 using namespace std;
+using namespace eosio::chain;
 
 uint64_t s2n_(const char* str);
 void n2s_(uint64_t _name, string& out);
@@ -44,6 +46,7 @@ int call_set_args_(string& args);
 int call_get_args_(string& args);
 
 uint64_t call_(uint64_t account, uint64_t func);
+int send_inline_(action& action);
 
 //interface/wasm_.cpp
 namespace eosio { namespace chain {

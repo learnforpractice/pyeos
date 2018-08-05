@@ -1,5 +1,5 @@
 from eoslib import *
-import ustruct as struct
+import struct
 
 '''
 int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
@@ -221,10 +221,9 @@ def db_test_idx256():
     itr, primary = db_idx256_find_secondary(receiver, receiver, table, secondary)
     print('db_idx256_find_secondary', itr, primary)
 
-def inline_send():
-    account = N('hello')
-    auth = struct.pack('QQQQ', code, N('active'), account, N('active'))
-    send_inline(account, N('sayhello'), auth, b'hello,worldddddddd')
+def test_send_inline():
+    account = N('apitest')
+    send_inline(account, 'sayhello', b'hello,worldddddddd', {'apitest':'active'})
 
 '''
 struct mp_transaction {
@@ -266,11 +265,11 @@ def apply(receiver, code, action):
         deffer_send()
     elif action == N('inlinesend'):
         print('inline_send begin')
-        inline_send()
+        test_send_inline()
         print('inline_send return')
     elif action == N('sayhello'):
         act = read_action()
-        print(n2s(name), 'read_action return:', act)
+        print('read_action return:', act)
 #        deffer_send()
     elif action == N('callwasm'):
         wasm_call(N('lab'), 'sayHello', N('hello'))

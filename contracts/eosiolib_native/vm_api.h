@@ -28,7 +28,7 @@ struct vm_api {
    void (*require_auth2)( uint64_t name, uint64_t permission );
    bool (*has_auth)( uint64_t name );
    bool (*is_account)( uint64_t name );
-   void (*send_inline)(char *serialized_action, size_t size);
+   void (*send_inline)(const char *serialized_action, size_t size);
    void (*send_context_free_inline)(char *serialized_action, size_t size);
    uint64_t  (*publication_time)();
    uint64_t (*current_receiver)();

@@ -49,7 +49,7 @@ void ipc_client::require_auth2( uint64_t name, uint64_t permission ) {
 
 }
 
-void ipc_client::send_inline(char *data, size_t data_len) {
+void ipc_client::send_inline(const char *data, size_t data_len) {
 
 }
 
