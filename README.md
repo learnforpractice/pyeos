@@ -130,7 +130,10 @@ republish to the testnet if it's been changed during the running of t.test(). Yo
 
 On Eos, C++ Smart Contract code is compile to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now It's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
 
-There is a short video on youtube for quick start:[C++ Smart Contract Debugging](https://youtu.be/7XPgnbjsXkE)
+There is a short video on youtube for quick start:
+
+### image
+[![Debugging](http://img.youtube.com/vi/7XPgnbjsXkE/0.jpg)](http://www.youtube.com/watch?v=7XPgnbjsXkE "Debugging C++ Smart Contract")
 
 To be brief, here are the steps on debugging a C++ Smart Contract:
 
@@ -187,7 +190,9 @@ t.debug()
 
 # Python Smart Contract Debugging
 
-There is a short video on youtube about Python Smart Contract for quick start:[Python Smart Contract Debugging](https://youtu.be/eTwx-VTxhfo)
+There is a short video on youtube about Python Smart Contract for quick start:
+[![Debugging](http://img.youtube.com/vi/eTwx-VTxhfo/0.jpg)](http://www.youtube.com/watch?v=eTwx-VTxhfo "Debugging Python Smart Contract")        
+
 
 The following steps show how to debug smart contract under programs/pyeos/contracts/hello.
 
