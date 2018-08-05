@@ -72,7 +72,7 @@
 		printf "\\tDo you wish to install Home Brew?\\n"
 		select yn in "Yes" "No"; do
 			case "${yn}" in
-				[Yy]* ) 
+				[Yy]* )
 				"${XCODESELECT}" --install 2>/dev/null;
 				if ! "${RUBY}" -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 				then
@@ -91,7 +91,7 @@
 
 	printf "\\tHome Brew installation found @\\n"
 	printf "\\t%s\\n\\n" "${BREW}"
-	
+
 	COUNT=1
 	PERMISSION_GETTEXT=0
 	DISPLAY=""
@@ -121,9 +121,9 @@
 		DISPLAY="${DISPLAY}${COUNT}. ${name}\\n\\t"
 		printf "\\t\\t %s ${bldred}NOT${txtrst} found.\\n" "${name}"
 		(( COUNT++ ))
-	done < scripts/eosio_build_dep
+	done < "${SOURCE_DIR}/scripts/eosio_build_dep"
 	IFS="${var_ifs}"
-		
+
 	printf "\\tChecking Python3 ... "
 	if [  -z "$( python3 -c 'import sys; print(sys.version_info.major)' 2>/dev/null )" ]; then
 		DEP=$DEP"python@3 "
@@ -140,7 +140,7 @@
 		echo "Do you wish to install these packages?"
 		select yn in "Yes" "No"; do
 			case $yn in
-				[Yy]* ) 
+				[Yy]* )
 					if [ $PERMISSION_GETTEXT -eq 1 ]; then
 						sudo chown -R "$(whoami)" /usr/local/share
 					fi
@@ -171,11 +171,11 @@
 				* ) echo "Please type 1 for yes or 2 for no.";;
 			esac
 		done
-	else 
+	else
 		printf "\\n\\tNo required Home Brew dependencies to install.\\n"
 	fi
 
-		
+
 	printf "\\n\\tChecking boost library installation.\\n"
 	BVERSION=$( grep "#define BOOST_VERSION" "/usr/local/include/boost/version.hpp" 2>/dev/null | tail -1 | tr -s ' ' | cut -d\  -f3 )
 	if [ "${BVERSION}" != "106700" ]; then
@@ -187,7 +187,7 @@
 				case $yn in
 					[Yy]* )
 						if "${BREW}" list | grep "boost"
-						then 
+						then
 							printf "\\tUninstalling Boost Version %s.\\n" "${BVERSION}"
 							if ! "${BREW}" uninstall --force boost
 							then
@@ -217,7 +217,7 @@
 			done
 		fi
 		printf "\\tInstalling boost libraries.\\n"
-		if ! "${BREW}" install boost
+		if ! "${BREW}" install https://raw.githubusercontent.com/Homebrew/homebrew-core/f946d12e295c8a27519b73cc810d06593270a07f/Formula/boost.rb
 		then
 			printf "\\tUnable to install boost 1.67 libraries at this time. 0\\n"
 			printf "\\tExiting now.\\n\\n"
@@ -234,6 +234,167 @@
 		printf "\\tBoost 1.67.0 successfully installed @ /usr/local.\\n"
 	else
 		printf "\\tBoost 1.67.0 found at /usr/local.\\n"
+	fi
+
+	printf "\\n\\tChecking MongoDB C++ driver installation.\\n"
+	MONGO_INSTALL=true
+
+    if [ -e "/usr/local/lib/libmongocxx-static.a" ]; then
+		MONGO_INSTALL=false
+		if ! version=$( grep "Version:" /usr/local/lib/pkgconfig/libmongocxx-static.pc | tr -s ' ' | awk '{print $2}' )
+		then
+			printf "\\tUnable to determine mongodb-cxx-driver version.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+
+		maj=$( echo "${version}" | cut -d'.' -f1 )
+		min=$( echo "${version}" | cut -d'.' -f2 )
+		if [ "${maj}" -gt 3 ]; then
+			MONGO_INSTALL=true
+		elif [ "${maj}" -eq 3 ] && [ "${min}" -lt 3 ]; then
+			MONGO_INSTALL=true
+		fi
+	fi
+
+    if [ $MONGO_INSTALL == "true" ]; then
+		if ! cd "${TEMP_DIR}"
+		then
+			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! pkgconfig=$( "${BREW}" list | grep pkg-config )
+		then
+			if ! "${BREW}" install --force pkg-config
+			then
+				printf "\\tHomebrew returned an error installing pkg-config.\\n"
+				printf "\\tExiting now.\\n\\n"
+				exit 1;
+			fi
+			if ! "${BREW}" unlink pkg-config && "${BREW}" link --force pkg-config
+			then
+				printf "\\tHomebrew returned an error linking pkgconfig.\\n"
+				printf "\\tExiting now.\\n\\n"
+				exit 1;
+			fi
+		fi
+		STATUS=$( curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.10.2/mongo-c-driver-1.10.2.tar.gz )
+		if [ "${STATUS}" -ne 200 ]; then
+			if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
+			then
+				printf "\\tUnable to remove file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
+			fi
+			printf "\\tUnable to download MongoDB C driver at this time.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! tar xf mongo-c-driver-1.10.2.tar.gz
+		then
+			printf "\\tUnable to unarchive file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
+		then
+			printf "\\tUnable to remove file mongo-c-driver-1.10.2.tar.gz.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd "${TEMP_DIR}"/mongo-c-driver-1.10.2
+		then
+			printf "\\tUnable to cd into directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! mkdir cmake-build
+		then
+			printf "\\tUnable to create directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd cmake-build
+		then
+			printf "\\tUnable to enter directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_BSON=ON \
+		-DENABLE_SSL=DARWIN -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_STATIC=ON ..
+		then
+			printf "\\tConfiguring MongoDB C driver has encountered the errors above.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! make -j"${CPU_CORE}"
+		then
+			printf "\\tError compiling MongoDB C driver.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! sudo make install
+		then
+			printf "\\tError installing MongoDB C driver.\\nMake sure you have sudo privileges.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd "${TEMP_DIR}"
+		then
+			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.10.2"
+		then
+			printf "\\tUnable to remove directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.3 --depth 1
+		then
+			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd "${TEMP_DIR}/mongo-cxx-driver/build"
+		then
+			printf "\\tUnable to enter directory %s/mongo-cxx-driver/build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+		then
+			printf "\\tCmake has encountered the above errors building the MongoDB C++ driver.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! make -j"${CPU_CORE}"
+		then
+			printf "\\tError compiling MongoDB C++ driver.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! sudo make install
+		then
+			printf "\\tError installing MongoDB C++ driver.\\nMake sure you have sudo privileges.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd "${TEMP_DIR}"
+		then
+			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! rm -rf "${TEMP_DIR}/mongo-cxx-driver"
+		then
+			printf "\\tUnable to remove directory %s/mongo-cxx-driver.\\n" "${TEMP_DIR}" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		printf "\\tMongo C++ driver installed at /usr/local/lib/libmongocxx-static.a.\\n"
+	else
+		printf "\\tMongo C++ driver found at /usr/local/lib/libmongocxx-static.a.\\n"
 	fi
 
 	printf "\\n\\tChecking secp256k1-zkp installation.\\n"
@@ -291,7 +452,7 @@
 	else
 		printf "\\tsecp256k1 found at /usr/local/lib/.\\n"
 	fi
-  
+
 	printf "\\n\\tChecking LLVM with WASM support.\\n"
 	if [ ! -d /usr/local/wasm/bin ]; then
 		if ! cd "${TEMP_DIR}"
