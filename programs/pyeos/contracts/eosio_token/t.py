@@ -16,7 +16,7 @@ from common import prepare, producer
 def init(func, wasm=False):
     def func_wrapper(*args, **kwargs):
         if not wasm:
-            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 7)
+            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
         func(*args, **kwargs)
     return func_wrapper
 
@@ -29,6 +29,11 @@ def create():
 @init
 def issue():
     r = eosapi.push_action('eosio.token','issue',{"to":"eosio","quantity":"10000000000.0000 EOS","memo":""},{'eosio':'active'})
+    assert r
+
+@init
+def issue2():
+    r = eosapi.push_action('eosio.token','issue',{"to":"hello","quantity":"10000000000.0000 EOS","memo":""},{'eosio':'active'})
     assert r
 
 @init

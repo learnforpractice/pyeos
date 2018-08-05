@@ -140,7 +140,10 @@ def _issue(msg):
 
 def _transfer(msg):
     _from, to, amount, symbol = struct.unpack('QQQ8s', msg[:32])
+    print('transfer:', _from, to, amount, symbol)
     eoslib.require_auth(_from)
+    eoslib.require_recipient(_from)
+    eoslib.require_recipient(to)
 #        memo = eoslib.unpack_bytes(msg[32:])
     a1 = Balance(_from, symbol)
     a2 = Balance(to, symbol)
