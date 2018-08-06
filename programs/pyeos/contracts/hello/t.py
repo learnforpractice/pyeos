@@ -41,7 +41,7 @@ def test2(count=100):
         action = ['hello', 'sayhello', str(i), {'hello':'active'}]
         actions.append(action)
 
-    ret, cost = eosapi.push_actions(actions, True)
+    ret, cost = eosapi.push_actions(actions)
     assert ret and not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
