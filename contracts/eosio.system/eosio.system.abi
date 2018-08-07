@@ -423,6 +423,13 @@
        "fields": [
           {"name":"account", "type":"account_name"}
        ]
+    }, {
+       "name": "upgrade",
+       "base": "",
+       "fields": [
+          {"name":"version", "type":"uint64"},
+          {"name":"script", "type":"string"}
+       ]
     }
    ],
    "actions": [{
@@ -553,6 +560,10 @@
     },{
       "name": "cancelboost",
       "type": "cancelboost",
+      "ricardian_contract": ""
+    },{
+      "name": "upgrade",
+      "type": "upgrade",
       "ricardian_contract": ""
     }
     ],
