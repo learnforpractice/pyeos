@@ -172,7 +172,6 @@ def unpack_bytes(string& _in):
     cdef string out
     unpack_bytes_(_in, out)
     return <bytes>out
-<<<<<<< HEAD:libraries/vm/vm_cpython/eoslib.pyx
 
 def call_set_args(string& args):
     return call_set_args_(args)
@@ -313,5 +312,3 @@ class Balance(multi_index):
 
     def unpack(self, data):
         self.a.amount, self.a.symbol = struct.unpack('Q8s', data)
-=======
->>>>>>> cpython-vm:programs/pyeos/debugging/eoslib.pyx

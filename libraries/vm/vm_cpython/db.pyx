@@ -64,18 +64,18 @@ cdef extern from "<eosiolib_native/vm_api.h>": # namespace "eosio::chain":
        int32_t (*db_idx64_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
        int32_t (*db_idx64_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
        int32_t (*db_idx64_end)(uint64_t code, uint64_t scope, uint64_t table);
-
-       int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float64_t* secondary);
-       void (*db_idx_double_update)(int32_t iterator, uint64_t payer, const float64_t* secondary);
-       void (*db_idx_double_remove)(int32_t iterator);
-       int32_t (*db_idx_double_next)(int32_t iterator, uint64_t* primary);
-       int32_t (*db_idx_double_previous)(int32_t iterator, uint64_t* primary);
-       int32_t (*db_idx_double_find_primary)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t primary);
-       int32_t (*db_idx_double_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const float64_t* secondary, uint64_t* primary);
-       int32_t (*db_idx_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
-       int32_t (*db_idx_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
-       int32_t (*db_idx_double_end)(uint64_t code, uint64_t scope, uint64_t table);
-
+'''
+int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float64_t* secondary);
+void (*db_idx_double_update)(int32_t iterator, uint64_t payer, const float64_t* secondary);
+void (*db_idx_double_remove)(int32_t iterator);
+int32_t (*db_idx_double_next)(int32_t iterator, uint64_t* primary);
+int32_t (*db_idx_double_previous)(int32_t iterator, uint64_t* primary);
+int32_t (*db_idx_double_find_primary)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t primary);
+int32_t (*db_idx_double_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const float64_t* secondary, uint64_t* primary);
+int32_t (*db_idx_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
+int32_t (*db_idx_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
+int32_t (*db_idx_double_end)(uint64_t code, uint64_t scope, uint64_t table);
+'''
 cdef extern from "vm_cpython.h":
     vm_api& api();
 

@@ -79,11 +79,9 @@ void init_console() {
    PyInit_eosapi();
    PyInit_net();
 
-   PyInit_eoslib();
-   PyInit_db();
    PyInit_rodb();
    PyInit_debug();
-   PyInit_python_contract();
+//   PyInit_python_contract();
 
    PyRun_SimpleString(
        "import sys;"

@@ -68,7 +68,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/net.pyx
 )
 
-add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
+add_library(pyeos-shared main.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
     interface/debug_.cpp
