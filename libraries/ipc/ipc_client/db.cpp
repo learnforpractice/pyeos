@@ -19,16 +19,16 @@ bool is_nan( const float128_t& f ) {
 
 extern "C" {
 
-int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
+int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len) {
    return ipc_client::get().db_store_i64(scope, table, payer, id,  data, len);
 }
 
-int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
+int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len) {
    FC_ASSERT(false, "not implemented!");
    return -1;//ctx().db_store_i64(code, scope, table, payer, id,  (const char*)data, len);
 }
 
-void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len) {
+void db_update_i64(int32_t iterator, uint64_t payer, const char* data, uint32_t len) {
    ipc_client::get().db_update_i64(iterator, payer, (const char*)data, len);
 }
 

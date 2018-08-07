@@ -47,10 +47,10 @@ struct vm_api {
    void (*assert_recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 
 
-   int32_t (*db_store_i64)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
-   int32_t (*db_store_i64_ex)(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
+   int32_t (*db_store_i64)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
+   int32_t (*db_store_i64_ex)(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
 
-   void (*db_update_i64)(int32_t iterator, uint64_t payer, const void* data, uint32_t len);
+   void (*db_update_i64)(int32_t iterator, uint64_t payer, const char* data, uint32_t len);
    void (*db_remove_i64)(int32_t iterator);
 
    void (*db_update_i64_ex)( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
@@ -78,8 +78,8 @@ struct vm_api {
    int32_t (*db_idx64_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
    int32_t (*db_idx64_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
    int32_t (*db_idx64_end)(uint64_t code, uint64_t scope, uint64_t table);
-   int32_t (*db_idx128_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* secondary);
 
+   int32_t (*db_idx128_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* secondary);
    void (*db_idx128_update)(int32_t iterator, uint64_t payer, const uint128_t* secondary);
    void (*db_idx128_remove)(int32_t iterator);
    int32_t (*db_idx128_next)(int32_t iterator, uint64_t* primary);
@@ -101,6 +101,7 @@ struct vm_api {
    int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
    int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
    int32_t (*db_idx256_end)(uint64_t code, uint64_t scope, uint64_t table);
+
    int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float64_t* secondary);
    void (*db_idx_double_update)(int32_t iterator, uint64_t payer, const float64_t* secondary);
    void (*db_idx_double_remove)(int32_t iterator);
@@ -111,6 +112,7 @@ struct vm_api {
    int32_t (*db_idx_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
    int32_t (*db_idx_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
    int32_t (*db_idx_double_end)(uint64_t code, uint64_t scope, uint64_t table);
+
    int32_t (*db_idx_long_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float128_t* secondary);
    void (*db_idx_long_double_update)(int32_t iterator, uint64_t payer, const float128_t* secondary);
    void (*db_idx_long_double_remove)(int32_t iterator);

@@ -9,16 +9,16 @@
 #include "vm_api.h"
 
 int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
-   return get_vm_api()->db_store_i64(scope, table, payer, id, data, len);
+   return get_vm_api()->db_store_i64(scope, table, payer, id, (const char*)data, len);
 }
 
 int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
-   return get_vm_api()->db_store_i64_ex(code, scope, table, payer, id, data, len);
+   return get_vm_api()->db_store_i64_ex(code, scope, table, payer, id, (const char*)data, len);
 }
 
 
 void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len) {
-   get_vm_api()->db_update_i64( iterator, payer, data, len);
+   get_vm_api()->db_update_i64( iterator, payer, (const char*)data, len);
 }
 
 void db_remove_i64(int32_t iterator) {

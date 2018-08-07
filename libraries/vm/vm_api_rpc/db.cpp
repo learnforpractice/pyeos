@@ -17,11 +17,11 @@ bool is_nan( const float128_t& f ) {
    return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
 }
 
-int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len) {
+int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len) {
    return 0;//db_api::get().db_store_i64(scope, table, payer, id,  (const char*)data, len);
 }
 
-void db_update_i64(int32_t iterator, uint64_t payer, const void* data, uint32_t len) {
+void db_update_i64(int32_t iterator, uint64_t payer, const char* data, uint32_t len) {
    return;//ctx().db_update_i64(iterator, payer, (const char*)data, len);
 }
 
@@ -29,7 +29,7 @@ void db_remove_i64(int32_t iterator) {
    return;//ctx().db_remove_i64(iterator);
 }
 
-int32_t db_get_i64(int32_t iterator, const void* data, uint32_t len) {
+int32_t db_get_i64(int32_t iterator, const char* data, uint32_t len) {
    return 0;//ctx().db_get_i64(iterator, (char*)data, len);
 }
 

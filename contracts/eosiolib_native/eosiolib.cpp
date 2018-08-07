@@ -35,3 +35,6 @@ struct vm_api* get_vm_api() {
    return s_api;
 }
 
+extern "C" uint64_t string_to_uint64(const char* str) {
+   return get_vm_api()->string_to_uint64(str);
+}
