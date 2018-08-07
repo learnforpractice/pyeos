@@ -16,7 +16,7 @@ from common import prepare, producer
 def init(func, wasm=False):
     def func_wrapper(*args, **kwargs):
         if not wasm:
-            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 7)
+            prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
         func(*args, **kwargs)
     return func_wrapper
 
