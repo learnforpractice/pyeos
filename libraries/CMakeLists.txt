@@ -1,4 +1,6 @@
 add_subdirectory( python )
+add_subdirectory( python-ss )
+
 #add_subdirectory( python-single-thread )
 
 add_subdirectory( vm )

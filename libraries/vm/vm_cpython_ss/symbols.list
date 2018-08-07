@@ -1,0 +1,8 @@
+_vm_init
+_vm_deinit
+_vm_setcode
+_vm_apply
+_vm_preload
+_vm_unload
+
+

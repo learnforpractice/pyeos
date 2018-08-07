@@ -7,3 +7,4 @@ endif()
 
 add_subdirectory( vm_native )
 add_subdirectory( vm_cpython )
+add_subdirectory( vm_cpython_ss )

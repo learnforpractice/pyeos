@@ -1539,6 +1539,9 @@ optional<producer_schedule_type> controller::proposed_producers()const {
 }
 
 bool controller::skip_auth_check()const {
+   if (my->conf.skip_signature_check) {
+      return true;
+   }
    return my->replaying && !my->conf.force_all_checks && !my->in_trx_requiring_checks;
 }
 

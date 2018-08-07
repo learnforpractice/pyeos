@@ -95,11 +95,19 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
 }
 
 int has_option(const char* _option) {
-   return appbase::app().has_option(_option);
+   try {
+      return appbase::app().has_option(_option);
+   } catch (...) {
+      return 0;
+   }
 }
 
 int get_option(const char* option, char *result, int size) {
-   return appbase::app().get_option(option, result, size);
+   try {
+      return appbase::app().get_option(option, result, size);
+   } catch (...) {
+      return 0;
+   }
 }
 
 int app_init_finished() {

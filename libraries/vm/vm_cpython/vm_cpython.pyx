@@ -27,15 +27,17 @@ def _get_code(uint64_t account):
 
 def _load_module(account, code):
     try:
-        module = imp.new_module(eoslib.n2s(account))
-        exec(code, module.__dict__)
+        name = eoslib.n2s(account)
+        co = compile(code, name, 'exec')
+        module = imp.new_module(name)
+        exec(co, module.__dict__)
         py_modules[account] = module
         return module
     except Exception as e:
         logging.exception(e)
     return None
 
-cdef extern int cpython_setcode(uint64_t account, string& code) with gil:
+cdef extern int cpython_setcode(uint64_t account, string& code):
     if _load_module(account, code):
         return 1
     return 0
@@ -43,13 +45,14 @@ cdef extern int cpython_setcode(uint64_t account, string& code) with gil:
 cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action) with gil:
     try:
         if receiver in py_modules:
-            py_modules[receiver].apply(receiver, account, action)
+            module = py_modules[receiver]
+            module.apply(receiver, account, action)
             return 1
         code = _get_code(receiver)
-        mod = _load_module(receiver, code)
-        if not mod:
+        module = _load_module(receiver, code)
+        if not module:
             return 0
-        mod.apply(receiver, account, action)
+        module.apply(receiver, account, action)
         return 1
     except Exception as e:
         logging.exception(e)

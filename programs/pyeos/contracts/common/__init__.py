@@ -192,10 +192,10 @@ class Sync(object):
         msg += mod_name.encode('utf8')
         msg += int.to_bytes(0, 1, 'little') # source code
         msg += src_code
-        with producer:
-            print('++++++++++++++++deply:', mod_name)
-            r = eosapi.push_action(self.account, 'deploy',msg,{self.account:'active'})
-            assert r
+
+        print('++++++++++++++++deply:', mod_name)
+        r = eosapi.push_action(self.account, 'deploy',msg,{self.account:'active'})
+        assert r
 
     def deploy_depend_libs(self, _libs_dir, depend_libs):
         for file_name in depend_libs:
@@ -212,7 +212,6 @@ class Sync(object):
             print('++++++++++++++++deply:', file_name)
             r = eosapi.push_action(self.account,'deploy',msg,{self.account:'active'})
             assert r
-        producer.produce_block()
 
     def deploy_all(self):
         files = os.listdir(self.src_dir)

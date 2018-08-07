@@ -466,9 +466,9 @@ void producer_plugin::set_program_options(
    boost::program_options::options_description producer_options;
 
    producer_options.add_options()
-         ("print-incoming-block", "read only mode")
-         ("print-producer-log", "read only mode")
-         ("manual-gen-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_manual_gen_block = e;}), "manual generate block.")
+         ("print-incoming-block", "print incoming block info")
+         ("print-producer-log", "print producer generated block info")
+         ("manual-gen-block", "manually generate block.")
          ("gen-empty-block", boost::program_options::bool_switch()->notifier([this](bool e){my->_gen_empty_block = e;}), "enable generate empty block,for debug purpose only.")
          ("enable-stale-production,e", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("pause-on-startup,x", boost::program_options::bool_switch()->notifier([this](bool p){my->_pause_production = p;}), "Start this node in a state where production is paused")
@@ -607,6 +607,10 @@ void producer_plugin::plugin_initialize(const boost::program_options::variables_
             elog("Malformed signature provider: \"${val}\", ignoring!", ("val", key_spec_pair));
          }
       }
+   }
+
+   if( options.count("manual-gen-block") ) {
+      my->_manual_gen_block = true;
    }
 
    my->_keosd_provider_timeout_us = fc::milliseconds(options.at("keosd-provider-timeout").as<int32_t>());
