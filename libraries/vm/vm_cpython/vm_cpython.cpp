@@ -2,11 +2,14 @@
 
 #include <Python.h>
 
-#include <eosiolib_native/vm_api.h>
 
 static struct vm_api* s_api;
 
-extern "C" PyObject* PyInit_vm_cpython();
+extern "C" {
+   PyObject* PyInit_vm_cpython();
+   PyObject* PyInit_eoslib();
+   PyObject* PyInit_db();
+}
 
 int init_cpython();
 int cpython_setcode(uint64_t account, string& code);
@@ -27,6 +30,8 @@ int init_cpython_() {
 void vm_init(struct vm_api* api) {
    s_api = api;
    vm_register_api(api);
+   PyInit_db();
+   PyInit_eoslib();
    PyInit_vm_cpython();
 }
 
@@ -37,6 +42,11 @@ void vm_deinit() {
 struct vm_api* get_vm_api() {
    return s_api;
 }
+
+vm_api& api() {
+   return *s_api;
+}
+
 
 int vm_setcode(uint64_t account) {
    string code;

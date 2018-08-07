@@ -53,4 +53,7 @@ namespace eosio { namespace chain {
    uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result);
 }}
 
+struct vm_api& get_vm_api();
+
+
 #endif /* EOSLIB__HPP_ */

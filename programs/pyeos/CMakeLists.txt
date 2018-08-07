@@ -68,19 +68,6 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/net.pyx
 )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/eoslib.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debugging/db.pyx
-)
-
-
 add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
@@ -94,10 +81,6 @@ add_library(pyeos-shared eos_main.cpp interface/json.cpp interface/eosapi_.cpp
     wrap/rodb.wrap.cpp
     wrap/debug.wrap.cpp
     wrap/net.wrap.cpp
-
-    debugging/eoslib.wrap.cpp
-    debugging/db.wrap.cpp
-    debugging/eoslib_.cpp
     )
 
 if( APPLE )

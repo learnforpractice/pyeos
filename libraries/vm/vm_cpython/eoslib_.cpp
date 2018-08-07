@@ -11,7 +11,7 @@ extern "C" {
    bool is_account( uint64_t name );
    void require_auth( uint64_t name );
    void require_recipient( uint64_t name );
-   uint64_t string_to_uint64_(const char* str);
+   uint64_t string_to_uint64(const char* str);
 
    int32_t db_store_i64(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
    int32_t db_store_i64_ex(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const void* data, uint32_t len);
@@ -40,7 +40,7 @@ extern "C" {
 using namespace eosio::chain;
 
 uint64_t s2n_(const char* str) {
-   return string_to_uint64_(str);
+   return string_to_uint64(str);
 }
 
 void n2s_(uint64_t _name, string& out) {
@@ -133,7 +133,7 @@ int send_inline_(action& act) {
    return 1;
 }
 
-/*
+
 void pack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> o = fc::raw::pack<string>(raw);
@@ -146,4 +146,4 @@ void unpack_bytes_(string& in, string& out) {
    std::vector<char> v(raw.begin(), raw.end());
    out = fc::raw::unpack<string>(v);
 }
-*/
+
