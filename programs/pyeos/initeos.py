@@ -6,7 +6,7 @@ import signal
 import pickle
 import traceback
 
-import db
+
 import rodb
 import net
 import wallet

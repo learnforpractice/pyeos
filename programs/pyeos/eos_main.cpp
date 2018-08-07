@@ -51,8 +51,6 @@ extern "C" {
    PyObject* PyInit_net();
 
 //only used in debug
-   PyObject* PyInit_eoslib();
-   PyObject* PyInit_db();
    PyObject* PyInit_rodb();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
@@ -79,11 +77,8 @@ void init_console() {
    PyInit_eosapi();
    PyInit_net();
 
-   PyInit_eoslib();
-   PyInit_db();
    PyInit_rodb();
    PyInit_debug();
-   PyInit_python_contract();
 
    PyRun_SimpleString(
        "import sys;"
@@ -93,7 +88,7 @@ void init_console() {
    PyRun_SimpleString("import readline");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
-   PyRun_SimpleString("import eoslib;");
+//   PyRun_SimpleString("import eoslib;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("import initeos;initeos.preinit()");
@@ -159,6 +154,8 @@ extern "C" int eos_main(int argc, char** argv) {
    std::unique_lock<std::mutex> lk(cv_m);
    boost::thread t(start_eos);
    cv.wait(lk);
+
+//   PyInit_python_contract();
 
    wlog("running console...");
    if (app().interactive_mode()) {

@@ -7,7 +7,7 @@ import signal
 import pickle
 import traceback
 
-import db
+import rodb as db
 import net
 import wallet
 import eosapi

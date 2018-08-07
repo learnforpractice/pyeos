@@ -3,7 +3,7 @@ import time
 import pickle
 
 import os
-import db
+import rodb as db
 import sys
 import imp
 import initeos

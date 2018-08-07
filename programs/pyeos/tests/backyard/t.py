@@ -4,7 +4,7 @@ import wallet
 import debug
 import eosapi
 import initeos
-import db
+import rodb as db
 from common import prepare, producer
 from tools import cpp2wast
 
