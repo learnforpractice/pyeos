@@ -12,12 +12,6 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.pyx
 )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/python_contract.pyx
-)
-
 file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "include/eosio/chain/webassembly/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
@@ -66,7 +60,6 @@ add_library( eosio_chain
 #              micropython/mpeoslib.cpp
 #              evm_interface.cpp
 #              micropython_interface.cpp
-              python_contract.wrap.cpp
               vm_api_native/vm_api.cpp
               ${HEADERS}
              )
