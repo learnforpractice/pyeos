@@ -132,8 +132,8 @@ On Eos, C++ Smart Contract code is compile to WebAssembly bytecode, that makes d
 
 There is a short video on youtube for quick start:
 
-### image
-[![Debugging](http://img.youtube.com/vi/7XPgnbjsXkE/0.jpg)](http://www.youtube.com/watch?v=7XPgnbjsXkE "Debugging C++ Smart Contract")
+[![Debugging](programs/pyeos/debugging/C++debugging.png?raw=true)](http://www.youtube.com/watch?v=7XPgnbjsXkE "Debugging C++ Smart Contract")
+
 
 To be brief, here are the steps on debugging a C++ Smart Contract:
 
@@ -191,10 +191,11 @@ t.debug()
 # Python Smart Contract Debugging
 
 There is a short video on youtube about Python Smart Contract for quick start:
-[![Debugging](http://img.youtube.com/vi/eTwx-VTxhfo/0.jpg)](http://www.youtube.com/watch?v=eTwx-VTxhfo "Debugging Python Smart Contract")        
+
+[![Debugging](programs/pyeos/debugging/PythonDebugging.png?raw=true)](http://www.youtube.com/watch?v=eTwx-VTxhfo "Debugging C++ Smart Contract")
 
 
-The following steps show how to debug smart contract under programs/pyeos/contracts/hello.
+The following steps show how to debug smart contract under programs/pyeos/contracts/hello
 
 #### 1. Launch PyEos
 ```
