@@ -91,7 +91,6 @@ void init_console() {
    PyRun_SimpleString("import readline");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
-   PyRun_SimpleString("import eoslib;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("import initeos;initeos.preinit()");

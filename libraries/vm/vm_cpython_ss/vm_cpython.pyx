@@ -35,6 +35,9 @@ cdef extern from "vm_cpython.h":
 
     int vm_cpython_apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
 
+    void Py_SetRecursionLimit(int new_limit)
+    int Py_GetRecursionLimit()
+
 def _get_code(uint64_t account):
     cdef string code
     get_code(account,  code)
@@ -150,6 +153,8 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     _dict = module.__dict__
 
+    limit = Py_GetRecursionLimit()
+    Py_SetRecursionLimit(10)
     ret = 1
     try:
         _tracemalloc.start()
@@ -160,5 +165,24 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
         ret = 0
     del module
     _tracemalloc.stop()
+    Py_SetRecursionLimit(limit)
     return ret
 
+cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:
+    '''
+    try:
+        if receiver in py_modules:
+            mod = py_modules[receiver]
+        else:
+            code = _get_code(receiver)
+            mod = _load_module(receiver, code)
+        if not mod:
+            return 0
+        _func = eoslib.n2s(func)
+        _func = getattr(mod, _func)
+        _func()
+        return 1
+    except Exception as e:
+        logging.exception(e)
+    '''
+    return 0

@@ -106,6 +106,10 @@ int vm_unload(uint64_t account) {
    return 0;
 }
 
+int vm_call(uint64_t account, uint64_t func) {
+   return 0;//cpython_call(account, func);
+}
+
 extern int cython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
 
 int vm_cpython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action) {

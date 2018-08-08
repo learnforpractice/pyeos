@@ -230,7 +230,6 @@ def apply(receiver, code, action):
 #    return
 #    test_create_module()
     test_set_func()
-    return
 
     if 1:
         test_crash2()
