@@ -8,6 +8,9 @@ import struct
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
+    ctypedef unsigned int       uint32_t
+    ctypedef int                int32_t
+    ctypedef long long          int64_t
 
 cdef extern from "<stdlib.h>":
     void memcpy(char* dst, char* src, size_t len)
@@ -35,42 +38,6 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint64_t                    name
         vector[permission_level]    authorization
         vector[char]                data
-
-    bool is_account_( uint64_t account )
-    uint64_t s2n_(const char* str);
-    void n2s_(uint64_t n, string& result);
-
-    void eosio_assert_(int condition, const char* str);
-
-    int action_size_();
-    int read_action_(char* memory, size_t size);
-
-    void require_auth_(uint64_t account);
-    void require_recipient_(uint64_t account);
-
-
-    int db_store_i64_( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size )
-    void db_update_i64_( int itr, uint64_t payer, const char* buffer, size_t buffer_size )
-    void db_remove_i64_( int itr )
-
-
-    int db_get_i64_( int iterator, char* buffer, size_t buffer_size )
-    int db_next_i64_( int iterator, uint64_t* primary )
-    int db_previous_i64_( int iterator, uint64_t* primary )
-    int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table )
-
-    int db_idx64_find_secondary_( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
-    int db_idx64_find_primary_( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
-    int db_idx64_lowerbound_( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx64_upperbound_( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx64_end_( uint64_t code, uint64_t scope, uint64_t table )
-    int db_idx64_next_( int iterator, uint64_t& primary  )
-    int db_idx64_previous_( int iterator, uint64_t& primary )
-    
-
     
     int db_idx_double_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
     int db_idx_double_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
@@ -88,6 +55,47 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
 
     uint64_t call_(uint64_t account, uint64_t func);
     int send_inline_(action& act);
+
+    cdef cppclass vm_api:
+        uint32_t (*read_action_data)( void* msg, uint32_t len );
+        uint32_t (*action_data_size)();
+        void (*require_recipient)( uint64_t name );
+        void (*require_auth)( uint64_t name );
+        void (*require_auth2)( uint64_t name, uint64_t permission );
+        bool (*has_auth)( uint64_t name );
+        bool (*is_account)( uint64_t name );
+        void (*send_inline)(const char *serialized_action, size_t size);
+        void (*send_context_free_inline)(char *serialized_action, size_t size);
+        uint64_t  (*publication_time)();
+        uint64_t (*current_receiver)();
+        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
+
+
+
+        int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
+        int64_t (*get_account_creation_time)( uint64_t account );
+
+        void (*set_resource_limits)( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
+        void (*get_resource_limits)( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight );
+        int64_t (*set_proposed_producers)( char *producer_data, uint32_t producer_data_size );
+        bool (*is_privileged)( uint64_t account );
+        void (*set_privileged)( uint64_t account, bool is_priv );
+        void (*set_blockchain_parameters_packed)(char* data, uint32_t datalen);
+        uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
+        void (*activate_feature)( int64_t f );
+
+        uint64_t (*string_to_uint64)(const char* str);
+        int32_t (*uint64_to_string)(uint64_t n, char* out, int size);
+
+        void (*eosio_abort)();
+        void (*eosio_assert)( uint32_t test, const char* msg );
+        void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len );
+        void (*eosio_assert_code)( uint32_t test, uint64_t code );
+        void (*eosio_exit)( int32_t code );
+        uint64_t  (*current_time)();
+        uint32_t  (*now)();
+
+    vm_api& api()
 
 cdef extern from "eoslib_.hpp" namespace "eosio::chain":
     uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args, vector[char]& result);
@@ -111,18 +119,21 @@ int db_idx256_previous( int iterator, uint64_t& primary )
 '''
 
 def is_account(uint64_t account):
-    return is_account_(account)
+    return api().is_account(account)
 
 def N(const char* _str):
-    return s2n_(_str);
+    return api().string_to_uint64(_str);
 
 def s2n(const char* _str):
-    return s2n_(_str);
+    return api().string_to_uint64(_str);
 
 def n2s(uint64_t n):
-    cdef string result
-    n2s_(n, result);
-    return result
+    cdef int size;
+    size = api().uint64_to_string(n, NULL, 0)
+
+    name = bytes(size)
+    api().uint64_to_string(n, name, size)
+    return str(name)
 
 def eosio_assert(_cond, const char* str):
     cdef int cond
@@ -130,20 +141,20 @@ def eosio_assert(_cond, const char* str):
         cond = 1
     else:
         cond = 0
-    eosio_assert_(cond, str)
+    api().eosio_assert(cond, str)
 
 def read_action():
     cdef int size
-    size = action_size_()
+    size = api().action_data_size()
     buf = bytes(size)
-    read_action_(buf, size);
+    api().read_action_data(<char*>buf, size);
     return buf
 
 def require_auth(uint64_t account):
-    return require_auth_(account)
+    return api().require_auth(account)
 
 def require_recipient(uint64_t account):
-    return require_recipient_(account)
+    return api().require_recipient(account)
 
 def wasm_call2(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args):
     cdef vector[char] result
@@ -187,27 +198,21 @@ def call(uint64_t account, uint64_t func):
 def send_inline(contract, act, args: bytes, permissions):
     cdef action _act
     cdef permission_level per
-    cdef uint64_t _account
-    cdef uint64_t action_name
 
     if isinstance(contract, str):
-        _account = s2n_(contract)
-    else:
-        _account = contract
+        contract = s2n(contract)
 
     if isinstance(act, str):
-        action_name = s2n_(act)
-    else:
-        action_name = act
+        act = s2n(act)
 
-    _act.account = _account
-    _act.name = action_name
+    _act.account = contract
+    _act.name = act
     _act.data.resize(len(args))
 
     memcpy(_act.data.data(), args, len(args))
 
     for key in permissions:
-        per.actor = s2n_(key)
+        per.actor = s2n(key)
         per.permission = s2n(permissions[key])
         _act.authorization.push_back(per)
 

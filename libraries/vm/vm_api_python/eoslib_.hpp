@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <eosiolib_native/vm_api.h>
+
 #include <eosio/chain/action.hpp>
 
 using namespace std;
@@ -53,7 +55,6 @@ namespace eosio { namespace chain {
    uint64_t wasm_call2_(uint64_t receiver, string& file_name, string& func, vector<uint64_t>& args, vector<char>& result);
 }}
 
-struct vm_api& get_vm_api();
-
+vm_api& api();
 
 #endif /* EOSLIB__HPP_ */

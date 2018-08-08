@@ -232,6 +232,9 @@ struct vm_api {
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };
 
+int32_t uint64_to_string(uint64_t n, char* out, int size);
+uint64_t string_to_uint64(const char* str);
+
 typedef void (*fn_register_vm_api)(struct vm_api* api);
 
 typedef int (*fn_setcode)(uint64_t account);

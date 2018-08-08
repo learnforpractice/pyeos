@@ -6,27 +6,12 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/vm_cpython.pyx
 )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/db.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/db.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx
-)
-
 add_library(vm_cpython SHARED 
             vm_cpython.wrap.cpp
             vm_cpython.cpp
-            eoslib.wrap.cpp
-            db.wrap.cpp
-            eoslib_.cpp
             )
 
-target_link_libraries(vm_cpython PRIVATE eosiolib_native db_api python3)
+target_link_libraries(vm_cpython PRIVATE vm_api_python python3)
 
 target_include_directories(vm_cpython PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

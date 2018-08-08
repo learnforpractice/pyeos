@@ -116,7 +116,7 @@ int app_init_finished() {
 
 int32_t uint64_to_string_(uint64_t n, char* out, int size) {
    if (out == NULL || size == 0) {
-      return 0;
+      return name(n).to_string().size();
    }
 
    string s = name(n).to_string();

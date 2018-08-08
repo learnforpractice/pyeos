@@ -43,11 +43,6 @@ struct vm_api* get_vm_api() {
    return s_api;
 }
 
-vm_api& api() {
-   return *s_api;
-}
-
-
 int vm_setcode(uint64_t account) {
    string code;
    get_code(account, code);

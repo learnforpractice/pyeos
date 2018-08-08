@@ -34,17 +34,23 @@ extern "C" {
    int call_get_args(char* args , int len);
    uint64_t call(uint64_t account, uint64_t func);
 
-   void send_inline(const char *serialized_action, size_t size);
+//   void send_inline(const char *serialized_action, size_t size);
 }
 
 using namespace eosio::chain;
+
+vm_api& api() {
+   return *get_vm_api();
+}
 
 uint64_t s2n_(const char* str) {
    return string_to_uint64(str);
 }
 
 void n2s_(uint64_t _name, string& out) {
-   out = eosio::chain::name(_name).to_string();
+   char name[64];
+   int size = uint64_to_string(_name, name, sizeof(name));
+   out = string(name, size);
 }
 
 void eosio_assert_(int condition, const char* str) {
@@ -71,45 +77,6 @@ int action_size_() {
    return action_data_size();
 }
 
-int db_store_i64_( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   return db_store_i64( scope, table, payer, id, buffer, buffer_size );
-}
-
-void db_update_i64_( int itr, uint64_t payer, const char* buffer, size_t buffer_size ) {
-   db_update_i64( itr, payer, buffer, buffer_size );
-}
-
-void db_remove_i64_( int itr ) {
-   db_remove_i64(itr);
-}
-
-int db_get_i64_( int itr, char* buffer, size_t buffer_size ) {
-   return db_get_i64( itr, buffer, buffer_size );
-}
-
-int db_next_i64_( int itr, uint64_t* primary ) {
-   return db_next_i64( itr, primary );
-}
-
-int db_previous_i64_( int itr, uint64_t* primary ) {
-   return db_previous_i64( itr, primary );
-}
-
-int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_find_i64( code, scope, table, id );
-}
-
-int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_lowerbound_i64( code, scope, table, id );
-}
-
-int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id ) {
-   return db_upperbound_i64( code, scope, table, id );
-}
-
-int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table ) {
-   return db_end_i64( code, scope, table );
-}
 
 int call_set_args_(string& args) {
    return call_set_args(args.c_str(), args.size());
@@ -129,7 +96,7 @@ uint64_t call_(uint64_t account, uint64_t func) {
 
 int send_inline_(action& act) {
    vector<char> data = fc::raw::pack<action>(act);
-   send_inline(data.data(), data.size());
+   api().send_inline(data.data(), data.size());
    return 1;
 }
 
@@ -145,3 +112,4 @@ void unpack_bytes_(string& in, string& out) {
    std::vector<char> v(raw.begin(), raw.end());
    out = fc::raw::unpack<string>(v);
 }
+

@@ -20,19 +20,6 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/inspector.pyx
 )
 
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/eoslib.pyx
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/db.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/db.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx
-)
-
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
@@ -44,16 +31,12 @@ add_library(vm_cpython_ss SHARED
             inspector.wrap.cpp
             inspector.cpp
             opcode.cc
-            db.wrap.cpp
             test.wrap.cpp
-            eoslib_.cpp
-            eoslib.wrap.cpp
             vm_cpython.cpp)
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native db_api)
-
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss vm_api_python)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

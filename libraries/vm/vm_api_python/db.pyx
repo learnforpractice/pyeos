@@ -7,31 +7,6 @@ cdef extern from "<stdint.h>":
     ctypedef unsigned int uint32_t
 
 cdef extern from "<eosiolib_native/vm_api.h>": # namespace "eosio::chain":
-    int db_store_i64_( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size )
-    void db_update_i64_( int itr, uint64_t payer, const char* buffer, size_t buffer_size )
-    void db_remove_i64_( int itr )
-
-    int db_get_i64_( int iterator, char* buffer, size_t buffer_size )
-    int db_next_i64_( int iterator, uint64_t* primary )
-    int db_previous_i64_( int iterator, uint64_t* primary )
-    int db_find_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_lowerbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_upperbound_i64_( uint64_t code, uint64_t scope, uint64_t table, uint64_t id )
-    int db_end_i64_( uint64_t code, uint64_t scope, uint64_t table )
-
-    int32_t db_idx64_store(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint64_t* secondary);
-    void db_idx64_update(int32_t iterator, uint64_t payer, const uint64_t* secondary);
-    void db_idx64_remove(int32_t iterator);
-
-
-    int db_idx_double_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
-    int db_idx_double_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_upperbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_end( uint64_t code, uint64_t scope, uint64_t table )
-    int db_idx_double_next( int iterator, uint64_t& primary  )
-    int db_idx_double_previous( int iterator, uint64_t& primary )
-
     cdef cppclass vm_api:
        int32_t (*db_store_i64)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
        int32_t (*db_store_i64_ex)(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
@@ -76,8 +51,8 @@ int32_t (*db_idx_double_lowerbound)(uint64_t code, uint64_t scope, uint64_t tabl
 int32_t (*db_idx_double_upperbound)(uint64_t code, uint64_t scope, uint64_t table, float64_t* secondary, uint64_t* primary);
 int32_t (*db_idx_double_end)(uint64_t code, uint64_t scope, uint64_t table);
 '''
-cdef extern from "vm_cpython.h":
-    vm_api& api();
+cdef extern from "eoslib_.hpp":
+    vm_api& api()
 
 def store_i64(scope, table, payer, id, buffer):
     api().db_store_i64(scope, table, payer, id, buffer, len(buffer))
