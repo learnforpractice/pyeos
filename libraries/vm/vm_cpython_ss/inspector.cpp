@@ -111,8 +111,7 @@ inspector::inspector() {
    type_whitelist_map[(PyTypeObject*)PyExc_RecursionError] = 1;
    type_whitelist_map[(PyTypeObject*)PyExc_OSError] = 1;
    type_whitelist_map[(PyTypeObject*)PyExc_AssertionError] = 1;
-
-
+   type_whitelist_map[(PyTypeObject*)PyExc_ImportError] = 1;
 
    type_whitelist_map[(PyTypeObject*)PyExc_NameError] = 1;
 
