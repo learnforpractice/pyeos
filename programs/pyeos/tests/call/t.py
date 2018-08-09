@@ -45,6 +45,21 @@ def test(msg='hello,world\n'):
     assert r
 
 @init()
+def call(msg='hello,world\n'):
+    _from = 'eosio'
+    _to = 'hello'
+    amount = 0.01
+    msg = struct.pack('QQQ', eosapi.s2n(_from), eosapi.s2n(_to), int(0.01*10000))
+
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+
+    r = eosapi.push_action('call', 'call', msg, {'call':'active', 'eosio':'active'})
+
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+
+    assert r
+
+@init()
 @init_debug()
 def debug(msg='hello,world\n'):
     r = eosapi.push_action('call', 'sayhello', msg, {'call':'active'})
