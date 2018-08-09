@@ -376,7 +376,7 @@ def publish_system_contracts(accounts_map):
             r = eosapi.set_contract(account, wast, abi, 0)
             print(wast, abi)
             time.sleep(1.0)
-            if account == 'eosio.token':
+            if account == 'eosio.token' and eosapi.get_balance('eosio') <= 0.0:
                 print('issue system token...')
 #                msg = {"issuer":"eosio","maximum_supply":"1000000000.0000 EOS","can_freeze":0,"can_recall":0, "can_whitelist":0}
                 msg = {"issuer":"eosio","maximum_supply":"11000000000000.0000 EOS"}

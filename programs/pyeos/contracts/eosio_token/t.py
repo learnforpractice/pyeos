@@ -13,7 +13,7 @@ import traceback
 from eosapi import N, mp_compile, pack_bytes, pack_setabi, push_transactions
 from common import prepare, producer
 
-def init(func, wasm=False):
+def init(func, wasm=0):
     def func_wrapper(*args, **kwargs):
         if not wasm:
             prepare('eosio.token', 'token.py', 'eosio.token.abi', __file__, 6)
@@ -55,13 +55,20 @@ def test1(count=100):
 
 @init
 def test2(count=100):
+    _from = 'eosio'
+    _to = 'hello'
+
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
     actions = []
     for i in range(count):
-        action = ['eosio.token','transfer',{"from":"eosio", "to":"hello", "quantity":"0.0010 EOS", "memo":str(i)},{'eosio':'active'}]
+        action = ['eosio.token','transfer',{"from":_from, "to":_to, "quantity":"0.0010 EOS", "memo":str(i)},{_from:'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
     if ret['except']:
         print(ret['except'])
     assert not ret['except']
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
