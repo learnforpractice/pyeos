@@ -34,6 +34,8 @@ struct vm_api {
    uint64_t (*current_receiver)();
    uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
+   int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount);
+
    void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
    void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );
 
@@ -219,7 +221,7 @@ struct vm_api {
    int (*call_get_args)(char* args , int len);
 
    int (*call)(uint64_t account, uint64_t func);
-
+   int (*get_call_status)();
    int (*call_set_results)(const char* result , int len);
    int (*call_get_results)(char* result , int len);
 

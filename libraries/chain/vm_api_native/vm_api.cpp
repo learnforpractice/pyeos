@@ -66,6 +66,20 @@ extern "C" uint64_t string_to_uint64_(const char* str) {
    return 0;
 }
 
+int get_balance(uint64_t _account, uint64_t _symbol, uint64_t* amount) {
+   struct {
+      uint64_t amount;
+      uint64_t symbol;
+   }balance;
+   auto itr = db_find_i64(N('eosio.token'), _account, N('accounts'), _symbol>>8);
+   if (itr<0) {
+      return 0;
+   }
+   db_get_i64(itr, &balance, sizeof(balance));
+   *amount = balance.amount;
+   return 1;
+}
+
 void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
    FC_ASSERT(version_size == sizeof(digest_type) && code != NULL && code_size != 0);
    const auto& account = ctx().db.get<account_object,by_name>(user_account);
@@ -150,7 +164,7 @@ uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
 
 static vector<char> s_args;
 static vector<char> s_results;
-
+static int s_call_status = 0;
 int call_set_args(const char* args , int len) {
    if (args == NULL || len <=0) {
       return 0;
@@ -172,8 +186,21 @@ int call_get_args(char* args , int len) {
 }
 
 int call(uint64_t account, uint64_t func) {
+   int ret = 0;
    s_results.resize(0);
-   return vm_manager::get().call(account, func);
+   s_call_status = 1;
+   try {
+      ret = vm_manager::get().call(account, func);
+   } catch (...) {
+      s_call_status = 0;
+      throw;
+   }
+   s_call_status = 0;
+   return ret;
+}
+
+int get_call_status() {
+   return s_call_status;
 }
 
 int call_set_results(const char* result , int len) {
@@ -207,6 +234,8 @@ static struct vm_api _vm_api = {
    .send_inline = send_inline,
    .send_context_free_inline = send_context_free_inline,
    .publication_time = publication_time,
+
+   .get_balance = get_balance,
 
    .current_receiver = current_receiver,
    .get_active_producers = get_active_producers,
@@ -377,6 +406,7 @@ static struct vm_api _vm_api = {
    .call_set_args = call_set_args,
    .call_get_args = call_get_args,
    .call = call,
+   .get_call_status = get_call_status,
    .call_set_results = call_set_results,
    .call_get_results = call_get_results,
 
