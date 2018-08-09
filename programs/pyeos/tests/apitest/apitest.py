@@ -222,8 +222,14 @@ def db_test_idx256():
     print('db_idx256_find_secondary', itr, primary)
 
 def test_send_inline():
-    account = N('apitest')
-    send_inline(account, 'sayhello', b'hello,worldddddddd', {'apitest':'active'})
+    if 0:
+        account = N('apitest')
+        send_inline(account, 'sayhello', b'hello,worldddddddd', {'apitest':'active'})
+    else:
+        transfer('apitest', 'hello', 100.111, b'hello')
+
+def test_transfer():
+    pass
 
 '''
 struct mp_transaction {
