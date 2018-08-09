@@ -240,7 +240,7 @@ def get_currency_balance(string& _code, string& _account, string& _symbol = 'EOS
 def get_balance(account):
     ret = get_currency_balance('eosio.token', account, 'EOS')
     if ret:
-        return float(ret[0].split(' ')[0])
+        return ret[0]/10000
     return 0.0
 
 def transfer(_from, _to, _amount, _memo=''):
@@ -301,10 +301,10 @@ def create_account2(creator, account, owner_key, active_key):
         act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
-    rr, cost =  push_actions(actions)
-    for r in rr:
-        if r['except']:
-            return False
+    r, cost =  push_actions(actions)
+    if r['except']:
+        raise Exception(JsonStruct(r['except']))
+        return False
     return True
 
 def create_account3(creator, account, owner_key, active_key, net, cpu, ram):

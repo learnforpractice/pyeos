@@ -598,7 +598,13 @@ PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol
 
    eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
    auto result = ro_api.get_currency_balance(params);
-   return python::json::to_string(result);
+   if (result.size() > 0) {
+      arr.append((uint64_t)result[0].get_amount());
+      arr.append((uint64_t)result[0].get_symbol().value());
+      return arr.get();
+   }
+   return py_new_none();
+//   return python::json::to_string(result);
 }
 
 PyObject* get_actions_(uint64_t account, int pos, int offset) {
