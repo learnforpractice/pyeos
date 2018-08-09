@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
