@@ -138,9 +138,7 @@ namespace eosio {
     *
     * @param level - Authorization to be required
     */
-   void require_auth(const permission_level& level) {
-      require_auth2( level.actor, level.permission );
-   }
+   void require_auth(const permission_level& level);
 
    /**
     * This is the packed representation of an action along with

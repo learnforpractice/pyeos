@@ -92,9 +92,7 @@ extern "C" {
     *  @return time in seconds from 1970 of the current block
     */
 #ifdef __WASM
-   uint32_t  now() {
-      return (uint32_t)( current_time() / 1000000 );
-   }
+   uint32_t  now();
 #else
    uint32_t  now();
  #endif
