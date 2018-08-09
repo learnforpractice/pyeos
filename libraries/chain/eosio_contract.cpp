@@ -24,8 +24,6 @@
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/resource_limits.hpp>
 
-#include <eosio/chain/micropython_interface.hpp>
-#include <eosio/chain/evm_interface.hpp>
 #include <appbase/application.hpp>
 #include "vm_manager.hpp"
 

@@ -20,8 +20,6 @@ cdef extern from "<stdint.h>":
 cdef extern from "vm_cpython.h":
     void get_code(uint64_t account, string& code)
 
-sys.modules['ustruct'] = sys.modules['struct']
-
 py_modules = {}
 
 def _get_code(uint64_t account):

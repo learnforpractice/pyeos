@@ -11,20 +11,14 @@ extern "C" {
    PyObject* PyInit_db();
 }
 
-int init_cpython();
 int cpython_setcode(uint64_t account, string& code);
-int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
+int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action);
 int cpython_call(uint64_t account, uint64_t func);
 
 void get_code(uint64_t account, string& code) {
    size_t size;
    const char* _code = get_vm_api()->get_code(account, &size);
    code = string(_code, size);
-}
-
-int init_cpython_() {
-   PyInit_vm_cpython();
-   return 1;
 }
 
 void vm_init(struct vm_api* api) {

@@ -60,6 +60,7 @@ add_library( eosio_chain
 #              micropython/mpeoslib.cpp
 #              evm_interface.cpp
 #              micropython_interface.cpp
+              native/native.cpp
               vm_api_native/vm_api.cpp
               ${HEADERS}
              )
@@ -73,12 +74,6 @@ endif()
 
 target_link_libraries( eosio_chain PUBLIC eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
 
-#vm_py compiled to shared lib and do not link to eosio_chain directly, and loaded by dlopen, 
-#but there are header files depend on vm_py, 
-#and this header files are generated during the build of vm_py, 
-#so let vm_py built before eosio_chain
-add_dependencies(eosio_chain vm_py)
-
 target_include_directories( eosio_chain
                             PUBLIC ${Boost_INCLUDE_DIR}
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -90,12 +85,7 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_manager
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_wasm
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/py
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/extmod
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/ports/unix
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_py/ports/unix/build
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/magic_get/include
                             )

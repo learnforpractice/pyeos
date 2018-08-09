@@ -727,10 +727,11 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     act = [contract, action, args, pers]
     outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async)
     if outputs:
-        if outputs[0]['except']:
-            raise Exception(outputs[0]['except'])
-        outputs[0]['cost'] = cost_time
-        return outputs[0]
+        output = outputs[0]
+        if output['except']:
+            raise Exception(JsonStruct(output['except']))
+        output['cost'] = cost_time
+        return output
     return None
 
 def push_actions(actions, _async=False, sign=True):

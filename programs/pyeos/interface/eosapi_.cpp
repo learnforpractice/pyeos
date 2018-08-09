@@ -1,5 +1,3 @@
-#include "micropython/mpeoslib.h"
-
 #include "eosapi_.hpp"
 
 #include <fc/time.hpp>
@@ -591,17 +589,21 @@ PyObject* get_accounts_(char* public_key) {
 }
 
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol) {
-   PyArray arr;
-   PyDict dict;
+   try {
+      PyArray arr;
+      PyDict dict;
 
-   auto ro_api = get_chain_plugin().get_read_only_api();
+      auto ro_api = get_chain_plugin().get_read_only_api();
 
-   eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
-   auto result = ro_api.get_currency_balance(params);
-   if (result.size() > 0) {
-      arr.append((uint64_t)result[0].get_amount());
-      arr.append((uint64_t)result[0].get_symbol().value());
-      return arr.get();
+      eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
+      auto result = ro_api.get_currency_balance(params);
+      if (result.size() > 0) {
+         arr.append((uint64_t)result[0].get_amount());
+         arr.append((uint64_t)result[0].get_symbol().value());
+         return arr.get();
+      }
+   } catch (...) {
+
    }
    return py_new_none();
 //   return python::json::to_string(result);
