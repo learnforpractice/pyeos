@@ -200,5 +200,10 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_(idx128, uint128_t)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_(idx256, 2, uint128_t)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_(idx_double, float64_t)
 DB_API_METHOD_WRAPPERS_FLOAT_SECONDARY_(idx_long_double, float128_t)
+
+int get_table_item_count(uint64_t code, uint64_t scope, uint64_t table) {
+   return ctx().get_table_item_count(code, scope, table);
+}
+
 }
 

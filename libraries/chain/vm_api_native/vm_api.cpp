@@ -249,6 +249,9 @@ static struct vm_api _vm_api = {
    .ripemd160 = ripemd160,
    .recover_key = recover_key,
    .assert_recover_key = assert_recover_key,
+
+   .get_table_item_count = get_table_item_count,
+
    .db_store_i64 = db_store_i64,
    .db_store_i64_ex = db_store_i64_ex,
    .db_update_i64 = db_update_i64,

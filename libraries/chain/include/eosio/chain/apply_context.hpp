@@ -567,6 +567,7 @@ class apply_context {
 
       name get_receiver();
 
+      int get_table_item_count(name code, name scope, name table);
       
    private:
          void schedule();

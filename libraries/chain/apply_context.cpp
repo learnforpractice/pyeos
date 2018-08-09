@@ -707,5 +707,13 @@ uint64_t apply_context::next_auth_sequence( account_name actor ) {
    return rs.auth_sequence;
 }
 
+int apply_context::get_table_item_count(name code, name scope, name table) {
+   auto* table_obj = find_table(code, scope, table);
+   if (table_obj == nullptr) {
+      return 0;
+   }
+   return table_obj->count;
+}
+
 
 } } /// eosio::chain
