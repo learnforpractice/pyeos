@@ -70,7 +70,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint64_t (*current_receiver)();
         uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
-
+        int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount)
 
         int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
         int64_t (*get_account_creation_time)( uint64_t account );
@@ -133,15 +133,14 @@ def n2s(uint64_t n):
 
     name = bytes(size)
     api().uint64_to_string(n, name, size)
-    return str(name)
+    return name.decode('utf8')
 
-def eosio_assert(_cond, const char* str):
-    cdef int cond
-    if _cond:
-        cond = 1
-    else:
-        cond = 0
-    api().eosio_assert(cond, str)
+def eosio_assert(cond, msg):
+    if not cond:
+        raise AssertionError(msg)
+
+def now():
+    return api().now()
 
 def read_action():
     cdef int size
@@ -210,7 +209,7 @@ def send_inline(contract, act, args: bytes, permissions):
     _act.data.resize(len(args))
 
     memcpy(_act.data.data(), args, len(args))
-
+    print(args)
     for key in permissions:
         per.actor = s2n(key)
         per.permission = s2n(permissions[key])
@@ -218,16 +217,37 @@ def send_inline(contract, act, args: bytes, permissions):
 
     return send_inline_(_act)
 
-def transfer(_from, _to, _amount, _memo=''):
-    _from = s2n('eosio')
-    _to = s2n('hello')
+def transfer(_from, _to, _amount, _memo=b''):
     symbol=bytearray(8)
     symbol[0] = 4
     symbol[1] = ord('E')
     symbol[2] = ord('O')
     symbol[3] = ord('S')
-    args = struct.pack('QQQ8s%ds'%(len(_memo),), _from, _to, _amount, symbol, _memo)
-    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
+    _amount = int(_amount*10000)
+    _memo = pack_bytes(_memo)
+    args = struct.pack('QQQ8s%ds'%(len(_memo),), s2n(_from), s2n(_to), _amount, symbol, _memo)
+    call_set_args(args)
+    return call(s2n('eosio.token'), s2n('transfer'))
+
+#    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
+
+def get_balance(account, symbol=None):
+    cdef uint64_t amount = 0
+
+    if isinstance(account, str):
+        account = s2n(account)
+    if not symbol:
+        symbol=bytearray(8)
+        symbol[0] = 4
+        symbol[1] = ord('E')
+        symbol[2] = ord('O')
+        symbol[3] = ord('S')
+        symbol, = struct.unpack('Q', symbol)
+    else:
+        symbol, = struct.unpack('Q', symbol)
+    print(symbol, account)
+    api().get_balance(account, symbol, &amount)
+    return amount
 
 _code = N('eosio.token')
 
