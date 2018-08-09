@@ -276,6 +276,7 @@ def apply(receiver, code, action):
     elif action == N('sayhello'):
         act = read_action()
         print('read_action return:', act)
+        print("get_balance('eosio') return:", get_balance('eosio'))
 #        deffer_send()
     elif action == N('callwasm'):
         wasm_call(N('lab'), 'sayHello', N('hello'))

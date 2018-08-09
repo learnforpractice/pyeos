@@ -71,7 +71,7 @@ int get_balance(uint64_t _account, uint64_t _symbol, uint64_t* amount) {
       uint64_t amount;
       uint64_t symbol;
    }balance;
-   auto itr = db_find_i64(N('eosio.token'), _account, N('accounts'), _symbol>>8);
+   auto itr = db_find_i64(N(eosio.token), _account, N(accounts), _symbol>>8);
    if (itr<0) {
       return 0;
    }

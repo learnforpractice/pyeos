@@ -245,7 +245,6 @@ def get_balance(account, symbol=None):
         symbol, = struct.unpack('Q', symbol)
     else:
         symbol, = struct.unpack('Q', symbol)
-    print(symbol, account)
     api().get_balance(account, symbol, &amount)
     return amount
 
