@@ -1,4 +1,7 @@
-add_subdirectory( vm_py )
+if(BUILD_VM_PY)
+   add_subdirectory( vm_py )
+endif()
+
 add_subdirectory( vm_wasm )
 
 if(BUILD_ETHEREUM)

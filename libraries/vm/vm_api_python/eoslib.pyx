@@ -71,6 +71,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
         int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount)
+        int (*transfer)(uint64_t _from, uint64_t to, uint64_t _account, uint64_t _symbol);
 
         int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
         int64_t (*get_account_creation_time)( uint64_t account );
@@ -217,17 +218,21 @@ def send_inline(contract, act, args: bytes, permissions):
 
     return send_inline_(_act)
 
-def transfer(_from, _to, _amount, _memo=b''):
-    symbol=bytearray(8)
-    symbol[0] = 4
-    symbol[1] = ord('E')
-    symbol[2] = ord('O')
-    symbol[3] = ord('S')
-    _amount = int(_amount*10000)
-    _memo = pack_bytes(_memo)
-    args = struct.pack('QQQ8s%ds'%(len(_memo),), s2n(_from), s2n(_to), _amount, symbol, _memo)
-    call_set_args(args)
-    return call(s2n('eosio.token'), s2n('transfer'))
+def transfer(_from, _to, _amount, symbol=0):
+    if isinstance(_from, str):
+        _from = s2n(_from)
+
+    if isinstance(_to, str):
+        _to = s2n(_to)
+
+    if not symbol:
+        symbol=bytearray(8)
+        symbol[0] = 4
+        symbol[1] = ord('E')
+        symbol[2] = ord('O')
+        symbol[3] = ord('S')
+        symbol, = struct.unpack('Q', symbol)
+    return api().transfer(_from, _to, _amount, symbol)
 
 #    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
 
@@ -250,89 +255,3 @@ def get_balance(account, symbol=None):
 
 _code = N('eosio.token')
 
-def to_symbol_name(s):
-    n = int.from_bytes(s, 'little')
-    return n>>8
-
-class Asset(object):
-    def __init__(self, amount=0, symbol=None):
-        self.amount = amount
-        self.symbol = symbol
-
-    def pack(self):
-        buffer = bytearray(16)
-        struct.pack_into('Q8s', buffer, 0, self.amount, self.symbol)
-        return bytes(buffer)
-
-    def unpack(cls, data):
-        a = Asset()
-        a.amount, a.symbol = struct.unpack('Q8s', data)
-        return a
-
-class multi_index(object):
-    def __init__(self, code, scope, table_id):
-        self.code = code
-        self.scope = scope
-        self.table_id = table_id
-
-    def store(self, payer):
-        it = db.find_i64(self.code, self.scope, self.table_id, self.get_primary_key())
-        if it >= 0:
-            db.update_i64(it, payer, self.pack())
-        else:
-            db.store_i64(self.scope, self.table_id, payer, self.get_primary_key(), self.pack())
-
-    def load(self):
-        it = db.find_i64(self.code, self.scope, self.table_id, self.get_primary_key())
-        if it >= 0:
-            data = db.get_i64(it)
-            return self.unpack(data)
-        return False
-
-    def get_primary_key(self):
-        raise Exception('should be implemented by subclass')
-
-    def pack(self):
-        raise Exception('should be implemented by subclass')
-
-    def unpack(self):
-        raise Exception('should be implemented by subclass')
-
-class Singleton(multi_index):
-    def __init__(self, code, scope, table_id):
-        multi_index.__init__(code, scope, table_id)
-        self.pk_value = table_id
-
-    def get_primary_key(self):
-        return self.pk_value
-
-class Balance(multi_index):
-    def __init__(self, owner, symbol):
-        self.owner = owner
-        self.a = Asset(0, symbol)
-        self.symbol_name = to_symbol_name(symbol)
-
-        table_id = N('accounts')
-        multi_index.__init__(self, _code, self.owner, table_id)
-
-        self.load()
-
-    def add(self, amount, payer):
-        self.a.amount += amount
-        self.store(payer)
-
-    def sub(self, amount):
-        assert(self.a.amount >= amount)
-        self.a.amount -= amount
-        self.store(self.owner)
-
-    def get_primary_key(self):
-        return self.symbol_name
-
-    def pack(self):
-        buffer = bytearray(16)
-        struct.pack_into('Q8s', buffer, 0, self.a.amount, self.a.symbol)
-        return bytes(buffer)
-
-    def unpack(self, data):
-        self.a.amount, self.a.symbol = struct.unpack('Q8s', data)

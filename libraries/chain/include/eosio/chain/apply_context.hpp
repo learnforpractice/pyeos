@@ -546,8 +546,8 @@ class apply_context {
       int  db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
       int  db_store_i64( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size );
 
-      void db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size );
-      void db_remove_i64( int iterator );
+      void db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size , bool check_code=true);
+      void db_remove_i64( int iterator , bool check_code = true);
 
       int  db_get_i64( int iterator, char* buffer, size_t buffer_size );
       int  db_get_i64_ex( int iterator, uint64_t& primary, char* buffer, size_t buffer_size );

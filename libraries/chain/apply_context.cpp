@@ -503,11 +503,13 @@ int apply_context::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, 
    return keyval_cache.add( obj );
 }
 
-void apply_context::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size ) {
+void apply_context::db_update_i64( int iterator, account_name payer, const char* buffer, size_t buffer_size, bool check_code ) {
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+   if (check_code) {
+      EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+   }
 
 //   require_write_lock( table_obj.scope );
 
@@ -534,11 +536,13 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
    });
 }
 
-void apply_context::db_remove_i64( int iterator ) {
+void apply_context::db_remove_i64( int iterator, bool check_code ) {
    const key_value_object& obj = keyval_cache.get( iterator );
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
-   EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+   if (check_code) {
+      EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+   }
 
 //   require_write_lock( table_obj.scope );
 
