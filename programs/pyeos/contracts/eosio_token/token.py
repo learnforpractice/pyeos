@@ -1,7 +1,7 @@
 import struct
 
 import db
-from eoslib import N, Balance, Asset, multi_index
+from eoslib import N
 import eoslib
 
 _code = N('eosio.token')
