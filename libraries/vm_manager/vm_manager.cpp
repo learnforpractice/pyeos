@@ -32,8 +32,7 @@ static const int VM_TYPE_ETH = 2;
 static const int VM_TYPE_WAVM = 3;
 static const int VM_TYPE_IPC = 4;
 static const int VM_TYPE_NATIVE = 5;
-static const int VM_TYPE_CPYTHON = 6;
-static const int VM_TYPE_CPYTHON_SS = 7;
+static const int VM_TYPE_CPYTHON_PRIVILEGED = 6;
 
 
 namespace eosio {
@@ -147,7 +146,7 @@ static uint64_t vm_names[] = {
 
 static const char* vm_libs_path[] = {
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
-   "../libs/libvm_py-1" DYLIB_SUFFIX,
+   "../libs/libvm_cpython_ss" DYLIB_SUFFIX,
    "../libs/libvm_eth" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
 //   "../libs/libipc_server" DYLIB_SUFFIX
@@ -156,7 +155,6 @@ static const char* vm_libs_path[] = {
 static const char *ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
 static const char *vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
 static const char *vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
-static const char *vm_cpython_ss_lib = "../libs/libvm_cpython_ss" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -207,8 +205,7 @@ bool vm_manager::init(struct vm_api* api) {
 
    load_vm_from_path(VM_TYPE_NATIVE, vm_native_lib);
 
-   load_vm_from_path(VM_TYPE_CPYTHON, vm_cpython_lib);
-   load_vm_from_path(VM_TYPE_CPYTHON_SS, vm_cpython_ss_lib);
+   load_vm_from_path(VM_TYPE_CPYTHON_PRIVILEGED, vm_cpython_lib);
 
    return true;
 }
@@ -524,7 +521,7 @@ int vm_manager::setcode(int type, uint64_t account) {
       load_vm_from_ram(type, vm_names[type]);
    }
 */
-   if (type == VM_TYPE_CPYTHON) {
+   if (type == VM_TYPE_CPYTHON_PRIVILEGED) {
       if (this->api->is_privileged(account)) {
       } else {
          EOS_ASSERT(this->api->has_option("debug"), fc::assert_exception, "set code no allowed");
