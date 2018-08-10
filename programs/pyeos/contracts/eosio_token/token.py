@@ -90,7 +90,7 @@ class currency_stats(multi_index):
 
 class Singleton(multi_index):
     def __init__(self, code, scope, table_id):
-        multi_index.__init__(code, scope, table_id)
+        super(multi_index, self).__init__(code, scope, table_id)
         self.pk_value = table_id
 
     def get_primary_key(self):
