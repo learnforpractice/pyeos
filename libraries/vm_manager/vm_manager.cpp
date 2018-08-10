@@ -331,6 +331,7 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
 
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
    if (handle == NULL) {
+      elog("load ${n1} failed: ${n2}", ("n1", dlerror())("n2",vm_path));
       return 0;
    }
 

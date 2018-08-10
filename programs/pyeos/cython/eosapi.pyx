@@ -8,6 +8,7 @@ import struct
 import signal
 import atexit
 
+from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
@@ -39,7 +40,6 @@ cdef extern from "<fc/io/raw.hpp>" namespace "fc::raw":
     cdef vector[char] pack[T](T& code)
 
 cdef extern from "eosapi_.hpp":
-    ctypedef int bool
 
     uint64_t string_to_uint64_(string str);
     string uint64_to_string_(uint64_t n);
