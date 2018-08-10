@@ -199,7 +199,7 @@ bool vm_manager::init(struct vm_api* api) {
 
    load_vm_wavm();
 
-   if (!get_vm_api()->has_option("no-ipc")) {
+   if (get_vm_api()->has_option("use-ipc")) {
       if (this->api->run_mode() == 0) {//server
          load_vm_from_path(VM_TYPE_IPC, ipc_server_lib);
       }
@@ -524,6 +524,12 @@ int vm_manager::setcode(int type, uint64_t account) {
       load_vm_from_ram(type, vm_names[type]);
    }
 */
+   if (type == VM_TYPE_CPYTHON) {
+      if (this->api->is_privileged(account)) {
+      } else {
+         EOS_ASSERT(this->api->has_option("debug"), fc::assert_exception, "set code no allowed");
+      }
+   }
    if (this->api->run_mode() == 0) {
       if (is_trusted_account(account)) {
       } else {
