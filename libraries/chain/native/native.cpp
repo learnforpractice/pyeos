@@ -174,8 +174,9 @@ void add_balance( uint64_t owner, uint64_t amount, uint64_t symbol, uint64_t ram
    }
 }
 
-int transfer(uint64_t from, uint64_t to, uint64_t amount, uint64_t symbol) {
+int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
    try {
+      uint64_t from = current_receiver()；
       eosio_assert( from != to, "cannot transfer to self" );
       require_auth( from );
       eosio_assert( is_account( to ), "to account does not exist");
@@ -184,7 +185,7 @@ int transfer(uint64_t from, uint64_t to, uint64_t amount, uint64_t symbol) {
       stats statstable( eosio_token, sym );
       const auto& st = statstable.get( sym );
 
-      require_recipient( from );
+//      require_recipient( from );
       require_recipient( to );
 
       asset quantity{(int64_t)amount, symbol};

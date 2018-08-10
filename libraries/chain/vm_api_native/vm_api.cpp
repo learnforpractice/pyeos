@@ -37,7 +37,7 @@
 
 using namespace eosio::chain;
 //native/native.cpp
-int transfer(uint64_t from, uint64_t to, uint64_t amount, uint64_t symbol);
+int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol);
 
 void db_store_i64_in_account( uint64_t code, uint64_t scope, uint64_t table_id, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
    apply_context::ctx().db_store_i64( code, scope, table_id, payer, id, buffer, buffer_size );
@@ -108,6 +108,16 @@ void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, cha
       if( code_size > 0 )
          memcpy( a.code.data(), code, code_size );
    });
+}
+
+bool is_code_locked( uint64_t account ) {
+   try {
+      const auto& account_obj = ctx().db.get<account_object,by_name>(account);
+      return account_obj.locked;
+   } catch (...) {
+
+   }
+   return false;
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {
@@ -247,13 +257,14 @@ static struct vm_api _vm_api = {
    .require_auth2 = require_auth2,
    .has_auth = has_auth,
    .is_account = is_account,
+   .is_code_locked = is_code_locked,
 
    .send_inline = send_inline,
    .send_context_free_inline = send_context_free_inline,
    .publication_time = publication_time,
 
    .get_balance = get_balance,
-   .transfer = transfer,
+   .transfer_inline = transfer_inline,
    .current_receiver = current_receiver,
    .get_active_producers = get_active_producers,
    .assert_sha256 = assert_sha256,

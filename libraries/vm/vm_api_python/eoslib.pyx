@@ -57,6 +57,8 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int send_inline_(action& act);
 
     cdef cppclass vm_api:
+        bool (*is_code_locked)( uint64_t name );
+
         uint32_t (*read_action_data)( void* msg, uint32_t len );
         uint32_t (*action_data_size)();
         void (*require_recipient)( uint64_t name );
@@ -71,7 +73,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
         int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount)
-        int (*transfer)(uint64_t _from, uint64_t to, uint64_t _account, uint64_t _symbol);
+        int (*transfer_inline)(uint64_t to, uint64_t _account, uint64_t _symbol);
 
         int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
         int64_t (*get_account_creation_time)( uint64_t account );
@@ -122,6 +124,9 @@ int db_idx256_previous( int iterator, uint64_t& primary )
 def is_account(uint64_t account):
     return api().is_account(account)
 
+def is_code_locked(uint64_t account):
+    return api().is_code_locked(account)
+
 def N(const char* _str):
     return api().string_to_uint64(_str);
 
@@ -136,7 +141,7 @@ def n2s(uint64_t n):
     api().uint64_to_string(n, name, size)
     return name.decode('utf8')
 
-def eosio_assert(cond, msg):
+def eosio_assert(cond, msg=''):
     if not cond:
         raise AssertionError(msg)
 
@@ -218,10 +223,7 @@ def send_inline(contract, act, args: bytes, permissions):
 
     return send_inline_(_act)
 
-def transfer(_from, _to, _amount, symbol=0):
-    if isinstance(_from, str):
-        _from = s2n(_from)
-
+def transfer_inline(_to, _amount, symbol=0):
     if isinstance(_to, str):
         _to = s2n(_to)
 
@@ -232,7 +234,7 @@ def transfer(_from, _to, _amount, symbol=0):
         symbol[2] = ord('O')
         symbol[3] = ord('S')
         symbol, = struct.unpack('Q', symbol)
-    return api().transfer(_from, _to, _amount, symbol)
+    return api().transfer_inline(_to, _amount, symbol)
 
 #    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
 

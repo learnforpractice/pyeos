@@ -28,6 +28,7 @@ struct vm_api {
    void (*require_auth2)( uint64_t name, uint64_t permission );
    bool (*has_auth)( uint64_t name );
    bool (*is_account)( uint64_t name );
+   bool (*is_code_locked)( uint64_t name );
    void (*send_inline)(const char *serialized_action, size_t size);
    void (*send_context_free_inline)(char *serialized_action, size_t size);
    uint64_t  (*publication_time)();
@@ -35,7 +36,7 @@ struct vm_api {
    uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
    int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount);
-   int (*transfer)(uint64_t from, uint64_t to, uint64_t _account, uint64_t _symbol);
+   int (*transfer_inline)(uint64_t to, uint64_t _account, uint64_t _symbol);
 
    void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
    void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );

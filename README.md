@@ -135,7 +135,7 @@ There is a short video on youtube for quick start:
 [![Debugging](programs/pyeos/debugging/C++debugging.png?raw=true)](http://www.youtube.com/watch?v=7XPgnbjsXkE "Debugging C++ Smart Contract")
 
 
-To be brief, here are the steps on debugging a C++ Smart Contract:
+To be brief, here are the steps about debugging a C++ Smart Contract:
 
 ### 1. Open pyeos project in Visual Studio Code
 
@@ -180,7 +180,7 @@ sketch.create('hello', 'helloworld', 'cpp')
 
 ### 8. Set breakpoint in test code
 
-### 9. test
+### 9. Testing
 ```
 from helloworld import t
 t.debug()
