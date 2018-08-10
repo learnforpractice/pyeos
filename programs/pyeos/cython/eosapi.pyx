@@ -804,12 +804,6 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
                 code += pack_bytes(wasm)
                 setcode = ['eosio', 'setcode', code, [[account, 'active']]]
                 actions.append(setcode)
-    elif vmtype == 1:
-        mpy_code = b'\x01'
-        mpy_code += mp_compile(src_file)
-        code += pack_bytes(mpy_code)
-        setcode = ['eosio', 'setcode', code, [[account, 'active']]]
-        actions.append(setcode)
     else:
         _code = open(src_file, 'rb').read()
         code += pack_bytes(_code)

@@ -21,8 +21,6 @@ def init(func):
 
 @init
 def test(name='mike'):
-    debug.mp_set_max_execution_time(1000_000)
-
     r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
     assert r and not r['except']
     print('cost time:', r['cost'])

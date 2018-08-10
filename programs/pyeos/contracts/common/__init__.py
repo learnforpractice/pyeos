@@ -124,9 +124,6 @@ def prepare(account, src, abi, full_src_path, code_type = None):
         code = f.read()
     if code_type == CODE_TYPE_WAST:
         code = eosapi.wast2wasm(code)
-    elif CODE_TYPE_PY == code_type:
-        code = b'\x01'
-        code += eosapi.mp_compile(src)
 
     code_hash = eosapi.sha256(code)
     old_hash = eosapi.get_code_hash(account)

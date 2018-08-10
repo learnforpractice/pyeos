@@ -29,8 +29,6 @@ cdef extern from "../interface/debug_.hpp":
     void wasm_enable_native_contract_(bool b)
     bool wasm_is_native_contract_enabled_()
 
-    void mp_set_max_execution_time_(int _max)
-
     void app_set_debug_mode_(bool d)
 
     uint64_t wasm_test_action_(const char* cls, const char* method)
@@ -107,9 +105,6 @@ def wasm_enable_native_contract(b):
 
 def wasm_is_native_contract_enabled():
     return wasm_is_native_contract_enabled_();
-
-def mp_set_max_execution_time(_max):
-    mp_set_max_execution_time_(_max)
 
 def app_set_debug_mode(d):
     app_set_debug_mode_(d)
