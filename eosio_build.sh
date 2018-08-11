@@ -194,8 +194,9 @@
          ;;
          "Ubuntu")
             FILE="${SOURCE_DIR}/scripts/eosio_build_ubuntu.sh"
-            CXX_COMPILER=clang++-4.0
-            C_COMPILER=clang-4.0
+            CXX_COMPILER=/usr/bin/clang++-4.0
+            C_COMPILER=/usr/bin/clang-4.0
+            CMAKE_TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=${PWD}/cmake/polly/clang-fpic.cmake"
             MONGOD_CONF=${HOME}/opt/mongodb/mongod.conf
             export PATH=${HOME}/opt/mongodb/bin:$PATH
          ;;
@@ -258,7 +259,8 @@
       -DCMAKE_C_COMPILER="${C_COMPILER}" -DWASM_ROOT="${WASM_ROOT}" -DCORE_SYMBOL_NAME="${CORE_SYMBOL_NAME}" \
       -DOPENSSL_ROOT_DIR="${OPENSSL_ROOT_DIR}" -DBUILD_MONGO_DB_PLUGIN=true \
       -DENABLE_COVERAGE_TESTING="${ENABLE_COVERAGE_TESTING}" -DBUILD_DOXYGEN="${DOXYGEN}" \
-      -DCMAKE_INSTALL_PREFIX="/usr/local/eosio" "${SOURCE_DIR}"
+      -DCMAKE_INSTALL_PREFIX="/usr/local/eosio" "${SOURCE_DIR}" \
+      "${CMAKE_TOOLCHAIN}"
    then
       printf "\\n\\t>>>>>>>>>>>>>>>>>>>> CMAKE building EOSIO has exited with the above error.\\n\\n"
       exit -1
