@@ -114,6 +114,7 @@ inspector::inspector() {
    type_whitelist_map[(PyTypeObject*)PyExc_ImportError] = 1;
 
    type_whitelist_map[(PyTypeObject*)PyExc_NameError] = 1;
+   type_whitelist_map[(PyTypeObject*)PyExc_IndexError] = 1;
 
    type_whitelist_map[&PyFileIO_Type] = 1; //FIXME: dangerous type
    type_whitelist_map[&PyBufferedReader_Type] = 1;
