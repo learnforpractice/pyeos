@@ -137,39 +137,6 @@ IF( WIN32 )
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries
 ENDIF(WIN32)
 
-hunter_add_package(Boost COMPONENTS 
-    thread
-    date_time
-    filesystem
-    system
-    program_options
-    signals
-    serialization
-    chrono
-    test
-    context
-    locale
-    iostreams
-    fiber
-    log)
-    
-find_package(Boost CONFIG REQUIRED
-    thread
-    date_time
-    filesystem
-    system
-    program_options
-    signals
-    serialization
-    chrono
-    unit_test_framework
-    context
-    locale
-    iostreams
-    fiber
-    log)
-
-
 if( WIN32 )
 
     message( STATUS "Configuring EOSIO on WIN32")
@@ -244,6 +211,43 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG" )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG" )
 endif()
+
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+    set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3" )
+endif()
+
+hunter_add_package(Boost COMPONENTS 
+    thread
+    date_time
+    filesystem
+    system
+    program_options
+    signals
+    serialization
+    chrono
+    test
+    context
+    locale
+    iostreams
+    fiber
+    log)
+    
+find_package(Boost CONFIG REQUIRED
+    thread
+    date_time
+    filesystem
+    system
+    program_options
+    signals
+    serialization
+    chrono
+    unit_test_framework
+    context
+    locale
+    iostreams
+    fiber
+    log)
 
 set(ENABLE_COVERAGE_TESTING FALSE CACHE BOOL "Build EOSIO for code coverage analysis")
 
