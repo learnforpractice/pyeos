@@ -159,6 +159,11 @@ void apply_eosio_setcode(apply_context& context) {
 
    context.require_authorization(act.account);
 
+   //account can reject code update in setcode action, that make code in account readonly.
+   if (account.code.size() > 0) {
+      vm_manager::get().apply(account.vm_type, account.name, account.name, N(setcode));
+   }
+
    FC_ASSERT(act.code.size() > 0);
 //   EOS_ASSERT( act.vmtype == 0, invalid_contract_vm_type, "code should be 0" );
    EOS_ASSERT( act.vmversion == 0, invalid_contract_vm_version, "version should be 0" );
