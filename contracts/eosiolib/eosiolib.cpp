@@ -555,4 +555,8 @@ void free(void* ptr)
    return eosio::memory_heap.free(ptr);
 }
 
+uint32_t  now() {
+   return (uint32_t)( current_time() / 1000000 );
+}
+
 }
