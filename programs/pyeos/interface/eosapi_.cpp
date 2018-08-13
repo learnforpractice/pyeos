@@ -257,7 +257,8 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
          } else {
             auto trx_trace_ptr = result.get<transaction_trace_ptr>();
             auto v = get_db().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(300*1000));
-            (*output)(v.get_object());
+            *output = v.get_object();
+            (*output)("except", "");
          }
          {
             std::lock_guard<std::mutex> lk(*m);
@@ -269,7 +270,11 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
 
    Py_BEGIN_ALLOW_THREADS
    std::unique_lock<std::mutex> lk(*m);
-   cv->wait_for(lk, 1000ms, [p]{return *p;});
+   if (!cv->wait_for(lk, 1000ms, [p]{return *p;})) {
+      if (!get_chain_plugin().chain().pending_block_state()) {
+         (*output)("except", "not in pending block state, ");
+      }
+   }
    Py_END_ALLOW_THREADS
 
    return python::json::to_string(*output);

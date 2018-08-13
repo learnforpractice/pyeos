@@ -17,9 +17,10 @@ namespace eosio {
 
 static appbase::abstract_plugin& _wallet_plugin = app().register_plugin<wallet_plugin>();
 
-wallet_plugin::wallet_plugin() {}
+wallet_plugin::wallet_plugin():wallet_manager_ptr(nullptr) {}
 
 wallet_manager& wallet_plugin::get_wallet_manager() {
+   EOS_ASSERT(wallet_manager_ptr, fc::exception, "wallet plugin not initialized!");
    return *wallet_manager_ptr;
 }
 

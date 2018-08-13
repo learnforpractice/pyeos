@@ -82,6 +82,25 @@ def change_active_key():
     r = eosapi.push_transactions([[act]])
     assert r
 
+def set_auth():
+    a = {
+        "account": "hello",
+        "permission": "eosio.code",
+        "parent": "owner",
+        "auth": {
+            "threshold": 1,
+            "keys": [
+                {
+                    "key": "EOS8muoEdY4L9WRYXYB55WmEzYw9A314fW1uMPUqUrFUBMMjWNpxd",
+                    "weight": 1
+                }
+            ],
+            "accounts": [],
+            "waits": []
+        }
+    }
+    eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
+    
 def create_multisig_account():
     #PW5KKNC8zM2KVLrb1cw4YNXZ69NLK7Fr5B35wHmsPt35tyiYkY4RR
     test_keys = {

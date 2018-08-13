@@ -24,8 +24,10 @@ using namespace eosio;
 using namespace eosio::chain;
 
 wallet_manager& wm() {
-   abstract_plugin& plugin = app().get_plugin("eosio::wallet_plugin");
-   return static_cast<wallet_plugin*>(&plugin)->get_wallet_manager();
+//   abstract_plugin& plugin = app().get_plugin("eosio::wallet_plugin");
+//   return static_cast<wallet_plugin*>(&plugin)->get_wallet_manager();
+   wallet_plugin& plugin = app().get_plugin<wallet_plugin>();//("eosio::wallet_plugin");
+   return plugin.get_wallet_manager();
 }
 
 chain_plugin& get_chain_plugin();//eosapi_.cpp

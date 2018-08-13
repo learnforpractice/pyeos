@@ -31,7 +31,7 @@ cdef extern int init_function_whitelist():
         for k in _dict:
             v = _dict[k]
             if callable(v):
-                print('+++++++++',v)
+#                print('+++++++++',v)
                 whitelist_function_(v)
                 function_whitelist[v] = True
     whitelist = [    int.from_bytes, 
@@ -49,7 +49,7 @@ cdef extern int init_function_whitelist():
 __current_module = None
 
 def add_function_to_white_list(func):
-    print('+++++++++++=add_function_to_white_list:', func)
+#    print('+++++++++++=add_function_to_white_list:', func)
     function_whitelist[func] = True
 
 cdef extern string get_c_string(object s):

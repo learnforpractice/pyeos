@@ -303,7 +303,7 @@ def create_account2(creator, account, owner_key, active_key):
 
     r, cost =  push_actions(actions)
     if r['except']:
-        raise Exception(JsonStruct(r['except']))
+        raise Exception(JsonStruct(r))
         return False
     return True
 
@@ -729,7 +729,7 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     if outputs:
         output = outputs[0]
         if output['except']:
-            raise Exception(JsonStruct(output['except']))
+            raise Exception(JsonStruct(output))
         output['cost'] = cost_time
         return output
     return None
@@ -816,10 +816,11 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
 
     ret, cost = push_transactions([actions], sign, compress = True)
     if ret:
-        if ret[0]['except']:
-            raise Exception(ret[0]['except'])
-        ret[0]['cost'] = cost
-        return ret[0]
+        ret = ret[0]
+        if 'except' in ret and ret['except']:
+            raise Exception(ret['except'])
+        ret['cost'] = cost
+        return ret
     return None
 
 def set_evm_contract(eth_address, sol_bin, sign=True):

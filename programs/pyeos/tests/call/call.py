@@ -18,5 +18,9 @@ def apply(receiver, code, action):
         symbol[3] = ord('S')
         memo = eoslib.pack_bytes(b'hello')
         args = struct.pack('QQQ8s%ds'%(len(memo),), _from, to, amount, symbol, memo)
-        eoslib.call_set_args(args)
-        eoslib.call(eoslib.s2n('eosio.token'), eoslib.s2n('transfer'))
+
+        print('++++call')
+        eoslib.send_inline(N('eosio.token'), N('transfer'), args, {'call':'active'})
+
+#        eoslib.call_set_args(args)
+#        eoslib.call(eoslib.s2n('eosio.token'), eoslib.s2n('transfer'))
