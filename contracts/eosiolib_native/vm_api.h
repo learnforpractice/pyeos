@@ -29,6 +29,7 @@ struct vm_api {
    bool (*has_auth)( uint64_t name );
    bool (*is_account)( uint64_t name );
    bool (*is_code_locked)( uint64_t name );
+   bool (*is_replay)();
    void (*send_inline)(const char *serialized_action, size_t size);
    void (*send_context_free_inline)(char *serialized_action, size_t size);
    uint64_t  (*publication_time)();

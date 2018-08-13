@@ -408,6 +408,11 @@ int inspector::inspect_memory() {
    if (!current_account) {
       return 1;
    }
+
+   if (get_vm_api()->is_replay()) {
+      return 1;
+   }
+
    auto _account_info = accounts_info_map.find(current_account);
    if (_account_info == accounts_info_map.end()) {
       return 1;

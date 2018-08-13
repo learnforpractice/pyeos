@@ -248,6 +248,10 @@ int call_get_results(char* result , int len) {
    return copy_len;
 }
 
+bool is_replay() {
+   return ctx().trx_context.deadline == fc::time_point::maximum();
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -258,6 +262,7 @@ static struct vm_api _vm_api = {
    .has_auth = has_auth,
    .is_account = is_account,
    .is_code_locked = is_code_locked,
+   .is_replay = is_replay,
 
    .send_inline = send_inline,
    .send_context_free_inline = send_context_free_inline,
