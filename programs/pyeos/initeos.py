@@ -119,6 +119,10 @@ class PyEosConsole(InteractiveConsole):
             module = sys.modules[k]
             if not hasattr(module, '__file__'):
                 continue
+
+            if not module.__file__:
+                continue
+
             if not module.__file__.endswith('.py'):
                 continue
 
@@ -194,9 +198,9 @@ psw = None
 def init_wallet():
     global psw
     
-    data_dir = 'data-dir'
-    if eosapi.has_opt('data-dir'):
-        data_dir = eosapi.get_opt('data-dir')
+    data_dir = eosapi.get_opt('data-dir')
+    if not data_dir:
+        data_dir = 'data-dir'
 
     psw_file = os.path.join(data_dir, 'data.pkl')
     wallet.set_dir(data_dir)
@@ -230,19 +234,23 @@ def init_wallet():
 
 def preinit():
     print('+++++++++++Initialize testnet.')
+    config_dir = eosapi.get_opt('config-dir')
+    print(config_dir)
+    if not config_dir:
+        config_dir = 'config-dir'
 
-    if os.path.exists('config-dir/.preinit'):
+    if os.path.exists(os.path.join(config_dir,'.preinit')):
         return
 
-    if not os.path.exists('config-dir'):
+    if not os.path.exists(config_dir):
         print('Creating config-dir')
-        os.mkdir('config-dir')
+        os.mkdir(config_dir)
 
-    with open('config-dir/.preinit', 'w') as f:
+    with open(os.path.join(config_dir, '.preinit'), 'w') as f:
         pass
 
-    config_file = 'config-dir/config.ini'
-    genesis_file = 'config-dir/genesis.json'
+    config_file = os.path.join(config_dir, 'config.ini')
+    genesis_file = os.path.join(config_dir, 'genesis.json')
 
 
     print('Initialize ', config_file)

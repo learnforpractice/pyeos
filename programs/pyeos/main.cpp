@@ -121,9 +121,9 @@ int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
+   app().init_args(argc, argv);
    vm_api_init();
    init_console();
-
 
    app().set_version(eosio::nodeos::config::version);
    app().register_plugin<history_plugin>();
@@ -132,6 +132,7 @@ int main(int argc, char** argv) {
    app().register_plugin<chain_api_plugin>();
    app().register_plugin<wallet_api_plugin>();
    app().register_plugin<producer_plugin>();
+
 
 //      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
    try {
