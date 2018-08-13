@@ -68,7 +68,8 @@ void vm_init(struct vm_api* api) {
 
    PyThreadState_Swap(NULL);
 
-   substate = Py_NewInterpreterEx();
+//   substate = Py_NewInterpreterEx();
+   substate = Py_NewInterpreter();
 
    PyImport_ImportModule("_struct");
    PyImport_ImportModule("eoslib");

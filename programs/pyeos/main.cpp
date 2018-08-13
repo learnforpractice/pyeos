@@ -56,7 +56,14 @@ extern "C" {
    PyObject* PyInit_rodb();
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
-
+   PyObject* PyInit__struct();
+   PyObject* PyInit__ssl();
+   PyObject* PyInit__posixsubprocess();
+   PyObject* PyInit_readline();
+   PyObject* PyInit_select();
+   PyObject* PyInit_math();
+   PyObject* PyInit__socket();
+   PyObject* PyInit_array();
    //vm_manager.cpp
    void vm_deinit_all();
    void vm_api_init();
@@ -69,8 +76,26 @@ bool is_init_finished() {
 
 void init_console() {
 //   init_api();
+   PyImport_AppendInittab("_struct", PyInit__struct);
+   PyImport_AppendInittab("_ssl", PyInit__struct);
+   PyImport_AppendInittab("_socket", PyInit__socket);
+   PyImport_AppendInittab("_posixsubprocess", PyInit__posixsubprocess);
+
+   PyImport_AppendInittab("readline", PyInit_readline);
+   PyImport_AppendInittab("select", PyInit_select);
+   PyImport_AppendInittab("math", PyInit_math);
+   PyImport_AppendInittab("array", PyInit_array);
 
    Py_Initialize();
+
+   PyImport_ImportModule("_struct");
+   PyImport_ImportModule("_ssl");
+   PyImport_ImportModule("_socket");
+   PyImport_ImportModule("_posixsubprocess");
+   PyImport_ImportModule("readline");
+   PyImport_ImportModule("select");
+   PyImport_ImportModule("math");
+   PyImport_ImportModule("array");
 
 #ifdef WITH_THREAD
    PyEval_InitThreads();
@@ -120,6 +145,9 @@ void start_eos() {
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
+
+   setenv("PYTHONHOME", "../../libraries/python", 1);
+   setenv("PYTHONPATH", "../../libraries/python/lib", 1);
 
    app().init_args(argc, argv);
    vm_api_init();
