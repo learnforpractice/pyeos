@@ -178,7 +178,7 @@ int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
    try {
       uint64_t from = current_receiver();
       eosio_assert( from != to, "cannot transfer to self" );
-      require_auth( from );
+//      require_auth( from );
       eosio_assert( is_account( to ), "to account does not exist");
 
       auto sym = symbol>>8;
@@ -195,7 +195,7 @@ int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
       eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
 
       sub_balance( from, amount, symbol );
-      add_balance( to, amount, symbol, from );
+      add_balance( to, amount, symbol, to );
       return 1;
    } catch (...) {
        throw;
