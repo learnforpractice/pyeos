@@ -42,8 +42,8 @@ void vm_init(struct vm_api* api) {
    PyImport_AppendInittab("inspector", PyInit_inspector);
    PyImport_AppendInittab("vm_cpython", PyInit_vm_cpython);
 
-//   Py_InitializeEx(0);
-   _Py_InitializeEx_Private(0, 0);
+   Py_InitializeEx(0);
+//   _Py_InitializeEx_Private(0, 0);
 
 //   PyInit_eoslib();
 //   PyInit_db();

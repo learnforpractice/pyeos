@@ -48,8 +48,8 @@ target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/softfloat/source/include
 
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-ss/Include
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-ss
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
 
     PRIVATE ${CMAKE_BINARY_DIR}/libraries/fc/include
 #    PRIVATE ${CMAKE_BINARY_DIR}/libraries/chain/include

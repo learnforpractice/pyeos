@@ -22,7 +22,6 @@ set_target_properties(vm_api_python  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
 target_link_libraries(vm_api_python PRIVATE eosiolib_native fc)
 
-
 target_include_directories(vm_api_python PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/include/libc++/upstream/include
@@ -33,8 +32,8 @@ target_include_directories(vm_api_python PRIVATE ${Boost_INCLUDE_DIR}
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/softfloat/source/include
 
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-ss/Include
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python-ss
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
+    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
 
     PRIVATE ${CMAKE_BINARY_DIR}/libraries/fc/include
 #    PRIVATE ${CMAKE_BINARY_DIR}/libraries/chain/include

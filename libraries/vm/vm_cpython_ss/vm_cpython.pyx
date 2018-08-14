@@ -86,23 +86,31 @@ sandbox = _sandbox()
 #define RAISE_VARARGS           130
 '''
 
-#opcodes = [131, 141, 142, 143]
-#opcodes = [91,130]
-opcodes = []
-opcode_blacklist = [False for i in range(255)]
-for opcode in opcodes:
-    opcode_blacklist[opcode] = True
+#define SETUP_EXCEPT            121
+#define POP_EXCEPT               89
 
-def validate(code):
+#opcode_blacklist = {143:True, 91:True, 130:True, 121:True, 89:True}
+#opcode_blacklist = {121:True, 89:True}
+
+opcode_blacklist = {}
+
+def validate(co):
+    code = co.co_code
     for i in range(0, len(code), 2):
         opcode = code[i]
-        if opcode_blacklist[opcode]:
-            print('bad opcode ', opcode)
+        if opcode in opcode_blacklist:
+            raise Exception('bad opcode ', opcode)
             return False
+
+    for const in co.co_consts:
+        if type(const) == type(co):
+            if not validate(const):
+                return False
+
     return True
 
 def load_module(account, code):
-    print('++++load_module')
+    print('++++load_module', account)
     try:
         name = eoslib.n2s(account)
 
@@ -112,7 +120,7 @@ def load_module(account, code):
         enable_filter_get_attr_(0)
         co = compile(code, name, 'exec')
         ret = co
-        if validate(co.co_code):
+        if validate(co):
             py_modules[account] = co
         else:
             py_modules[account] = None

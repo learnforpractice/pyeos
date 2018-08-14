@@ -44,11 +44,7 @@
 [submodule "libraries/vm/vm_py"]
 	path = libraries/vm/vm_py
 	url = https://github.com/learnforpractice/micropython
-[submodule "libraries/python-ss"]
-	path = libraries/python-ss
-	url = https://github.com/learnforpractice/cpython
-	branch = python-v3.6.3-single-thread
 [submodule "libraries/python"]
 	path = libraries/python
 	url = https://github.com/learnforpractice/cpython
-	branch = v3.6.4-cmake
+	branch = v3.7.0-cmake

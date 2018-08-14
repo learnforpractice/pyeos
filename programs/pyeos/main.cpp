@@ -57,6 +57,7 @@ extern "C" {
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
    PyObject* PyInit__struct();
+#if 0
    PyObject* PyInit__ssl();
    PyObject* PyInit__posixsubprocess();
    PyObject* PyInit_readline();
@@ -64,6 +65,8 @@ extern "C" {
    PyObject* PyInit_math();
    PyObject* PyInit__socket();
    PyObject* PyInit_array();
+#endif
+
    //vm_manager.cpp
    void vm_deinit_all();
    void vm_api_init();
@@ -76,8 +79,10 @@ bool is_init_finished() {
 
 void init_console() {
 //   init_api();
+
+#if 0
    PyImport_AppendInittab("_struct", PyInit__struct);
-   PyImport_AppendInittab("_ssl", PyInit__struct);
+   PyImport_AppendInittab("_ssl", PyInit__ssl);
    PyImport_AppendInittab("_socket", PyInit__socket);
    PyImport_AppendInittab("_posixsubprocess", PyInit__posixsubprocess);
 
@@ -85,9 +90,11 @@ void init_console() {
    PyImport_AppendInittab("select", PyInit_select);
    PyImport_AppendInittab("math", PyInit_math);
    PyImport_AppendInittab("array", PyInit_array);
+#endif
 
-   Py_Initialize();
+   Py_InitializeEx(0);
 
+#if 0
    PyImport_ImportModule("_struct");
    PyImport_ImportModule("_ssl");
    PyImport_ImportModule("_socket");
@@ -96,6 +103,7 @@ void init_console() {
    PyImport_ImportModule("select");
    PyImport_ImportModule("math");
    PyImport_ImportModule("array");
+#endif
 
 #ifdef WITH_THREAD
    PyEval_InitThreads();
@@ -146,8 +154,8 @@ int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
-   setenv("PYTHONHOME", "../../libraries/python", 1);
-   setenv("PYTHONPATH", "../../libraries/python/lib", 1);
+//   setenv("PYTHONHOME", "../../libraries/python", 1);
+//   setenv("PYTHONPATH", "../../libraries/python/lib", 1);
 
    app().init_args(argc, argv);
    vm_api_init();
@@ -190,6 +198,7 @@ int main(int argc, char** argv) {
    if (app().interactive_mode()) {
       PyRun_SimpleString("import initeos");
       PyRun_SimpleString("initeos.start_console()");
+      wlog("quit app...");
       appbase::app().quit();
    }
 

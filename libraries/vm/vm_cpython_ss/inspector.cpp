@@ -17,6 +17,68 @@ extern "C" {
    extern PyTypeObject PyTextIOWrapper_Type;
 }
 
+
+int object_is_function(PyObject* func) {
+   if (!func) {
+      return 0;
+   }
+   PyTypeObject *tp = Py_TYPE(func);
+
+//   printf(" ++++++++object_is_function: tp->tp_name %s\n", tp->tp_name);
+   if (&PyMethodDescr_Type == Py_TYPE(func)) {
+      return 1;
+   }
+
+   if (PyCFunction_Check(func)) {
+      return 1;
+   }
+   if (PyFunction_Check(func)) {
+      return 1;
+   }
+   if (PyMethod_Check(func)) {
+      return 1;
+   }
+   return 0;
+}
+
+int filter_attr(PyObject* v, PyObject* name) {
+    Py_ssize_t size;
+    const char* cname;
+
+    PyTypeObject *tp = Py_TYPE(v);
+
+    if (!PyUnicode_Check(name)) {
+        return 0;
+    }
+//    printf("tp->tp_name %s, PyLong_Type %p\n", tp->tp_name, &PyLong_Type);
+
+    cname = PyUnicode_AsUTF8AndSize(name,&size);
+    if (size >= 2 && cname) {
+       if (cname[0] == '_' && cname[1] == '_') {
+          if (strcmp(cname, "__init__") == 0) {
+             return 1;
+          }
+          return 0;
+       }
+    }
+
+    if (tp->tp_getattro != NULL) {
+       PyObject* o = (*tp->tp_getattro)(v, name);
+       return object_is_function(o);
+    }
+
+    if (tp->tp_getattr != NULL) {
+        const char *name_str = PyUnicode_AsUTF8(name);
+        if (name_str == NULL)
+            return 0;
+
+        PyObject* o = (*tp->tp_getattr)(v, (char*)name_str);
+        return object_is_function(o);
+    }
+    return 0;
+}
+
+
 struct opcode_map
 {
    int index;

@@ -489,6 +489,7 @@ def wd():
     debug.wasm_enable_native_contract(0)
 
 def start_console():
+    print("start console...")
     init_wallet()
     signal.signal(signal.SIGINT, original_sigint_handler)
     console = PyEosConsole(locals = globals())
