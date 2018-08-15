@@ -56,4 +56,5 @@ uint64_t acc_get_used_(uint64_t value_ex);
 
 void add_trusted_account_(uint64_t account);
 void remove_trusted_account_(uint64_t account);
+int vm_run_script_(const char* str);
 

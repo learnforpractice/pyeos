@@ -311,3 +311,14 @@ void add_trusted_account_(uint64_t account) {
 void remove_trusted_account_(uint64_t account) {
    vm_manager::get().remove_trusted_account(account);
 }
+
+namespace eosio {
+namespace chain {
+   int vm_run_script(const char* str);
+}
+}
+
+int vm_run_script_(const char* str) {
+   return vm_run_script(str);
+}
+

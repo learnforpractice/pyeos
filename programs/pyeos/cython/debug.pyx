@@ -49,7 +49,10 @@ cdef extern from "../interface/debug_.hpp":
 
     void add_trusted_account_(uint64_t account);
     void remove_trusted_account_(uint64_t account);
-    
+
+    int vm_run_script_(const char* str);
+
+
 def eval(const char* code):
     pass
 #    get_mpapi().set_debug_mode(1)
@@ -177,4 +180,7 @@ def remove_trusted_account(account):
     if not isinstance(account, int):
         account = eosapi.s2n(account)
     remove_trusted_account_(account);
+
+def vm_run_script(_str):
+    return vm_run_script_(_str)
 
