@@ -88,6 +88,7 @@ struct opcode_map
 extern struct opcode_map _opcode_map[];
 
 inspector::inspector() {
+   total_used_memory = 0;
    current_module = nullptr;
    current_account = 0;
    opcode_blacklist.resize(158, 0);//158
@@ -244,10 +245,11 @@ int inspector::whitelist_attr(const char* name) {
    return 1;
 }
 
-bool compile_string(Py_UNICODE * wstr, Py_ssize_t size, string& str) {
+bool compare_string(Py_UNICODE * wstr, Py_ssize_t size, string& str) {
    if (size != str.size()) {
       return false;
    }
+
    for(int i=0;i<size;i++) {
       if (wstr[i] != str[i]) {
          return false;
@@ -279,7 +281,7 @@ int inspector::inspect_setattr(PyObject* v, PyObject* name) {
    return 0;
 
    string s("__init__");
-   if (compile_string(wstr, size, s)) {
+   if (compare_string(wstr, size, s)) {
       return 1;
    }
 
@@ -303,7 +305,7 @@ int inspector::inspect_getattr(PyObject* v, PyObject* name) {
    }
 
    string s("__init__");
-   if (compile_string(wstr, size, s)) {
+   if (compare_string(wstr, size, s)) {
       return 1;
    }
 
@@ -402,10 +404,13 @@ void inspector::memory_trace_start() {
 }
 
 void inspector::memory_trace_stop() {
-
+   malloc_map.clear();
+   total_used_memory = 0;
+   printf("+++memory_trace_stop\n");
 }
 
 void inspector::memory_trace_alloc(void* ptr, size_t new_size) {
+#if 0
    if (!current_account) {
       return;
    }
@@ -414,6 +419,7 @@ void inspector::memory_trace_alloc(void* ptr, size_t new_size) {
    if (_account_info == accounts_info_map.end()) {
       return;
    }
+
 //   printf("++++++++++memory_trace_alloc %lld %p %d\n", current_account, ptr, new_size);
    memory_info_map[ptr] = std::make_unique<account_memory_info>();
 
@@ -421,11 +427,15 @@ void inspector::memory_trace_alloc(void* ptr, size_t new_size) {
    _account_info->second->total_used_memory += new_size;
    _memory_info->size = new_size;
    _memory_info->info = _account_info->second;
-
+#endif
 //   memory_info_map[ptr] = std::move(_memory_info);
+//   printf("+++memory_trace_alloc:%p %d \n", ptr, new_size);
+   malloc_map[ptr] = new_size;
+   total_used_memory += new_size;
 }
 
 void inspector::memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_size) {
+#if 0
    if (!current_account) {
       return;
    }
@@ -450,9 +460,20 @@ void inspector::memory_trace_realloc(void* old_ptr, void* new_ptr, size_t new_si
       _memory_info->info = _account_info->second;
       memory_info_map[new_ptr] = std::move(_memory_info);
    }
+#endif
+//   printf("+++memory_trace_realloc: %p %p %d \n", old_ptr, new_ptr, new_size);
+   auto it = malloc_map.find(old_ptr);
+   if (it != malloc_map.end()) {
+      total_used_memory -= it->second;
+      malloc_map.erase(it);
+   }
+
+   malloc_map[new_ptr] = new_size;
+   total_used_memory += new_size;
 }
 
 void inspector::memory_trace_free(void* ptr) {
+#if 0
    if (!current_account) {
       return;
    }
@@ -462,11 +483,20 @@ void inspector::memory_trace_free(void* ptr) {
       return;
    }
    it->second->info->total_used_memory -= it->second->size;
-//   printf("+++memory_trace_free: total_used_memory %lld %d \n", it->second->info->account, it->second->info->total_used_memory);
+   printf("+++memory_trace_free: total_used_memory %lld %d %d\n", it->second->info->account, it->second->info->total_used_memory, it->second->size);
    memory_info_map.erase(it);
+#endif
+
+   auto it = malloc_map.find(ptr);
+   if (it != malloc_map.end()) {
+//      printf("+++memory_trace_free: %p %d\n", ptr, it->second);
+      total_used_memory -= it->second;
+      malloc_map.erase(it);
+   }
 }
 
 int inspector::inspect_memory() {
+#if 0
    if (!current_account) {
       return 1;
    }
@@ -481,6 +511,12 @@ int inspector::inspect_memory() {
    }
 //   printf("++++++_account_info->second->total_used_memory %lld %d \n", current_account, _account_info->second->total_used_memory);
    return _account_info->second->total_used_memory <=500*1024;
+#endif
+//   printf("+++total_used_memory %d \n", total_used_memory);
+   if (total_used_memory >= 500*1024) {
+      printf("+++total_used_memory %d \n", total_used_memory);
+   }
+   return total_used_memory <= 500*1024;
 }
 
 void whitelist_function_(PyObject* func) {

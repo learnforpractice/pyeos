@@ -96,6 +96,9 @@ private:
    vector<int> opcode_blacklist;//158
    map<uint64_t, std::shared_ptr<account_info>> accounts_info_map;
    map<void*, std::unique_ptr<account_memory_info>> memory_info_map;
+   map<void*, int> malloc_map;
+   uint64_t total_used_memory;
+
    map<PyTypeObject*, int> type_whitelist_map;
 };
 
@@ -125,6 +128,8 @@ int is_code_object_in_current_account_(PyCodeObject* co);
 
 void set_current_account_(uint64_t account);
 void set_current_module_(PyObject* mod);
+
+void memory_trace_clear_();
 
 //object.c
 extern "C" int filter_attr(PyObject* v, PyObject* name);
