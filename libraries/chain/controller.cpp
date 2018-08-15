@@ -23,7 +23,9 @@
 
 
 namespace eosio { namespace chain {
+
 void vm_manager_init();
+bool vm_cleanup();
 
 using resource_limits::resource_limits_manager;
 
@@ -876,6 +878,7 @@ struct controller_impl {
    } /// sign_block
 
    void apply_block( const signed_block_ptr& b, controller::block_status s ) { try {
+      vm_cleanup();
       try {
          EOS_ASSERT( b->block_extensions.size() == 0, block_validate_exception, "no supported extensions" );
          start_block( b->timestamp, b->confirmed, s );

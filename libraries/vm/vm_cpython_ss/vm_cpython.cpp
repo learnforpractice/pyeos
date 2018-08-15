@@ -14,6 +14,7 @@ PyObject* PyInit_db();
 PyObject* PyInit_vm_cpython();
 PyObject* PyInit_inspector();
 PyObject* PyInit__struct(void);
+int PyObject_GC_GetCount();
 }
 
 int cpython_setcode(uint64_t account, string& code);
@@ -27,13 +28,25 @@ void get_code(uint64_t account, string& code) {
    code = string(_code, size);
 }
 
+bool vm_cleanup() {
+   if (PyObject_GC_GetCount() >=1000) {
+      PyGC_Collect();
+      return true;
+   }
+   return false;
+}
+
+int vm_run_script(const char* str) {
+   return PyRun_SimpleString(str);
+}
+
 void vm_init(struct vm_api* api) {
    s_api = api;
    vm_register_api(api);
    init_injected_apis();
 
-   setenv("PYTHONHOME", "../../libraries/python-ss/dist", 1);
-   setenv("PYTHONPATH", "../../libraries/python-ss/dist/lib/python3.6", 1);
+   setenv("PYTHONHOME", "../../libraries/vm/vm_cpython_ss", 1);
+   setenv("PYTHONPATH", "../../libraries/vm/vm_cpython_ss/lib", 1);
 
    Py_NoSiteFlag = 1;
    PyImport_AppendInittab("_struct", PyInit__struct);
@@ -79,6 +92,8 @@ void vm_init(struct vm_api* api) {
 //   enable_injected_apis_();
 
    init_function_whitelist();
+   api->vm_cleanup = vm_cleanup;
+   api->vm_run_script = vm_run_script;
 }
 
 void vm_deinit() {

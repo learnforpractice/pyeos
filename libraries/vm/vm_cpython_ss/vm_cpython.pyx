@@ -15,6 +15,10 @@ import inspector
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
 
+cdef extern from "<Python.h>":
+    ctypedef unsigned long size_t
+    size_t PyGC_Collect();
+
 cdef extern from "vm_cpython.h":
     void get_code(uint64_t account, string& code)
 
@@ -113,7 +117,6 @@ def load_module(account, code):
     print('++++load_module', account)
     try:
         name = eoslib.n2s(account)
-
         enable_injected_apis_(1)
         enable_create_code_object_(1)
         enable_filter_set_attr_(0)
@@ -136,6 +139,8 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
         del py_modules[account]
 
     ret = load_module(account, code)
+    set_current_account_(0)
+
     if ret:
         return 1
     return 0
@@ -164,16 +169,26 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     limit = Py_GetRecursionLimit()
     Py_SetRecursionLimit(10)
     ret = 1
+    error = 0
     try:
         _tracemalloc.start()
         builtin_exec_(co, _dict, _dict)
         vm_cpython_apply(module, receiver, account, action)
-    except:
-        print('++++++++error!')
+    except MemoryError:
+        print('++++++++memory error!!!')
+        error = 1
         ret = 0
+    except:
+        ret = 0
+
     del module
+
+    if error == 1:
+        PyGC_Collect()
+
     _tracemalloc.stop()
     Py_SetRecursionLimit(limit)
+    set_current_account_(0)
     return ret
 
 cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:

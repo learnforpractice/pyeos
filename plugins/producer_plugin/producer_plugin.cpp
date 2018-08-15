@@ -44,7 +44,11 @@ using boost::signals2::scoped_connection;
 namespace fc {
    extern std::unordered_map<std::string,logger>& get_logger_map();
 }
-
+namespace eosio {
+   namespace chain {
+      bool vm_cleanup();
+   }
+}
 const fc::string logger_name("producer_plugin");
 fc::logger _log;
 
@@ -853,9 +857,10 @@ optional<fc::time_point> producer_plugin_impl::calculate_next_block_time(const a
 }
 
 producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool &last_block) {
+   vm_cleanup();
+
    chain::controller& chain = app().get_plugin<chain_plugin>().chain();
    const auto& hbs = chain.head_block_state();
-
    //Schedule for the next second's tick regardless of chain state
    // If we would wait less than 50ms (1/10 of block_interval), wait for the whole block interval.
    fc::time_point now = fc::time_point::now();
