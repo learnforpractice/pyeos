@@ -252,6 +252,15 @@ bool is_replay() {
    return ctx().trx_context.deadline == fc::time_point::maximum();
 }
 
+
+void update_db_usage( uint64_t payer, int64_t delta ) {
+   ctx().update_db_usage(payer, delta);
+}
+
+bool verify_account_ram_usage( account_name account ) {
+   return ctx().control.get_mutable_resource_limits_manager().verify_account_ram_usage_ex(account);
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -399,6 +408,11 @@ static struct vm_api _vm_api = {
    .checktime = checktime,
    .check_context_free = check_context_free,
    .contracts_console = contracts_console,
+   .vm_cleanup = nullptr,
+   .vm_run_script = nullptr,
+
+   .update_db_usage = update_db_usage,
+   .verify_account_ram_usage = verify_account_ram_usage,
 
    .send_deferred = _send_deferred,
    .cancel_deferred = _cancel_deferred,
@@ -504,6 +518,14 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    else
       in.setstate(std::ios_base::failbit);
    return in;
+}
+
+bool vm_cleanup() {
+   return _vm_api.vm_cleanup();
+}
+
+bool vm_run_script(const char* str) {
+   return _vm_api.vm_run_script(str);
 }
 
 

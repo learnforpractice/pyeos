@@ -178,6 +178,10 @@ struct vm_api {
    void (*checktime)();
    void (*check_context_free)(bool context_free);
    bool (*contracts_console)();
+   void (*update_db_usage)( uint64_t payer, int64_t delta );
+   bool (*verify_account_ram_usage)( account_name account );
+   bool (*vm_cleanup)();
+   int (*vm_run_script)(const char* str);
 
    void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t* sender_id);
