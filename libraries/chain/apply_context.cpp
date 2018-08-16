@@ -466,7 +466,7 @@ int apply_context::get_context_free_data( uint32_t index, char* buffer, size_t b
 }
 
 int apply_context::db_store_i64( uint64_t scope, uint64_t table, const account_name& payer, uint64_t id, const char* buffer, size_t buffer_size ) {
-   return db_store_i64( receiver, scope, table, payer, id, buffer, buffer_size);
+   return db_store_i64( get_receiver(), scope, table, payer, id, buffer, buffer_size);
 }
 name apply_context::get_receiver() {
   if ( act.account == setcode::get_account() ) {
@@ -508,7 +508,7 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
    if (check_code) {
-      EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+      EOS_ASSERT( table_obj.code == get_receiver(), table_access_violation, "db access violation" );
    }
 
 //   require_write_lock( table_obj.scope );
@@ -541,7 +541,7 @@ void apply_context::db_remove_i64( int iterator, bool check_code ) {
 
    const auto& table_obj = keyval_cache.get_table( obj.t_id );
    if (check_code) {
-      EOS_ASSERT( table_obj.code == receiver, table_access_violation, "db access violation" );
+      EOS_ASSERT( table_obj.code == get_receiver(), table_access_violation, "db access violation" );
    }
 
 //   require_write_lock( table_obj.scope );

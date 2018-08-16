@@ -183,7 +183,7 @@ class apply_context {
 
 //               context.require_write_lock( scope );
 
-               const auto& tab = context.find_or_create_table( context.receiver, scope, table, payer );
+               const auto& tab = context.find_or_create_table( context.get_receiver(), scope, table, payer );
 
                const auto& obj = context.db.create<ObjectType>( [&]( auto& o ){
                   o.t_id          = tab.id;
@@ -207,7 +207,7 @@ class apply_context {
                context.update_db_usage( obj.payer, -( config::billable_size_v<ObjectType> ) );
 
                const auto& table_obj = itr_cache.get_table( obj.t_id );
-               EOS_ASSERT( table_obj.code == context.receiver, table_access_violation, "db access violation" );
+               EOS_ASSERT( table_obj.code == context.get_receiver(), table_access_violation, "db access violation" );
 
 //               context.require_write_lock( table_obj.scope );
 
@@ -227,7 +227,7 @@ class apply_context {
                const auto& obj = itr_cache.get( iterator );
 
                const auto& table_obj = itr_cache.get_table( obj.t_id );
-               EOS_ASSERT( table_obj.code == context.receiver, table_access_violation, "db access violation" );
+               EOS_ASSERT( table_obj.code == context.get_receiver(), table_access_violation, "db access violation" );
 
 //               context.require_write_lock( table_obj.scope );
 
