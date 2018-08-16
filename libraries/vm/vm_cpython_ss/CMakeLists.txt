@@ -29,7 +29,6 @@ add_custom_command(
 add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
             inspector.wrap.cpp
-            inspector.cpp
             opcode.cc
             test.wrap.cpp
             vm_cpython.cpp)

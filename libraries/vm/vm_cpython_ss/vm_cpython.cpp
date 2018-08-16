@@ -43,7 +43,6 @@ int vm_run_script(const char* str) {
 void vm_init(struct vm_api* api) {
    s_api = api;
    vm_register_api(api);
-   init_injected_apis();
 
    setenv("PYTHONHOME", "../../libraries/vm/vm_cpython_ss", 1);
    setenv("PYTHONPATH", "../../libraries/vm/vm_cpython_ss/lib", 1);

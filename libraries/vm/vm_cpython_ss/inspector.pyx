@@ -14,14 +14,14 @@ cdef extern from "<stdint.h>":
 cdef extern from "vm_cpython.h":
     void get_code(uint64_t account, string& code)
 
-    void enable_injected_apis_(int enabled)
-    void whitelist_function_(object func)
-    void enable_opcode_inspector_(int enable);
+    void enable_injected_apis(int enabled)
+    void whitelist_function(object func)
+    void enable_opcode_inspector(int enable);
 
     object builtin_exec_(object source, object globals, object locals);
-    void inspect_set_status_(int status);
-    void enable_create_code_object_(int enable);
-    void set_current_account_(uint64_t account);
+    void inspect_set_status(int status);
+    void enable_create_code_object(int enable);
+    void set_current_account(uint64_t account);
 
     int filter_attr(object v, object name);
 
@@ -32,7 +32,7 @@ cdef extern int init_function_whitelist():
             v = _dict[k]
             if callable(v):
 #                print('+++++++++',v)
-                whitelist_function_(v)
+                whitelist_function(v)
                 function_whitelist[v] = True
     whitelist = [    int.from_bytes, 
                      int.to_bytes, 
@@ -43,12 +43,12 @@ cdef extern int init_function_whitelist():
                  ]
     print('++++++++++++++int.from_bytes:', int.from_bytes)
     for bltin in whitelist:
-        whitelist_function_(bltin)
+        whitelist_function(bltin)
         function_whitelist[bltin] = True
 
 __current_module = None
 
-def add_function_to_white_list(func):
+def add_function_to_whitelist(func):
 #    print('+++++++++++=add_function_to_white_list:', func)
     function_whitelist[func] = True
 
@@ -73,23 +73,6 @@ cdef extern int py_inspect_getattr(v, name):
         return 1
     return filter_attr(v, name)
 
-def enable_create_code_object(enable):
-    enable_create_code_object_(enable)
-
-def enable_injected_apis(enable):
-    enable_injected_apis_(enable)
-
-def enable_create_code_object(enable):
-    enable_create_code_object_(enable)
-
-def enable_injected_apis(enable):
-    enable_injected_apis_(enable)
-
 def set_current_module(mod):
     global __current_module
     __current_module = mod
-
-def builtin_exec(object co, object globals, object locals):
-    return builtin_exec_(co, globals, locals)
-    
-

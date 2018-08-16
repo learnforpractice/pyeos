@@ -8,7 +8,7 @@ for _dict in [db.__dict__, eoslib.__dict__, struct.__dict__, int.__dict__]:
         v = _dict[k]
         if callable(v):
 #            print('+++++++++',v)
-            inspector.add_function_to_white_list(v)
+            inspector.add_function_to_whitelist(v)
 
 whitelist = [    str,
                  pow,
@@ -27,7 +27,7 @@ print('++++++++++++++int.from_bytes:', int.from_bytes)
 print('++++++++++++++str', str)
 
 for bltin in whitelist:
-    inspector.add_function_to_white_list(bltin)
+    inspector.add_function_to_whitelist(bltin)
 
 def debug(func):
     def func_wrapper(*args, **kwargs):

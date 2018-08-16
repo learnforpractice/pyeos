@@ -19,23 +19,25 @@ cdef extern from "<Python.h>":
     ctypedef unsigned long size_t
     size_t PyGC_Collect();
 
-cdef extern from "vm_cpython.h":
-    void get_code(uint64_t account, string& code)
+cdef extern from "inspector.h":
+    void enable_injected_apis(int enabled)
+    void enable_opcode_inspector(int enable);
 
-    void enable_injected_apis_(int enabled)
-    void enable_opcode_inspector_(int enable);
+    void enable_filter_set_attr(int enable);
+    void enable_filter_get_attr(int enable);
 
-    void enable_filter_set_attr_(int enable);
-    void enable_filter_get_attr_(int enable);
-
-    void whitelist_function_(object func)
+    void whitelist_function(object func)
 
     object builtin_exec_(object source, object globals, object locals);
 
-    void inspect_set_status_(int status);
-    void enable_create_code_object_(int enable);
-    void set_current_account_(uint64_t account);
-    void set_current_module_(object mod);
+    void inspect_set_status(int status);
+    void enable_create_code_object(int enable);
+    void set_current_account(uint64_t account);
+    void set_current_module(object mod);
+
+cdef extern from "vm_cpython.h":
+    void get_code(uint64_t account, string& code)
+
 
     int vm_cpython_apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
 
@@ -64,19 +66,19 @@ class _sandbox:
 
 #        enable_opcode_inspector_(1)
 
-        enable_injected_apis_(1)
-        enable_create_code_object_(0)
-        enable_filter_set_attr_(1)
-        enable_filter_get_attr_(1)
+        enable_injected_apis(1)
+        enable_create_code_object(0)
+        enable_filter_set_attr(1)
+        enable_filter_get_attr(1)
 
     def __exit__(self, type, value, traceback):
 
 #        enable_opcode_inspector_(0)
 
-        enable_injected_apis_(0)
-        enable_create_code_object_(1)
-        enable_filter_set_attr_(0)
-        enable_filter_get_attr_(0)
+        enable_injected_apis(0)
+        enable_create_code_object(1)
+        enable_filter_set_attr(0)
+        enable_filter_get_attr(0)
 
 sandbox = _sandbox()
 
@@ -117,10 +119,10 @@ def load_module(account, code):
     print('++++load_module', account)
     try:
         name = eoslib.n2s(account)
-        enable_injected_apis_(1)
-        enable_create_code_object_(1)
-        enable_filter_set_attr_(0)
-        enable_filter_get_attr_(0)
+        enable_injected_apis(1)
+        enable_create_code_object(1)
+        enable_filter_set_attr(0)
+        enable_filter_get_attr(0)
         co = compile(code, name, 'exec')
         ret = co
         if validate(co):
@@ -134,12 +136,12 @@ def load_module(account, code):
     return None
 
 cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
-    set_current_account_(account)
+    set_current_account(account)
     if account in py_modules:
         del py_modules[account]
 
     ret = load_module(account, code)
-    set_current_account_(0)
+    set_current_account(0)
 
     if ret:
         return 1
@@ -150,7 +152,7 @@ cdef extern int cython_apply(object mod, unsigned long long receiver, unsigned l
     return 1
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
-    set_current_account_(receiver)
+    set_current_account(receiver)
     mod = None
     if receiver in py_modules:
         co = py_modules[receiver]
@@ -188,7 +190,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     _tracemalloc.stop()
     Py_SetRecursionLimit(limit)
-    set_current_account_(0)
+    set_current_account(0)
     return ret
 
 cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:
