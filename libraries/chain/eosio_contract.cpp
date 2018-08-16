@@ -69,13 +69,6 @@ void validate_authority_precondition( const apply_context& context, const author
    }
 }
 
-void check_account_lock_status( const apply_context& context, const account_name& account ) {
-   const auto& _account = context.db.get<account_object,by_name>( account );
-   if (_account.locked) {
-      throw FC_EXCEPTION( fc::exception, "${n1} has been locked on", ("n1", account));
-   }
-}
-
 /**
  *  This method is called assuming precondition_system_newaccount succeeds a
  */
@@ -143,17 +136,12 @@ void apply_eosio_setcode(apply_context& context) {
    auto& db = context.db;
    auto  act = context.act.data_as<setcode>();
    const auto& account = db.get<account_object,by_name>(act.account);
-   if (account.locked) {
-      throw FC_EXCEPTION( fc::exception, "code in ${n} has been locked on", ("n", act.account));
-   }
 
    if (!appbase::app().debug_mode()) {
       if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
          throw FC_EXCEPTION( fc::exception, "code updated in less than 10m from the previous update");
       }
    }
-
-   check_account_lock_status( context, act.account );
 
    jit_account_deactivate(act.account.value);
 
@@ -308,55 +296,10 @@ void apply_eosio_setconfig(apply_context& context) {
    }
 }
 
-void apply_eosio_lockcode(apply_context& context) {
-   name _account_name;
-   datastream<const char*> ds( context.act.data.data(), context.act.data.size() );
-   fc::raw::unpack( ds, _account_name );
-   auto& db = context.db;
-   const auto& account = db.get<account_object,by_name>( _account_name );
-
-   check_account_lock_status( context, _account_name );
-
-   context.require_authorization( _account_name );
-
-   db.modify( account, [&]( auto& a ) {
-      a.locked = true;
-   });
-}
-
-void apply_eosio_unlockcode(apply_context& context) {
-   //account owner can not unlock the code, only a privileged account such as BP can
-   name _privileged_account;
-   name _unlockaccount;
-
-   datastream<const char*> ds( context.act.data.data(), context.act.data.size() );
-   fc::raw::unpack( ds, _privileged_account );
-   fc::raw::unpack( ds, _unlockaccount );
-
-   auto& db = context.db;
-   const auto& account = db.get<account_object,by_name>( _privileged_account );
-   if (!account.privileged) {
-      throw FC_EXCEPTION( fc::exception, "can not unlock ${n1} with nonprivileged account ${n2}", ("n1", _unlockaccount)("n2", _unlockaccount));
-   }
-   context.require_authorization(_privileged_account); // only here to mark the single authority on this action as used
-
-   const auto& _account = db.get<account_object,by_name>( _unlockaccount );
-
-   if (!_account.locked) {
-      throw FC_EXCEPTION( fc::exception, "Code in account ${n1} has not been locked on", ("n1", _unlockaccount));
-   }
-
-   db.modify( _account, [&]( auto& a ) {
-      a.locked = false;
-   });
-}
-
-
 void apply_eosio_updateauth(apply_context& context) {
 
    auto update = context.act.data_as<updateauth>();
    context.require_authorization(update.account); // only here to mark the single authority on this action as used
-   check_account_lock_status( context, update.account );
 
    auto& authorization = context.control.get_mutable_authorization_manager();
    auto& db = context.db;
@@ -423,7 +366,6 @@ void apply_eosio_deleteauth(apply_context& context) {
 
    auto remove = context.act.data_as<deleteauth>();
    context.require_authorization(remove.account); // only here to mark the single authority on this action as used
-   check_account_lock_status( context, remove.account );
 
    EOS_ASSERT(remove.permission != config::active_name, action_validate_exception, "Cannot delete active authority");
    EOS_ASSERT(remove.permission != config::owner_name, action_validate_exception, "Cannot delete owner authority");
@@ -458,7 +400,6 @@ void apply_eosio_linkauth(apply_context& context) {
       EOS_ASSERT(!requirement.requirement.empty(), action_validate_exception, "Required permission cannot be empty");
 
       context.require_authorization(requirement.account); // only here to mark the single authority on this action as used
-      check_account_lock_status( context, requirement.account );
 
       auto& db = context.db;
       const auto *account = db.find<account_object, by_name>(requirement.account);
@@ -506,7 +447,6 @@ void apply_eosio_unlinkauth(apply_context& context) {
    auto unlink = context.act.data_as<unlinkauth>();
 
    context.require_authorization(unlink.account); // only here to mark the single authority on this action as used
-   check_account_lock_status( context, unlink.account );
 
    auto link_key = boost::make_tuple(unlink.account, unlink.code, unlink.type);
    auto link = db.find<permission_link_object, by_action_name>(link_key);
