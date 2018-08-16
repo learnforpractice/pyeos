@@ -52,6 +52,7 @@ cdef extern from "../interface/debug_.hpp":
 
     int vm_run_script_(const char* str);
 
+    void softfloat_test_();
 
 def eval(const char* code):
     pass
@@ -183,4 +184,8 @@ def remove_trusted_account(account):
 
 def vm_run_script(_str):
     return vm_run_script_(_str)
+
+def softfloat_test():
+    softfloat_test_()
+
 

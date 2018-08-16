@@ -322,3 +322,46 @@ int vm_run_script_(const char* str) {
    return vm_run_script(str);
 }
 
+
+#include "softfloat.h"
+#include <time.h>       /* time */
+
+void softfloat_test_() {
+   union {
+      double f;
+      uint64_t v;
+   } d1, d2, d4;
+
+   float64_t f1, f2, f3, f4;
+
+   for (uint64_t i=0;i<0xffffffff;i+=1000) {
+//      printf("%d \n", i);
+
+      int n = i;//rand();
+      f4 = ui64_to_f64(n);
+      d1.f = 777777777777777.333459;
+      d2.f = 888888888877777.999999;
+
+      f1.v = d1.v;
+      f2.v = d2.v;
+      d4.v = f4.v;
+
+      f3 = f64_add(f1, f4);
+      f3 = f64_mul(f3, f2);
+      f3 = f64_sub(f3, f2);
+      f3 = f64_div(f3, f4);
+
+      double d3 = ((d1.f+d4.f) * d2.f-d2.f)/(*(double*)&f4.v);
+
+//      printf("%p %p \n", f3.v, *((uint64_t*)&d3));
+//      printf("%d \n", memcmp(&f3.v, &d3, 8));
+      if (memcmp(&f3.v, &d3, 8) != 0) {
+         break;
+      }
+      if (i % 1000000 == 0) {
+         printf("%llu\n", i);
+      }
+   }
+
+
+}

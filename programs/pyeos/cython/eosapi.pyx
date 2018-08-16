@@ -240,7 +240,7 @@ def get_currency_balance(string& _code, string& _account, string& _symbol = 'EOS
 def get_balance(account):
     ret = get_currency_balance('eosio.token', account, 'EOS')
     if ret:
-        return ret[0]/10000
+        return ret[0]/10000.0
     return 0.0
 
 def transfer(_from, _to, _amount, _memo=''):

@@ -58,3 +58,6 @@ void add_trusted_account_(uint64_t account);
 void remove_trusted_account_(uint64_t account);
 int vm_run_script_(const char* str);
 
+void softfloat_test_();
+
+
