@@ -318,8 +318,9 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
              controller& ctrl = get_chain_plugin().chain();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
 
+             auto deadline = fc::time_point::now() + fc::milliseconds(100);
              uint64_t cost = get_microseconds();
-             auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
+             auto trx_trace_ptr = ctrl.push_transaction(mtrx, deadline, cpu_usage);
              cost_time += (get_microseconds() - cost);
 
              fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr, fc::microseconds(30*1000) );
