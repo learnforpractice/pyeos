@@ -20,7 +20,7 @@ namespace eosio { namespace chain {
       uint8_t              vm_type      = 0;
       uint8_t              vm_version   = 0;
       bool                 privileged   = false;
-      bool                 locked   = false;
+      bool                 code_activated   = false;
 
       time_point           last_code_update;
       digest_type          code_version;
@@ -83,4 +83,4 @@ CHAINBASE_SET_INDEX_TYPE(eosio::chain::account_object, eosio::chain::account_ind
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::account_sequence_object, eosio::chain::account_sequence_index)
 
 
-FC_REFLECT(eosio::chain::account_object, (name)(vm_type)(vm_version)(locked)(code_version)(code)(creation_date))
+FC_REFLECT(eosio::chain::account_object, (name)(vm_type)(vm_version)(code_activated)(code_version)(code)(creation_date))

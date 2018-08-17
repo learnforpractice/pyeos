@@ -110,10 +110,10 @@ void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, cha
    });
 }
 
-bool is_code_locked( uint64_t account ) {
+bool is_code_activated( uint64_t account ) {
    try {
       const auto& account_obj = ctx().db.get<account_object,by_name>(account);
-      return account_obj.locked;
+      return account_obj.code_activated;
    } catch (...) {
 
    }
@@ -270,7 +270,7 @@ static struct vm_api _vm_api = {
    .require_auth2 = require_auth2,
    .has_auth = has_auth,
    .is_account = is_account,
-   .is_code_locked = is_code_locked,
+   .is_code_activated = is_code_activated,
    .is_replay = is_replay,
 
    .send_inline = send_inline,

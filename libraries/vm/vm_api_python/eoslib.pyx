@@ -57,7 +57,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int send_inline_(action& act);
 
     cdef cppclass vm_api:
-        bool (*is_code_locked)( uint64_t name );
+        bool (*is_code_activated)( uint64_t name );
 
         uint32_t (*read_action_data)( void* msg, uint32_t len );
         uint32_t (*action_data_size)();
@@ -124,8 +124,8 @@ int db_idx256_previous( int iterator, uint64_t& primary )
 def is_account(uint64_t account):
     return api().is_account(account)
 
-def is_code_locked(uint64_t account):
-    return api().is_code_locked(account)
+def is_code_activated(uint64_t account):
+    return api().is_code_activated(account)
 
 def N(const char* _str):
     return api().string_to_uint64(_str);
