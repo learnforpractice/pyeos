@@ -339,8 +339,8 @@ void softfloat_test_() {
 
       int n = i;//rand();
       f4 = ui64_to_f64(n);
-      d1.f = 777777777777777.333459;
-      d2.f = 888888888877777.999999;
+      d1.f = 77777777.333459;
+      d2.f = 88888888.999999;
 
       f1.v = d1.v;
       f2.v = d2.v;
@@ -353,8 +353,6 @@ void softfloat_test_() {
 
       double d3 = ((d1.f+d4.f) * d2.f-d2.f)/(*(double*)&f4.v);
 
-//      printf("%p %p \n", f3.v, *((uint64_t*)&d3));
-//      printf("%d \n", memcmp(&f3.v, &d3, 8));
       if (memcmp(&f3.v, &d3, 8) != 0) {
          break;
       }

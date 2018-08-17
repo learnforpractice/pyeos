@@ -4,7 +4,7 @@
 
 #include <eosiolib_native/vm_api.h>
 
-#include "inspector.hpp"
+#include <inspector/inspector.hpp>
 
 static struct vm_api* s_api;
 
@@ -106,11 +106,49 @@ struct vm_api* get_vm_api() {
 int vm_setcode(uint64_t account) {
    string code;
    get_code(account, code);
-   return cpython_setcode(account, code);
+   int ret = cpython_setcode(account, code);
+   get_vm_api()->eosio_assert(ret, "setcode failed!");
+   return 1;
+}
+
+int error_handler(string& error) {
+   PyObject *_type;
+   PyObject *_value;
+   PyTracebackObject *_tb;
+   if (!PyErr_Occurred()) {
+      return 0;
+   }
+   PyErr_Fetch(&_type, &_value, (PyObject **)&_tb);
+   if (_value == NULL || _tb == NULL) {
+      return 0;
+   }
+
+   char buffer[256];
+   Py_ssize_t size;
+   const char *err = PyUnicode_AsUTF8AndSize(_value, &size);
+   int n = snprintf(buffer, sizeof(buffer), "\n+++++traceback: %s\n", err);
+   error = string(buffer, n);
+   while (_tb) {
+      PyCodeObject *code = _tb->tb_frame->f_code;
+      const char* file_name = PyUnicode_AsUTF8(code->co_filename);
+      const char* name = PyUnicode_AsUTF8(code->co_name);
+      //_tb->tb_frame->f_lineno
+      n = snprintf(buffer, sizeof(buffer), "%d %s %s\n", _tb->tb_lineno, file_name, name);
+      error += string(buffer, n);
+      _tb = _tb->tb_next;
+   }
+   PyErr_Clear();
+   return 1;
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   return cpython_apply(receiver, account, act);
+   int ret = cpython_apply(receiver, account, act);
+   if (ret == -1) {
+      string error;
+      error_handler(error);
+      get_vm_api()->eosio_assert(0, error.c_str());
+   }
+   return 1;
 }
 
 int vm_preload(uint64_t account) {
@@ -123,34 +161,6 @@ int vm_unload(uint64_t account) {
 
 int vm_call(uint64_t account, uint64_t func) {
    return 0;//cpython_call(account, func);
-}
-
-extern int cython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action);
-
-int vm_cpython_apply(PyObject* mod, unsigned long long receiver, unsigned long long account, unsigned long long action) {
-   enable_injected_apis(1);
-   enable_create_code_object(0);
-   enable_filter_set_attr(1);
-   enable_filter_get_attr(1);
-   enable_inspect_obj_creation(1);
-
-   int ret = 0;
-   try {
-      ret = cython_apply(mod, receiver, account, action);
-   } catch (...) {
-      enable_injected_apis(0);
-      enable_create_code_object(1);
-      enable_filter_set_attr(0);
-      enable_filter_get_attr(0);
-      enable_inspect_obj_creation(0);
-      throw;
-   }
-   enable_injected_apis(0);
-   enable_create_code_object(1);
-   enable_filter_set_attr(0);
-   enable_filter_get_attr(0);
-   enable_inspect_obj_creation(0);
-   return ret;
 }
 
 

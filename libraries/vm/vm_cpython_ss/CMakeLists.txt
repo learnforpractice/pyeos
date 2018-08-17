@@ -15,12 +15,6 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/inspector.wrap.cpp
-    COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/inspector.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/inspector.wrap.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/inspector.pyx
-)
-
-add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
     COMMAND ${PYTHON3} -m cython --cplus ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx -o ${CMAKE_CURRENT_SOURCE_DIR}/test.wrap.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test.pyx
