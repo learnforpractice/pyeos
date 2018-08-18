@@ -2,7 +2,7 @@
 #include <vector>
 #include <Python.h>
 
-#include "inspector.hpp"
+#include "inspector/inspector.hpp"
 
 using namespace std;
 

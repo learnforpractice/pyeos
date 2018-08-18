@@ -78,7 +78,7 @@ and publish their smart contract on testnet.
 
 Although the above steps will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
 
-### Generating source code with sketch
+### Generating source code with sketch tool
 
 Run the following command in PyEos console,
 

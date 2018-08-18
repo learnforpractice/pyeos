@@ -3,6 +3,7 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
+from cpython.ref cimport PyObject
 
 import db
 import eoslib
@@ -19,7 +20,10 @@ cdef extern from "<Python.h>":
     ctypedef unsigned long size_t
     size_t PyGC_Collect();
 
-cdef extern from "inspector.h":
+    void PyErr_Fetch(PyObject **p_type, PyObject **p_value, PyObject **p_traceback);
+    void PyErr_Clear();
+
+cdef extern from "<inspector/inspector.h>":
     void enable_injected_apis(int enabled)
     void enable_opcode_inspector(int enable);
 
@@ -33,7 +37,8 @@ cdef extern from "inspector.h":
     void inspect_set_status(int status);
     void enable_create_code_object(int enable);
     void set_current_account(uint64_t account);
-    void set_current_module(object mod);
+#    void set_current_module(object mod);
+    void enable_inspect_obj_creation(int enable);
 
 cdef extern from "vm_cpython.h":
     void get_code(uint64_t account, string& code)
@@ -98,7 +103,7 @@ sandbox = _sandbox()
 #opcode_blacklist = {143:True, 91:True, 130:True, 121:True, 89:True}
 #opcode_blacklist = {121:True, 89:True}
 
-opcode_blacklist = {}
+opcode_blacklist = {91:True}
 
 def validate(co):
     code = co.co_code
@@ -116,7 +121,6 @@ def validate(co):
     return True
 
 def load_module(account, code):
-    print('++++load_module', account)
     try:
         name = eoslib.n2s(account)
         enable_injected_apis(1)
@@ -147,11 +151,7 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
         return 1
     return 0
 
-cdef extern int cython_apply(object mod, unsigned long long receiver, unsigned long long account, unsigned long long action):
-    vm.apply(mod, receiver, account, action)
-    return 1
-
-cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action): # with gil:
+cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) except -1: # with gil:
     set_current_account(receiver)
     mod = None
     if receiver in py_modules:
@@ -169,24 +169,28 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     _dict = module.__dict__
 
     limit = Py_GetRecursionLimit()
-    Py_SetRecursionLimit(10)
+    Py_SetRecursionLimit(20)
     ret = 1
     error = 0
-    try:
-        _tracemalloc.start()
-        builtin_exec_(co, _dict, _dict)
-        vm_cpython_apply(module, receiver, account, action)
-    except MemoryError:
-        print('++++++++memory error!!!')
-        error = 1
-        ret = 0
-    except:
-        ret = 0
+
+    _tracemalloc.start()
+    builtin_exec_(co, _dict, _dict)
+
+    enable_injected_apis(1);
+    enable_create_code_object(1);
+    enable_filter_set_attr(1);
+    enable_filter_get_attr(1);
+    enable_inspect_obj_creation(1);
+
+    module.apply(receiver, account, action)
+
+    enable_injected_apis(0);
+    enable_create_code_object(1);
+    enable_filter_set_attr(0);
+    enable_filter_get_attr(0);
+    enable_inspect_obj_creation(0);
 
     del module
-
-    if error == 1:
-        PyGC_Collect()
 
     _tracemalloc.stop()
     Py_SetRecursionLimit(limit)

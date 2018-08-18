@@ -1,5 +1,5 @@
 import db
-from eoslib import N, read_action
+from eoslib import N, read_action, n2s
 
 def assert_success(func):
     def func_wrapper(*args, **kwargs):
@@ -189,7 +189,7 @@ def test_context_manager():
 
 @assert_failure
 def test_memory_out():
-    a = bytes(600*1024)
+    a = bytes(3000*1024)
 
 @assert_success
 def test_memory_out2():
@@ -224,13 +224,21 @@ def test_set_func():
     a = db.get_i64
     a.a = 123
 
+@assert_failure
+def test_str_format():
+    '{}'.format('hello')
+
+
 def apply(receiver, code, action):
+    print('+++++action:', n2s(action))
+    if not action == N('sayhello'):
+        return 
+    '{}'.format('hello')
 #    Exception()
 #    KeyboardInterrupt()
 #    return
 #    test_create_module()
     test_set_func()
-
     if 1:
         test_crash2()
     #    test_base_exception()
@@ -271,3 +279,5 @@ def apply(receiver, code, action):
     test_change_builtin_module4()
 
     test_import()
+    test_str_format()
+    
