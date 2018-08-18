@@ -4,6 +4,7 @@ cmake_minimum_required( VERSION 3.5 )
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/vm/libevm4eos/cmake")
 
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
@@ -94,6 +95,9 @@ hunter_add_package(OpenSSL)
 find_package(OpenSSL REQUIRED)
 
 find_package(Secp256k1 REQUIRED)
+
+include(ProjectMPIR)
+
 
 if(UNIX)
   if(APPLE)
