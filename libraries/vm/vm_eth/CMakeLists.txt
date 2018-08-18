@@ -1,8 +1,10 @@
 add_library(vm_eth SHARED 
 #            EosState.cpp
-#            EosExecutive.cpp
 #            EosDB.cpp
-#            EosExtVM.cpp
+#            Executive.cpp
+            Precompiled.cpp
+            ChainParams.cpp
+            ExtVM.cpp
             vm_eth.cpp)
 
 set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")

@@ -19,6 +19,8 @@
 
 namespace dev
 {
+bytes const NullBytes;
+
 namespace eth
 {
 namespace
