@@ -1,4 +1,4 @@
-#include "ChainParams.h"
+#include "SealEngine.h"
 
 namespace dev {
 namespace eth {
@@ -19,7 +19,7 @@ PrecompiledContract::PrecompiledContract(
 {}
 
 
-ChainParams::ChainParams() {
+SealEngine::SealEngine() {
    precompiled.insert(make_pair(Address(1), PrecompiledContract(3000, 0, PrecompiledRegistrar::executor("ecrecover"))));
    precompiled.insert(make_pair(Address(2), PrecompiledContract(60, 12, PrecompiledRegistrar::executor("sha256"))));
    precompiled.insert(make_pair(Address(3), PrecompiledContract(600, 120, PrecompiledRegistrar::executor("ripemd160"))));

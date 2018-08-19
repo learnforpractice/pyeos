@@ -39,16 +39,21 @@ namespace eth {
        u256 m_startingBlock = 0;
    };
 
-   class ChainParams
+   class SealEngine
    {
    public:
-      ChainParams();
-      static ChainParams& get() {
-         static ChainParams * params = nullptr;
+      SealEngine();
+      static SealEngine& get() {
+         static SealEngine * params = nullptr;
          if (!params) {
-            params = new ChainParams();
+            params = new SealEngine();
          }
          return *params;
+      }
+
+      bool isPrecompiled(Address const& _a, u256 const& _blockNumber) const
+      {
+         return precompiled.count(_a) != 0;
       }
 
       std::pair<bool, bytes> executePrecompiled(Address const& _a, bytesConstRef _in, u256 const&) const {

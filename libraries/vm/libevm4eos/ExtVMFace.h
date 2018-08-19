@@ -86,13 +86,13 @@ private:
 
 struct SubState
 {
-    std::vector<Address> suicides;    ///< Any accounts that have suicided.
+    std::set<Address> suicides;    ///< Any accounts that have suicided.
 //    LogEntries logs;            ///< Any logs.
     u256 refunds;                ///< Refund counter of SSTORE nonzero->zero.
 
     SubState& operator+=(SubState const& _s)
     {
-        suicides.insert(suicides.end(), _s.suicides.begin(), _s.suicides.end());
+        suicides += _s.suicides;
         refunds += _s.refunds;
 //        logs += _s.logs;
         return *this;
@@ -236,7 +236,7 @@ public:
     virtual bool exists(Address) { return false; }
 
     /// Suicide the associated contract and give proceeds to the given address.
-    virtual void suicide(Address) { sub.suicides.push_back(myAddress); }
+    virtual void suicide(Address) { sub.suicides.insert(myAddress); }
 
     /// Create a new (contract) account.
     virtual CreateResult create(u256, u256&, bytesConstRef, Instruction, u256, OnOpFunc const&) = 0;

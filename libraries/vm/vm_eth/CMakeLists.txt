@@ -1,9 +1,9 @@
 add_library(vm_eth SHARED 
-#            EosState.cpp
 #            EosDB.cpp
-#            Executive.cpp
+            Executive.cpp
+            State.cpp
             Precompiled.cpp
-            ChainParams.cpp
+            SealEngine.cpp
             ExtVM.cpp
             vm_eth.cpp)
 
@@ -22,6 +22,7 @@ target_include_directories(vm_eth PRIVATE ${Boost_INCLUDE_DIR}
     PRIVATE ${CMAKE_SOURCE_DIR}/contracts
     PRIVATE ${CMAKE_SOURCE_DIR}/libraries/vm/libevm4eos/include
     PRIVATE ${CMAKE_SOURCE_DIR}/libraries/vm/libevm4eos
+    PRIVATE ${CMAKE_SOURCE_DIR}/contracts
     PRIVATE ${CPP_ETHEREUM_DIR}
     PRIVATE ${LevelDB_INCLUDE}
     PRIVATE ${CPP_ETHEREUM_DIR}
