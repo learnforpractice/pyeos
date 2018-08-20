@@ -89,7 +89,7 @@ extern "C" {
     * @brief Get the length of current action's data field
     * @return the length of the current action's data field
     */
-   uint32_t action_data_size();
+   uint32_t action_data_size(void);
 
    /**
     *  Add the specified account to set of accounts to be notified
@@ -163,14 +163,14 @@ extern "C" {
     *  @brief Get the publication time
     *  @return the time in microseconds from 1970 of the publication_time
     */
-   uint64_t  publication_time();
+   uint64_t  publication_time( void );
 
    /**
     *  Get the current receiver of the action
     *  @brief Get the current receiver of the action
     *  @return the account which specifies the current receiver of the action
     */
-   account_name current_receiver();
+   account_name current_receiver( void );
    ///@ } actioncapi
 
 #ifdef __cplusplus

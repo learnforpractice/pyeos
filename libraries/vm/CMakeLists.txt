@@ -19,4 +19,4 @@ add_subdirectory( vm_cpython_ss )
 
 if (BUILD_VM_JULIA)
    add_subdirectory( vm_julia )
-end()
+endif()

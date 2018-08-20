@@ -1,5 +1,4 @@
 add_library(vm_julia SHARED
-            vm_api.c
             vm_julia.cpp)
 
 

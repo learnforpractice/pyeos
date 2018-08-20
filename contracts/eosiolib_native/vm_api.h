@@ -27,18 +27,18 @@ extern "C" {
 
 struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
-   uint32_t (*action_data_size)();
+   uint32_t (*action_data_size)(void);
    void (*require_recipient)( uint64_t name );
    void (*require_auth)( uint64_t name );
    void (*require_auth2)( uint64_t name, uint64_t permission );
    bool (*has_auth)( uint64_t name );
    bool (*is_account)( uint64_t name );
    bool (*is_code_activated)( uint64_t name );
-   bool (*is_replay)();
+   bool (*is_replay)(void);
    void (*send_inline)(const char *serialized_action, size_t size);
    void (*send_context_free_inline)(char *serialized_action, size_t size);
-   uint64_t  (*publication_time)();
-   uint64_t (*current_receiver)();
+   uint64_t  (*publication_time)(void);
+   uint64_t (*current_receiver)(void);
    uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
    int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount);
@@ -172,34 +172,34 @@ struct vm_api {
    uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
    void (*activate_feature)( int64_t f );
 
-   void (*eosio_abort)();
+   void (*eosio_abort)(void);
    void (*eosio_assert)( uint32_t test, const char* msg );
    void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len );
    void (*eosio_assert_code)( uint32_t test, uint64_t code );
    void (*eosio_exit)( int32_t code );
-   uint64_t  (*current_time)();
-   uint32_t  (*now)();
+   uint64_t  (*current_time)(void);
+   uint32_t  (*now)(void);
 
-   void (*checktime)();
+   void (*checktime)(void);
    void (*check_context_free)(bool context_free);
-   bool (*contracts_console)();
+   bool (*contracts_console)(void);
    void (*update_db_usage)( uint64_t payer, int64_t delta );
    bool (*verify_account_ram_usage)( account_name account );
-   bool (*vm_cleanup)();
+   bool (*vm_cleanup)(void);
    int (*vm_run_script)(const char* str);
 
    void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const uint128_t* sender_id);
 
    size_t (*read_transaction)(char *buffer, size_t size);
-   size_t (*transaction_size)();
-   int (*tapos_block_num)();
-   int (*tapos_block_prefix)();
-   uint32_t (*expiration)();
+   size_t (*transaction_size)(void);
+   int (*tapos_block_num)(void);
+   int (*tapos_block_prefix)(void);
+   uint32_t (*expiration)(void);
    int (*get_action)( uint32_t type, uint32_t index, char* buff, size_t size );
 
-   void (*assert_privileged)();
-   void (*assert_context_free)();
+   void (*assert_privileged)(void);
+   void (*assert_context_free)(void);
    int (*get_context_free_data)( uint32_t index, char* buff, size_t size );
 
    const char* (*get_code)( uint64_t receiver, size_t* size );
@@ -220,13 +220,13 @@ struct vm_api {
 
 
    int (*split_path)(const char* str_path, char *path1, size_t path1_size, char *path2, size_t path2_size);
-   uint64_t (*get_action_account)();
+   uint64_t (*get_action_account)(void);
    uint64_t (*string_to_uint64)(const char* str);
    int32_t (*uint64_to_string)(uint64_t n, char* out, int size);
    uint64_t (*string_to_symbol)(uint8_t precision, const char* str);
 
-   void (*resume_billing_timer)();
-   void (*pause_billing_timer)();
+   void (*resume_billing_timer)(void);
+   void (*pause_billing_timer)(void);
 
    uint64_t (*wasm_call)(const char*func, uint64_t* args , int argc);
 
@@ -234,15 +234,15 @@ struct vm_api {
    int (*call_get_args)(char* args , int len);
 
    int (*call)(uint64_t account, uint64_t func);
-   int (*get_call_status)();
+   int (*get_call_status)(void);
    int (*call_set_results)(const char* result , int len);
    int (*call_get_results)(char* result , int len);
 
    int (*has_option)(const char* _option);
    int (*get_option)(const char* option, char *result, int size);
-   int (*app_init_finished)();
+   int (*app_init_finished)(void);
 
-   int (*run_mode)(); // 0 for server, 1 for client
+   int (*run_mode)(void); // 0 for server, 1 for client
 
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };
@@ -257,13 +257,13 @@ typedef int (*fn_apply)(uint64_t receiver, uint64_t account, uint64_t act);
 typedef int (*fn_call)(uint64_t account, uint64_t func);
 
 typedef void (*fn_vm_init)(struct vm_api* api);
-typedef void (*fn_vm_deinit)();
+typedef void (*fn_vm_deinit)(void);
 typedef int (*fn_preload)(uint64_t account);
 typedef int (*fn_unload)(uint64_t account);
 
 
 void vm_init(struct vm_api* api);
-void vm_deinit();
+void vm_deinit(void);
 void vm_register_api(struct vm_api* api);
 
 int vm_setcode(uint64_t account);
@@ -273,7 +273,7 @@ int vm_call(uint64_t account, uint64_t func);
 int vm_preload(uint64_t account);
 int vm_unload(uint64_t account);
 
-struct vm_api* get_vm_api();
+struct vm_api* get_vm_api(void);
 
 uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 
