@@ -16,12 +16,11 @@
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
 
+
 namespace eosio {
 namespace chain {
 
-#define __NO_EOSIOLIB_HEADER_DEFINES
 #include <eosiolib_native/vm_api.h>
-
 
 #define API() get_vm_api()
 

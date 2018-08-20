@@ -1,22 +1,10 @@
 cmake_minimum_required( VERSION 3.5 )
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/evmc/cmake/cable/bootstrap.cmake)
-include(CableBuildInfo)
-include(CableBuildType)
-include(CableToolchains)
-include(GNUInstallDirs)
-
-cable_configure_toolchain(DEFAULT cxx11)
-
-
-set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake" CACHE PATH "The path to the cmake directory")
-list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 # Defines EOS library target.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
-
-set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/vm/libevm4eos/cmake")
 
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
@@ -78,6 +66,7 @@ set( CLI_CLIENT_EXECUTABLE_NAME cleos )
 set( GUI_CLIENT_EXECUTABLE_NAME eosio )
 set( CUSTOM_URL_SCHEME "gcs" )
 set( INSTALLER_APP_ID "68ad7005-8eee-49c9-95ce-9eed97e5b347" )
+set( BUILD_ETHEREUM TRUE)
 
 # http://stackoverflow.com/a/18369825
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -107,6 +96,9 @@ find_package(OpenSSL REQUIRED)
 
 find_package(Secp256k1 REQUIRED)
 
+include(ProjectMPIR)
+
+
 if(UNIX)
   if(APPLE)
 #    set(whole_archive_flag "-force_load")
@@ -123,7 +115,7 @@ endif()
 hunter_add_package(BZip2)
 find_package( BZip2 )
 
-include(ProjectLibFF)
+#include(ProjectLibFF)
 
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 set(Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
@@ -230,7 +222,7 @@ hunter_add_package(Boost COMPONENTS
     context
     locale
     iostreams
-    fiber
+#    fiber
     log)
     
 find_package(Boost CONFIG REQUIRED
@@ -246,7 +238,7 @@ find_package(Boost CONFIG REQUIRED
     context
     locale
     iostreams
-    fiber
+#    fiber
     log)
 
 set(ENABLE_COVERAGE_TESTING FALSE CACHE BOOL "Build EOSIO for code coverage analysis")

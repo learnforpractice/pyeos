@@ -1,5 +1,4 @@
 #include "debug_.hpp"
-#include <libdevcore/CommonData.h>
 #include <fc/log/logger.hpp>
 #include <fc/variant_object.hpp>
 #include <fc/reflect/reflect.hpp>
@@ -11,8 +10,6 @@
 #include "pyobject.hpp"
 
 #include <appbase/application.hpp>
-
-using namespace dev;
 
 using namespace fc;
 using namespace std;
@@ -119,6 +116,7 @@ void debug_test2() {
    wlog("${n}", ("n", s.rfind(".py")));
 }
 
+#if 0
 void debug_test__() {
    u256 _key = u256(300);
    dev::bytes __key = dev::toBigEndian(_key);
@@ -135,9 +133,12 @@ static constexpr unsigned int DJBH(const char* cp)
   return hash;
 }
 
+#endif
+
 uint64_t wasm_test_action_(const char* cls, const char* method)
 {
-  return static_cast<unsigned long long>(DJBH(cls)) << 32 | static_cast<unsigned long long>(DJBH(method));
+   return 0;
+//  return static_cast<unsigned long long>(DJBH(cls)) << 32 | static_cast<unsigned long long>(DJBH(method));
 }
 
 #include <eosio/chain/block_log.hpp>

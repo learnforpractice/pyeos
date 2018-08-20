@@ -66,4 +66,8 @@ int get_option(const char* option, char *result, int size) {
    return get_vm_api()->get_option(option, result, size);
 }
 
+const char* get_code( uint64_t receiver, size_t* size ) {
+   return get_vm_api()->get_code(receiver, size);
+}
+
 }

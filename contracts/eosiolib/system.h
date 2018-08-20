@@ -84,7 +84,7 @@ extern "C" {
     *  @brief Get time of the current block (i.e. the block including this action)
     *  @return time in microseconds from 1970 of the current block
     */
-   uint64_t  current_time();
+   uint64_t  current_time(void);
 
    /**
     *  Returns the time in seconds from 1970 of the block including this action
@@ -92,9 +92,9 @@ extern "C" {
     *  @return time in seconds from 1970 of the current block
     */
 #ifdef __WASM
-   uint32_t  now();
+   uint32_t  now(void);
 #else
-   uint32_t  now();
+   uint32_t  now(void);
  #endif
    ///@ } systemcapi
 

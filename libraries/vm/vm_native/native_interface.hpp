@@ -2,6 +2,7 @@
 #include <memory>
 #include <map>
 
+#include <softfloat.hpp>
 #include <eosiolib_native/vm_api.h>
 
 using namespace std;

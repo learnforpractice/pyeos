@@ -19,6 +19,4 @@ add_subdirectory( chain )
 add_subdirectory( testing )
 add_subdirectory( abi_generator )
 add_subdirectory( fc ) 
-if(BUILD_ETHEREUM)
-   add_subdirectory( ethereum )
-endif()
+
