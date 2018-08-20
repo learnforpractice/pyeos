@@ -33,7 +33,7 @@ static const int VM_TYPE_WAVM = 3;
 static const int VM_TYPE_IPC = 4;
 static const int VM_TYPE_NATIVE = 5;
 static const int VM_TYPE_CPYTHON_PRIVILEGED = 6;
-
+static const int VM_TYPE_JULIA = 7;
 
 namespace eosio {
 namespace chain {
@@ -155,6 +155,7 @@ static const char* vm_libs_path[] = {
 static const char *ipc_server_lib = "../libs/libipc_server" DYLIB_SUFFIX;
 static const char *vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
 static const char *vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
+static const char *vm_julia_lib = "../libs/libvm_julia" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -206,6 +207,8 @@ bool vm_manager::init(struct vm_api* api) {
    load_vm_from_path(VM_TYPE_NATIVE, vm_native_lib);
 
    load_vm_from_path(VM_TYPE_CPYTHON_PRIVILEGED, vm_cpython_lib);
+
+   load_vm_from_path(VM_TYPE_JULIA, vm_julia_lib);
 
    return true;
 }
