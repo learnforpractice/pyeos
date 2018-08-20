@@ -228,17 +228,16 @@ def test_set_func():
 def test_str_format():
     '{}'.format('hello')
 
+@assert_failure
+def test_timeout():
+    while True:
+        pass
 
 def apply(receiver, code, action):
     print('+++++action:', n2s(action))
     if not action == N('sayhello'):
         return 
-    '{}'.format('hello')
-#    Exception()
-#    KeyboardInterrupt()
-#    return
-#    test_create_module()
-    test_set_func()
+
     if 1:
         test_crash2()
     #    test_base_exception()
@@ -278,6 +277,8 @@ def apply(receiver, code, action):
     test_change_builtin_module3()
     test_change_builtin_module4()
 
+    test_set_func()
+
     test_import()
     test_str_format()
-    
+    test_timeout()

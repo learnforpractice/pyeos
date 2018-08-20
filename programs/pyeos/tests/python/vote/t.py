@@ -7,7 +7,7 @@ import initeos
 
 from common import prepare, producer
 
-import vote
+from python import vote
 
 def init(func):
     def func_wrapper(*args, **kwargs):

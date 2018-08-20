@@ -5,20 +5,25 @@
 extern "C" {
 #endif
 
-#include <softfloat_types.h>
+//#include <softfloat_types.h>
 
 #ifndef __EOSIO_CHAIN_TYPES // avoid type conflicts
 #include <stdint.h>
-
 #include <eosiolib/types.h>
 #include <eosiolib/action.h>
 #include <eosiolib/chain.h>
 #include <eosiolib/crypto.h>
 #include <eosiolib/db.h>
 #include <eosiolib/permission.h>
+
 #endif
 
-
+#ifndef softfloat_types_h
+   typedef struct { uint16_t v; } float16_t;
+   typedef struct { uint32_t v; } float32_t;
+   typedef struct { uint64_t v; } float64_t;
+   typedef struct { uint64_t v[2]; } float128_t;
+#endif
 
 struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
