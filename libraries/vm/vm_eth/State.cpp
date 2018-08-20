@@ -82,12 +82,14 @@ u256 State::getNonce(Address const& _addr) const
 
 u256 State::storage(Address const& _id, u256 const& _key) const
 {
+   uint64_t code = _id;
    assert(0);
    return 0;
 }
 
 void State::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
+   uint64_t code = _contract;
    assert(0);
 }
 

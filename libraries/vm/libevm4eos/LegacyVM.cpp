@@ -115,13 +115,16 @@ uint64_t LegacyVM::gasForMem(u512 _size)
 {
    return 0;
 }
-
+/*
 void LegacyVM::updateIOGas()
 {
 	if (m_io_gas < m_runGas)
 		throwOutOfGas();
 	m_io_gas -= m_runGas;
 }
+*/
+
+#define updateIOGas()
 
 void LegacyVM::updateGas()
 {

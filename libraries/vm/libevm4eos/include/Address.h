@@ -21,6 +21,7 @@
 #pragma once
 
 #include "FixedHash.h"
+#include <stdint.h>
 
 namespace dev
 {

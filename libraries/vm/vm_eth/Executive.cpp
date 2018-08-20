@@ -147,7 +147,7 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, by
     return !m_ext;
 }
 
-bool Executive::go(bytes& output, OnOpFunc const& _onOp)
+bool Executive::go(OnOpFunc const& _onOp)
 {
    if (!m_ext)
    {
@@ -161,7 +161,6 @@ bool Executive::go(bytes& output, OnOpFunc const& _onOp)
       {
           m_s.clearStorage(m_ext->myAddress);
           auto out = vm->exec(m_gas, *m_ext, _onOp);
-          output = out.toVector(); // copy output to execution result
           m_s.setCode(m_ext->myAddress, out.toVector());
       }
       else
@@ -202,12 +201,7 @@ bool Executive::go(bytes& output, OnOpFunc const& _onOp)
       // Another solution would be to reject this transaction, but that also
       // has drawbacks. Essentially, the amount of ram has to be increased here.
    }
-
-   if (m_output) {
-     // Copy full output:
-      output = m_output.toVector();
-   }
-    return true;
+   return true;
 }
 
 bool Executive::finalize()

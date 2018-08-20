@@ -15,6 +15,7 @@ set(sources
     VMSIMD.cpp
     VMValidate.cpp
     VMFactory.cpp VMFactory.h
+    VM_API.cpp
 )
 
 add_library(evm4eos ${sources})

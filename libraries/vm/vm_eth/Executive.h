@@ -149,7 +149,7 @@ public:
 
     /// Executes (or continues execution of) the VM.
     /// @returns false iff go() must be called again to finish the transaction.
-    bool go(bytes& output, OnOpFunc const& _onOp = OnOpFunc());
+    bool go(OnOpFunc const& _onOp = OnOpFunc());
 
     /// Operation function for providing a simple trace of the VM execution.
     OnOpFunc simpleTrace();

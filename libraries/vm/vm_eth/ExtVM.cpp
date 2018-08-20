@@ -20,6 +20,8 @@
  */
 
 #include "ExtVM.h"
+#include "Executive.h"
+
 #include <boost/thread.hpp>
 #include <exception>
 
@@ -50,7 +52,6 @@ static size_t const c_entryOverhead = 128 * 1024;
 /// On what depth execution should be offloaded to additional separated stack space.
 static unsigned const c_offloadPoint = (c_defaultStackSize - c_entryOverhead) / c_singleExecutionStackSize;
 
-#if 0
 void goOnOffloadedStack(Executive& _e, OnOpFunc const& _onOp)
 {
     // Set new stack size enouth to handle the rest of the calls up to the limit.
@@ -83,7 +84,7 @@ void go(unsigned _depth, Executive& _e, OnOpFunc const& _onOp)
 
     if (_depth == c_offloadPoint)
     {
-        cnote << "Stack offloading (depth: " << c_offloadPoint << ")";
+//        cnote << "Stack offloading (depth: " << c_offloadPoint << ")";
         goOnOffloadedStack(_e, _onOp);
     }
     else
@@ -119,16 +120,14 @@ evmc_status_code transactionExceptionToEvmcStatusCode(TransactionException ex) n
         return EVMC_FAILURE;
     }
 }
-#endif
 
 } // anonymous namespace
 
 
 CallResult ExtVM::call(CallParameters& _p)
 {
-#if 0
-   Executive e{m_s, envInfo(), m_sealEngine, depth + 1};
-    if (!e.call(_p, gasPrice, origin))
+   Executive e{m_s, envInfo(), depth + 1};
+    if (!e.call(_p, origin))
     {
         go(depth, e, _p.onOp);
         e.accrueSubState(sub);
@@ -136,7 +135,6 @@ CallResult ExtVM::call(CallParameters& _p)
     _p.gas = e.gas();
 
     return {transactionExceptionToEvmcStatusCode(e.getException()), e.takeOutput()};
-#endif
 }
 
 size_t ExtVM::codeSizeAt(dev::Address _a)
@@ -158,15 +156,14 @@ void ExtVM::setStore(u256 _n, u256 _v)
 
 CreateResult ExtVM::create(u256 _endowment, u256& io_gas, bytesConstRef _code, Instruction _op, u256 _salt, OnOpFunc const& _onOp)
 {
-#if 0
-   Executive e{m_s, envInfo(), m_sealEngine, depth + 1};
+   Executive e{m_s, envInfo(), depth + 1};
     bool result = false;
     if (_op == Instruction::CREATE)
-        result = e.createOpcode(myAddress, _endowment, gasPrice, io_gas, _code, origin);
+        result = e.createOpcode(myAddress, _endowment, _code, origin);
     else
     {
         assert(_op == Instruction::CREATE2);
-        result = e.create2Opcode(myAddress, _endowment, gasPrice, io_gas, _code, origin, _salt);
+        result = e.create2Opcode(myAddress, _endowment, _code, origin, _salt);
     }
 
     if (!result)
@@ -176,7 +173,7 @@ CreateResult ExtVM::create(u256 _endowment, u256& io_gas, bytesConstRef _code, I
     }
     io_gas = e.gas();
     return {transactionExceptionToEvmcStatusCode(e.getException()), e.takeOutput(), e.newAddress()};
-#endif
+
 }
 
 void ExtVM::suicide(Address _a)

@@ -15,6 +15,7 @@
     along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+void evm_checktime();
 
 namespace dev
 {
@@ -425,7 +426,9 @@ namespace eth
     fetchInstruction(); \
     goto* jumpTable[(int)m_OP];
 #define CASE(name) \
-    name:
+    name: \
+    evm_checktime();
+
 #define NEXT            \
     ++m_PC;             \
     fetchInstruction(); \

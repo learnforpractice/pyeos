@@ -88,6 +88,8 @@ public:
    /// Convert to arithmetic type.
    operator Arith() const { return fromBigEndian<Arith>(m_data); }
 
+   operator uint64_t() const { return fromBigEndian<uint64_t>(m_data); }
+
    /// @returns true iff this is the empty hash.
    explicit operator bool() const { return std::any_of(m_data.begin(), m_data.end(), [](byte _b) { return _b != 0; }); }
 
