@@ -18,9 +18,9 @@
 #include "VMFactory.h"
 #include "EVMC.h"
 #include "interpreter.h"
-
 #include <boost/dll.hpp>
 #include <boost/filesystem.hpp>
+
 
 #if ETH_EVMJIT
 #include <evmjit.h>
@@ -29,6 +29,8 @@
 #if ETH_HERA
 #include <hera.h>
 #endif
+
+#include "LegacyVM.h"
 
 namespace dll = boost::dll;
 namespace fs = boost::filesystem;
@@ -218,10 +220,7 @@ std::unique_ptr<VMFace> VMFactory::create(VMKind _kind)
         return std::unique_ptr<VMFace>(new EVMC{g_dllEvmcCreate()});
     case VMKind::Legacy:
     default:
-       auto ec = std::make_error_code(std::errc::invalid_seek);
-       std::string what = "VM not found!";
-       BOOST_THROW_EXCEPTION(std::system_error(ec, what));
-//        return std::unique_ptr<VMFace>(new LegacyVM);
+        return std::unique_ptr<VMFace>(new LegacyVM);
     }
 }
 }

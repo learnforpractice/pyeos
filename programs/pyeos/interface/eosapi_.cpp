@@ -918,3 +918,16 @@ void sha256_(string& data, string& hash) {
    hash = fc::sha256::hash(data.c_str(), data.size()).str();
 }
 
+#include <eosiolib_native/vm_api.h>
+
+uint64_t ethaddr2n_(string& addr) {
+   return get_vm_api()->ethaddr2n((char*)addr.c_str(), addr.size());
+}
+
+void n2ethaddr_(uint64_t n, string& addr) {
+   char _addr[20];
+   get_vm_api()->n2ethaddr(n, _addr, sizeof(_addr));
+   addr = string(_addr, sizeof(_addr));
+}
+
+

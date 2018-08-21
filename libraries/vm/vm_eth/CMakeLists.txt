@@ -15,7 +15,7 @@ include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
 include_directories (${CPP_ETHEREUM_DIR}/utils)
 include_directories (jsoncpp/include)
 
-target_link_libraries(vm_eth PRIVATE eosiolib_native evm4eos ${Boost_LIBRARIES})
+target_link_libraries(vm_eth PRIVATE eosiolib_native evm4eos fc ${Boost_LIBRARIES})
 
 target_include_directories(vm_eth PRIVATE ${Boost_INCLUDE_DIR}
     PRIVATE ${CMAKE_SOURCE_DIR}/externals/magic_get/include

@@ -284,6 +284,7 @@ try:
     from credit import t as ct2
 
     from julia.hello import t as jh
+    from evm.evm import t as et
 
 #    from biosboot import t as bb
     import d

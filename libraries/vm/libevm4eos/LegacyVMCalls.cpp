@@ -138,7 +138,7 @@ void LegacyVM::caseCreate()
 	}
 
 	updateMem(memNeed(initOff, initSize));
-	updateIOGas();
+//	updateIOGas();
 
 	// Clear the return data buffer. This will not free the memory.
 	m_returnData.clear();
@@ -223,10 +223,10 @@ bool LegacyVM::caseCallSetup(CallParameters *callParams, bytesRef& o_output)
 
 	m_newMemSize = std::max(inputMemNeed, outputMemNeed);
 	updateMem(m_newMemSize);
-	updateIOGas();
+//	updateIOGas();
 
 	m_runGas = toInt63(callParams->gas);
-	updateIOGas();
+//	updateIOGas();
 
 	callParams->codeAddress = destinationAddr;
 

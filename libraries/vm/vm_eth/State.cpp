@@ -43,8 +43,9 @@ bool State::addressInUse(Address const& _id) const
 
 bool State::addressHasCode(Address const& _id) const
 {
-   assert(0);
-   return false;
+   size_t size = 0;
+   get_code(_id, &size);
+   return size != 0;
 }
 
 u256 State::balance(Address const& _id) const
@@ -78,11 +79,6 @@ void State::kill(Address _addr)
 
 }
 
-u256 State::getNonce(Address const& _addr) const
-{
-
-}
-
 u256 State::storage(Address const& _id, u256 const& _key) const
 {
    uint64_t id = 0;
@@ -94,6 +90,8 @@ u256 State::storage(Address const& _id, u256 const& _key) const
    memset(value.data(), 0 ,value.size());
 
    dev::bytes key = dev::toBigEndian(_key);
+
+   printf("storage: %s\n", _key.str().c_str());
 
    for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
       uint64_t id = ((uint64_t*)key.data())[i];
@@ -129,7 +127,7 @@ void State::setStorage(Address const& _contract, u256 const& _key, u256 const& _
    uint64_t n = _contract;
 
 // ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
-
+   printf("setStorage: %s %s\n", _key.str().c_str(), _value.str().c_str());
    dev::bytes key = dev::toBigEndian(_key);
 
    dev::bytes value(32+32);
@@ -173,6 +171,9 @@ bytes const& State::code(Address const& _addr) const
 {
    uint64_t receiver = _addr;
    size_t size;
+
+   eosio_assert (get_code_type(_addr) == 2, "bad vm type");
+
    const char *code = get_code( receiver, &size );
    return bytes(code, code+size);
 }
@@ -226,3 +227,10 @@ bool State::execute(EnvInfo const& _envInfo, Transaction const& _t, Permanence _
     return make_pair(res, receipt);
 }
 #endif
+
+State& State::operator=(State const& _s)
+{
+    if (&_s == this)
+        return *this;
+    return *this;
+}

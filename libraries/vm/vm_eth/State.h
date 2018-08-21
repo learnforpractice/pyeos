@@ -240,16 +240,6 @@ public:
     /// @returns code(_contract).size(), but utilizes CodeSizeHash.
     size_t codeSize(Address const& _contract) const;
 
-    /// Increament the account nonce.
-    void incNonce(Address const& _id);
-
-    /// Set the account nonce.
-    void setNonce(Address const& _addr, u256 const& _newNonce);
-
-    /// Get the account nonce -- the number of transactions it has sent.
-    /// @returns 0 if the address has never been used.
-    u256 getNonce(Address const& _addr) const;
-
     /// Commit all changes waiting in the address cache to the DB.
     /// @param _commitBehaviour whether or not to remove empty accounts during commit.
     void commit(CommitBehaviour _commitBehaviour);

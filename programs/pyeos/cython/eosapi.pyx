@@ -132,6 +132,8 @@ cdef extern from "eosapi_.hpp":
     int has_option(const char* _option);
     int get_option(const char* option, char *result, int size);
 
+    uint64_t ethaddr2n_(string& addr);
+    void n2ethaddr_(uint64_t n, string& addr);
 
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
@@ -879,3 +881,10 @@ def get_opt(option):
     n = get_option(option, a, len(a))
     return a[:n].decode('utf8')
 
+def ethaddr2n(string& addr):
+    return ethaddr2n_(addr)
+
+def n2ethaddr(uint64_t n):
+    cdef string addr
+    n2ethaddr_(n, addr);
+    return <bytes>addr

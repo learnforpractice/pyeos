@@ -103,14 +103,13 @@ bool Executive::create(Address const& _txSender, u256 const& _endowment, bytesCo
 
 bool Executive::createOpcode(Address const& _sender, u256 const& _endowment, bytesConstRef _init, Address const& _origin)
 {
-    u256 nonce = m_s.getNonce(_sender);
-    m_newAddress = Address(0);//right160(sha3(rlpList(_sender, nonce)));
+    m_newAddress = _sender;//right160(sha3(rlpList(_sender, nonce)));
     return executeCreate(_sender, _endowment, _init, _origin);
 }
 
 bool Executive::create2Opcode(Address const& _sender, u256 const& _endowment, bytesConstRef _init, Address const& _origin, u256 const& _salt)
 {
-    m_newAddress = Address(0);//right160(sha3(bytes{0xff} +_sender.asBytes() + toBigEndian(_salt) + sha3(_init)));
+    m_newAddress = _sender;//right160(sha3(bytes{0xff} +_sender.asBytes() + toBigEndian(_salt) + sha3(_init)));
     return executeCreate(_sender, _endowment, _init, _origin);
 }
 
@@ -120,8 +119,8 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, by
 
     // We can allow for the reverted state (i.e. that with which m_ext is constructed) to contain the m_orig.address, since
     // we delete it explicitly if we decide we need to revert.
-
-    bool accountAlreadyExist = (m_s.addressHasCode(m_newAddress) || m_s.getNonce(m_newAddress) > 0);
+#if 0
+    bool accountAlreadyExist = m_s.addressHasCode(m_newAddress);
     if (accountAlreadyExist)
     {
 //        LOG(m_detailsLogger) << "Address already used: " << m_newAddress;
@@ -131,10 +130,10 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, by
         m_ext = {}; // cancel the _init execution if there are any scheduled.
         return !m_ext;
     }
-
     // Transfer ether before deploying the code. This will also create new
     // account if it does not exist yet.
     m_s.transferBalance(_sender, m_newAddress, _endowment);
+#endif
 
     // Schedule _init execution if not empty.
     if (!_init.empty())
