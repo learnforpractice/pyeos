@@ -78,4 +78,9 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
    return get_vm_api()->get_code_id(account, code_id, size);
 }
 
+int get_code_type( uint64_t account) {
+   return get_vm_api()->get_code_type(account);
+}
+
+
 }

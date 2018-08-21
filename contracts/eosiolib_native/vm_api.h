@@ -205,6 +205,7 @@ struct vm_api {
    const char* (*get_code)( uint64_t receiver, size_t* size );
    void (*set_code)(uint64_t user_account, int vm_type, char* code, int code_size);
    int (*get_code_id)( uint64_t account, char* code_id, size_t size );
+   int (*get_code_type)( uint64_t account);
 
    void (*rodb_remove_i64)( int32_t itr );
    int32_t (*rodb_get_i64)( int32_t itr, char* buffer, size_t buffer_size );
@@ -243,6 +244,9 @@ struct vm_api {
    int (*app_init_finished)(void);
 
    int (*run_mode)(void); // 0 for server, 1 for client
+
+   uint64_t (*ethaddr2n)(const char* address, int size);
+   void (*n2ethaddr)(uint64_t n, char* address, int size);
 
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };

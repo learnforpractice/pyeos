@@ -139,6 +139,14 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
    return 1;
 }
 
+int get_code_type( uint64_t account) {
+   if (is_account(account)) {
+      return -1;
+   }
+   const auto& a = ctx().db.get<account_object,by_name>(account);
+   return a.vm_type;
+}
+
 int has_option(const char* _option) {
    try {
       return appbase::app().has_option(_option);
@@ -435,6 +443,7 @@ static struct vm_api _vm_api = {
    .get_code = get_code,
    .set_code = set_code,
    .get_code_id = get_code_id,
+   .get_code_type = get_code_type,
 
    .rodb_remove_i64 = db_api_remove_i64,
 
@@ -469,8 +478,9 @@ static struct vm_api _vm_api = {
    .app_init_finished = app_init_finished,
    .run_mode = run_mode,
 
+   .ethaddr2n = nullptr,
+   .n2ethaddr = nullptr
 };
-
 
 void vm_manager_init() {
    vm_register_api(&_vm_api);
