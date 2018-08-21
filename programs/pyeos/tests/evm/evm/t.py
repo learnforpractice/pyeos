@@ -8,18 +8,15 @@ from web3.contract import ConciseContract
 import eosapi
 import wallet
 import initeos
-from common import prepare, producer
+from common import prepare
 from eosapi import N
-
-producer = eosapi.Producer()
 
 def init(func):
     def func_wrapper(*args, **kwargs):
         if not eosapi.get_account('evm'):
             print('evm account not exist, create it.')
-            with producer:
-                r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
-                assert r
+            r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
+            assert r
         func(*args, **kwargs)
     return func_wrapper
 
@@ -119,11 +116,9 @@ def deploy(contract_interface):
 #    print(contract_interface['bin'])
     json.dumps(contract_interface['abi'], sort_keys=False, indent=4, separators=(',', ': '))
 
-    with producer:
-        address = eosapi.eos_name_to_eth_address('evm')
-        with producer:
-            tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
-            print('tx_hash:', tx_hash)
+    address = eosapi.eos_name_to_eth_address('evm')
+    tx_hash = contract.deploy(transaction={'from': address, 'gas': 2000001350})
+    print('tx_hash:', tx_hash)
     print('=========================deploy end======================')
 
 def call_contract(contract_interface):
@@ -158,22 +153,19 @@ def kitties_test(contract_interface):
     # Contract instance in concise mode
     contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
 
-    with producer:
-    #    r = contract_instance.getValue(transact={'from': address})
-    #    r = contract_instance.getValue(call={'from': address})
-        r = contract_instance.getValue(transact={'from': contract_address})
-        print('++++++++++getValue:', r)
+#    r = contract_instance.getValue(transact={'from': address})
+#    r = contract_instance.getValue(call={'from': address})
+    r = contract_instance.getValue(transact={'from': contract_address})
+    print('++++++++++getValue:', r)
 
-    with producer:
-        address = eosapi.eos_name_to_eth_address('evm')
-        r = contract_instance.setValue(119000, transact={'from': contract_address})
-        print('++++++++++++setValue:', r)
+    address = eosapi.eos_name_to_eth_address('evm')
+    r = contract_instance.setValue(119000, transact={'from': contract_address})
+    print('++++++++++++setValue:', r)
 
-    with producer:
-    #    r = contract_instance.getValue(transact={'from': address})
-    #    r = contract_instance.getValue(call={'from': address})
-        r = contract_instance.getValue(transact={'from': contract_address})
-        print('++++++++++getValue:', r)
+#    r = contract_instance.getValue(transact={'from': address})
+#    r = contract_instance.getValue(call={'from': address})
+    r = contract_instance.getValue(transact={'from': contract_address})
+    print('++++++++++getValue:', r)
 
 contract_source_code = '''
 
@@ -186,8 +178,24 @@ def test():
     with open(greeter, 'r') as f:
         contract_source_code = f.read()
         contract_interface = compile(contract_source_code, main_class)
-        deploy(contract_interface)
-        call_contract(contract_interface)
+#        deploy(contract_interface)
+        bin = contract_interface['bin']
+        print(bin)
+
+        account = 'evm'
+        actions = []
+
+        _src_dir = os.path.dirname(__file__)
+        abi_file = os.path.join(_src_dir, 'evm.abi')
+        setabi = eosapi.pack_setabi(abi_file, eosapi.N(account))
+        act = ['eosio', 'setabi', setabi, {account:'active'}]
+        actions.append(act)
+
+        args = eosapi.pack_args("eosio", 'setcode', {'account':account,'vmtype':2, 'vmversion':0, 'code':bin})
+        act = ['eosio', 'setcode', args, {'evm':'active'}]
+        actions.append(act)
+
+        eosapi.push_actions(actions)
 
 @init
 def test2(count=100):

@@ -1,0 +1,27 @@
+{
+  "structs": [{
+     "name": "message",
+     "base": "",
+     "fields": [
+        {"name":"msg", "type":"string"}
+     ]
+  },{
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"data", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "sayhello",
+      "type": "raw"
+    },{
+      "name": "transfer",
+      "type": "transfer"
+    }
+  ]
+}
