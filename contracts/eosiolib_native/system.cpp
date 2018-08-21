@@ -33,7 +33,7 @@ uint32_t  now() {
    return (uint32_t)( current_time() / 1000000 );
 }
 
-uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
+uint64_t wasm_call(const char* func, uint64_t* args , int argc) {
 //   printf("++++++++wasm_call: %s\n", func);
    return get_vm_api()->wasm_call(func, args , argc);
 }
@@ -68,6 +68,14 @@ int get_option(const char* option, char *result, int size) {
 
 const char* get_code( uint64_t receiver, size_t* size ) {
    return get_vm_api()->get_code(receiver, size);
+}
+
+void set_code(uint64_t user_account, int vm_type, char* code, int code_size) {
+   get_vm_api()->set_code(user_account, vm_type, code, code_size);
+}
+
+int get_code_id( uint64_t account, char* code_id, size_t size ) {
+   return get_vm_api()->get_code_id(account, code_id, size);
 }
 
 }

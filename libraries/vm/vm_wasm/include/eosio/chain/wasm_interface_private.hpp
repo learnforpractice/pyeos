@@ -37,8 +37,10 @@ using namespace Runtime;
 
 void resume_billing_timer();
 void pause_billing_timer();
-const char* get_code( uint64_t receiver, size_t* size );
-int get_code_id( uint64_t account, char* code_id, size_t size );
+
+extern "C" const char* get_code( uint64_t receiver, size_t* size );
+extern "C" int get_code_id( uint64_t account, char* code_id, size_t size );
+
 bool vm_is_account(uint64_t account);
 
 int db_api_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );

@@ -101,6 +101,10 @@ extern "C" {
    int has_option(const char* _option);
    int get_option(const char* option, char *result, int size);
 
+   const char* get_code( uint64_t receiver, size_t* size );
+   void set_code(uint64_t user_account, int vm_type, char* code, int code_size);
+   int get_code_id( uint64_t account, char* code_id, size_t size );
+
 #ifdef __cplusplus
 }
 #endif

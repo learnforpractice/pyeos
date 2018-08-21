@@ -27,6 +27,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/timer.hpp>
 
+#include <eosiolib/db.h>
+#include <eosiolib/system.h>
+
 using namespace std;
 using namespace dev;
 using namespace dev::eth;
@@ -82,46 +85,115 @@ u256 State::getNonce(Address const& _addr) const
 
 u256 State::storage(Address const& _id, u256 const& _key) const
 {
-   uint64_t code = _id;
-   assert(0);
+   uint64_t id = 0;
+   uint64_t n = _id;
+
+// ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+
+   dev::bytes value(32+32);
+   memset(value.data(), 0 ,value.size());
+
+   dev::bytes key = dev::toBigEndian(_key);
+
+   for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
+      uint64_t id = ((uint64_t*)key.data())[i];
+      int itr = db_find_i64( n, n, n, id );
+      if (itr < 0) {
+         return 0;
+      }
+
+      int size = db_get_i64( itr, (char*)value.data(), value.size() );
+      if (size <= 0) {
+         return 0;
+      }
+
+      eosio_assert(size == (32+32), "bad storage");
+
+      if (memcmp(key.data(), value.data(), key.size()) != 0) {
+         // key conflict, find next
+         continue;
+      }
+      dev::bytes v(value.begin()+32,value.end());
+      u256 ret = dev::fromBigEndian<u256>(v);
+//      ilog( "got value ${n2}", ("n2", ret.str()) );
+      return ret;
+   }
+
    return 0;
+
 }
 
 void State::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
-   uint64_t code = _contract;
-   assert(0);
+   uint64_t id = 0;
+   uint64_t n = _contract;
+
+// ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+
+   dev::bytes key = dev::toBigEndian(_key);
+
+   dev::bytes value(32+32);
+   value = key;
+   value += dev::toBigEndian(_value);
+
+   for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
+      uint64_t id = ((uint64_t*)key.data())[i];
+      int itr = db_find_i64( n, n, n, id );
+      if (itr < 0) {
+         db_store_i64(n, n, n, id, (const char *)value.data(), value.size() );
+         return;
+      }
+//         wlog("update value ${n}", ("n", _value.str()));
+      dev::bytes v(32+32);
+      int size = db_get_i64( itr, (char*)v.data(), v.size() );
+
+      eosio_assert(size == v.size(), "bad storage");
+
+      if (memcmp(v.data(), key.data(), key.size()) != 0) {
+         //key conflict, find next
+         continue;
+      }
+      db_update_i64( itr, n, (const char *)value.data(), value.size() );
+      return;
+   }
+
 }
 
 void State::clearStorage(Address const& _contract)
 {
-   assert(0);
+//   assert(0);
 }
 
 h256 State::storageRoot(Address const& _id) const
 {
-   assert(0);
+   return h256(0);
 }
 
 bytes const& State::code(Address const& _addr) const
 {
-   assert(0);
-   return bytes();
+   uint64_t receiver = _addr;
+   size_t size;
+   const char *code = get_code( receiver, &size );
+   return bytes(code, code+size);
 }
 
 void State::setCode(Address const& _address, bytes&& _code)
 {
-
+   set_code(_address, 2, (char*)_code.data(), _code.size());
 }
 
 h256 State::codeHash(Address const& _a) const
 {
-   return h256(0);//EmptySHA3;
+   h256 code_id;
+   get_code_id( _a, (char*)code_id.data(), code_id.size );
+   return code_id;//EmptySHA3;
 }
 
 size_t State::codeSize(Address const& _a) const
 {
-   return 0;
+   size_t size;
+   get_code( _a, &size );
+   return size;
 }
 
 #if 0

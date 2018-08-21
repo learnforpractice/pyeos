@@ -97,13 +97,17 @@ int get_balance(uint64_t _account, uint64_t _symbol, uint64_t* amount) {
    return 1;
 }
 
-void set_code(uint64_t user_account, int vm_type, uint64_t last_code_update, char *code_version, int version_size, char* code, int code_size) {
-   FC_ASSERT(version_size == sizeof(digest_type) && code != NULL && code_size != 0);
+void set_code(uint64_t user_account, int vm_type, char* code, int code_size) {
+   FC_ASSERT(code != NULL && code_size != 0);
+
    const auto& account = ctx().db.get<account_object,by_name>(user_account);
+
+   auto code_id = fc::sha256::hash( code, (uint32_t)code_size );
+
    ctx().db.modify( account, [&]( auto& a ) {
       a.vm_type = vm_type;
       a.last_code_update = ctx().control.pending_block_time();
-      memcpy(&a.code_version, code_version, version_size);
+      a.code_version = code_id;
       a.code.resize( code_size );
       if( code_size > 0 )
          memcpy( a.code.data(), code, code_size );
