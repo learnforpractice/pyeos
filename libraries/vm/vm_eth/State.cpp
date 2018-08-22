@@ -167,7 +167,7 @@ h256 State::storageRoot(Address const& _id) const
    return h256(0);
 }
 
-bytes const& State::code(Address const& _addr) const
+bytes State::code(Address const& _addr) const
 {
    uint64_t receiver = _addr;
    size_t size;

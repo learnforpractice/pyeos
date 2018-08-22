@@ -82,7 +82,7 @@ bool Executive::call(CallParameters const& _p, Address const& _origin)
         m_gas = _p.gas;
         if (m_s.addressHasCode(_p.codeAddress))
         {
-            bytes const& c = m_s.code(_p.codeAddress);
+            bytes c = m_s.code(_p.codeAddress);
             h256 codeHash = m_s.codeHash(_p.codeAddress);
             m_ext = make_shared<ExtVM>(m_s, m_envInfo, _p.receiveAddress,
                 _p.senderAddress, _origin, _p.apparentValue, 0, _p.data, &c, codeHash,
@@ -138,8 +138,8 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, by
     // Schedule _init execution if not empty.
     if (!_init.empty())
         m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_newAddress, _sender, _origin,
-              _endowment, 0, bytesConstRef(), _init, u256(0), m_depth, true, false);
-//FIXME sha3            _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth, true, false);
+              _endowment, 0,         bytesConstRef(), _init, u256(0), m_depth, true, false);
+//FIXME sha3  _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth, true, false);
 
 
 

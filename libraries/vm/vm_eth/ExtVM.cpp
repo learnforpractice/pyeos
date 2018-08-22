@@ -139,19 +139,17 @@ CallResult ExtVM::call(CallParameters& _p)
 
 size_t ExtVM::codeSizeAt(dev::Address _a)
 {
-   return 0;
-//    return m_s.codeSize(_a);
+    return m_s.codeSize(_a);
 }
 
 h256 ExtVM::codeHashAt(Address _a)
 {
-   return h256(0);
-//    return exists(_a) ? m_s.codeHash(_a) : h256{};
+    return exists(_a) ? m_s.codeHash(_a) : h256{};
 }
 
 void ExtVM::setStore(u256 _n, u256 _v)
 {
-//    m_s.setStorage(myAddress, _n, _v);
+    m_s.setStorage(myAddress, _n, _v);
 }
 
 CreateResult ExtVM::create(u256 _endowment, u256& io_gas, bytesConstRef _code, Instruction _op, u256 _salt, OnOpFunc const& _onOp)

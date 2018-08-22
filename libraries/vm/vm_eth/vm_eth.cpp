@@ -86,18 +86,22 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    EnvInfo info;
 
    Executive e(g_s, info, 0);
-   Transaction ts;
-   ts.m_sender = Address(0);
-   ts.m_receiveAddress = Address(receiver);
-   ts.m_value = 0;
-   ts.m_creation = false;
 
    uint32_t size = action_data_size();
-   ts.m_data.resize(size);
-   read_action_data( ts.m_data.data(), size );
+   bytes data(size);
+   read_action_data( data.data(), data.size() );
 
-   EthTransfer t;
-   fc::raw::unpack<EthTransfer>((char*)ts.m_data.data(), (uint32_t)ts.m_data.size(), t);
+   EthTransfer et;
+   fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
+
+   Transaction ts;
+   ts.m_sender = Address(et.from);
+   ts.m_receiveAddress = Address(et.to);
+   ts.m_value = et.value;
+   ts.m_data = et.data;
+
+   ts.m_creation = false;
+
 
    e.initialize(ts);
    e.execute();

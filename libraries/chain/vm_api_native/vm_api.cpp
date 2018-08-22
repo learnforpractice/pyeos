@@ -140,7 +140,7 @@ int get_code_id( uint64_t account, char* code_id, size_t size ) {
 }
 
 int get_code_type( uint64_t account) {
-   if (is_account(account)) {
+   if (!is_account(account)) {
       return -1;
    }
    const auto& a = ctx().db.get<account_object,by_name>(account);

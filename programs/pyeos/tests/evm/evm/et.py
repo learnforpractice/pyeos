@@ -5,20 +5,6 @@ import web3
 from web3 import Web3, HTTPProvider, TestRPCProvider, EthereumTesterProvider
 from solc import compile_source
 from web3.contract import ConciseContract
-import eosapi
-import wallet
-import initeos
-from common import prepare
-from eosapi import N
-
-def init(func):
-    def func_wrapper(*args, **kwargs):
-        if not eosapi.get_account('evm'):
-            print('evm account not exist, create it.')
-            r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
-            assert r
-        func(*args, **kwargs)
-    return func_wrapper
 
 
 from eth_utils import (
@@ -83,13 +69,11 @@ class LocalProvider(web3.providers.base.JSONBaseProvider):
         }
 
 
+
 TEST = False
 DEPLOY = True
 
 contract_interface = None
-w3 = None
-contract = None
-contract_address = None
 
 provider = LocalProvider()
 
@@ -97,6 +81,10 @@ if TEST:
     w3 = Web3(EthereumTesterProvider())
 else:
     w3 = Web3(provider)
+
+
+contract = None
+contract_address = None
 
 
 def compile(contract_source_code, main_class):
@@ -122,190 +110,61 @@ def deploy(contract_interface):
     print('=========================deploy end======================')
 
 def call_contract(contract_interface):
-#    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
-    contract_address = eosapi.eos_name_to_eth_address('evm')
-
-    # Contract instance in concise mode
+    print(contract_interface['abi'])
+    contract_address = '0x88224fe4e4954c29d1d765ebe39331186fc259cf'
+    contract_address = Web3.toChecksumAddress(contract_address)
+    
     contract_instance = w3.eth.contract(contract_address, abi=contract_interface['abi'], bytecode=contract_interface['bin'], ContractFactoryClass=ConciseContract)
 
-
-#    r = contract_instance.getValue(transact={'from': address})
-#    r = contract_instance.getValue(call={'from': address})
-    if 0:
-        r = contract_instance.getValue(transact={'from': contract_address})
-        print('++++++++++getValue:', r)
-
-    address = eosapi.eos_name_to_eth_address('evm')
-    r = contract_instance.setValue(119000, transact={'from': contract_address})
-    print('++++++++++++setValue:', r)
-
-#    r = contract_instance.getValue(transact={'from': address})
-#    r = contract_instance.getValue(call={'from': address})
-    if 0:
-        r = contract_instance.getValue(transact={'from': contract_address})
-        print('++++++++++getValue:', r)
-
-
-def kitties_test(contract_interface):
-    contract = w3.eth.contract(contract_interface['abi'], bytecode=contract_interface['bin'])
-    contract_address = eosapi.eos_name_to_eth_address('evm')
-
     # Contract instance in concise mode
-    contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
+#    contract_instance = w3.eth.contract(contract_interface['abi'], contract_address, ContractFactoryClass=ConciseContract)
+
 
 #    r = contract_instance.getValue(transact={'from': address})
 #    r = contract_instance.getValue(call={'from': address})
-    r = contract_instance.getValue(transact={'from': contract_address})
-    print('++++++++++getValue:', r)
+    if 0:
+        r = contract_instance.getValue(transact={'from': contract_address})
+        print('++++++++++getValue:', r)
 
-    address = eosapi.eos_name_to_eth_address('evm')
     r = contract_instance.setValue(119000, transact={'from': contract_address})
     print('++++++++++++setValue:', r)
 
 #    r = contract_instance.getValue(transact={'from': address})
 #    r = contract_instance.getValue(call={'from': address})
-    r = contract_instance.getValue(transact={'from': contract_address})
-    print('++++++++++getValue:', r)
+    if 0:
+        r = contract_instance.getValue(transact={'from': contract_address})
+        print('++++++++++getValue:', r)
 
-contract_source_code = '''
-
-'''
-
-@init
 def test():
     main_class = '<stdin>:Greeter'
     greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
     with open(greeter, 'r') as f:
         contract_source_code = f.read()
         contract_interface = compile(contract_source_code, main_class)
-#        deploy(contract_interface)
-        bin = contract_interface['bin']
-        print(bin)
-
-        account = 'evm'
-        actions = []
-
-        _src_dir = os.path.dirname(__file__)
-        abi_file = os.path.join(_src_dir, 'evm.abi')
-        setabi = eosapi.pack_setabi(abi_file, eosapi.N(account))
-        act = ['eosio', 'setabi', setabi, {account:'active'}]
-        actions.append(act)
-
-#        bin = '608060405234801561001057600080fd5b506103e76000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055506122b86000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550610221806100aa6000396000f300608060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063209652551461005c5780635524107714610087578063a5b248d9146100b4575b600080fd5b34801561006857600080fd5b5061007161010b565b6040518082815260200191505060405180910390f35b34801561009357600080fd5b506100b260048036038101908080359060200190929190505050610151565b005b3480156100c057600080fd5b506100f5600480360381019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506101dd565b6040518082815260200191505060405180910390f35b60008060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905090565b806000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550606381016000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000208190555050565b600060205280600052604060002060009150905054815600a165627a7a7230582027ddd8a5407c4fad4a070848746c3d9e2313600c2a052b6e11b3416b35d72cda0029'
-        args = eosapi.pack_args("eosio", 'setcode', {'account':account,'vmtype':2, 'vmversion':0, 'code':bin})
-        act = ['eosio', 'setcode', args, {'evm':'active'}]
-        actions.append(act)
-
-        r, cost = eosapi.push_actions(actions)
-        print(r['elapsed'])
-#        call_contract(contract_interface)
-
-@init
-def setValue(v=119000):
-    main_class = '<stdin>:Greeter'
-    greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
-    with open(greeter, 'r') as f:
-        contract_source_code = f.read()
-        contract_interface = compile(contract_source_code, main_class)
-#        deploy(contract_interface)
-        contract_abi = contract_interface['abi']
-
-    fn_identifier = 'setValue'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = (v,)
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
-    print(data)
-    data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
-#    args = eosapi.pack_args('evm', 'transfer', args)
-#    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'evm':'active'})
-    print(r['elapsed'])
-
-
-@init
-def getValue():
-    main_class = '<stdin>:Greeter'
-    greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
-    with open(greeter, 'r') as f:
-        contract_source_code = f.read()
-        contract_interface = compile(contract_source_code, main_class)
-#        deploy(contract_interface)
-        contract_abi = contract_interface['abi']
-
-    fn_identifier = 'getValue'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = ()
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
-    print(data)
-    data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
-#    args = eosapi.pack_args('evm', 'transfer', args)
-#    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'evm':'active'})
-    print(r['elapsed'])
-
-
-@init
-def test2(count=100):
-    actions = []
-    for i in range(count):
-        args = '55241077'
-        args += int.to_bytes(i, 32, 'big').hex()
-        args = bytes.fromhex(args)
-        act = [eosapi.s2n('evm'), N('call'), [[N('evm'), N('active')]], args]
-        actions.append(act)
-    outputs, cost_time = eosapi.push_transactions([actions], True)
-    print(1e6/(cost_time/count))
-
-@init
-def test3():
-    main_class = '<stdin>:Greeter'
-    with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
-        contract_source_code = f.read()
-        contract_interface = compile(contract_source_code, main_class)
-#        deploy(contract_interface)
         call_contract(contract_interface)
 
+def pack_args():
 
-@init
-def test4():
-    main_class = '<stdin>:KittyCore'
-    with open('../../programs/pyeos/contracts/evm/cryptokitties.sol', 'r') as f:
-        contract_source_code = f.read()
-        contract_interface = compile(contract_source_code, main_class)
-        deploy(contract_interface)
-        kitties_test(contract_interface)
-
-
-if __name__ == '__main__':
-    import pydevd
-    pydevd.settrace(suspend=False)
-    test2()
-
-
+    fn_identifier = 'setValue'
+    fn_abi =  {'constant': False, 'inputs': [{'name': 'v', 'type': 'uint256'}], 'name': 'setValue', 'outputs': [], 'payable': False, 'stateMutability': 'nonpayable', 'type': 'function'}
+    args = (119000,)
+    kwargs = {}
+    
+    contract_abi =  [
+      {'constant': False, 'inputs': [],                                 'name': 'getValue', 'outputs': [{'name': '', 'type': 'uint256'}],      'payable': False, 'stateMutability': 'nonpayable', 'type': 'function'}, 
+      {'constant': False, 'inputs': [{'name': 'v', 'type': 'uint256'}], 'name': 'setValue', 'outputs': [],                                     'payable': False, 'stateMutability': 'nonpayable', 'type': 'function'}, 
+      {'constant': True, 'inputs': [{'name': '', 'type': 'address'}],   'name': 'mymap',    'outputs': [{'name': '',  'type': 'uint256'}],     'payable': False, 'stateMutability': 'view',       'type': 'function'}, 
+      {'inputs': [], 'payable': False,  'stateMutability': 'nonpayable', 'type': 'constructor'}, 
+      {'anonymous': False, 'inputs': [{'indexed': False, 'name': 's', 'type': 'string'}], 'name': 'log', 'type': 'event'}
+      ]
+    
+    data = web3.utils.contracts.encode_transaction_data(
+            web3,
+            fn_identifier,
+            contract_abi,
+            fn_abi,
+            args,
+            kwargs)
+    print(data)
+test()
 
