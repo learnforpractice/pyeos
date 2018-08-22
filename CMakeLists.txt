@@ -1,10 +1,22 @@
 cmake_minimum_required( VERSION 3.5 )
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/evmc/cmake/cable/bootstrap.cmake)
+include(CableBuildInfo)
+include(CableBuildType)
+include(CableToolchains)
+include(GNUInstallDirs)
+
+cable_configure_toolchain(DEFAULT cxx11)
+
+
+set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake" CACHE PATH "The path to the cmake directory")
+list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 # Defines EOS library target.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/vm/libevm4eos/cmake")
+
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
 
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
@@ -96,9 +108,6 @@ find_package(OpenSSL REQUIRED)
 
 find_package(Secp256k1 REQUIRED)
 
-include(ProjectMPIR)
-
-
 if(UNIX)
   if(APPLE)
 #    set(whole_archive_flag "-force_load")
@@ -115,7 +124,7 @@ endif()
 hunter_add_package(BZip2)
 find_package( BZip2 )
 
-#include(ProjectLibFF)
+include(ProjectLibFF)
 
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 set(Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
@@ -128,6 +137,39 @@ IF( WIN32 )
   SET(BOOST_ROOT $ENV{BOOST_ROOT})
   set(BOOST_ALL_DYN_LINK OFF) # force dynamic linking for all libraries
 ENDIF(WIN32)
+
+hunter_add_package(Boost COMPONENTS 
+    thread
+    date_time
+    filesystem
+    system
+    program_options
+    signals
+    serialization
+    chrono
+    test
+    context
+    locale
+    iostreams
+    fiber
+    log)
+    
+find_package(Boost CONFIG REQUIRED
+    thread
+    date_time
+    filesystem
+    system
+    program_options
+    signals
+    serialization
+    chrono
+    unit_test_framework
+    context
+    locale
+    iostreams
+    fiber
+    log)
+
 
 if( WIN32 )
 
@@ -203,43 +245,6 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG" )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG" )
 endif()
-
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-    set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3" )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3" )
-endif()
-
-hunter_add_package(Boost COMPONENTS 
-    thread
-    date_time
-    filesystem
-    system
-    program_options
-    signals
-    serialization
-    chrono
-    test
-    context
-    locale
-    iostreams
-#    fiber
-    log)
-    
-find_package(Boost CONFIG REQUIRED
-    thread
-    date_time
-    filesystem
-    system
-    program_options
-    signals
-    serialization
-    chrono
-    unit_test_framework
-    context
-    locale
-    iostreams
-#    fiber
-    log)
 
 set(ENABLE_COVERAGE_TESTING FALSE CACHE BOOL "Build EOSIO for code coverage analysis")
 

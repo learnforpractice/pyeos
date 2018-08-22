@@ -1,12 +1,12 @@
 add_subdirectory( python )
 
-#add_subdirectory( python-single-thread )
-
 add_subdirectory( vm )
 
 add_subdirectory( ipc )
 
 add_subdirectory( vm_manager )
+
+add_subdirectory( ethereum )
 
 add_subdirectory( builtins )
 add_subdirectory( softfloat )
