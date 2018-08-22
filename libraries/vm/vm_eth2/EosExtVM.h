@@ -78,10 +78,7 @@ public:
    /// Does the account exist?
    virtual bool exists(Address _a) override final
    {
-      if (evmSchedule().emptinessIsNonexistence())
-         return m_s.accountNonemptyAndExisting(_a);
-      else
-         return m_s.addressInUse(_a);
+      return m_s.addressInUse(_a);
    }
 
    /// Suicide the associated contract to the given address.
@@ -90,7 +87,7 @@ public:
    /// Return the EVM gas-price schedule for this execution context.
    virtual EVMSchedule const& evmSchedule() const override final { return m_sealEngine.evmSchedule(envInfo().number()); }
 
-   State const& state() const { return m_s; }
+   EosState const& state() const { return m_s; }
 
    /// Hash of a block if within the last 256 blocks, or h256() otherwise.
    h256 blockHash(u256 _number) override;

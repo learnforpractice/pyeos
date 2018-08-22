@@ -14,13 +14,9 @@
 
 #include "EosExecutive.h"
 
-#include "Block.h"
-#include "BlockChain.h"
 #include "EosExtVM.h"
 #include "Interface.h"
 
-#include <libdevcore/CommonIO.h>
-#include <libethcore/CommonJS.h>
 #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
 
@@ -45,15 +41,6 @@ std::string dumpStackAndMemory(LegacyVM const& _vm)
     return o.str();
 };
 
-std::string dumpStorage(EosExtVM const& _ext)
-{
-    ostringstream o;
-    o << "    STORAGE\n";
-    for (auto const& i : _ext.state().storage(_ext.myAddress))
-        o << showbase << hex << i.second.first << ": " << i.second.second << "\n";
-    return o.str();
-};
-
 
 }  // namespace
 
@@ -73,63 +60,11 @@ void EosExecutive::accrueSubState(SubState& _parentContext)
 void EosExecutive::initialize(Transaction const& _transaction)
 {
     m_t = _transaction;
-    m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
-    try
-    {
-        m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
-    }
-    catch (Exception const& ex)
-    {
-        m_excepted = toTransactionException(ex);
-        throw;
-    }
-
-    if (!m_t.hasZeroSignature())
-    {
-        // Avoid invalid transactions.
-        u256 nonceReq;
-        try
-        {
-            nonceReq = m_s.getNonce(m_t.sender());
-        }
-        catch (InvalidSignature const&)
-        {
-            LOG(m_execLogger) << "Invalid Signature";
-            m_excepted = TransactionException::InvalidSignature;
-            throw;
-        }
-        if (m_t.nonce() != nonceReq)
-        {
-            LOG(m_execLogger) << "Sender: " << m_t.sender().hex() << " Invalid Nonce: Require "
-                              << nonceReq << " Got " << m_t.nonce();
-            m_excepted = TransactionException::InvalidNonce;
-            BOOST_THROW_EXCEPTION(InvalidNonce() << RequirementError((bigint)nonceReq, (bigint)m_t.nonce()));
-        }
-
-        // Avoid unaffordable transactions.
-        bigint gasCost = (bigint)m_t.gas() * m_t.gasPrice();
-        bigint totalCost = m_t.value() + gasCost;
-        if (m_s.balance(m_t.sender()) < totalCost)
-        {
-            LOG(m_execLogger) << "Not enough cash: Require > " << totalCost << " = " << m_t.gas()
-                              << " * " << m_t.gasPrice() << " + " << m_t.value() << " Got"
-                              << m_s.balance(m_t.sender()) << " for sender: " << m_t.sender();
-            m_excepted = TransactionException::NotEnoughCash;
-            m_excepted = TransactionException::NotEnoughCash;
-            BOOST_THROW_EXCEPTION(NotEnoughCash() << RequirementError(totalCost, (bigint)m_s.balance(m_t.sender())) << errinfo_comment(m_t.sender().hex()));
-        }
-        m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
-    }
 }
 
 bool EosExecutive::execute()
 {
     // Entry point for a user-executed transaction.
-
-    // Pay...
-    LOG(m_detailsLogger) << "Paying " << formatBalance(m_gasCost) << " from sender for gas ("
-                         << m_t.gas() << " gas at " << formatBalance(m_t.gasPrice()) << ")";
-    m_s.subBalance(m_t.sender(), m_gasCost);
 
     assert(m_t.gas() >= (u256)m_baseGasRequired);
     if (m_t.isCreation())
@@ -147,50 +82,20 @@ bool EosExecutive::call(Address const& _receiveAddress, Address const& _senderAd
 bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
     // If external transaction.
-#if 0
-    if (m_t)
-    {
-        // FIXME: changelog contains unrevertable balance change that paid
-        //        for the transaction.
-        // Increment associated nonce for sender.
-        if (_p.senderAddress != MaxAddress || m_envInfo.number() < m_sealEngine.chainParams().constantinopleForkBlock) // EIP86
-            m_s.incNonce(_p.senderAddress);
-    }
-#endif
-    m_savepoint = m_s.savepoint();
 
     if (m_sealEngine.isPrecompiled(_p.codeAddress, m_envInfo.number()))
     {
-        bigint g = m_sealEngine.costOfPrecompiled(_p.codeAddress, _p.data, m_envInfo.number());
-        if (_p.gas < g)
-        {
-            m_excepted = TransactionException::OutOfGasBase;
-            // Bail from exception.
-
-            // Empty precompiled contracts need to be deleted even in case of OOG
-            // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
-            // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
-            // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-            if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
-                m_s.addBalance(_p.codeAddress, 0);
-
-            return true;   // true actually means "all finished - nothing more to be done regarding go().
-        }
-        else
-        {
-            m_gas = (u256)(_p.gas - g);
-            bytes output;
-            bool success;
-            tie(success, output) = m_sealEngine.executePrecompiled(_p.codeAddress, _p.data, m_envInfo.number());
-            size_t outputSize = output.size();
-            m_output = owning_bytes_ref{std::move(output), 0, outputSize};
-            if (!success)
-            {
-                m_gas = 0;
-                m_excepted = TransactionException::OutOfGas;
-                return true;  // true means no need to run go().
-            }
-        }
+         bytes output;
+         bool success;
+         tie(success, output) = m_sealEngine.executePrecompiled(_p.codeAddress, _p.data, m_envInfo.number());
+         size_t outputSize = output.size();
+         m_output = owning_bytes_ref{std::move(output), 0, outputSize};
+         if (!success)
+         {
+             m_gas = 0;
+             m_excepted = TransactionException::OutOfGas;
+             return true;  // true means no need to run go().
+         }
     }
     else
     {
@@ -218,7 +123,6 @@ bool EosExecutive::create(Address const& _txSender, u256 const& _endowment, u256
 
 bool EosExecutive::createOpcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin)
 {
-    u256 nonce = m_s.getNonce(_sender);
     m_newAddress = _sender;//right160(sha3(rlpList(_sender, nonce)));
     return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin);
 }
@@ -231,10 +135,6 @@ bool EosExecutive::create2Opcode(Address const& _sender, u256 const& _endowment,
 
 bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin)
 {
-    if (_sender != MaxAddress || m_envInfo.number() < m_sealEngine.chainParams().constantinopleForkBlock) // EIP86
-        m_s.incNonce(_sender);
-
-    m_savepoint = m_s.savepoint();
 
     m_isCreation = true;
 
@@ -257,11 +157,6 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
     // account if it does not exist yet.
     m_s.transferBalance(_sender, m_newAddress, _endowment);
 
-    u256 newNonce = m_s.requireAccountStartNonce();
-    if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
-        newNonce += 1;
-    m_s.setNonce(m_newAddress, newNonce);
-
     // Schedule _init execution if not empty.
     if (!_init.empty())
         m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
@@ -270,26 +165,6 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
     return !m_ext;
 }
 
-OnOpFunc EosExecutive::simpleTrace()
-{
-    Logger& traceLogger = m_vmTraceLogger;
-
-    return [&traceLogger](uint64_t steps, uint64_t PC, Instruction inst, bigint newMemSize,
-               bigint gasCost, bigint gas, VMFace const* _vm, ExtVMFace const* voidExt) {
-        EosExtVM const& ext = *static_cast<EosExtVM const*>(voidExt);
-        auto vm = dynamic_cast<LegacyVM const*>(_vm);
-
-        ostringstream o;
-        if (vm)
-            LOG(traceLogger) << dumpStackAndMemory(*vm);
-        LOG(traceLogger) << dumpStorage(ext);
-        LOG(traceLogger) << " < " << dec << ext.depth << " : " << ext.myAddress << " : #" << steps
-                         << " : " << hex << setw(4) << setfill('0') << PC << " : "
-                         << instructionInfo(inst).name << " : " << dec << gas << " : -" << dec
-                         << gasCost << " : " << newMemSize << "x32"
-                         << " >";
-    };
-}
 
 bool EosExecutive::go(OnOpFunc const& _onOp)
 {
@@ -395,14 +270,6 @@ bool EosExecutive::finalize()
     m_refunded = m_ext ? min((m_t.gas() - m_gas) / 2, m_ext->sub.refunds) : 0;
     m_gas += m_refunded;
 
-    if (m_t)
-    {
-        m_s.addBalance(m_t.sender(), m_gas * m_t.gasPrice());
-
-        u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
-        m_s.addBalance(m_envInfo.author(), feesEarned);
-    }
-
     // Suicides...
     if (m_ext)
         for (auto a: m_ext->sub.suicides)
@@ -415,7 +282,7 @@ bool EosExecutive::finalize()
     if (m_res) // Collect results
     {
         m_res->gasUsed = gasUsed();
-        m_res->excepted = m_excepted; // TODO: m_except is used only in EosExtVM::call
+        m_res->excepted = m_excepted; // TODO: m_except is used only in ExtVM::call
         m_res->newAddress = m_newAddress;
         m_res->gasRefunded = m_ext ? m_ext->sub.refunds : 0;
     }
@@ -429,5 +296,4 @@ void EosExecutive::revert()
 
     // Set result address to the null one.
     m_newAddress = {};
-    m_s.rollback(m_savepoint);
 }

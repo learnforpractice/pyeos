@@ -9,20 +9,11 @@ static struct vm_api s_api;
 #include <libethereum/Transaction.h>
 #include <libethereum/Executive.h>
 #include <libethereum/ChainParams.h>
-#include <libethereum/Block.h>
 #include <libethereum/LastBlockHashesFace.h>
-
-#include <libdevcore/CommonIO.h>
-#include <libdevcore/CommonJS.h>
-#include <libdevcore/SHA3.h>
-
-#include <libethashseal/GenesisInfo.h>
-#include <libethashseal/Ethash.h>
 
 #include <libevm/VM.h>
 #include <libevm/VMFactory.h>
 
-#include <libdevcrypto/Hash.h>
 
 #include "EosState.h"
 #include "EosExecutive.h"
@@ -33,15 +24,14 @@ static struct vm_api s_api;
 
 #include <eosiolib/types.hpp>
 
-using namespace dev::eth;
+#include <libethcore/SealEngine.h>
+
 using namespace dev;
+using namespace dev::eth;
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
-
-
-std::unique_ptr<dev::eth::State> globalState;
-std::shared_ptr<dev::eth::SealEngineFace> globalSealEngine;
+std::unique_ptr<dev::eth::SealEngineFace> seal;
 
 int64_t maxBlockGasLimit()
 {
@@ -50,18 +40,53 @@ int64_t maxBlockGasLimit()
    return 0xfffffffff;
 }
 
-
-enum class Mode
+static std::string const c_genesisInfoMainNetworkNoProofTest = std::string() +
+R"E(
 {
-   Trace,
-   Statistics,
-   OutputOnly,
+   "sealEngine": "NoProof",
+   "params": {
+      "accountStartNonce": "0x00",
+      "homesteadForkBlock": "0x118c30",
+      "daoHardforkBlock": "0x1d4c00",
+      "EIP150ForkBlock": "0x259518",
+      "EIP158ForkBlock": "0x28d138",
+      "byzantiumForkBlock": "0x2dc6c0",
+      "constantinopleForkBlock": "0x2f36ca",
+      "networkID" : "0x01",
+      "chainID": "0x01",
+      "maximumExtraDataSize": "0x20",
+      "tieBreakingGas": false,
+      "minGasLimit": "0x1388",
+      "maxGasLimit": "7fffffffffffffff",
+      "gasLimitBoundDivisor": "0x0400",
+      "minimumDifficulty": "0x020000",
+      "difficultyBoundDivisor": "0x0800",
+      "durationLimit": "0x0d",
+      "blockReward": "0x4563918244F40000"
+   },
+   "genesis": {
+      "nonce": "0x0000000000000042",
+      "difficulty": "0x020000",
+      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "author": "0x0000000000000000000000000000000000000000",
+      "timestamp": "0x00",
+      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+      "gasLimit": "0x1388"
+   },
+   "accounts": {
+      "0000000000000000000000000000000000000001": { "precompiled": { "name": "ecrecover", "linear": { "base": 3000, "word": 0 } } },
+      "0000000000000000000000000000000000000002": { "precompiled": { "name": "sha256", "linear": { "base": 60, "word": 12 } } },
+      "0000000000000000000000000000000000000003": { "precompiled": { "name": "ripemd160", "linear": { "base": 600, "word": 120 } } },
+      "0000000000000000000000000000000000000004": { "precompiled": { "name": "identity", "linear": { "base": 15, "word": 3 } } },
+      "0000000000000000000000000000000000000005": { "precompiled": { "name": "modexp", "startingBlock" : "0x2dc6c0" } },
+      "0000000000000000000000000000000000000006": { "precompiled": { "name": "alt_bn128_G1_add", "startingBlock" : "0x2dc6c0", "linear": { "base": 500, "word": 0 } } },
+      "0000000000000000000000000000000000000007": { "precompiled": { "name": "alt_bn128_G1_mul", "startingBlock" : "0x2dc6c0", "linear": { "base": 40000, "word": 0 } } },
+      "0000000000000000000000000000000000000008": { "precompiled": { "name": "alt_bn128_pairing_product", "startingBlock" : "0x2dc6c0" } }
+   }
+}
+)E";
 
-   /// Test mode -- output information needed for test verification and
-   /// benchmarking. The execution is not introspected not to degrade
-   /// performance.
-   Test
-};
 
 class LastBlockHashes: public eth::LastBlockHashesFace
 {
@@ -73,6 +98,8 @@ public:
 
 void vm_init(struct vm_api* api) {
    s_api = *api;
+   NoProof::init();
+   seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
 }
 
 void vm_deinit() {
@@ -128,52 +155,6 @@ int vm_call(uint64_t account, uint64_t func) {
    return 0;
 }
 
-static std::string const c_genesisInfoMainNetworkNoProofTest = std::string() +
-R"E(
-{
-   "sealEngine": "NoProof",
-   "params": {
-      "accountStartNonce": "0x00",
-      "homesteadForkBlock": "0x118c30",
-      "daoHardforkBlock": "0x1d4c00",
-      "EIP150ForkBlock": "0x259518",
-      "EIP158ForkBlock": "0x28d138",
-      "byzantiumForkBlock": "0x2dc6c0",
-      "constantinopleForkBlock": "0x2f36ca",
-      "networkID" : "0x01",
-      "chainID": "0x01",
-      "maximumExtraDataSize": "0x20",
-      "tieBreakingGas": false,
-      "minGasLimit": "0x1388",
-      "maxGasLimit": "7fffffffffffffff",
-      "gasLimitBoundDivisor": "0x0400",
-      "minimumDifficulty": "0x020000",
-      "difficultyBoundDivisor": "0x0800",
-      "durationLimit": "0x0d",
-      "blockReward": "0x4563918244F40000"
-   },
-   "genesis": {
-      "nonce": "0x0000000000000042",
-      "difficulty": "0x020000",
-      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "author": "0x0000000000000000000000000000000000000000",
-      "timestamp": "0x00",
-      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
-      "gasLimit": "0x1388"
-   },
-   "accounts": {
-      "0000000000000000000000000000000000000001": { "precompiled": { "name": "ecrecover", "linear": { "base": 3000, "word": 0 } } },
-      "0000000000000000000000000000000000000002": { "precompiled": { "name": "sha256", "linear": { "base": 60, "word": 12 } } },
-      "0000000000000000000000000000000000000003": { "precompiled": { "name": "ripemd160", "linear": { "base": 600, "word": 120 } } },
-      "0000000000000000000000000000000000000004": { "precompiled": { "name": "identity", "linear": { "base": 15, "word": 3 } } },
-      "0000000000000000000000000000000000000005": { "precompiled": { "name": "modexp", "startingBlock" : "0x2dc6c0" } },
-      "0000000000000000000000000000000000000006": { "precompiled": { "name": "alt_bn128_G1_add", "startingBlock" : "0x2dc6c0", "linear": { "base": 500, "word": 0 } } },
-      "0000000000000000000000000000000000000007": { "precompiled": { "name": "alt_bn128_G1_mul", "startingBlock" : "0x2dc6c0", "linear": { "base": 40000, "word": 0 } } },
-      "0000000000000000000000000000000000000008": { "precompiled": { "name": "alt_bn128_pairing_product", "startingBlock" : "0x2dc6c0" } }
-   }
-}
-)E";
 
 static uint64_t g_sender = 0;
 
@@ -195,9 +176,6 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
 
    set_sender(_sender);
 
-   VMKind vmKind = VMKind::Interpreter;
-   Mode mode = Mode::Statistics;
-
    u256 gas = maxBlockGasLimit();
    u256 gasPrice = 0;
    u256 value = 0;
@@ -210,19 +188,17 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
 
    EosState state;
 
-   Ethash::init();
-   NoProof::init();
-
    Transaction t;
    if (create)
    {
       // Deploy the code on some fake account to be called later.
+#if 0
       Account account(0, 0);
       account.setCode(std::vector<uint8_t>{*(reinterpret_cast<dev::bytes*>(&data))});
       std::unordered_map<Address, Account> map;
       map[contractDestination] = account;
       state.populateFrom(map);
-
+#endif
       t = Transaction(value, gasPrice, gas, contractDestination, *(reinterpret_cast<dev::bytes*>(&data)), 0);
       t.forceSender(contractDestination);
    }
@@ -231,6 +207,7 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
       // If not code provided construct "create" transaction out of the input
       // data.
       t = Transaction(value, gasPrice, gas, *(reinterpret_cast<dev::bytes*>(&data)), 0);
+      t.forceSender(sender);
    }
 
 //   state.addBalance(sender, value);
@@ -238,7 +215,6 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
    LastBlockHashes lastBlockHashes;
    EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
 
-   std::unique_ptr<dev::eth::SealEngineFace> seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
 
    EosExecutive executive(state, envInfo, *seal);
 
