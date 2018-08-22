@@ -9,6 +9,7 @@ add_subdirectory( vm_wasm )
 if(BUILD_ETHEREUM)
    add_subdirectory( libevm4eos )
    add_subdirectory( vm_eth )
+   add_subdirectory( vm_eth2 )
 endif()
 
 add_subdirectory( vm_api_python )
