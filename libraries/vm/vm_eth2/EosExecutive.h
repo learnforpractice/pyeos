@@ -36,7 +36,7 @@ class OverlayDB;
 namespace eth
 {
 
-class State;
+class EosState;
 class Block;
 class BlockChain;
 class EosExtVM;
@@ -67,7 +67,7 @@ class EosExecutive
 {
 public:
     /// Simple constructor; executive will operate on given state, with the given environment info.
-    EosExecutive(State& _s, EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, unsigned _level = 0): m_s(_s), m_envInfo(_envInfo), m_depth(_level), m_sealEngine(_sealEngine) {}
+    EosExecutive(EosState& _s, EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, unsigned _level = 0): m_s(_s), m_envInfo(_envInfo), m_depth(_level), m_sealEngine(_sealEngine) {}
 
     /** Easiest constructor.
      * Creates executive to operate on the state of end of the given block, populating environment
@@ -86,7 +86,7 @@ public:
      * populating environment info from the given Block and the LastHashes portion from the BlockChain.
      * State is assigned the resultant value, but otherwise unused.
      */
-    EosExecutive(State& io_s, Block const& _block, unsigned _txIndex, BlockChain const& _bc, unsigned _level = 0);
+    EosExecutive(EosState& io_s, Block const& _block, unsigned _txIndex, BlockChain const& _bc, unsigned _level = 0);
 
     EosExecutive(EosExecutive const&) = delete;
     void operator=(EosExecutive) = delete;
@@ -153,7 +153,7 @@ private:
     /// @returns false iff go() must be called (and thus a VM execution in required).
     bool executeCreate(Address const& _txSender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _code, Address const& _originAddress);
 
-    State& m_s;                     ///< The state to which this operation/transaction is applied.
+    EosState& m_s;                     ///< The state to which this operation/transaction is applied.
     // TODO: consider changign to EnvInfo const& to avoid LastHashes copy at every CALL/CREATE
     EnvInfo m_envInfo;              ///< Information on the runtime environment.
     std::shared_ptr<EosExtVM> m_ext;      ///< The VM externality object for the VM execution or null if no VM is required. shared_ptr used only to allow EosExtVM forward reference. This field does *NOT* survive this object.

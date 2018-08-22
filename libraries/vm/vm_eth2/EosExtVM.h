@@ -18,7 +18,7 @@
 #pragma once
 
 #include "EosExecutive.h"
-#include "State.h"
+#include "EosState.h"
 
 #include <libethcore/Common.h>
 #include <libethcore/SealEngine.h>
@@ -39,7 +39,7 @@ class EosExtVM : public ExtVMFace
 {
 public:
     /// Full constructor.
-    EosExtVM(State& _s, EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Address _myAddress,
+    EosExtVM(EosState& _s, EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Address _myAddress,
         Address _caller, Address _origin, u256 _value, u256 _gasPrice, bytesConstRef _data,
         bytesConstRef _code, h256 const& _codeHash, unsigned _depth, bool _isCreate,
         bool _staticCall)
@@ -96,7 +96,7 @@ public:
    h256 blockHash(u256 _number) override;
 
 private:
-   State& m_s;  ///< A reference to the base state.
+   EosState& m_s;  ///< A reference to the base state.
    SealEngineFace const& m_sealEngine;
 };
 
