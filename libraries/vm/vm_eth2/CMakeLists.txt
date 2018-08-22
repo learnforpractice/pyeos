@@ -13,7 +13,7 @@ include_directories (${CPP_ETHEREUM_DIR}/evmjit/include)
 include_directories (${CPP_ETHEREUM_DIR}/utils)
 include_directories (jsoncpp/include)
 
-target_link_libraries(vm_eth2 PRIVATE eosiolib_native fc evm ethereum)
+target_link_libraries(vm_eth2 PRIVATE eosiolib_native fc evm ethereum ethashseal)
 
 target_include_directories(vm_eth2 PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

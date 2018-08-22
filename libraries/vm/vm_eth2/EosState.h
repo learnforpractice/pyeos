@@ -95,13 +95,16 @@ public:
 
 	virtual u256 const& requireAccountStartNonce() const;
 
-	virtual bool addressInUse(Address const& _address) const;
-
 	virtual bool accountNonemptyAndExisting(Address const& _address) const;
 #endif
+   virtual bool addressInUse(Address const& _address) const;
+
+	virtual void setCode(Address const& _address, bytes&& _code);
+
 
 	virtual bytes const& code(Address const& _addr) const;
 
+   virtual bool addressHasCode(Address const& _address) const;
 
 	virtual size_t codeSize(Address const& _contract) const;
 

@@ -28,6 +28,11 @@ static struct vm_api s_api;
 #include "EosExecutive.h"
 //#include "EosDB.h"
 
+#include <fc/reflect/reflect.hpp>
+#include <fc/io/raw.hpp>
+
+#include <eosiolib/types.hpp>
+
 using namespace dev::eth;
 using namespace dev;
 
@@ -78,13 +83,44 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
+bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create);
+
 int vm_setcode(uint64_t account) {
-   printf("+++++vm_eth: setcode\n");
-   return 0;
+   printf("+++++vm_eth2: setcode\n");
+   size_t size = 0;
+   const char* code = get_code(account, &size);
+   bytes _code(code, code+size);
+   run_code(account, account, _code, true);
+   return 1;
 }
 
+struct EthTransfer {
+   uint64_t from;
+   uint64_t to;
+   uint64_t value;
+   std::vector<uint8_t> data;
+};
+
+FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
+
+
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   printf("+++++vm_eth: apply\n");
+   ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
+   if (act != N(transfer)) {
+      return 1;
+   }
+
+   uint32_t size = action_data_size();
+   bytes data(size);
+   read_action_data( data.data(), data.size() );
+
+   EthTransfer et;
+   fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
+   require_auth(et.from);
+   eosio_assert(et.to == account, "bad receiver");
+
+   run_code(et.from, et.to, et.data, false);
+
    return 0;
 }
 
@@ -92,18 +128,18 @@ int vm_call(uint64_t account, uint64_t func) {
    return 0;
 }
 
-static std::string const c_genesisInfoMainNetworkTest = std::string() +
+static std::string const c_genesisInfoMainNetworkNoProofTest = std::string() +
 R"E(
 {
-   "sealEngine": "Ethash",
+   "sealEngine": "NoProof",
    "params": {
       "accountStartNonce": "0x00",
       "homesteadForkBlock": "0x118c30",
       "daoHardforkBlock": "0x1d4c00",
       "EIP150ForkBlock": "0x259518",
       "EIP158ForkBlock": "0x28d138",
-      "byzantiumForkBlock": "0x42ae50",
-      "constantinopleForkBlock": "0x500000",
+      "byzantiumForkBlock": "0x2dc6c0",
+      "constantinopleForkBlock": "0x2f36ca",
       "networkID" : "0x01",
       "chainID": "0x01",
       "maximumExtraDataSize": "0x20",
@@ -139,14 +175,25 @@ R"E(
 }
 )E";
 
-bool run_code(uint64_t account, bytes& code, bytes& data, bytes& output)
+static uint64_t g_sender = 0;
+
+void set_sender(uint64_t sender) {
+   g_sender = sender;
+}
+
+uint64_t get_sender() {
+   return g_sender;
+}
+
+bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
 {
-   Address contractDestination;;
-   Address sender;
-   contractDestination = Address(account);
+   bytes output;
+   Address contractDestination = Address(_receiver);
+   Address sender = Address(_sender);
+   Address receiver = Address(_receiver);
+   Address origin = Address(_receiver);
 
-   sender = contractDestination;
-
+   set_sender(_sender);
 
    VMKind vmKind = VMKind::Interpreter;
    Mode mode = Mode::Statistics;
@@ -155,35 +202,29 @@ bool run_code(uint64_t account, bytes& code, bytes& data, bytes& output)
    u256 gasPrice = 0;
    u256 value = 0;
 
-
-
    StandardTrace st;
 
    BlockHeader blockHeader; // fake block to be executed in
    blockHeader.setGasLimit(gas);
    blockHeader.setTimestamp(0);
 
-
-   Address origin = contractDestination;//Address(69);
-
-
    EosState state;
-//   State state(0);
 
-//   code = dev::fromHex(_code);
-//   code = std::vector<uint8_t>( _code.begin(), _code.end() );
-//   data = dev::jsToBytes(_data, OnFailed::Throw);
+   Ethash::init();
+   NoProof::init();
 
    Transaction t;
-   if (!code.empty())
+   if (create)
    {
       // Deploy the code on some fake account to be called later.
       Account account(0, 0);
-      account.setCode(std::vector<uint8_t>{*(reinterpret_cast<dev::bytes*>(&code))});
+      account.setCode(std::vector<uint8_t>{*(reinterpret_cast<dev::bytes*>(&data))});
       std::unordered_map<Address, Account> map;
       map[contractDestination] = account;
       state.populateFrom(map);
+
       t = Transaction(value, gasPrice, gas, contractDestination, *(reinterpret_cast<dev::bytes*>(&data)), 0);
+      t.forceSender(contractDestination);
    }
    else
    {
@@ -192,12 +233,12 @@ bool run_code(uint64_t account, bytes& code, bytes& data, bytes& output)
       t = Transaction(value, gasPrice, gas, *(reinterpret_cast<dev::bytes*>(&data)), 0);
    }
 
-   state.addBalance(sender, value);
+//   state.addBalance(sender, value);
 
    LastBlockHashes lastBlockHashes;
    EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
 
-   std::unique_ptr<dev::eth::SealEngineFace> seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkTest).createSealEngine());
+   std::unique_ptr<dev::eth::SealEngineFace> seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
 
    EosExecutive executive(state, envInfo, *seal);
 
@@ -208,56 +249,20 @@ bool run_code(uint64_t account, bytes& code, bytes& data, bytes& output)
    std::unordered_map<byte, std::pair<unsigned, dev::bigint>> counts;
    unsigned total = 0;
    dev::bigint memTotal;
-   auto onOp = [&](uint64_t step, uint64_t PC, Instruction inst, dev::bigint m, dev::bigint gasCost, dev::bigint gas, dev::eth::VMFace const* evm, ExtVMFace const* extVM) {
-//      std::cout << "++++++gasCost: " << gasCost << "\n";
-#if 0
-      if (mode == Mode::Statistics)
-      {
-         counts[(byte)inst].first++;
-         counts[(byte)inst].second += gasCost;
-         total++;
-         if (m > 0)
-            memTotal = m;
-      }
-      else if (mode == Mode::Trace)
-         st(step, PC, inst, m, gasCost, gas, evm, extVM);
-#endif
-   };
 
    executive.initialize(t);
-   if (!code.empty())
-      executive.call(contractDestination, sender, value, gasPrice, reinterpret_cast<dev::bytes*>(&data), gas);
+   if (create)
+       executive.create(sender, value, gasPrice, gas, reinterpret_cast<dev::bytes*>(&data), origin);
    else
-      executive.create(sender, value, gasPrice, gas, reinterpret_cast<dev::bytes*>(&data), origin);
+       executive.call(contractDestination, sender, value, gasPrice, reinterpret_cast<dev::bytes*>(&data), gas);
 
-   Timer timer;
-   if ((mode == Mode::Statistics || mode == Mode::Trace) && vmKind == VMKind::Interpreter)
-      // If we use onOp, the factory falls back to "interpreter"
-      executive.go(onOp);
-   else
-      executive.go();
-   double execTime = timer.elapsed();
+   executive.go();
+
    executive.finalize();
 
    output.resize( 0 );
    output.resize( res.output.size() );
    memcpy( output.data(), res.output.data(), res.output.size() );
 
-#if 0
-   std::cout << "res.newAddress.hex(): " << res.newAddress.hex() << "\n";
-   std::cout << "Gas used: " << res.gasUsed << " (+" << t.baseGasRequired(seal->evmSchedule(envInfo.number())) << " for transaction, -" << res.gasRefunded << " refunded)\n";
-   std::cout << "res.output.size():" << res.output.size() << "\n";
-   std::cout << "Output: " << toHex(res.output) << "\n";
-//   std::cout << "toJS(res.output): " << toJS(res.output) << "\n";
-
-   LogEntries logs = executive.logs();
-   std::cout << logs.size() << " logs" << (logs.empty() ? "." : ":") << "\n";
-   for (LogEntry const& l: logs)
-   {
-      std::cout << "  " << l.address.hex() << ": " << toHex(t.data()) << "\n";
-      for (h256 const& t: l.topics)
-         std::cout << "    " << t.hex() << "\n";
-   }
-#endif
    return true;
 }

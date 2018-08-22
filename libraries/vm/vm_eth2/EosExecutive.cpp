@@ -148,6 +148,7 @@ bool EosExecutive::call(Address const& _receiveAddress, Address const& _senderAd
 bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
     // If external transaction.
+#if 0
     if (m_t)
     {
         // FIXME: changelog contains unrevertable balance change that paid
@@ -156,7 +157,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
         if (_p.senderAddress != MaxAddress || m_envInfo.number() < m_sealEngine.chainParams().constantinopleForkBlock) // EIP86
             m_s.incNonce(_p.senderAddress);
     }
-
+#endif
     m_savepoint = m_s.savepoint();
 
     if (m_sealEngine.isPrecompiled(_p.codeAddress, m_envInfo.number()))

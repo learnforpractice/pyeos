@@ -197,6 +197,7 @@ def test():
         actions.append(act)
 
         r, cost = eosapi.push_actions(actions)
+        print(r['except'])
         print(r['elapsed'])
 #        call_contract(contract_interface)
 
@@ -231,7 +232,7 @@ def setValue(v=119000):
     args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'evm':'active'})
+    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
     print(r['elapsed'])
 
 
@@ -266,7 +267,7 @@ def getValue():
     args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'evm':'active'})
+    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
     print(r['elapsed'])
 
 

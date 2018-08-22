@@ -45,20 +45,9 @@
 namespace eosio {
 namespace chain {
 
-bool get_code(uint64_t _account, std::vector<uint8_t>& v) {
-   size_t size = 0;
-   const char* code = get_vm_api()->get_code(_account, &size);
-   if (size <= 0) {
-      return false;
-   }
-   v.resize(size);
-   memcpy(v.data(), code, size);
-   return true;
-}
-
 bool get_code_size(uint64_t _account, size_t& size) {
    get_vm_api()->get_code(_account, &size);
-   return size;
+   return size != 0;
 }
 
 }
@@ -239,16 +228,6 @@ u256 const& EosState::requireAccountStartNonce() const
 	return m_accountStartNonce;
 }
 
-bool EosState::addressInUse(Address const& _id) const
-{
-	uint64_t n = ((uint64_t*)_id.data())[0];
-	int size = 0;
-	bool ret;
-	ret = get_code_size(n, size);
-	ilog( "size ${n}\n", ("n", size) );
-	return ret;
-	//	return !!account(_id);
-}
 
 bool EosState::accountNonemptyAndExisting(Address const& _address) const
 {
@@ -266,32 +245,29 @@ bool EosState::accountNonemptyAndExisting(Address const& _address) const
 }
 #endif
 
-#include <libdevcore/CommonJS.h>
-vector<uint8_t> g_code;
-bytes const& EosState::code(Address const& _addr) const
+bool EosState::addressInUse(Address const& _id) const
 {
-	ilog(_addr.hex());
-	uint64_t n = ((uint64_t*)_addr.data())[0];
-	if (get_code(n, g_code)) {
-		ilog( "code size: ${n}", ("n", g_code.size()) );
-		return g_code;
-	}
-	return NullBytes;
+   return false;
+   return is_account(_id);
+}
 
-	Account const* a = account(_addr);
-	if (!a || a->codeHash() == EmptySHA3)
-		return NullBytes;
 
-	if (a->code().empty())
-	{
-		// Load the code from the backend.
-		Account* mutableAccount = const_cast<Account*>(a);
-		mutableAccount->noteCode(m_db.lookup(a->codeHash()));
-		CodeSizeCache::instance().store(a->codeHash(), a->code().size());
-	}
+bytes const& EosState::code(Address const& _addr) const {
+   static bytes _code;
+   uint64_t receiver = _addr;
+   size_t size=0;
 
-	return a->code();
+   eosio_assert (get_code_type(_addr) == 2, "bad vm type");
+   const char *code = get_code( receiver, &size );
 
+   _code.resize(size);
+   memcpy(_code.data(), code, size);
+   return _code;
+}
+
+/// Sets the code of the account. Must only be called during / after contract creation.
+void EosState::setCode(Address const& _address, bytes&& _code) {
+   set_code(_address, 2, (char*)_code.data(), _code.size());
 }
 
 
@@ -303,14 +279,22 @@ size_t EosState::codeSize(Address const& _a) const
 	return size;
 }
 
+bool EosState::addressHasCode(Address const& _id) const
+{
+   size_t size;
+   return get_code_size(_id, size);
+}
+
+uint64_t get_sender();
+
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
 	uint64_t id = 0;
 	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
-	uint64_t n = ((uint64_t*)_contract.data())[0];
+    uint64_t n = _contract;
 
-//	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
 
 	dev::bytes key = dev::toBigEndian(_key);
 //FIXME: lost pricision
@@ -319,13 +303,13 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 	dev::bytes value(32+32);
 	value = key;
 	value += dev::toBigEndian(_value);
-
+	uint64_t payer = get_sender();
 	try {
 		for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
 			uint64_t id = ((uint64_t*)key.data())[i];
 			int itr = db_find_i64( n, n, n, id );
 			if (itr < 0) {
-				db_store_i64(n, n, n, id, (const char *)value.data(), value.size() );
+				db_store_i64(n, n, payer, id, (const char *)value.data(), value.size() );
 				return;
 			}
 			wlog("update value ${n}", ("n", _value.str()));
@@ -337,7 +321,7 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 				//key conflict, find next
 				continue;
 			}
-			db_update_i64( itr, n, (const char *)value.data(), value.size() );
+			db_update_i64( itr, payer, (const char *)value.data(), value.size() );
 			return;
 		}
 	} catch (const fc::exception& e) {
@@ -352,16 +336,14 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
 	uint64_t id = 0;
-	uint64_t n = ((uint64_t*)_id.data())[0];
+	uint64_t n = _id;
 
-//	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
 
 	dev::bytes value(32+32);
 	memset(value.data(), 0 ,value.size());
 
 	dev::bytes key = dev::toBigEndian(_key);
-//FIXME: lost pricision
-	memcpy(&id, key.data(), sizeof(id));
 
 	try {
 		for (int i=0;i<key.size()/sizeof(uint64_t);i++) {

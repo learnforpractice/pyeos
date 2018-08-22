@@ -147,7 +147,7 @@ static uint64_t vm_names[] = {
 static const char* vm_libs_path[] = {
    "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_cpython_ss" DYLIB_SUFFIX,
-   "../libs/libvm_eth" DYLIB_SUFFIX,
+   "../libs/libvm_eth2" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
 //   "../libs/libipc_server" DYLIB_SUFFIX
 };
