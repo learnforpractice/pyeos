@@ -16,9 +16,8 @@
 
 #include "Block.h"
 #include "BlockChain.h"
-#include "ExtVM.h"
+#include "EosExtVM.h"
 #include "Interface.h"
-#include "State.h"
 
 #include <libdevcore/CommonIO.h>
 #include <libethcore/CommonJS.h>
@@ -46,7 +45,7 @@ std::string dumpStackAndMemory(LegacyVM const& _vm)
     return o.str();
 };
 
-std::string dumpStorage(ExtVM const& _ext)
+std::string dumpStorage(EosExtVM const& _ext)
 {
     ostringstream o;
     o << "    STORAGE\n";
@@ -200,7 +199,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
         {
             bytes const& c = m_s.code(_p.codeAddress);
             h256 codeHash = m_s.codeHash(_p.codeAddress);
-            m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress,
+            m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress,
                 _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash,
                 m_depth, false, _p.staticCall);
         }
@@ -265,7 +264,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 
     // Schedule _init execution if not empty.
     if (!_init.empty())
-        m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
+        m_ext = make_shared<EosExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
             _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), m_depth, true, false);
 
     return !m_ext;
@@ -277,7 +276,7 @@ OnOpFunc EosExecutive::simpleTrace()
 
     return [&traceLogger](uint64_t steps, uint64_t PC, Instruction inst, bigint newMemSize,
                bigint gasCost, bigint gas, VMFace const* _vm, ExtVMFace const* voidExt) {
-        ExtVM const& ext = *static_cast<ExtVM const*>(voidExt);
+        EosExtVM const& ext = *static_cast<EosExtVM const*>(voidExt);
         auto vm = dynamic_cast<LegacyVM const*>(_vm);
 
         ostringstream o;
@@ -416,7 +415,7 @@ bool EosExecutive::finalize()
     if (m_res) // Collect results
     {
         m_res->gasUsed = gasUsed();
-        m_res->excepted = m_excepted; // TODO: m_except is used only in ExtVM::call
+        m_res->excepted = m_excepted; // TODO: m_except is used only in EosExtVM::call
         m_res->newAddress = m_newAddress;
         m_res->gasRefunded = m_ext ? m_ext->sub.refunds : 0;
     }

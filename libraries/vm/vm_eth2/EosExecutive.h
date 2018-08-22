@@ -39,7 +39,7 @@ namespace eth
 class State;
 class Block;
 class BlockChain;
-class ExtVM;
+class EosExtVM;
 class SealEngineFace;
 struct Manifest;
 
@@ -156,7 +156,7 @@ private:
     State& m_s;                     ///< The state to which this operation/transaction is applied.
     // TODO: consider changign to EnvInfo const& to avoid LastHashes copy at every CALL/CREATE
     EnvInfo m_envInfo;              ///< Information on the runtime environment.
-    std::shared_ptr<ExtVM> m_ext;      ///< The VM externality object for the VM execution or null if no VM is required. shared_ptr used only to allow ExtVM forward reference. This field does *NOT* survive this object.
+    std::shared_ptr<EosExtVM> m_ext;      ///< The VM externality object for the VM execution or null if no VM is required. shared_ptr used only to allow EosExtVM forward reference. This field does *NOT* survive this object.
     owning_bytes_ref m_output;         ///< Execution output.
     ExecutionResult* m_res = nullptr;  ///< Optional storage for execution results.
 
