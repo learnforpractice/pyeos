@@ -17,8 +17,8 @@
 #include "EosExtVM.h"
 #include "Interface.h"
 
-#include <libevm/LegacyVM.h>
-#include <libevm/VMFactory.h>
+//#include <libevm/VMFactory.h>
+#include <libevm4eos/EosVM.h>
 
 #include <json/json.h>
 #include <boost/timer.hpp>
@@ -26,24 +26,6 @@
 using namespace std;
 using namespace dev;
 using namespace dev::eth;
-
-namespace
-{
-std::string dumpStackAndMemory(LegacyVM const& _vm)
-{
-    ostringstream o;
-    o << "\n    STACK\n";
-    for (auto i : _vm.stack())
-        o << (h256)i << "\n";
-    o << "    MEMORY\n"
-      << ((_vm.memory().size() > 1000) ? " mem size greater than 1000 bytes " :
-                                         memDump(_vm.memory()));
-    return o.str();
-};
-
-
-}  // namespace
-
 
 
 u256 EosExecutive::gasUsed() const
@@ -176,7 +158,8 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
         try
         {
             // Create VM instance. Force Interpreter if tracing requested.
-            auto vm = VMFactory::create();
+//            auto vm = VMFactory::create();
+            std::unique_ptr<EosVM> vm = std::make_unique<EosVM>();
             if (m_isCreation)
             {
                 m_s.clearStorage(m_ext->myAddress);
@@ -261,15 +244,6 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
 
 bool EosExecutive::finalize()
 {
-    // Accumulate refunds for suicides.
-    if (m_ext)
-        m_ext->sub.refunds += m_ext->evmSchedule().suicideRefundGas * m_ext->sub.suicides.size();
-
-    // SSTORE refunds...
-    // must be done before the miner gets the fees.
-    m_refunded = m_ext ? min((m_t.gas() - m_gas) / 2, m_ext->sub.refunds) : 0;
-    m_gas += m_refunded;
-
     // Suicides...
     if (m_ext)
         for (auto a: m_ext->sub.suicides)

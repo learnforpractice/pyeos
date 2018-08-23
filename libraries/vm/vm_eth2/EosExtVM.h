@@ -20,9 +20,7 @@
 #include "EosExecutive.h"
 #include "EosState.h"
 
-#include <libethcore/Common.h>
 #include <libethcore/SealEngine.h>
-#include <libevm/ExtVMFace.h>
 
 #include <functional>
 #include <map>

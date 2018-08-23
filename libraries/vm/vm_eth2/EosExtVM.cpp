@@ -22,6 +22,8 @@
 #include "EosExtVM.h"
 
 #include <libethereum/LastBlockHashesFace.h>
+#include <libethcore/SealEngine.h>
+
 #include <boost/thread.hpp>
 #include <exception>
 

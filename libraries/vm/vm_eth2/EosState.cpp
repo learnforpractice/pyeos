@@ -23,18 +23,13 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/timer.hpp>
-#include <libdevcore/Assertions.h>
-
-#include <libethcore/SealEngine.h>
 
 #include <libevm/VMFactory.h>
 //#include <libethereum/BlockChain.h>
 //#include <libethereum/Block.h>
-#include <libethereum/Defaults.h>
 
 #include "EosExtVM.h"
 
-#include <libethereum/TransactionQueue.h>
 #include "EosExecutive.h"
 
 #include <fc/log/logger.hpp>

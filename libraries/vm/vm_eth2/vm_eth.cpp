@@ -29,9 +29,24 @@ static struct vm_api s_api;
 using namespace dev;
 using namespace dev::eth;
 
+class LastBlockHashes: public eth::LastBlockHashesFace
+{
+public:
+   h256s precedingHashes(h256 const& /* _mostRecentHash */) const override { return h256s(256, h256()); }
+   void clear() override {}
+};
+
+
 using byte = uint8_t;
 using bytes = std::vector<byte>;
-std::unique_ptr<dev::eth::SealEngineFace> seal;
+
+static std::unique_ptr<dev::eth::SealEngineFace> seal;
+
+static BlockHeader blockHeader;
+static LastBlockHashes lastBlockHashes;
+
+static std::unique_ptr<dev::eth::EnvInfo> envInfo;
+static EosState state;
 
 int64_t maxBlockGasLimit()
 {
@@ -88,18 +103,12 @@ R"E(
 )E";
 
 
-class LastBlockHashes: public eth::LastBlockHashesFace
-{
-public:
-   h256s precedingHashes(h256 const& /* _mostRecentHash */) const override { return h256s(256, h256()); }
-   void clear() override {}
-};
-
-
 void vm_init(struct vm_api* api) {
    s_api = *api;
    NoProof::init();
    seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
+
+   envInfo = std::make_unique<dev::eth::EnvInfo>(blockHeader, lastBlockHashes, 0);
 }
 
 void vm_deinit() {
@@ -180,51 +189,23 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
    u256 gasPrice = 0;
    u256 value = 0;
 
-   StandardTrace st;
-
-   BlockHeader blockHeader; // fake block to be executed in
-   blockHeader.setGasLimit(gas);
-   blockHeader.setTimestamp(0);
-
-   EosState state;
-
    Transaction t;
    if (create)
    {
-      // Deploy the code on some fake account to be called later.
-#if 0
-      Account account(0, 0);
-      account.setCode(std::vector<uint8_t>{*(reinterpret_cast<dev::bytes*>(&data))});
-      std::unordered_map<Address, Account> map;
-      map[contractDestination] = account;
-      state.populateFrom(map);
-#endif
       t = Transaction(value, gasPrice, gas, contractDestination, *(reinterpret_cast<dev::bytes*>(&data)), 0);
       t.forceSender(contractDestination);
    }
    else
    {
-      // If not code provided construct "create" transaction out of the input
-      // data.
       t = Transaction(value, gasPrice, gas, *(reinterpret_cast<dev::bytes*>(&data)), 0);
       t.forceSender(sender);
    }
 
-//   state.addBalance(sender, value);
-
-   LastBlockHashes lastBlockHashes;
-   EnvInfo const envInfo(blockHeader, lastBlockHashes, 0);
-
-
-   EosExecutive executive(state, envInfo, *seal);
+   EosExecutive executive(state, *envInfo, *seal);
 
    ExecutionResult res;
-   executive.setResultRecipient(res);
+//   executive.setResultRecipient(res);
    t.forceSender(sender);
-
-   std::unordered_map<byte, std::pair<unsigned, dev::bigint>> counts;
-   unsigned total = 0;
-   dev::bigint memTotal;
 
    executive.initialize(t);
    if (create)
@@ -236,9 +217,9 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
 
    executive.finalize();
 
-   output.resize( 0 );
-   output.resize( res.output.size() );
-   memcpy( output.data(), res.output.data(), res.output.size() );
+//   output.resize( 0 );
+//   output.resize( res.output.size() );
+//   memcpy( output.data(), res.output.data(), res.output.size() );
 
    return true;
 }

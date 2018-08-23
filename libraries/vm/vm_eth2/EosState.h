@@ -20,13 +20,8 @@
 #include <array>
 #include <unordered_map>
 #include <libdevcore/Common.h>
-#include <libdevcore/RLP.h>
-#include <libethcore/Exceptions.h>
+#include <libdevcore/Exceptions.h>
 #include <libevm/ExtVMFace.h>
-#include "Account.h"
-#include "Transaction.h"
-#include "TransactionReceipt.h"
-#include "GasPricer.h"
 
 namespace dev
 {
