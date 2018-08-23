@@ -3,6 +3,7 @@
 
 #include <eosio/chain/block_log.hpp>
 #include <eosio/chain/fork_database.hpp>
+#include <eosio/chain/exceptions.hpp>
 
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/block_summary_object.hpp>
@@ -29,12 +30,56 @@ bool vm_cleanup();
 
 using resource_limits::resource_limits_manager;
 
+class maybe_session {
+   public:
+      maybe_session() = default;
+
+      maybe_session( maybe_session&& other)
+      :_session(move(other._session))
+      {
+      }
+
+      explicit maybe_session(database& db) {
+         _session = db.start_undo_session(true);
+      }
+
+      maybe_session(const maybe_session&) = delete;
+
+      void squash() {
+         if (_session)
+            _session->squash();
+      }
+
+      void undo() {
+         if (_session)
+            _session->undo();
+      }
+
+      void push() {
+         if (_session)
+            _session->push();
+      }
+
+      maybe_session& operator = ( maybe_session&& mv ) {
+         if (mv._session) {
+            _session = move(*mv._session);
+            mv._session.reset();
+         } else {
+            _session.reset();
+         }
+
+         return *this;
+      };
+
+   private:
+      optional<database::session>     _session;
+};
 
 struct pending_state {
-   pending_state( database::session&& s )
+   pending_state( maybe_session&& s )
    :_db_session( move(s) ){}
 
-   database::session                  _db_session;
+   maybe_session                      _db_session;
 
    block_state_ptr                    _pending_block_state;
 
@@ -60,7 +105,8 @@ struct controller_impl {
    authorization_manager          authorization;
    controller::config             conf;
    chain_id_type                  chain_id;
-   bool                           replaying = false;
+   bool                           replaying= false;
+   optional<fc::time_point>       replay_head_time;
    db_read_mode                   read_mode = db_read_mode::SPECULATIVE;
    bool                           in_trx_requiring_checks = false; ///< if true, checks that are normally skipped on replay (e.g. auth checks) cannot be skipped
    optional<fc::microseconds>     subjective_cpu_leeway;
@@ -218,7 +264,9 @@ struct controller_impl {
 
          auto end = blog.read_head();
          if( end && end->block_num() > 1 ) {
+            auto end_time = end->timestamp.to_time_point();
             replaying = true;
+            replay_head_time = end_time;
             ilog( "existing block log, attempting to replay ${n} blocks", ("n",end->block_num()) );
 
             auto start = fc::time_point::now();
@@ -228,6 +276,12 @@ struct controller_impl {
                   std::cerr << std::setw(10) << next->block_num() << " of " << end->block_num() <<"\r";
                }
             }
+            std::cerr<< "\n";
+            ilog( "${n} blocks replayed", ("n", head->block_num) );
+
+            // the irreverible log is played without undo sessions enabled, so we need to sync the
+            // revision ordinal to the appropriate expected value here.
+            db.set_revision(head->block_num);
 
             int rev = 0;
             while( auto obj = reversible_blocks.find<reversible_block_object,by_num>(head->block_num+1) ) {
@@ -235,14 +289,13 @@ struct controller_impl {
                self.push_block( obj->get_block(), controller::block_status::validated );
             }
 
-            std::cerr<< "\n";
             ilog( "${n} reversible blocks replayed", ("n",rev) );
             auto end = fc::time_point::now();
             ilog( "replayed ${n} blocks in ${duration} seconds, ${mspb} ms/block",
                   ("n", head->block_num)("duration", (end-start).count()/1000000)
                   ("mspb", ((end-start).count()/1000.0)/head->block_num)        );
-            std::cerr<< "\n";
             replaying = false;
+            replay_head_time.reset();
 
          } else if( !end ) {
             blog.reset_to_genesis( conf.genesis, head->block );
@@ -326,7 +379,7 @@ struct controller_impl {
     */
    void initialize_fork_db() {
       wlog( " Initializing new blockchain with genesis state                  " );
-      producer_schedule_type initial_schedule{ 0, {{N(eosio), conf.genesis.initial_key}} };
+      producer_schedule_type initial_schedule{ 0, {{config::system_account_name, conf.genesis.initial_key}} };
 
       block_header_state genheader;
       genheader.active_schedule       = initial_schedule;
@@ -512,8 +565,6 @@ struct controller_impl {
                                         trx_context.billed_cpu_time_us, trace->net_usage );
          fc::move_append( pending->_actions, move(trx_context.executed) );
 
-         emit( self.applied_transaction, trace );
-
          trx_context.squash();
          restore.cancel();
          return trace;
@@ -535,7 +586,7 @@ struct controller_impl {
       db.remove( gto );
    }
 
-   bool failure_is_subjective( const fc::exception& e ) {
+   bool failure_is_subjective( const fc::exception& e ) const {
       auto code = e.code();
       return    (code == subjective_block_production_exception::code_value)
              || (code == block_net_usage_exceeded::code_value)
@@ -551,6 +602,12 @@ struct controller_impl {
              || (code == key_blacklist_exception::code_value);
    }
 
+   bool scheduled_failure_is_subjective( const fc::exception& e ) const {
+      auto code = e.code();
+      return    (code == tx_cpu_usage_exceeded::code_value)
+             || failure_is_subjective(e);
+   }
+
    transaction_trace_ptr push_scheduled_transaction( const transaction_id_type& trxid, fc::time_point deadline, uint32_t billed_cpu_time_us, bool explicit_billed_cpu_time = false ) {
       const auto& idx = db.get_index<generated_transaction_multi_index,by_trx_id>();
       auto itr = idx.find( trxid );
@@ -560,7 +617,10 @@ struct controller_impl {
 
    transaction_trace_ptr push_scheduled_transaction( const generated_transaction_object& gto, fc::time_point deadline, uint32_t billed_cpu_time_us, bool explicit_billed_cpu_time = false )
    { try {
-      auto undo_session = db.start_undo_session(true);
+      maybe_session undo_session;
+      if ( !self.skip_db_sessions() )
+         undo_session = maybe_session(db);
+
       auto gtrx = generated_transaction(gto);
 
       // remove the generated transaction object after making a copy
@@ -576,18 +636,23 @@ struct controller_impl {
       EOS_ASSERT( gtrx.delay_until <= self.pending_block_time(), transaction_exception, "this transaction isn't ready",
                  ("gtrx.delay_until",gtrx.delay_until)("pbt",self.pending_block_time())          );
 
+      signed_transaction dtrx;
+      fc::raw::unpack(ds,static_cast<transaction&>(dtrx) );
+      transaction_metadata_ptr trx = std::make_shared<transaction_metadata>( dtrx );
+      trx->accepted = true;
+      trx->scheduled = true;
 
+      transaction_trace_ptr trace;
       if( gtrx.expiration < self.pending_block_time() ) {
-         auto trace = std::make_shared<transaction_trace>();
+         trace = std::make_shared<transaction_trace>();
          trace->id = gtrx.trx_id;
-         trace->scheduled = false;
+         trace->scheduled = true;
          trace->receipt = push_receipt( gtrx.trx_id, transaction_receipt::expired, billed_cpu_time_us, 0 ); // expire the transaction
+         emit( self.accepted_transaction, trx );
+         emit( self.applied_transaction, trace );
          undo_session.squash();
          return trace;
       }
-
-      signed_transaction dtrx;
-      fc::raw::unpack(ds,static_cast<transaction&>(dtrx) );
 
       auto reset_in_trx_requiring_checks = fc::make_scoped_exit([old_value=in_trx_requiring_checks,this](){
          in_trx_requiring_checks = old_value;
@@ -601,7 +666,7 @@ struct controller_impl {
       trx_context.deadline = deadline;
       trx_context.explicit_billed_cpu_time = explicit_billed_cpu_time;
       trx_context.billed_cpu_time_us = billed_cpu_time_us;
-      transaction_trace_ptr trace = trx_context.trace;
+      trace = trx_context.trace;
       try {
          trx_context.init_for_deferred_trx( gtrx.published );
          trx_context.exec();
@@ -616,11 +681,14 @@ struct controller_impl {
 
          fc::move_append( pending->_actions, move(trx_context.executed) );
 
+         emit( self.accepted_transaction, trx );
          emit( self.applied_transaction, trace );
 
          trx_context.squash();
          undo_session.squash();
+
          restore.cancel();
+
          return trace;
       } catch( const fc::exception& e ) {
          cpu_time_to_bill_us = trx_context.update_billed_cpu_time( fc::time_point::now() );
@@ -628,7 +696,7 @@ struct controller_impl {
          trace->except_ptr = std::current_exception();
          trace->elapsed = fc::time_point::now() - trx_context.start;
       }
-      trx_context.undo_session.undo();
+      trx_context.undo();
 
       // Only subjective OR soft OR hard failure logic below:
 
@@ -639,6 +707,8 @@ struct controller_impl {
          error_trace->failed_dtrx_trace = trace;
          trace = error_trace;
          if( !trace->except_ptr ) {
+            emit( self.accepted_transaction, trx );
+            emit( self.applied_transaction, trace );
             undo_session.squash();
             return trace;
          }
@@ -647,7 +717,15 @@ struct controller_impl {
 
       // Only subjective OR hard failure logic below:
 
-      if (!failure_is_subjective(*trace->except)) {
+      // subjectivity changes based on producing vs validating
+      bool subjective  = false;
+      if (explicit_billed_cpu_time) {
+         subjective = failure_is_subjective(*trace->except);
+      } else {
+         subjective = scheduled_failure_is_subjective(*trace->except);
+      }
+
+      if ( !subjective ) {
          // hard failure logic
 
          if( !explicit_billed_cpu_time ) {
@@ -665,8 +743,14 @@ struct controller_impl {
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
 
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
+
+         emit( self.accepted_transaction, trx );
          emit( self.applied_transaction, trace );
+
          undo_session.squash();
+      } else {
+         emit( self.accepted_transaction, trx );
+         emit( self.applied_transaction, trace );
       }
 
       return trace;
@@ -696,7 +780,6 @@ struct controller_impl {
     */
    transaction_trace_ptr push_transaction( const transaction_metadata_ptr& trx,
                                            fc::time_point deadline,
-                                           bool implicit,
                                            uint32_t billed_cpu_time_us,
                                            bool explicit_billed_cpu_time = false )
    {
@@ -713,13 +796,15 @@ struct controller_impl {
          trx_context.billed_cpu_time_us = billed_cpu_time_us;
          trace = trx_context.trace;
          try {
-            if( implicit ) {
+            if( trx->implicit ) {
                trx_context.init_for_implicit_trx();
                trx_context.can_subjectively_fail = false;
             } else {
+               bool skip_recording = replay_head_time && (time_point(trx->trx.expiration) <= *replay_head_time);
                trx_context.init_for_input_trx( trx->packed_trx.get_unprunable_size(),
                                                trx->packed_trx.get_prunable_size(),
-                                               trx->trx.signatures.size());
+                                               trx->trx.signatures.size(),
+                                               skip_recording);
             }
 
             if( trx_context.can_subjectively_fail && pending->_block_status == controller::block_status::incomplete ) {
@@ -729,7 +814,7 @@ struct controller_impl {
 
             trx_context.delay = fc::seconds(trx->trx.delay_sec);
 
-            if( !self.skip_auth_check() && !implicit ) {
+            if( !self.skip_auth_check() && !trx->implicit ) {
                authorization.check_authorization(
                        trx->trx.actions,
                        trx->recover_keys( chain_id ),
@@ -746,7 +831,7 @@ struct controller_impl {
 
             auto restore = make_block_restore_point();
 
-            if (!implicit) {
+            if (!trx->implicit) {
                transaction_receipt::status_enum s = (trx_context.delay == fc::seconds(0))
                                                     ? transaction_receipt::executed
                                                     : transaction_receipt::delayed;
@@ -764,8 +849,8 @@ struct controller_impl {
 
             // call the accept signal but only once for this transaction
             if (!trx->accepted) {
-               emit( self.accepted_transaction, trx);
                trx->accepted = true;
+               emit( self.accepted_transaction, trx);
             }
 
             emit(self.applied_transaction, trace);
@@ -779,7 +864,7 @@ struct controller_impl {
                trx_context.squash();
             }
 
-            if (!implicit) {
+            if (!trx->implicit) {
                unapplied_transactions.erase( trx->signed_id );
             }
             return trace;
@@ -792,25 +877,31 @@ struct controller_impl {
             unapplied_transactions.erase( trx->signed_id );
          }
 
+         emit( self.accepted_transaction, trx );
+         emit( self.applied_transaction, trace );
+
          return trace;
       } FC_CAPTURE_AND_RETHROW((trace))
    } /// push_transaction
 
 
    void start_block( block_timestamp_type when, uint16_t confirm_block_count, controller::block_status s ) {
-      EOS_ASSERT( !pending, block_validate_exception, "pending block is not available" );
-
-      EOS_ASSERT( db.revision() == head->block_num, database_exception, "db revision is not on par with head block",
-                ("db.revision()", db.revision())("controller_head_block", head->block_num)("fork_db_head_block", fork_db.head()->block_num) );
+      EOS_ASSERT( !pending, block_validate_exception, "pending block already exists" );
 
       auto guard_pending = fc::make_scoped_exit([this](){
          pending.reset();
       });
 
-      pending = db.start_undo_session(true);
+      if (!self.skip_db_sessions(s)) {
+         EOS_ASSERT( db.revision() == head->block_num, database_exception, "db revision is not on par with head block",
+                     ("db.revision()", db.revision())("controller_head_block", head->block_num)("fork_db_head_block", fork_db.head()->block_num) );
+
+         pending.emplace(maybe_session(db));
+      } else {
+         pending.emplace(maybe_session());
+      }
 
       pending->_block_status = s;
-
       pending->_pending_block_state = std::make_shared<block_state>( *head, when ); // promotes pending schedule (if any) to active
       pending->_pending_block_state->in_current_chain = true;
 
@@ -844,11 +935,12 @@ struct controller_impl {
 
          try {
             auto onbtrx = std::make_shared<transaction_metadata>( get_on_block_transaction() );
+            onbtrx->implicit = true;
             auto reset_in_trx_requiring_checks = fc::make_scoped_exit([old_value=in_trx_requiring_checks,this](){
                   in_trx_requiring_checks = old_value;
                });
             in_trx_requiring_checks = true;
-            push_transaction( onbtrx, fc::time_point::maximum(), true, self.get_global_properties().configuration.min_transaction_cpu_usage, true );
+            push_transaction( onbtrx, fc::time_point::maximum(), self.get_global_properties().configuration.min_transaction_cpu_usage, true );
          } catch( const boost::interprocess::bad_alloc& e  ) {
             elog( "on block transaction failed due to a bad allocation" );
             throw;
@@ -888,7 +980,7 @@ struct controller_impl {
             if( receipt.trx.contains<packed_transaction>() ) {
                auto& pt = receipt.trx.get<packed_transaction>();
                auto mtrx = std::make_shared<transaction_metadata>(pt);
-               trace = push_transaction( mtrx, fc::time_point::maximum(), false, receipt.cpu_usage_us, true );
+               trace = push_transaction( mtrx, fc::time_point::maximum(), receipt.cpu_usage_us, true );
             } else if( receipt.trx.contains<transaction_id_type>() ) {
                trace = push_scheduled_transaction( receipt.trx.get<transaction_id_type>(), fc::time_point::maximum(), receipt.cpu_usage_us, true );
             } else {
@@ -1355,13 +1447,57 @@ void controller::push_confirmation( const header_confirmation& c ) {
 
 transaction_trace_ptr controller::push_transaction( const transaction_metadata_ptr& trx, fc::time_point deadline, uint32_t billed_cpu_time_us ) {
    validate_db_available_size();
-   return my->push_transaction(trx, deadline, false, billed_cpu_time_us, billed_cpu_time_us > 0 );
+   EOS_ASSERT( get_read_mode() != chain::db_read_mode::READ_ONLY, transaction_type_exception, "push transaction not allowed in read-only mode" );
+   EOS_ASSERT( trx && !trx->implicit && !trx->scheduled, transaction_type_exception, "Implicit/Scheduled transaction not allowed" );
+   return my->push_transaction(trx, deadline, billed_cpu_time_us, billed_cpu_time_us > 0 );
 }
 
 transaction_trace_ptr controller::push_scheduled_transaction( const transaction_id_type& trxid, fc::time_point deadline, uint32_t billed_cpu_time_us )
 {
    validate_db_available_size();
    return my->push_scheduled_transaction( trxid, deadline, billed_cpu_time_us, billed_cpu_time_us > 0 );
+}
+
+const flat_set<account_name>& controller::get_actor_whitelist() const {
+   return my->conf.actor_whitelist;
+}
+const flat_set<account_name>& controller::get_actor_blacklist() const {
+   return my->conf.actor_blacklist;
+}
+const flat_set<account_name>& controller::get_contract_whitelist() const {
+   return my->conf.contract_whitelist;
+}
+const flat_set<account_name>& controller::get_contract_blacklist() const {
+   return my->conf.contract_blacklist;
+}
+const flat_set< pair<account_name, action_name> >& controller::get_action_blacklist() const {
+   return my->conf.action_blacklist;
+}
+const flat_set<public_key_type>& controller::get_key_blacklist() const {
+   return my->conf.key_blacklist;
+}
+
+void controller::set_actor_whitelist( const flat_set<account_name>& new_actor_whitelist ) {
+   my->conf.actor_whitelist = new_actor_whitelist;
+}
+void controller::set_actor_blacklist( const flat_set<account_name>& new_actor_blacklist ) {
+   my->conf.actor_blacklist = new_actor_blacklist;
+}
+void controller::set_contract_whitelist( const flat_set<account_name>& new_contract_whitelist ) {
+   my->conf.contract_whitelist = new_contract_whitelist;
+}
+void controller::set_contract_blacklist( const flat_set<account_name>& new_contract_blacklist ) {
+   my->conf.contract_blacklist = new_contract_blacklist;
+}
+void controller::set_action_blacklist( const flat_set< pair<account_name, action_name> >& new_action_blacklist ) {
+   for (auto& act: new_action_blacklist) {
+      EOS_ASSERT(act.first != account_name(), name_type_exception, "Action blacklist - contract name should not be empty");
+      EOS_ASSERT(act.second != action_name(), action_type_exception, "Action blacklist - action name should not be empty");
+   }
+   my->conf.action_blacklist = new_action_blacklist;
+}
+void controller::set_key_blacklist( const flat_set<public_key_type>& new_key_blacklist ) {
+   my->conf.key_blacklist = new_key_blacklist;
 }
 
 uint32_t controller::head_block_num()const {
@@ -1539,11 +1675,46 @@ optional<producer_schedule_type> controller::proposed_producers()const {
    return gpo.proposed_schedule;
 }
 
-bool controller::skip_auth_check()const {
+bool controller::skip_auth_check() const {
    if (my->conf.skip_signature_check) {
       return true;
    }
-   return my->replaying && !my->conf.force_all_checks && !my->in_trx_requiring_checks;
+   // replaying
+   bool consider_skipping = my->replaying;
+
+   // OR in light validation mode
+   consider_skipping = consider_skipping || my->conf.block_validation_mode == validation_mode::LIGHT;
+
+   return consider_skipping
+      && !my->conf.force_all_checks
+      && !my->in_trx_requiring_checks;
+}
+
+bool controller::skip_db_sessions( block_status bs ) const {
+   bool consider_skipping = bs == block_status::irreversible;
+   return consider_skipping
+      && !my->conf.disable_replay_opts
+      && !my->in_trx_requiring_checks;
+}
+
+bool controller::skip_db_sessions( ) const {
+   if (my->pending) {
+      return skip_db_sessions(my->pending->_block_status);
+   } else {
+      return false;
+   }
+}
+
+bool controller::skip_trx_checks() const {
+   // in a pending irreversible or previously validated block
+   bool consider_skipping = my->pending && ( my->pending->_block_status == block_status::irreversible || my->pending->_block_status == block_status::validated );
+
+   // OR in light validation mode
+   consider_skipping = consider_skipping || my->conf.block_validation_mode == validation_mode::LIGHT;
+
+   return consider_skipping
+      && !my->conf.disable_replay_opts
+      && !my->in_trx_requiring_checks;
 }
 
 bool controller::contracts_console()const {
@@ -1556,6 +1727,10 @@ chain_id_type controller::get_chain_id()const {
 
 db_read_mode controller::get_read_mode()const {
    return my->read_mode;
+}
+
+validation_mode controller::get_validation_mode()const {
+   return my->conf.block_validation_mode;
 }
 
 const apply_handler* controller::find_apply_handler( account_name receiver, account_name scope, action_name act ) const
