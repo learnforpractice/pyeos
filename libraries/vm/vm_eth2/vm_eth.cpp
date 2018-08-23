@@ -134,21 +134,21 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, dev::bytes& data, bool create);
+bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create);
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_eth2: setcode\n");
    size_t size = 0;
    const char* code = get_code(account, &size);
    dev::bytes _code(code, code+size);
-   run_code(account, account, _code, true);
+   run_code(account, account, 0,  _code, true);
    return 1;
 }
 
 struct EthTransfer {
    uint64_t from;
    uint64_t to;
-   uint64_t value;
+   int64_t value;
    std::vector<uint8_t> data;
 };
 
@@ -167,7 +167,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       require_auth(et.from);
       eosio_assert(et.to == account, "bad receiver");
 
-      run_code(et.from, et.to, et.data, false);
+      run_code(et.from, et.to, et.value, et.data, false);
       return 1;
    } else if (act == N(transfer)) {
       auto transfer = unpack_action_data<currency::transfer>();
@@ -179,7 +179,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       eosio_assert(transfer.memo.size() % 2 == 0, "invalid hex string");
       eosio::bytes data(transfer.memo.size()/2);
       fc::from_hex(transfer.memo, data.data(), data.size());
-      run_code(transfer.from, transfer.to, *reinterpret_cast<dev::bytes*>(&data), false);
+      run_code(transfer.from, transfer.to, transfer.quantity.amount, *reinterpret_cast<dev::bytes*>(&data), false);
    }
 
    return 0;
@@ -200,7 +200,7 @@ uint64_t get_sender() {
    return g_sender;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, dev::bytes& data, bool create)
+bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create)
 {
    dev::bytes output;
    Address contractDestination = Address(_receiver);
@@ -212,7 +212,7 @@ bool run_code(uint64_t _sender, uint64_t _receiver, dev::bytes& data, bool creat
 
    u256 gas = maxBlockGasLimit();
    u256 gasPrice = 0;
-   u256 value = 0;
+   u256 value(_value);
 
    Transaction t;
    if (create)
