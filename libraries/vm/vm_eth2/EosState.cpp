@@ -44,7 +44,7 @@ using bytes = std::vector<byte>;
 namespace eosio {
 namespace chain {
 
-#define VM_TYPE 8
+#define VM_TYPE 2
 
 bool get_code_size(uint64_t _account, size_t& size) {
    get_vm_api()->get_code(_account, &size);
