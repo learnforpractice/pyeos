@@ -21,6 +21,7 @@ static struct vm_api s_api;
 
 #include <fc/reflect/reflect.hpp>
 #include <fc/io/raw.hpp>
+#include <fc/crypto/hex.hpp>
 
 #include <eosiolib/types.hpp>
 
@@ -174,8 +175,11 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       eosio_assert(transfer.quantity.symbol == S(4, EOS), "not EOS token");
       eosio_assert(transfer.quantity.is_valid(), "invalid transfer");
       eosio_assert(transfer.quantity.amount > 0, "invalid amount");
-      dev::bytes data(transfer.memo.begin(), transfer.memo.end());
-      run_code(transfer.from, transfer.to, data, false);
+//      dev::bytes data(transfer.memo.begin(), transfer.memo.end());
+      eosio_assert(transfer.memo.size() % 2 == 0, "invalid hex string");
+      eosio::bytes data(transfer.memo.size()/2);
+      fc::from_hex(transfer.memo, data.data(), data.size());
+      run_code(transfer.from, transfer.to, *reinterpret_cast<dev::bytes*>(&data), false);
    }
 
    return 0;
