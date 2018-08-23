@@ -48,3 +48,7 @@
 	path = libraries/ethereum
 	url = https://github.com/learnforpractice/cpp-ethereum
 	branch = develop-eos
+[submodule "externals/julia"]
+	path = externals/julia
+	url = https://github.com/learnforpractice/julia
+	branch = master
