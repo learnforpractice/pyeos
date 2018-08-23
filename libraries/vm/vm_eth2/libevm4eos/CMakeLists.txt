@@ -4,7 +4,7 @@ add_library(eosvm STATIC
             EosVMOpt.cpp
             )
 
-set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/external/ethereum")
 
 target_link_libraries(eosvm PRIVATE eosiolib_native fc evm ethashseal)
 

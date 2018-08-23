@@ -7,7 +7,7 @@ add_library(vm_eth2 SHARED
             VM_API.cpp
             vm_eth.cpp)
 
-set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum")
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/externals/ethereum")
 
 include_directories (${CPP_ETHEREUM_DIR})
 include_directories (${CPP_ETHEREUM_DIR}/libethereum)

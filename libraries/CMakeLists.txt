@@ -6,8 +6,6 @@ add_subdirectory( ipc )
 
 add_subdirectory( vm_manager )
 
-add_subdirectory( ethereum )
-
 add_subdirectory( builtins )
 add_subdirectory( softfloat )
 add_subdirectory( chainbase )

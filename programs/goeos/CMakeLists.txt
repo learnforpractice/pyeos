@@ -20,8 +20,8 @@ endif( APPLE )
 
 target_include_directories( goeos PUBLIC ${CMAKE_SOURCE_DIR}/include 
                                   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
-                                  PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                                  PUBLIC ${CMAKE_SOURCE_DIR}/externals/python/Include
+                                  PUBLIC ${CMAKE_SOURCE_DIR}/externals/python
                                   PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                                   PUBLIC  ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include

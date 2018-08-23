@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/evmc/cmake/cable/bootstrap.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/externals/ethereum/evmc/cmake/cable/bootstrap.cmake)
 include(CableBuildInfo)
 include(CableBuildType)
 include(CableToolchains)
@@ -9,14 +9,14 @@ include(GNUInstallDirs)
 cable_configure_toolchain(DEFAULT cxx11)
 
 
-set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/ethereum/cmake" CACHE PATH "The path to the cmake directory")
+set(ETH_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/ethereum/cmake" CACHE PATH "The path to the cmake directory")
 list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 # Defines EOS library target.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/fc/CMakeModules")
 
-set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/libraries/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
+set(CPP_ETHEREUM_DIR "${CMAKE_SOURCE_DIR}/externals/ethereum" CACHE PATH "Path to the root directory for cpp-ethereum")
 
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)

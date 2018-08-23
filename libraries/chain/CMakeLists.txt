@@ -4,7 +4,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/genesis_state_root_key.cpp.in ${CMAKE
 file(GLOB HEADERS "include/eosio/chain/*.hpp" "include/eosio/chain/contracts/*.hpp")
 #find_package(LevelDB)
 
-set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/libraries/python;${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
+set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/externals/python;${CMAKE_SOURCE_DIR}/externals/python/dist/bin/python3")
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/rpc_interface/rpc_interface_.wrap.cpp
@@ -81,8 +81,8 @@ target_include_directories( eosio_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
-                            PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                            PUBLIC ${CMAKE_SOURCE_DIR}/externals/python/Include
+                            PUBLIC ${CMAKE_SOURCE_DIR}/externals/python
                             PUBLIC ${CMAKE_SOURCE_DIR}/contracts
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_manager
                             PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm/vm_wasm

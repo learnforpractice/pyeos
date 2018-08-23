@@ -41,11 +41,11 @@
 	path = libraries/vm/vm_py
 	url = https://github.com/learnforpractice/micropython
 [submodule "libraries/python"]
-	path = libraries/python
+	path = externals/python
 	url = https://github.com/learnforpractice/cpython
 	branch = v3.7.0-cmake
 [submodule "libraries/ethereum"]
-	path = libraries/ethereum
+	path = externals/ethereum
 	url = https://github.com/learnforpractice/cpp-ethereum
 	branch = develop-eos
 [submodule "externals/julia"]

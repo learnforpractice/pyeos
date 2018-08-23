@@ -6,7 +6,7 @@ else()
     set(LINK_FLAGS "${LINK_FLAGS} -Wl,--version-script,\"${_version_script}\"")
 endif (APPLE)
 
-set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/libraries/python;${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
+set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/externals/python;${CMAKE_SOURCE_DIR}/externals/python/dist/bin/python3")
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/vm_cpython.wrap.cpp
@@ -41,8 +41,8 @@ target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     PUBLIC ${CMAKE_SOURCE_DIR}/libraries/softfloat/source/include
 
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
-    PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+    PUBLIC ${CMAKE_SOURCE_DIR}/externals/python/Include
+    PUBLIC ${CMAKE_SOURCE_DIR}/externals/python
 
     PRIVATE ${CMAKE_BINARY_DIR}/libraries/fc/include
 #    PRIVATE ${CMAKE_BINARY_DIR}/libraries/chain/include

@@ -15,7 +15,7 @@ endif()
 
 #set_property(TARGET python3.6m PROPERTY IMPORTED_LOCATION $ENV{PYTHON_LIB})
 
-set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/libraries/python;${CMAKE_SOURCE_DIR}/libraries/python/dist/bin/python3")
+set(PYTHON3 "LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/externals/python;${CMAKE_SOURCE_DIR}/externals/python/dist/bin/python3")
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/wrap/eosapi.wrap.cpp
@@ -96,19 +96,19 @@ target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
 endif( APPLE )
 
 target_include_directories( pyeos-shared 
-                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/ethereum
+                              PUBLIC ${CMAKE_SOURCE_DIR}/externals/ethereum
                               PUBLIC ${CMAKE_SOURCE_DIR}/contracts 
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/chain/include
                               PUBLIC ${CMAKE_BINARY_DIR}//libraries/chain/include
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python
+                              PUBLIC ${CMAKE_SOURCE_DIR}/externals/python
+                              PUBLIC ${CMAKE_SOURCE_DIR}/externals/python/Include
                               PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/interface
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_wasm
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix
                               PUBLIC ${CMAKE_SOURCE_DIR}/libraries/vm_py/ports/unix/build
-                              PUBLIC ${CMAKE_SOURCE_DIR}/libraries/python/Include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PUBLIC ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/include
                               PRIVATE ${CMAKE_SOURCE_DIR}/plugins/history_plugin/include
