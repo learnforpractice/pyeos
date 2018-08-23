@@ -192,7 +192,7 @@ def test():
         actions.append(act)
 
 #        bin = '608060405234801561001057600080fd5b506103e76000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055506122b86000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550610221806100aa6000396000f300608060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063209652551461005c5780635524107714610087578063a5b248d9146100b4575b600080fd5b34801561006857600080fd5b5061007161010b565b6040518082815260200191505060405180910390f35b34801561009357600080fd5b506100b260048036038101908080359060200190929190505050610151565b005b3480156100c057600080fd5b506100f5600480360381019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506101dd565b6040518082815260200191505060405180910390f35b60008060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905090565b806000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550606381016000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000208190555050565b600060205280600052604060002060009150905054815600a165627a7a7230582027ddd8a5407c4fad4a070848746c3d9e2313600c2a052b6e11b3416b35d72cda0029'
-        args = eosapi.pack_args("eosio", 'setcode', {'account':account,'vmtype':8, 'vmversion':0, 'code':bin})
+        args = eosapi.pack_args("eosio", 'setcode', {'account':account,'vmtype':2, 'vmversion':0, 'code':bin})
         act = ['eosio', 'setcode', args, {'evm':'active'}]
         actions.append(act)
 
@@ -232,7 +232,7 @@ def setValue(v=119000):
     args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
+    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
     print(r['except'])
     print(r['elapsed'])
 
@@ -268,7 +268,7 @@ def getValue():
     args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
-    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
+    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
     print(r['elapsed'])
 
 

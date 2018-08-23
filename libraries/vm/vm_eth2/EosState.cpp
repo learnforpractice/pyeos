@@ -190,11 +190,14 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 }
 
 h256 EosState::codeHash(Address const& _contract) const {
-   elog("fixme:codeHash");
-   return h256(0);
+   h256 code_id;
+   get_code_id( _contract, (char*)code_id.data(), code_id.size );
+   return code_id;//EmptySHA3;
 }
 
 u256 EosState::balance(Address const& _id) const {
-   assert(0);
-   return u256(0);
+   uint64_t amount;
+   //534f4504: 4,EOS
+   get_vm_api()->get_balance(_id, 0x534f4504, &amount);
+   return u256(amount);
 }
