@@ -26,6 +26,10 @@ static struct vm_api s_api;
 
 #include <libethcore/SealEngine.h>
 
+#include <eosiolib/action.hpp>
+#include <eosiolib/currency.hpp>
+
+using namespace eosio;
 using namespace dev;
 using namespace dev::eth;
 
@@ -35,10 +39,6 @@ public:
    h256s precedingHashes(h256 const& /* _mostRecentHash */) const override { return h256s(256, h256()); }
    void clear() override {}
 };
-
-
-using byte = uint8_t;
-using bytes = std::vector<byte>;
 
 static std::unique_ptr<dev::eth::SealEngineFace> seal;
 
@@ -52,7 +52,7 @@ int64_t maxBlockGasLimit()
 {
 //   static int64_t limit = ChainParams(genesisInfo(Network::MainNetworkTest)).maxGasLimit.convert_to<int64_t>();
 //   return limit;
-   return 0xfffffffff;
+   return 0xfffffffffffffff;
 }
 
 static std::string const c_genesisInfoMainNetworkNoProofTest = std::string() +
@@ -103,7 +103,21 @@ R"E(
 )E";
 
 
+uint64_t ethaddr2n(const char* address, int size) {
+   eosio_assert(size == Address::size, "wrong address size");
+   return Address((byte*)address, Address::ConstructFromPointer);
+}
+
+void n2ethaddr(uint64_t n, char* address, int size) {
+   eosio_assert(size == Address::size, "wrong address size");
+   Address a(n);
+   memcpy(address, a.data(), Address::size);
+}
+
 void vm_init(struct vm_api* api) {
+   api->ethaddr2n = ethaddr2n;
+   api->n2ethaddr = n2ethaddr;
+
    s_api = *api;
    NoProof::init();
    seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
@@ -119,13 +133,13 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create);
+bool run_code(uint64_t _sender, uint64_t _receiver, dev::bytes& data, bool create);
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_eth2: setcode\n");
    size_t size = 0;
    const char* code = get_code(account, &size);
-   bytes _code(code, code+size);
+   dev::bytes _code(code, code+size);
    run_code(account, account, _code, true);
    return 1;
 }
@@ -142,20 +156,27 @@ FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
-   if (act != N(transfer)) {
+   if (act == N(ethtransfer)) {
+      uint32_t size = action_data_size();
+      eosio::bytes data(size);
+      read_action_data( data.data(), data.size() );
+
+      EthTransfer et;
+      fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
+      require_auth(et.from);
+      eosio_assert(et.to == account, "bad receiver");
+
+      run_code(et.from, et.to, et.data, false);
       return 1;
+   } else if (act == N(transfer)) {
+      auto transfer = unpack_action_data<currency::transfer>();
+      eosio_assert(account == N(eosio.token), "bad token");
+      eosio_assert(transfer.quantity.symbol == S(4, EOS), "not EOS token");
+      eosio_assert(transfer.quantity.is_valid(), "invalid transfer");
+      eosio_assert(transfer.quantity.amount > 0, "invalid amount");
+      dev::bytes data(transfer.memo.begin(), transfer.memo.end());
+      run_code(transfer.from, transfer.to, data, false);
    }
-
-   uint32_t size = action_data_size();
-   bytes data(size);
-   read_action_data( data.data(), data.size() );
-
-   EthTransfer et;
-   fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
-   require_auth(et.from);
-   eosio_assert(et.to == account, "bad receiver");
-
-   run_code(et.from, et.to, et.data, false);
 
    return 0;
 }
@@ -175,9 +196,9 @@ uint64_t get_sender() {
    return g_sender;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
+bool run_code(uint64_t _sender, uint64_t _receiver, dev::bytes& data, bool create)
 {
-   bytes output;
+   dev::bytes output;
    Address contractDestination = Address(_receiver);
    Address sender = Address(_sender);
    Address receiver = Address(_receiver);
@@ -192,26 +213,30 @@ bool run_code(uint64_t _sender, uint64_t _receiver, bytes& data, bool create)
    Transaction t;
    if (create)
    {
-      t = Transaction(value, gasPrice, gas, contractDestination, *(reinterpret_cast<dev::bytes*>(&data)), 0);
-      t.forceSender(contractDestination);
+      t = Transaction(value, gasPrice, gas, data, 0);
+      t.forceSender(sender);
    }
    else
    {
-      t = Transaction(value, gasPrice, gas, *(reinterpret_cast<dev::bytes*>(&data)), 0);
-      t.forceSender(sender);
+       t = Transaction(value, gasPrice, gas, contractDestination, data, 0);
+       t.forceSender(contractDestination);
    }
 
    EosExecutive executive(state, *envInfo, *seal);
 
-   ExecutionResult res;
+//   ExecutionResult res;
 //   executive.setResultRecipient(res);
    t.forceSender(sender);
 
    executive.initialize(t);
+#if 1
+   executive.execute();
+#else
    if (create)
-       executive.create(sender, value, gasPrice, gas, reinterpret_cast<dev::bytes*>(&data), origin);
+       executive.create(sender, value, gasPrice, gas, &data, origin);
    else
-       executive.call(contractDestination, sender, value, gasPrice, reinterpret_cast<dev::bytes*>(&data), gas);
+       executive.call(contractDestination, sender, value, gasPrice, &data, gas);
+#endif
 
    executive.go();
 

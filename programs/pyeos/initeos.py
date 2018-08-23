@@ -267,14 +267,13 @@ def preinit():
 try:
     from python.apitest import t as at
     from python.cryptokitties import t as kt
-    from python.currency import t as ct
     from python.backyard import t as bt
     from python.rpctest import t as rt
     from python.simpleauction import t as st
     from wasm.lab import t as lt
     
     from python.vote import t as vt2
-    from python.native import t as nt
+    from native.native import t as nt
     from python.vmstore import t as vt
     from python.inspector import t as it
 
