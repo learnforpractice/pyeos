@@ -93,7 +93,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
     }
 
     // Transfer ether.
-    m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
+//    m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
     return !m_ext;
 }
 
@@ -207,6 +207,7 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
             m_gas = 0;
             m_excepted = toTransactionException(_e);
             revert();
+            throw;
         }
         catch (InternalVMError const& _e)
         {

@@ -156,7 +156,7 @@ FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
 
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
+//   ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
    if (act == N(ethtransfer)) {
       uint32_t size = action_data_size();
       eosio::bytes data(size);
@@ -212,7 +212,7 @@ bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& 
 
    u256 gas = maxBlockGasLimit();
    u256 gasPrice = 0;
-   u256 value(_value);
+   u256 value(0);
 
    Transaction t;
    if (create)
