@@ -16,6 +16,7 @@
 */
 
 #include "EosVM.h"
+#include <eosiolib/system.h>
 
 using namespace std;
 using namespace dev;
@@ -146,6 +147,7 @@ void EosVM::updateGas()
 
 void EosVM::updateMem(uint64_t _newMem)
 {
+   eosio_assert(_newMem<10*1024*1024, "running out of memory!");
 	m_newMemSize = (_newMem + 31) / 32 * 32;
 	updateGas();
 	if (m_newMemSize > m_mem.size())
