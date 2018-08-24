@@ -25,6 +25,8 @@ extern "C" {
    typedef struct { uint64_t v[2]; } float128_t;
 #endif
 
+typedef unsigned __int128 __uint128;
+
 struct vm_api {
    uint32_t (*read_action_data)( void* msg, uint32_t len );
    uint32_t (*action_data_size)(void);
@@ -89,6 +91,7 @@ struct vm_api {
    int (*db_get_i256)( int iterator, char* buffer, size_t buffer_size );
    int (*db_find_i256)( uint64_t code, uint64_t scope, uint64_t table, void* id, int size );
 
+   int (*sha3)(const char* data, int size, char* result, int size2);
 
    int32_t (*db_idx64_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_previous)(int32_t iterator, uint64_t* primary);
@@ -98,27 +101,27 @@ struct vm_api {
    int32_t (*db_idx64_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t* primary);
    int32_t (*db_idx64_end)(uint64_t code, uint64_t scope, uint64_t table);
 
-   int32_t (*db_idx128_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* secondary);
-   void (*db_idx128_update)(int32_t iterator, uint64_t payer, const uint128_t* secondary);
+   int32_t (*db_idx128_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const __uint128* secondary);
+   void (*db_idx128_update)(int32_t iterator, uint64_t payer, const __uint128* secondary);
    void (*db_idx128_remove)(int32_t iterator);
    int32_t (*db_idx128_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx128_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx128_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t primary);
-   int32_t (*db_idx128_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const uint128_t* secondary, uint64_t* primary);
-   int32_t (*db_idx128_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t* primary);
-   int32_t (*db_idx128_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* secondary, uint64_t* primary);
+   int32_t (*db_idx128_find_primary)(uint64_t code, uint64_t scope, uint64_t table, __uint128* secondary, uint64_t primary);
+   int32_t (*db_idx128_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const __uint128* secondary, uint64_t* primary);
+   int32_t (*db_idx128_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, __uint128* secondary, uint64_t* primary);
+   int32_t (*db_idx128_upperbound)(uint64_t code, uint64_t scope, uint64_t table, __uint128* secondary, uint64_t* primary);
 
    int32_t (*db_idx128_end)(uint64_t code, uint64_t scope, uint64_t table);
-   int32_t (*db_idx256_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint128_t* data, size_t data_len );
+   int32_t (*db_idx256_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const __uint128* data, size_t data_len );
    void (*db_idx256_update)(int32_t iterator, uint64_t payer, const void* data, size_t data_len);
    void (*db_idx256_remove)(int32_t iterator);
    int32_t (*db_idx256_next)(int32_t iterator, uint64_t* primary);
 
    int32_t (*db_idx256_previous)(int32_t iterator, uint64_t* primary);
-   int32_t (*db_idx256_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t primary);
-   int32_t (*db_idx256_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const uint128_t* data, size_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
-   int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, uint128_t* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_find_primary)(uint64_t code, uint64_t scope, uint64_t table, __uint128* data, size_t data_len, uint64_t primary);
+   int32_t (*db_idx256_find_secondary)(uint64_t code, uint64_t scope, uint64_t table, const __uint128* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_lowerbound)(uint64_t code, uint64_t scope, uint64_t table, __uint128* data, size_t data_len, uint64_t* primary);
+   int32_t (*db_idx256_upperbound)(uint64_t code, uint64_t scope, uint64_t table, __uint128* data, size_t data_len, uint64_t* primary);
    int32_t (*db_idx256_end)(uint64_t code, uint64_t scope, uint64_t table);
 
    int32_t (*db_idx_double_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const float64_t* secondary);
@@ -163,8 +166,8 @@ struct vm_api {
    void (*prints_l)( const char* cstr, uint32_t len);
    void (*printi)( int64_t value );
    void (*printui)( uint64_t value );
-   void (*printi128)( const int128_t* value );
-   void (*printui128)( const uint128_t* value );
+   void (*printi128)( const __int128* value );
+   void (*printui128)( const __uint128* value );
    void (*printsf)(float value);
    void (*printdf)(double value);
    void (*printqf)(const float128_t* value);
@@ -196,8 +199,8 @@ struct vm_api {
    bool (*vm_cleanup)(void);
    int (*vm_run_script)(const char* str);
 
-   void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
-   int (*cancel_deferred)(const uint128_t* sender_id);
+   void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+   int (*cancel_deferred)(const __uint128* sender_id);
 
    size_t (*read_transaction)(char *buffer, size_t size);
    size_t (*transaction_size)(void);

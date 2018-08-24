@@ -115,9 +115,20 @@ void n2ethaddr(uint64_t n, char* address, int size) {
    memcpy(address, a.data(), Address::size);
 }
 
+int sha3_(const char* data, int size, char* result, int size2) {
+   if (size2 != h256::size) {
+      return 0;
+   }
+   dev::bytes bs(data, data+size);
+   h256 ret = dev::sha3(bs);
+   memcpy(result, ret.data(), h256::size);
+   return h256::size;
+}
+
 void vm_init(struct vm_api* api) {
    api->ethaddr2n = ethaddr2n;
    api->n2ethaddr = n2ethaddr;
+   api->sha3 = sha3_;
 
    s_api = *api;
    NoProof::init();

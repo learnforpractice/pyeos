@@ -135,6 +135,12 @@ cdef extern from "eosapi_.hpp":
     uint64_t ethaddr2n_(string& addr);
     void n2ethaddr_(uint64_t n, string& addr);
 
+cdef extern from "<eosiolib_native/vm_api.h>":
+    cdef cppclass vm_api:
+        int (*sha3)(const char* data, int size, char* result, int size2)
+    vm_api* get_vm_api()
+
+
 VM_TYPE_WASM = 0
 VM_TYPE_PY = 1
 VM_TYPE_MP = 2
@@ -875,3 +881,8 @@ def n2ethaddr(uint64_t n):
     cdef string addr
     n2ethaddr_(n, addr);
     return <bytes>addr
+
+def sha3(string& s):
+    result = bytes(32)
+    get_vm_api()[0].sha3(s.c_str(), s.size(), result, len(result))
+    return result.hex()
