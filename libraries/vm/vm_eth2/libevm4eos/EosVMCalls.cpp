@@ -118,7 +118,7 @@ int64_t EosVM::verifyJumpDest(u256 const& _dest, bool _throw)
 void EosVM::caseCreate()
 {
 	m_bounce = &EosVM::interpretCases;
-	m_runGas = toInt63(m_schedule->createGas);
+//	m_runGas = toInt63(m_schedule->createGas);
 
 	// Collect arguments.
 	u256 endowment = m_SP[0];
@@ -209,19 +209,21 @@ bool EosVM::caseCallSetup(CallParameters *callParams, bytesRef& o_output)
 	assert(callParams->valueTransfer == 0);
 	assert(callParams->apparentValue == 0);
 
-	m_runGas = toInt63(m_schedule->callGas);
+//	m_runGas = toInt63(m_schedule->callGas);
 
 	callParams->staticCall = (m_OP == Instruction::STATICCALL || m_ext->staticCall);
 
 	bool const haveValueArg = m_OP == Instruction::CALL || m_OP == Instruction::CALLCODE;
 
 	Address destinationAddr = asAddress(m_SP[1]);
+#if 0
 	if (m_OP == Instruction::CALL && !m_ext->exists(destinationAddr))
 		if (m_SP[2] > 0 || m_schedule->zeroValueTransferChargesNewAccountGas())
 			m_runGas += toInt63(m_schedule->callNewAccountGas);
 
 	if (haveValueArg && m_SP[2] > 0)
 		m_runGas += toInt63(m_schedule->callValueTransferGas);
+#endif
 
 	size_t const sizesOffset = haveValueArg ? 3 : 2;
 	u256 inputOffset  = m_SP[sizesOffset];
@@ -248,7 +250,7 @@ bool EosVM::caseCallSetup(CallParameters *callParams, bytesRef& o_output)
 		callParams->gas = std::min(m_SP[0], maxAllowedCallGas);
 	}
 
-	m_runGas = toInt63(callParams->gas);
+//	m_runGas = toInt63(callParams->gas);
 	updateIOGas();
 
 	if (haveValueArg && m_SP[2] > 0)

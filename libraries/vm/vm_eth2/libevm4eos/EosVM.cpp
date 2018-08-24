@@ -97,7 +97,8 @@ void EosVM::adjustStack(unsigned _removed, unsigned _added)
 
 void EosVM::updateSSGas()
 {
-	if (!m_ext->store(m_SP[0]) && m_SP[1])
+#if 0
+   if (!m_ext->store(m_SP[0]) && m_SP[1])
 		m_runGas = toInt63(m_schedule->sstoreSetGas);
 	else if (m_ext->store(m_SP[0]) && !m_SP[1])
 	{
@@ -106,13 +107,17 @@ void EosVM::updateSSGas()
 	}
 	else
 		m_runGas = toInt63(m_schedule->sstoreResetGas);
+#endif
 }
 
 
 uint64_t EosVM::gasForMem(u512 _size)
 {
-	u512 s = _size / 32;
+#if 0
+   u512 s = _size / 32;
 	return toInt63((u512)m_schedule->memoryGas * s + s * s / m_schedule->quadCoeffDiv);
+#endif
+	return 0;
 }
 
 void evm_checktime();
@@ -150,7 +155,7 @@ void EosVM::updateMem(uint64_t _newMem)
 void EosVM::logGasMem()
 {
 	unsigned n = (unsigned)m_OP - (unsigned)Instruction::LOG0;
-	m_runGas = toInt63(m_schedule->logGas + m_schedule->logTopicGas * n + u512(m_schedule->logDataGas) * m_SP[1]);
+//	m_runGas = toInt63(m_schedule->logGas + m_schedule->logTopicGas * n + u512(m_schedule->logDataGas) * m_SP[1]);
 	updateMem(memNeed(m_SP[0], m_SP[1]));
 }
 
@@ -161,7 +166,7 @@ void EosVM::fetchInstruction()
 	adjustStack(metric.args, metric.ret);
 
 	// FEES...
-	m_runGas = toInt63(m_schedule->tierStepGas[static_cast<unsigned>(metric.gasPriceTier)]);
+//	m_runGas = toInt63(m_schedule->tierStepGas[static_cast<unsigned>(metric.gasPriceTier)]);
 	m_newMemSize = m_mem.size();
 	m_copyMemSize = 0;
 }
@@ -286,16 +291,17 @@ void EosVM::interpretCases()
 			if (m_ext->staticCall)
 				throwDisallowedStateChange();
 
-			m_runGas = toInt63(m_schedule->suicideGas);
+//			m_runGas = toInt63(m_schedule->suicideGas);
 			Address dest = asAddress(m_SP[0]);
 
 			// After EIP158 zero-value suicides do not have to pay account creation gas.
 			if (m_ext->balance(m_ext->myAddress) > 0 || m_schedule->zeroValueTransferChargesNewAccountGas())
 				// After EIP150 hard fork charge additional cost of sending
 				// ethers to non-existing account.
-				if (m_schedule->suicideChargesNewAccountGas() && !m_ext->exists(dest))
+#if 0
+			   if (m_schedule->suicideChargesNewAccountGas() && !m_ext->exists(dest))
 					m_runGas += m_schedule->callNewAccountGas;
-
+#endif
 			updateIOGas();
 			m_ext->suicide(dest);
 			m_bounce = 0;
@@ -348,7 +354,7 @@ void EosVM::interpretCases()
 		CASE(SHA3)
 		{
 			ON_OP();
-			m_runGas = toInt63(m_schedule->sha3Gas + (u512(m_SP[1]) + 31) / 32 * m_schedule->sha3WordGas);
+//			m_runGas = toInt63(m_schedule->sha3Gas + (u512(m_SP[1]) + 31) / 32 * m_schedule->sha3WordGas);
 			updateMem(memNeed(m_SP[0], m_SP[1]));
 			updateIOGas();
 
@@ -426,7 +432,7 @@ void EosVM::interpretCases()
 		CASE(EXP)
 		{
 			u256 expon = m_SP[1];
-			m_runGas = toInt63(m_schedule->expGas + m_schedule->expByteGas * (32 - (h256(expon).firstBitSet() / 8)));
+//			m_runGas = toInt63(m_schedule->expGas + m_schedule->expByteGas * (32 - (h256(expon).firstBitSet() / 8)));
 			ON_OP();
 			updateIOGas();
 
@@ -1177,7 +1183,7 @@ void EosVM::interpretCases()
 
 		CASE(BALANCE)
 		{
-			m_runGas = toInt63(m_schedule->balanceGas);
+//			m_runGas = toInt63(m_schedule->balanceGas);
 			ON_OP();
 			updateIOGas();
 
@@ -1256,7 +1262,7 @@ void EosVM::interpretCases()
 
 		CASE(EXTCODESIZE)
 		{
-			m_runGas = toInt63(m_schedule->extcodesizeGas);
+//			m_runGas = toInt63(m_schedule->extcodesizeGas);
 			ON_OP();
 			updateIOGas();
 
@@ -1306,7 +1312,7 @@ void EosVM::interpretCases()
 		CASE(EXTCODECOPY)
 		{
 			ON_OP();
-			m_runGas = toInt63(m_schedule->extcodecopyGas);
+//			m_runGas = toInt63(m_schedule->extcodecopyGas);
 			m_copyMemSize = toInt63(m_SP[3]);
 			updateMem(memNeed(m_SP[1], m_SP[3]));
 			updateIOGas();
@@ -1329,7 +1335,7 @@ void EosVM::interpretCases()
 		CASE(BLOCKHASH)
 		{
 			ON_OP();
-			m_runGas = toInt63(m_schedule->blockhashGas);
+//			m_runGas = toInt63(m_schedule->blockhashGas);
 			updateIOGas();
 
 			m_SPP[0] = (u256)m_ext->blockHash(m_SP[0]);
@@ -1572,7 +1578,7 @@ void EosVM::interpretCases()
 
 		CASE(SLOAD)
 		{
-			m_runGas = toInt63(m_schedule->sloadGas);
+//			m_runGas = toInt63(m_schedule->sloadGas);
 			ON_OP();
 			updateIOGas();
 

@@ -104,7 +104,6 @@ uint64_t get_sender();
 
 void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
-	uint64_t id = 0;
 //	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
     uint64_t n = _contract;
@@ -128,10 +127,9 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
 {
-	uint64_t id = 0;
 	uint64_t n = _id;
-
-//	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+	auto temp = dev::toBigEndian(_key);
+//	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", *(reinterpret_cast<bytes*>(&temp))) );
 
 	dev::bytes value(32);
 	memset(value.data(), 0 ,value.size());
@@ -146,7 +144,7 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 	eosio_assert(size == 32, "bad storage");
 
    u256 ret = dev::fromBigEndian<u256>(value);
-//   ilog( "got value ${n2}", ("n2", ret.str()) );
+//   wlog( "got value ${n2}", ("n2", ret.str()) );
    return ret;
 }
 
