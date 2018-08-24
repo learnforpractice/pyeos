@@ -6,7 +6,15 @@ contract Greeter {
 
     function Greeter() {
         mymap[msg.sender] = 100;
-        mymap[msg.sender] = 101111;
+        address evm = 0x56e4000000000000;
+        
+        if (msg.sender == evm) {
+           mymap[msg.sender] = 1;
+        } else {
+           mymap[msg.sender] = 0;
+        }
+        mymap[msg.sender] = evm.balance;
+        
         log("+++++++++Greeter\n");
     }
 
@@ -18,6 +26,5 @@ contract Greeter {
     function setValue(uint v) public {
         log("+++++++++setValue\n");
         mymap[msg.sender] = v;
-        mymap[msg.sender] = v+99;
     }
 }

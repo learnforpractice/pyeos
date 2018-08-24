@@ -265,7 +265,7 @@ def getValue():
             kwargs)
     print(data)
     data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
+    args = {'from':'eosio', 'to':'evm', 'amount':1234567, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
     r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
@@ -273,26 +273,83 @@ def getValue():
 
 
 @init
-def test2(count=100):
-    actions = []
-    for i in range(count):
-        args = '55241077'
-        args += int.to_bytes(i, 32, 'big').hex()
-        args = bytes.fromhex(args)
-        act = [eosapi.s2n('evm'), N('call'), [[N('evm'), N('active')]], args]
-        actions.append(act)
-    outputs, cost_time = eosapi.push_transactions([actions], True)
-    print(1e6/(cost_time/count))
-
-@init
-def test3():
+def test2(count=200):
     main_class = '<stdin>:Greeter'
-    with open('../../programs/pyeos/contracts/evm/greeter.sol', 'r') as f:
+    greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
+    with open(greeter, 'r') as f:
         contract_source_code = f.read()
         contract_interface = compile(contract_source_code, main_class)
 #        deploy(contract_interface)
-        call_contract(contract_interface)
+        contract_abi = contract_interface['abi']
 
+    fn_identifier = 'getValue'
+
+    for abi in contract_abi:
+        if 'name' in abi and abi['name'] == fn_identifier:
+            fn_abi = abi
+            break
+    args = ()
+    kwargs = {}
+
+    data = web3.utils.contracts.encode_transaction_data(
+            web3,
+            fn_identifier,
+            contract_abi,
+            fn_abi,
+            args,
+            kwargs)
+    print(data)
+    data = data[2:]
+    args = {'from':'eosio', 'to':'evm', 'amount':10, 'data':data}
+
+    actions = []
+    for i in range(count):
+        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        actions.append(action)
+
+    ret, cost = eosapi.push_actions(actions)
+    cost = ret['elapsed']
+    print(ret['except'])
+    assert ret and not ret['except']
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init
+def test3(count=200):
+    main_class = '<stdin>:Greeter'
+    greeter = os.path.join(os.path.dirname(__file__), 'greeter.sol')
+    with open(greeter, 'r') as f:
+        contract_source_code = f.read()
+        contract_interface = compile(contract_source_code, main_class)
+#        deploy(contract_interface)
+        contract_abi = contract_interface['abi']
+
+    fn_identifier = 'getValue'
+
+    for abi in contract_abi:
+        if 'name' in abi and abi['name'] == fn_identifier:
+            fn_abi = abi
+            break
+    args = ()
+    kwargs = {}
+
+    data = web3.utils.contracts.encode_transaction_data(
+            web3,
+            fn_identifier,
+            contract_abi,
+            fn_abi,
+            args,
+            kwargs)
+    print(data)
+    data = data[2:]
+    transactions = []
+    for i in range(count):
+        args = {'from':'eosio', 'to':'evm', 'amount':i, 'data':data}
+        args = eosapi.pack_args('evm', 'ethtransfer', args)
+        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        transactions.append([action,])
+    ret, cost = eosapi.push_transactions(transactions)
+    assert ret
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
 def test4():

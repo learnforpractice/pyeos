@@ -676,6 +676,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
         vector[permission_level]    authorization;
         vector[char]                data;
     '''
+
     for aa in actions:
         v = vector[action]()
         for a in aa:
@@ -683,16 +684,24 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
             act.account = N(a[0])
             act.name = N(a[1])
             pers = vector[permission_level]()
-            for auth in a[3]:
+
+            auths = a[3]
+            for auth in auths:
                 per = permission_level()
-                per.actor = N(auth[0])
-                per.permission = N(auth[1])
+                per.actor = N(auth)
+                per.permission = N(auths[auth])
                 pers.push_back(per)
+
+            args = a[2]
+            if isinstance(args, dict):
+                args = pack_args(a[0], a[1], args)
+
             act.authorization = pers
             act.data.resize(0)
-            act.data.resize(len(a[2]))
-            memcpy(act.data.data(), a[2], len(a[2]))
+            act.data.resize(len(args))
+            memcpy(act.data.data(), args, len(args))
             v.push_back(act)
+
         vv.push_back(v)
 
     if has_opt('manual-gen-block'):
@@ -720,13 +729,7 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     '''
     assert type(args) in (str, dict, bytes)
 
-    if isinstance(args, dict):
-        args = pack_args(contract, action, args)
-
-    pers = []
-    for per in permissions:
-        pers.append([per, permissions[per]])
-    act = [contract, action, args, pers]
+    act = [contract, action, args, permissions]
     outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async)
     if outputs:
         output = outputs[0]
@@ -737,23 +740,7 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     return None
 
 def push_actions(actions, _async=False, sign=True):
-    _actions = []
-    for act in actions:
-        _act = [act[0], act[1]]
-
-        args = act[2]
-        if isinstance(args, dict):
-            args = pack_args(_act[0], _act[1], args)
-        _act.append(args)
-
-        pers = []
-        for per in act[3]:
-            pers.append([per, act[3][per]])
-        _act.append(pers)
-
-        _actions.append(_act)
-
-    ret, cost = push_transactions([_actions], sign, 0, _async)
+    ret, cost = push_transactions([actions,], sign, 0, _async)
     return ret[0], cost
 
 def push_evm_action(eth_address, args, permissions: Dict, sign=True):
@@ -809,11 +796,11 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     else:
         _code = open(src_file, 'rb').read()
         code += pack_bytes(_code)
-        setcode = ['eosio', 'setcode', code, [[account, 'active']]]
+        setcode = ['eosio', 'setcode', code, {account:'active'}]
         actions.append(setcode)
 
     setabi = pack_setabi(abi_file, account)
-    setabi = ['eosio', 'setabi', setabi, [[account, 'active']]]
+    setabi = ['eosio', 'setabi', setabi, {account:'active'}]
     actions.append(setabi)
 
     ret, cost = push_transactions([actions], sign, compress = True)
