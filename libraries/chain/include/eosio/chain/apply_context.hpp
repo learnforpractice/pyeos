@@ -560,6 +560,15 @@ class apply_context {
       int  db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
       int  db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 
+
+      int  db_store_i256( uint64_t scope, uint64_t table, const account_name& payer, key256_t& id, const char* buffer, size_t buffer_size );
+      int  db_store_i256( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, key256_t& id, const char* buffer, size_t buffer_size );
+
+      void db_update_i256( int iterator, account_name payer, const char* buffer, size_t buffer_size , bool check_code=true);
+      void db_remove_i256( int iterator , bool check_code = true);
+      int db_get_i256( int iterator, char* buffer, size_t buffer_size );
+      int db_find_i256( uint64_t code, uint64_t scope, uint64_t table, key256_t& id );
+
       bool get_code(uint64_t _account, std::vector<uint8_t>& v);
       bool get_code_size(uint64_t _account, int& size);
 
@@ -619,7 +628,7 @@ class apply_context {
       action_trace                                trace;
 
    private:
-
+      iterator_cache<key256_value_object>    key256val_cache;
       iterator_cache<key_value_object>    keyval_cache;
       vector<account_name>                _notified; ///< keeps track of new accounts to be notifed of current message
       vector<action>                      _inline_actions; ///< queued inline messages

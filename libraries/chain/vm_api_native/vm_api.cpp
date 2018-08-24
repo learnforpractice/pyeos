@@ -324,6 +324,12 @@ static struct vm_api _vm_api = {
    .db_find_i64 = db_find_i64,
    .db_lowerbound_i64 = db_lowerbound_i64,
 
+   .db_store_i256 = db_store_i256,
+   .db_update_i256 = db_update_i256,
+   .db_remove_i256 = db_remove_i256,
+   .db_get_i256 = db_get_i256,
+   .db_find_i256 = db_find_i256,
+
    .db_upperbound_i64 = db_upperbound_i64,
    .db_end_i64 = db_end_i64,
    .db_idx64_store = db_idx64_store,

@@ -36,6 +36,7 @@
 #include <fc/exception/exception.hpp>
 
 #include <eosiolib_native/vm_api.h>
+#include <eosiolib/db.h>
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
@@ -108,43 +109,21 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 //	m_cache[_contract].setStorage(_key, _value);
     uint64_t n = _contract;
 
-	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+//	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
 
 	dev::bytes key = dev::toBigEndian(_key);
-//FIXME: lost pricision
-	memcpy(&id, key.data(), sizeof(id));
 
-	dev::bytes value(32+32);
-	value = key;
-	value += dev::toBigEndian(_value);
+	dev::bytes value = dev::toBigEndian(_value);
 	uint64_t payer = get_sender();
-	try {
-		for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
-			uint64_t id = ((uint64_t*)key.data())[i];
-			int itr = db_find_i64( n, n, n, id );
-			if (itr < 0) {
-				db_store_i64(n, n, payer, id, (const char *)value.data(), value.size() );
-				return;
-			}
-			wlog("update value ${n}", ("n", _value.str()));
-			dev::bytes v(32+32);
-			int size = db_get_i64( itr, (char*)v.data(), v.size() );
-			assert(size == v.size());
 
-			if (memcmp(v.data(), key.data(), key.size()) != 0) {
-				//key conflict, find next
-				continue;
-			}
-			db_update_i64( itr, payer, (const char *)value.data(), value.size() );
-			return;
-		}
-	} catch (const fc::exception& e) {
-		wlog("exception thrown while call db_store_i64 ${e}", ("e",e.to_detail_string()));
-	} catch (std::exception& e) {
-      wlog("exception thrown while call db_store_i64 ${e}", ("e",e.what()));
-	} catch (...) {
-      wlog("unknown exception.");
-	}
+   int itr = db_find_i256( n, n, n, key.data(), key.size() );
+   if (itr < 0) {
+      db_store_i256(n, n, payer, key.data(), key.size(), (const char *)value.data(), value.size() );
+      return;
+   }
+
+   db_update_i256( itr, payer, (const char *)value.data(), value.size() );
+   return;
 }
 
 u256 EosState::storage(Address const& _id, u256 const& _key) const
@@ -152,41 +131,23 @@ u256 EosState::storage(Address const& _id, u256 const& _key) const
 	uint64_t id = 0;
 	uint64_t n = _id;
 
-	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
+//	ilog( "${n1} ${n2}", ("n1", _id.hex())("n2", _key.str()) );
 
-	dev::bytes value(32+32);
+	dev::bytes value(32);
 	memset(value.data(), 0 ,value.size());
 
 	dev::bytes key = dev::toBigEndian(_key);
-
-	try {
-		for (int i=0;i<key.size()/sizeof(uint64_t);i++) {
-			uint64_t id = ((uint64_t*)key.data())[i];
-			int itr = db_find_i64( n, n, n, id );
-			if (itr < 0) {
-				return 0;
-			}
-
-			int size = db_get_i64( itr, (char*)value.data(), value.size() );
-			if (size <= 0) {
-				return 0;
-			}
-			assert(size == (32+32));
-
-			if (memcmp(key.data(), value.data(), key.size()) != 0) {
-				// key conflict, find next
-				continue;
-			}
-			dev::bytes v(value.begin()+32,value.end());
-			u256 ret = dev::fromBigEndian<u256>(v);
-			ilog( "got value ${n2}", ("n2", ret.str()) );
-			return ret;
-		}
-	} catch (const fc::exception& e) {
-		wlog("exception thrown while call db_get_i64 ${e}", ("e",e.to_detail_string()));
+	int itr = db_find_i256(n, n, n, key.data(), key.size());
+	if (itr < 0) {
+	   return 0;
 	}
 
-	return 0;
+	int size = db_get_i256( itr, (char *)value.data(), value.size() );
+	eosio_assert(size == 32, "bad storage");
+
+   u256 ret = dev::fromBigEndian<u256>(value);
+//   ilog( "got value ${n2}", ("n2", ret.str()) );
+   return ret;
 }
 
 h256 EosState::codeHash(Address const& _contract) const {

@@ -688,6 +688,121 @@ int apply_context::db_end_i64( uint64_t code, uint64_t scope, uint64_t table ) {
    return keyval_cache.cache_table( *tab );
 }
 
+
+int apply_context::db_store_i256( uint64_t scope, uint64_t table, const account_name& payer, key256_t& id, const char* buffer, size_t buffer_size ) {
+   return db_store_i256( get_receiver(), scope, table, payer, id, buffer, buffer_size);
+}
+
+int apply_context::db_store_i256( uint64_t code, uint64_t scope, uint64_t table, const account_name& payer, key256_t& id, const char* buffer, size_t buffer_size ) {
+//   require_write_lock( scope );
+   const auto& tab = find_or_create_table( code, scope, table, payer );
+   auto tableid = tab.id;
+
+   EOS_ASSERT( payer != account_name(), invalid_table_payer, "must specify a valid account to pay for new record" );
+
+   const auto& obj = db.create<key256_value_object>( [&]( auto& o ) {
+      o.t_id        = tableid;
+      o.primary_key = id;
+      o.value.resize( buffer_size );
+      o.payer       = payer;
+      memcpy( o.value.data(), buffer, buffer_size );
+   });
+
+   db.modify( tab, [&]( auto& t ) {
+     ++t.count;
+   });
+
+   int64_t billable_size = (int64_t)(buffer_size + config::billable_size_v<key256_value_object>);
+   update_db_usage( payer, billable_size);
+
+   key256val_cache.cache_table( tab );
+   return key256val_cache.add( obj );
+}
+
+void apply_context::db_update_i256( int iterator, account_name payer, const char* buffer, size_t buffer_size, bool check_code ) {
+   const key256_value_object& obj = key256val_cache.get( iterator );
+
+   const auto& table_obj = key256val_cache.get_table( obj.t_id );
+   if (check_code) {
+      EOS_ASSERT( table_obj.code == get_receiver(), table_access_violation, "db access violation" );
+   }
+
+//   require_write_lock( table_obj.scope );
+
+   const int64_t overhead = config::billable_size_v<key256_value_object>;
+   int64_t old_size = (int64_t)(obj.value.size() + overhead);
+   int64_t new_size = (int64_t)(buffer_size + overhead);
+
+   if( payer == account_name() ) payer = obj.payer;
+
+   if( account_name(obj.payer) != payer ) {
+      // refund the existing payer
+      update_db_usage( obj.payer,  -(old_size) );
+      // charge the new payer
+      update_db_usage( payer,  (new_size));
+   } else if(old_size != new_size) {
+      // charge/refund the existing payer the difference
+      update_db_usage( obj.payer, new_size - old_size);
+   }
+
+   db.modify( obj, [&]( auto& o ) {
+     o.value.resize( buffer_size );
+     memcpy( o.value.data(), buffer, buffer_size );
+     o.payer = payer;
+   });
+}
+
+void apply_context::db_remove_i256( int iterator, bool check_code ) {
+   const key256_value_object& obj = key256val_cache.get( iterator );
+
+   const auto& table_obj = key256val_cache.get_table( obj.t_id );
+   if (check_code) {
+      EOS_ASSERT( table_obj.code == get_receiver(), table_access_violation, "db access violation" );
+   }
+
+//   require_write_lock( table_obj.scope );
+
+   update_db_usage( obj.payer,  -(obj.value.size() + config::billable_size_v<key256_value_object>) );
+
+   db.modify( table_obj, [&]( auto& t ) {
+      --t.count;
+   });
+   db.remove( obj );
+
+   if (table_obj.count == 0) {
+      remove_table(table_obj);
+   }
+
+   key256val_cache.remove( iterator );
+}
+
+int apply_context::db_get_i256( int iterator, char* buffer, size_t buffer_size ) {
+   const key256_value_object& obj = key256val_cache.get( iterator );
+
+   auto s = obj.value.size();
+   if( buffer_size == 0 ) return s;
+
+   auto copy_size = std::min( buffer_size, s );
+   memcpy( buffer, obj.value.data(), copy_size );
+
+   return copy_size;
+}
+
+int apply_context::db_find_i256( uint64_t code, uint64_t scope, uint64_t table, key256_t& id ) {
+   //require_read_lock( code, scope ); // redundant?
+
+   const auto* tab = find_table( code, scope, table );
+   if( !tab ) return -1;
+
+   auto table_end_itr = key256val_cache.cache_table( *tab );
+
+   const key256_value_object* obj = db.find<key256_value_object, by_scope_primary>( boost::make_tuple( tab->id, id ) );
+   if( !obj ) return table_end_itr;
+
+   return key256val_cache.add( *obj );
+}
+
+
 uint64_t apply_context::next_global_sequence() {
    const auto& p = control.get_dynamic_global_properties();
    db.modify( p, [&]( auto& dgp ) {

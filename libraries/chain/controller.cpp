@@ -344,6 +344,8 @@ struct controller_impl {
 
       db.add_index<table_id_multi_index>();
       db.add_index<key_value_index>();
+      db.add_index<key256_value_index>();
+
       db.add_index<index64_index>();
       db.add_index<index128_index>();
       db.add_index<index256_index>();

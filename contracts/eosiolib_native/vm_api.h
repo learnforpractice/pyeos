@@ -82,6 +82,14 @@ struct vm_api {
    void (*db_idx64_update)(int32_t iterator, uint64_t payer, const uint64_t* secondary);
    void (*db_idx64_remove)(int32_t iterator);
 
+
+   int (*db_store_i256)( uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size );
+   void (*db_update_i256)( int iterator, uint64_t payer, const char* buffer, size_t buffer_size );
+   void (*db_remove_i256)( int iterator );
+   int (*db_get_i256)( int iterator, char* buffer, size_t buffer_size );
+   int (*db_find_i256)( uint64_t code, uint64_t scope, uint64_t table, void* id, int size );
+
+
    int32_t (*db_idx64_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_previous)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_find_primary)(uint64_t code, uint64_t scope, uint64_t table, uint64_t* secondary, uint64_t primary);

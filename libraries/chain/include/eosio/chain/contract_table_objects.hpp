@@ -81,6 +81,33 @@ namespace eosio { namespace chain {
       >
    >;
 
+   struct key256_value_object : public chainbase::object<key256_value_object_type, key256_value_object> {
+      OBJECT_CTOR(key256_value_object, (value))
+
+      typedef uint64_t key_type;
+      static const int number_of_keys = 1;
+
+      id_type               id;
+      table_id              t_id;
+      std::array<uint128_t, 2>              primary_key;
+      account_name          payer = 0;
+      shared_string         value;
+   };
+
+   using key256_value_index = chainbase::shared_multi_index_container<
+      key256_value_object,
+      indexed_by<
+         ordered_unique<tag<by_id>, member<key256_value_object, key256_value_object::id_type, &key256_value_object::id>>,
+         ordered_unique<tag<by_scope_primary>,
+            composite_key< key256_value_object,
+               member<key256_value_object, table_id, &key256_value_object::t_id>,
+               member<key256_value_object, std::array<uint128_t, 2>, &key256_value_object::primary_key>
+            >,
+            composite_key_compare< std::less<table_id>, std::less<std::array<uint128_t, 2>> >
+         >
+      >
+   >;
+
    struct by_primary;
    struct by_secondary;
 
@@ -174,6 +201,13 @@ namespace config {
    };
 
    template<>
+   struct billable_size<key256_value_object> {
+      static const uint64_t overhead = overhead_per_row_per_index_ram_bytes * 2;  ///< overhead for potentially single-row table, 2x indices internal-key and primary key
+      static const uint64_t value = 24 + 32 + 8 + 4 + overhead; ///< 32 bytes for our constant size fields, 8 for pointer to vector data, 4 bytes for a size of vector + overhead
+   };
+
+
+   template<>
    struct billable_size<index64_object> {
       static const uint64_t overhead = overhead_per_row_per_index_ram_bytes * 3;  ///< overhead for potentially single-row table, 3x indices internal-key, primary key and primary+secondary key
       static const uint64_t value = 24 + 8 + overhead; ///< 24 bytes for fixed fields + 8 bytes key + overhead
@@ -209,6 +243,7 @@ namespace config {
 
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::table_id_object, eosio::chain::table_id_multi_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::key_value_object, eosio::chain::key_value_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::key256_value_object, eosio::chain::key256_value_index)
 
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::index64_object, eosio::chain::index64_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::index128_object, eosio::chain::index128_index)
