@@ -35,6 +35,8 @@ using namespace dev;
 using namespace dev::eth;
 namespace fs = boost::filesystem;
 
+#define VM_TYPE 8
+
 bool State::addressInUse(Address const& _id) const
 {
     assert(0);
@@ -172,7 +174,7 @@ bytes State::code(Address const& _addr) const
    uint64_t receiver = _addr;
    size_t size;
 
-   eosio_assert (get_code_type(_addr) == 2, "bad vm type");
+   eosio_assert (get_code_type(_addr) == VM_TYPE, "bad vm type");
 
    const char *code = get_code( receiver, &size );
    return bytes(code, code+size);
@@ -180,7 +182,7 @@ bytes State::code(Address const& _addr) const
 
 void State::setCode(Address const& _address, bytes&& _code)
 {
-   set_code(_address, 2, (char*)_code.data(), _code.size());
+   set_code(_address, VM_TYPE, (char*)_code.data(), _code.size());
 }
 
 h256 State::codeHash(Address const& _a) const

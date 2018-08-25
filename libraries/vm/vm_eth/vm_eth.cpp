@@ -79,7 +79,7 @@ FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    printf("+++++vm_eth: apply\n");
-   if (act != N(transfer)) {
+   if (act != N(ethtransfer)) {
       return 1;
    }
 
@@ -97,7 +97,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    Transaction ts;
    ts.m_sender = Address(et.from);
    ts.m_receiveAddress = Address(et.to);
-   ts.m_value = et.value;
+   ts.m_value = 0;//et.value;
    ts.m_data = et.data;
 
    ts.m_creation = false;
