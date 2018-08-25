@@ -289,7 +289,7 @@ psw
 ```
 'PW5JCWXaGkA15s6th6AWCabHewuGASAtrUJjTWoL1Ybx6sG9QzrSb'
 ```
-You can see you wallet now. The * behind mywallet means the wallet is unlocked.
+You can see your wallet now. The * behind mywallet means the wallet is unlocked.
 
 ```
 wallet.list_wallets()
