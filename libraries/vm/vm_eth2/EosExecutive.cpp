@@ -20,6 +20,9 @@
 //#include <libevm/VMFactory.h>
 #include <libevm4eos/EosVM.h>
 
+#include <hera/hera.h>
+#include <libevm/EVMC.h>
+
 #include <json/json.h>
 #include <boost/timer.hpp>
 
@@ -159,7 +162,12 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
         {
             // Create VM instance. Force Interpreter if tracing requested.
 //            auto vm = VMFactory::create();
-            std::unique_ptr<EosVM> vm = std::make_unique<EosVM>();
+
+#ifdef VM_HERA
+           std::unique_ptr<VMFace> vm = std::unique_ptr<VMFace>(new EVMC{evmc_create_hera()});
+#else
+           std::unique_ptr<EosVM> vm = std::make_unique<EosVM>();
+#endif
             if (m_isCreation)
             {
                 m_s.clearStorage(m_ext->myAddress);

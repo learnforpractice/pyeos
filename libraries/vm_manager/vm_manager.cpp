@@ -35,6 +35,7 @@ static const int VM_TYPE_NATIVE = 5;
 static const int VM_TYPE_CPYTHON_PRIVILEGED = 6;
 static const int VM_TYPE_JULIA = 7;
 static const int VM_TYPE_ETH2 = 8;
+static const int VM_TYPE_HERA = 9;
 
 namespace eosio {
 namespace chain {
@@ -158,6 +159,7 @@ static const char *vm_native_lib = "../libs/libvm_native" DYLIB_SUFFIX;
 static const char *vm_cpython_lib = "../libs/libvm_cpython" DYLIB_SUFFIX;
 static const char *vm_julia_lib = "../libs/libvm_julia" DYLIB_SUFFIX;
 static const char *vm_eth_lib = "../libs/libvm_eth" DYLIB_SUFFIX;
+static const char *vm_eth_hera = "../libs/libvm_hera" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -213,6 +215,8 @@ bool vm_manager::init(struct vm_api* api) {
    load_vm_from_path(VM_TYPE_JULIA, vm_julia_lib);
 
    load_vm_from_path(VM_TYPE_ETH2, vm_eth_lib);
+
+   load_vm_from_path(VM_TYPE_HERA, vm_eth_hera);
 
    return true;
 }
