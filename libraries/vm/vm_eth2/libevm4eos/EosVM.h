@@ -18,7 +18,7 @@
 #pragma once
 
 #include <libevm/Instruction.h>
-#include <libevm/VMConfig.h>
+#include <libevm/LegacyVMConfig.h>
 #include <libevm/VMFace.h>
 
 namespace dev

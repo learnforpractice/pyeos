@@ -11,7 +11,6 @@ static struct vm_api s_api;
 #include <libethereum/ChainParams.h>
 #include <libethereum/LastBlockHashesFace.h>
 
-#include <libevm/VM.h>
 #include <libevm/VMFactory.h>
 
 

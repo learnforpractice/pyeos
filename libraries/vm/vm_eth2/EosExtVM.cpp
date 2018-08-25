@@ -33,7 +33,7 @@ using namespace dev::eth;
 namespace // anonymous
 {
 
-static unsigned const c_depthLimit = 1024;
+static unsigned const c_depthLimit = 100;//1024;
 
 /// Upper bound of stack space needed by single CALL/CREATE execution. Set experimentally.
 static size_t const c_singleExecutionStackSize = 100 * 1024;

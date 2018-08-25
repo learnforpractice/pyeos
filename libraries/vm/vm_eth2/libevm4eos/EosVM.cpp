@@ -147,7 +147,7 @@ void EosVM::updateGas()
 
 void EosVM::updateMem(uint64_t _newMem)
 {
-   eosio_assert(_newMem<10*1024*1024, "running out of memory!");
+   eosio_assert(_newMem<64*1024, "running out of memory!");
 	m_newMemSize = (_newMem + 31) / 32 * 32;
 	updateGas();
 	if (m_newMemSize > m_mem.size())
@@ -156,9 +156,11 @@ void EosVM::updateMem(uint64_t _newMem)
 
 void EosVM::logGasMem()
 {
+#if 0
 	unsigned n = (unsigned)m_OP - (unsigned)Instruction::LOG0;
-//	m_runGas = toInt63(m_schedule->logGas + m_schedule->logTopicGas * n + u512(m_schedule->logDataGas) * m_SP[1]);
-	updateMem(memNeed(m_SP[0], m_SP[1]));
+	m_runGas = toInt63(m_schedule->logGas + m_schedule->logTopicGas * n + u512(m_schedule->logDataGas) * m_SP[1]);
+#endif
+   updateMem(memNeed(m_SP[0], m_SP[1]));
 }
 
 void EosVM::fetchInstruction()
@@ -1299,6 +1301,19 @@ void EosVM::interpretCases()
 			copyDataToMemory(&m_returnData, m_SP);
 		}
 		NEXT
+
+      CASE(EXTCODEHASH)
+      {
+          ON_OP();
+          if (!m_schedule->haveExtcodehash)
+              throwBadInstruction();
+
+          m_runGas = toInt63(m_schedule->extcodehashGas);
+          updateIOGas();
+
+          m_SPP[0] = u256{m_ext->codeHashAt(asAddress(m_SP[0]))};
+      }
+      NEXT
 
 		CASE(CODECOPY)
 		{
