@@ -132,7 +132,7 @@ void vm_init(struct vm_api* api) {
    s_api = *api;
    NoProof::init();
    seal = std::unique_ptr<dev::eth::SealEngineFace>(ChainParams(c_genesisInfoMainNetworkNoProofTest).createSealEngine());
-
+   blockHeader.setNumber(0x42ae50);//byzantiumForkBlock
    envInfo = std::make_unique<dev::eth::EnvInfo>(blockHeader, lastBlockHashes, 0);
 }
 
