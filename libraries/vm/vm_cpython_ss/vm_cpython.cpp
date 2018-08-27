@@ -106,6 +106,13 @@ struct vm_api* get_vm_api() {
 int vm_setcode(uint64_t account) {
    string code;
    get_code(account, code);
+
+   enable_injected_apis(0);
+   enable_create_code_object(1);
+   enable_filter_set_attr(0);
+   enable_filter_get_attr(0);
+   enable_inspect_obj_creation(0);
+
    int ret = cpython_setcode(account, code);
    get_vm_api()->eosio_assert(ret, "setcode failed!");
    return 1;
@@ -142,6 +149,12 @@ int error_handler(string& error) {
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   enable_injected_apis(0);
+   enable_create_code_object(1);
+   enable_filter_set_attr(0);
+   enable_filter_get_attr(0);
+   enable_inspect_obj_creation(0);
+
    int ret = cpython_apply(receiver, account, act);
    if (ret == -1) {
       string error;
