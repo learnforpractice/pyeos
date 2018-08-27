@@ -195,7 +195,7 @@ public:
      * @param _to Account to which @a _value will be added.
      * @param _value Amount to be transferred.
      */
-    void transferBalance(Address const& _from, Address const& _to, u256 const& _value) { }
+    void transferBalance(Address const& _from, Address const& _to, u256 const& _value);
 
     /// Get the value of a storage position of an account.
     /// @returns 0 if no account exists at that address.

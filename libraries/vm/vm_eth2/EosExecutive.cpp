@@ -23,6 +23,10 @@
 #include <hera/hera.h>
 #include <libevm/EVMC.h>
 
+#ifdef VM_EVMJIT
+#include <evmjit.h>
+#endif
+
 #include <json/json.h>
 #include <boost/timer.hpp>
 
@@ -96,7 +100,7 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
     }
 
     // Transfer ether.
-//    m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
+    m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
     return !m_ext;
 }
 
@@ -165,10 +169,17 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
 
 #ifdef VM_HERA
            std::unique_ptr<VMFace> vm = std::unique_ptr<VMFace>(new EVMC{evmc_create_hera()});
-#else
+#endif
+
+#ifdef VM_EVM
            std::unique_ptr<EosVM> vm = std::make_unique<EosVM>();
 #endif
-            if (m_isCreation)
+
+#ifdef VM_EVMJIT
+           std::unique_ptr<VMFace> vm = std::unique_ptr<VMFace>(new EVMC{evmjit_create()});
+#endif
+
+           if (m_isCreation)
             {
                 m_s.clearStorage(m_ext->myAddress);
                 auto out = vm->exec(m_gas, *m_ext, _onOp);

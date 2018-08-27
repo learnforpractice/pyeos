@@ -24,10 +24,14 @@ add_custom_target( eosinstall ALL
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/eosinstaller.py ${CMAKE_BINARY_DIR}/programs/pyeos/pyeos
 )
 
-set (DEPS pyeos eosio_chain eosiolib_native vm_native vm_cpython vm_cpython_ss vm_eth vm_eth2 vm_wasm_wavm vm_wasm_binaryen cleos nodeos keosd ipc_server ipc_client vm_manager eosio_native)
+set (DEPS pyeos eosio_chain eosiolib_native vm_native vm_cpython vm_cpython_ss vm_lua vm_eth vm_eth2 vm_wasm_wavm vm_wasm_binaryen cleos nodeos keosd ipc_server ipc_client vm_manager eosio_native)
 
 if (BUILD_VM_JULIA)
 set (DEPS ${DEPS} vm_julia)
+endif()
+
+if (EVMJIT)
+set (DEPS ${DEPS} vm_evmjit)
 endif()
 
 add_dependencies(eosinstall ${DEPS})

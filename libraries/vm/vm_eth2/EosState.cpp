@@ -60,6 +60,11 @@ using namespace eosio::chain;
 using namespace dev;
 using namespace dev::eth;
 
+void EosState::transferBalance(Address const& _from, Address const& _to, u256 const& _value) {
+//   uint64_t value = _value.convert_to<uint64_t>();
+//   get_vm_api()->transfer(_from, _to, value);
+}
+
 bool EosState::addressInUse(Address const& _id) const
 {
    return false;
