@@ -797,7 +797,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
             print(old_hash, code_hash)
             if code_hash != old_hash:
                 code += pack_bytes(wasm)
-                setcode = ['eosio', 'setcode', code, [[account, 'active']]]
+                setcode = ['eosio', 'setcode', code, {account:'active'}]
                 actions.append(setcode)
     else:
         _code = open(src_file, 'rb').read()
