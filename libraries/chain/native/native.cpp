@@ -2,6 +2,8 @@
 #include <fc/log/logger.hpp>
 #include <boost/thread/thread.hpp>
 
+#include <eosiolib/symbol.hpp>
+
 extern "C" void vm_unload_account(uint64_t account);
 //defined in python_contract.pyx
 int system_upgrade(uint64_t version, const string& script);
@@ -202,3 +204,30 @@ int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
    }
    return 0;
 }
+
+
+static uint64_t EOS = S(4, "EOS");
+
+int transfer(uint64_t from, uint64_t to, uint64_t amount) {
+   eosio_assert( from != to, "cannot transfer to self" );
+   require_auth( from );
+   eosio_assert( is_account( to ), "to account does not exist");
+
+   auto sym = EOS>>8;
+   stats statstable( eosio_token, sym );
+   const auto& st = statstable.get( sym );
+
+//      require_recipient( from );
+   require_recipient( to );
+
+   asset quantity{(int64_t)amount, EOS};
+
+   eosio_assert( quantity.is_valid(), "invalid quantity" );
+   eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
+   eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+
+   sub_balance( from, amount, EOS );
+   add_balance( to, amount, EOS, to );
+   return 1;
+}
+

@@ -38,6 +38,7 @@
 using namespace eosio::chain;
 //native/native.cpp
 int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol);
+int transfer(uint64_t from, uint64_t to, uint64_t amount);
 
 void db_store_i64_in_account( uint64_t code, uint64_t scope, uint64_t table_id, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size ) {
    apply_context::ctx().db_store_i64( code, scope, table_id, payer, id, buffer, buffer_size );
@@ -291,6 +292,8 @@ static struct vm_api _vm_api = {
 
    .get_balance = get_balance,
    .transfer_inline = transfer_inline,
+   .transfer = transfer,
+
    .current_receiver = current_receiver,
    .get_active_producers = get_active_producers,
    .assert_sha256 = assert_sha256,
