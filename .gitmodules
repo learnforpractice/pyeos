@@ -54,4 +54,4 @@
 	branch = master
 [submodule "externals/lua_sandbox"]
 	path = externals/lua_sandbox
-	url = https://github.com/mozilla-services/lua_sandbox.git
+	url = https://github.com/learnforpractice/lua_sandbox.git
