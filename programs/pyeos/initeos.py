@@ -270,7 +270,7 @@ try:
     from python.backyard import t as bt
     from python.rpctest import t as rt
     from python.simpleauction import t as st
-    from wasm.lab import t as lt
+    from wasm.lab import t as wt
     
     from python.vote import t as vt2
     from native.native import t as nt
@@ -284,6 +284,7 @@ try:
 
     from julia.hello import t as jh
     from evm.evm import t as et
+    from lua.hello import t as lt
 
 #    from biosboot import t as bb
     import d
