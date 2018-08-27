@@ -29,7 +29,7 @@ add_library(vm_cpython_ss SHARED
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss vm_api_python)
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss vmapi4python)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

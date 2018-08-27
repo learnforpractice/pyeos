@@ -12,17 +12,17 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/db.pyx
 )
 
-add_library(vm_api_python STATIC
+add_library(vmapi4python STATIC
             db.wrap.cpp
             eoslib_.cpp
             eoslib.wrap.cpp
             )
 
-set_target_properties(vm_api_python  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
+set_target_properties(vmapi4python  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_api_python PRIVATE eosiolib_native fc)
+target_link_libraries(vmapi4python PRIVATE eosiolib_native fc)
 
-target_include_directories(vm_api_python PRIVATE ${Boost_INCLUDE_DIR}
+target_include_directories(vmapi4python PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/include/libc++/upstream/include
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/musl/include/musl/upstream/include

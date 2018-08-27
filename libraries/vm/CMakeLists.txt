@@ -12,7 +12,7 @@ if(BUILD_ETHEREUM)
    add_subdirectory( vm_eth2 )
 endif()
 
-add_subdirectory( vm_api_python )
+add_subdirectory( libvmapi4python )
 
 add_subdirectory( vm_native )
 add_subdirectory( vm_cpython )

@@ -11,7 +11,7 @@ add_library(vm_cpython SHARED
             vm_cpython.cpp
             )
 
-target_link_libraries(vm_cpython PRIVATE vm_api_python python3)
+target_link_libraries(vm_cpython PRIVATE vmapi4python python3)
 
 target_include_directories(vm_cpython PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
