@@ -25,20 +25,6 @@ using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
-
-static const int VM_TYPE_BINARYEN = 0;
-static const int VM_TYPE_PY = 1;
-static const int VM_TYPE_ETH = 2;
-static const int VM_TYPE_WAVM = 3;
-static const int VM_TYPE_IPC = 4;
-static const int VM_TYPE_NATIVE = 5;
-static const int VM_TYPE_CPYTHON_PRIVILEGED = 6;
-static const int VM_TYPE_JULIA = 7;
-static const int VM_TYPE_ETH2 = 8;
-static const int VM_TYPE_HERA = 9;
-static const int VM_TYPE_EVMJIT = 10;
-static const int VM_TYPE_LUA = 11;
-
 namespace eosio {
 namespace chain {
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );

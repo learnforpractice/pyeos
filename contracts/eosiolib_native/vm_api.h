@@ -297,6 +297,19 @@ uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 int has_option(const char* _option);
 int get_option(const char* option, char *result, int size);
 
+#define  VM_TYPE_BINARYEN                  0
+#define  VM_TYPE_PY                        1
+#define  VM_TYPE_ETH                       2
+#define  VM_TYPE_WAVM                      3
+#define  VM_TYPE_IPC                       4
+#define  VM_TYPE_NATIVE                    5
+#define  VM_TYPE_CPYTHON_PRIVILEGED        6
+#define  VM_TYPE_JULIA                     7
+#define  VM_TYPE_ETH2                      8
+#define  VM_TYPE_HERA                      9
+#define  VM_TYPE_LUA                      10
+#define  VM_TYPE_EVMJIT                   11
+
 #ifdef __cplusplus
 }
 #endif
