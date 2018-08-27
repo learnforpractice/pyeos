@@ -1,0 +1,26 @@
+{
+   "version": "eosio::abi/1.0",
+   "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+   }],
+  "structs": [{
+      "name": "ethtransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"data", "type":"bytes"}
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "sayhello",
+      "type": "raw"
+    },{
+      "name": "ethtransfer",
+      "type": "ethtransfer"
+    }
+  ]
+}
