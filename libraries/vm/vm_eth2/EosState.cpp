@@ -101,7 +101,10 @@ size_t EosState::codeSize(Address const& _a) const
 
 bool EosState::addressHasCode(Address const& _id) const
 {
-   size_t size;
+   if (VM_TYPE_ETH != get_code_type(_id)) {
+      return false;
+   }
+   size_t size = 0;
    return get_code_size(_id, size);
 }
 
