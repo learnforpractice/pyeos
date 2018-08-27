@@ -143,7 +143,7 @@ typedef eosio::multi_index<N(stat), currency_stats> stats;
 static uint64_t eosio_token = N(eosio.token);
 static uint64_t table_id = N(accounts);
 
-void sub_balance( uint64_t owner, uint64_t amount, uint64_t symbol ) {
+void sub_balance( uint64_t owner, int64_t amount, uint64_t symbol ) {
 
    int it = db_find_i64(eosio_token, owner, table_id, symbol>>8);
    eosio_assert(it >=0, "no balance found");
@@ -161,7 +161,7 @@ void sub_balance( uint64_t owner, uint64_t amount, uint64_t symbol ) {
    }
 }
 
-void add_balance( uint64_t owner, uint64_t amount, uint64_t symbol, uint64_t ram_payer )
+void add_balance( uint64_t owner, int64_t amount, uint64_t symbol, uint64_t ram_payer )
 {
    int it = db_find_i64(eosio_token, owner, table_id, symbol>>8);
 
@@ -176,7 +176,7 @@ void add_balance( uint64_t owner, uint64_t amount, uint64_t symbol, uint64_t ram
    }
 }
 
-int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
+int transfer_inline(uint64_t to, int64_t amount, uint64_t symbol) {
    try {
       uint64_t from = current_receiver();
       eosio_assert( from != to, "cannot transfer to self" );
@@ -206,9 +206,9 @@ int transfer_inline(uint64_t to, uint64_t amount, uint64_t symbol) {
 }
 
 
-static uint64_t EOS = S(4, "EOS");
+static uint64_t EOS = S(4, EOS);
 
-int transfer(uint64_t from, uint64_t to, uint64_t amount) {
+int transfer(uint64_t from, uint64_t to, int64_t amount) {
    eosio_assert( from != to, "cannot transfer to self" );
    require_auth( from );
    eosio_assert( is_account( to ), "to account does not exist");

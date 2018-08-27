@@ -37,6 +37,7 @@
 
 #include <eosiolib_native/vm_api.h>
 #include <eosiolib/db.h>
+#include <eosiolib/symbol.hpp>
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
@@ -60,9 +61,17 @@ using namespace eosio::chain;
 using namespace dev;
 using namespace dev::eth;
 
+static uint64_t EOS = S(4, EOS);
+
 void EosState::transferBalance(Address const& _from, Address const& _to, u256 const& _value) {
-//   uint64_t value = _value.convert_to<uint64_t>();
-//   get_vm_api()->transfer(_from, _to, value);
+   int64_t value = _value.convert_to<int64_t>();
+   if (value == 0) {
+      return;
+   }
+   uint64_t from = _from;
+   uint64_t receiver = get_vm_api()->current_receiver();
+   eosio_assert(from == receiver, "bad sender");
+   get_vm_api()->transfer_inline(_to, value, EOS);
 }
 
 bool EosState::addressInUse(Address const& _id) const
@@ -163,7 +172,7 @@ h256 EosState::codeHash(Address const& _contract) const {
 }
 
 u256 EosState::balance(Address const& _id) const {
-   uint64_t amount = 0;
+   int64_t amount = 0;
    //534f4504: 4,EOS
    get_vm_api()->get_balance(_id, 0x534f4504, &amount);
    return u256(amount);

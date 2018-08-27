@@ -72,7 +72,7 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint64_t (*current_receiver)();
         uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
-        int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount)
+        int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount)
         int (*transfer_inline)(uint64_t to, uint64_t _account, uint64_t _symbol);
 
         int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
@@ -239,7 +239,7 @@ def transfer_inline(_to, _amount, symbol=0):
 #    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
 
 def get_balance(account, symbol=None):
-    cdef uint64_t amount = 0
+    cdef int64_t amount = 0
 
     if isinstance(account, str):
         account = s2n(account)

@@ -43,9 +43,9 @@ struct vm_api {
    uint64_t (*current_receiver)(void);
    uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
-   int (*get_balance)(uint64_t _account, uint64_t _symbol, uint64_t* amount);
-   int (*transfer_inline)(uint64_t to, uint64_t amount, uint64_t symbol);
-   int (*transfer)(uint64_t from, uint64_t to, uint64_t amount);
+   int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount);
+   int (*transfer_inline)(uint64_t to, int64_t amount, uint64_t symbol);
+   int (*transfer)(uint64_t from, uint64_t to, int64_t amount);
 
    void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
    void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );
