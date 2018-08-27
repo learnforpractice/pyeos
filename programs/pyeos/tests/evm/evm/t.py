@@ -265,12 +265,14 @@ def getValue():
             kwargs)
     print(data)
     data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':1234567, 'data':data}
-#    args = eosapi.pack_args('evm', 'transfer', args)
-#    print(args)
+    '''
+    ret = eosapi.transfer('eosio', 'evm', 0.2, data)
+    assert ret
+    '''
+
+    args = {'from':'eosio', 'to':'evm', 'amount':2000, 'data':data}
     r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
     print(r['elapsed'])
-
 
 @init
 def test2(count=200):

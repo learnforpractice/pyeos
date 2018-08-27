@@ -45,7 +45,7 @@ struct vm_api {
 
    int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount);
    int (*transfer_inline)(uint64_t to, int64_t amount, uint64_t symbol);
-   int (*transfer)(uint64_t from, uint64_t to, int64_t amount);
+   int (*transfer)(uint64_t from, uint64_t to, int64_t amount, uint64_t symbol);
 
    void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
    void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );

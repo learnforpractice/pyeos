@@ -62,13 +62,13 @@ bool EosExecutive::execute()
         return call(m_t.receiveAddress(), m_t.sender(), m_t.value(), m_t.gasPrice(), bytesConstRef(&m_t.data()), m_t.gas() - (u256)m_baseGasRequired);
 }
 
-bool EosExecutive::call(Address const& _receiveAddress, Address const& _senderAddress, u256 const& _value, u256 const& _gasPrice, bytesConstRef _data, u256 const& _gas)
+bool EosExecutive::call(Address const& _receiveAddress, Address const& _senderAddress, u256 const& _value, u256 const& _gasPrice, bytesConstRef _data, u256 const& _gas, bool transfer)
 {
     CallParameters params{_senderAddress, _receiveAddress, _receiveAddress, _value, _value, _gas, _data, {}};
-    return call(params, _gasPrice, _senderAddress);
+    return call(params, _gasPrice, _senderAddress, transfer);
 }
 
-bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
+bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin, bool transfer)
 {
     // If external transaction.
 
@@ -98,9 +98,10 @@ bool EosExecutive::call(CallParameters const& _p, u256 const& _gasPrice, Address
                 m_depth, false, _p.staticCall);
         }
     }
-
-    // Transfer ether.
-    m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
+    if (transfer) {
+       // Transfer ether.
+       m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);
+    }
     return !m_ext;
 }
 
@@ -144,7 +145,7 @@ bool EosExecutive::executeCreate(Address const& _sender, u256 const& _endowment,
 
     // Transfer ether before deploying the code. This will also create new
     // account if it does not exist yet.
-    m_s.transferBalance(_sender, m_newAddress, _endowment);
+//    m_s.transferBalance(_sender, m_newAddress, _endowment);
 
     // Schedule _init execution if not empty.
     if (!_init.empty())
@@ -219,6 +220,7 @@ bool EosExecutive::go(OnOpFunc const& _onOp)
             revert();
             m_output = _e.output();
             m_excepted = TransactionException::RevertInstruction;
+            throw;
         }
         catch (VMException const& _e)
         {

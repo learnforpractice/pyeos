@@ -69,9 +69,13 @@ void EosState::transferBalance(Address const& _from, Address const& _to, u256 co
       return;
    }
    uint64_t from = _from;
+   uint64_t to = _to;
    uint64_t receiver = get_vm_api()->current_receiver();
-   eosio_assert(from == receiver, "bad sender");
-   get_vm_api()->transfer_inline(_to, value, EOS);
+   if (from == receiver) {
+      get_vm_api()->transfer_inline(_to, value, EOS);
+   } else {
+      get_vm_api()->transfer(from, to, value, EOS);
+   }
 }
 
 bool EosState::addressInUse(Address const& _id) const

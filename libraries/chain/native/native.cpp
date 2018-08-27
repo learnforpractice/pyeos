@@ -208,12 +208,12 @@ int transfer_inline(uint64_t to, int64_t amount, uint64_t symbol) {
 
 static uint64_t EOS = S(4, EOS);
 
-int transfer(uint64_t from, uint64_t to, int64_t amount) {
+int transfer(uint64_t from, uint64_t to, int64_t amount, uint64_t symbol) {
    eosio_assert( from != to, "cannot transfer to self" );
    require_auth( from );
    eosio_assert( is_account( to ), "to account does not exist");
 
-   auto sym = EOS>>8;
+   auto sym = symbol>>8;
    stats statstable( eosio_token, sym );
    const auto& st = statstable.get( sym );
 

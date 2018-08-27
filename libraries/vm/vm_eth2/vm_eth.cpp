@@ -144,14 +144,14 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create);
+bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create, bool transfer);
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_eth2: setcode\n");
    size_t size = 0;
    const char* code = get_code(account, &size);
    dev::bytes _code(code, code+size);
-   run_code(account, account, 0,  _code, true);
+   run_code(account, account, 0,  _code, true, false);
    return 1;
 }
 
@@ -167,6 +167,7 @@ FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 //   ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
+
    if (act == N(ethtransfer)) {
       uint32_t size = action_data_size();
       eosio::bytes data(size);
@@ -177,7 +178,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       require_auth(et.from);
       eosio_assert(et.to == account, "bad receiver");
 
-      run_code(et.from, et.to, et.value, et.data, false);
+      run_code(et.from, et.to, et.value, et.data, false, true);
       return 1;
    } else if (act == N(transfer)) {
       auto transfer = unpack_action_data<currency::transfer>();
@@ -189,7 +190,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       eosio_assert(transfer.memo.size() % 2 == 0, "invalid hex string");
       eosio::bytes data(transfer.memo.size()/2);
       fc::from_hex(transfer.memo, data.data(), data.size());
-      run_code(transfer.from, transfer.to, transfer.quantity.amount, *reinterpret_cast<dev::bytes*>(&data), false);
+      run_code(transfer.from, transfer.to, transfer.quantity.amount, *reinterpret_cast<dev::bytes*>(&data), false, false);
    }
 
    return 0;
@@ -210,7 +211,7 @@ uint64_t get_sender() {
    return g_sender;
 }
 
-bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create)
+bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create, bool transfer)
 {
    dev::bytes output;
    Address contractDestination = Address(_receiver);
@@ -222,7 +223,7 @@ bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& 
 
    u256 gas = maxBlockGasLimit();
    u256 gasPrice = 0;
-   u256 value(0);
+   u256 value(_value);
 
    Transaction t;
    if (create)
@@ -243,13 +244,13 @@ bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& 
    t.forceSender(sender);
 
    executive.initialize(t);
-#if 1
+#if 0
    executive.execute();
 #else
    if (create)
        executive.create(sender, value, gasPrice, gas, &data, origin);
    else
-       executive.call(contractDestination, sender, value, gasPrice, &data, gas);
+       executive.call(contractDestination, sender, value, gasPrice, &data, gas, transfer);
 #endif
 
    executive.go();
