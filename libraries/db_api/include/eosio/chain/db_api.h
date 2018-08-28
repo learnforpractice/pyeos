@@ -25,6 +25,11 @@ int db_api_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64
 int db_api_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
 int db_api_end_i64( uint64_t code, uint64_t scope, uint64_t table );
 
+void db_api_update_i256( int iterator, uint64_t payer, const char* buffer, size_t buffer_size );
+void db_api_remove_i256( int iterator );
+int db_api_get_i256( int iterator, char* buffer, size_t buffer_size );
+int db_api_find_i256( uint64_t code, uint64_t scope, uint64_t table, const void* id, int size );
+
 #ifdef __cplusplus
 }
 #endif
