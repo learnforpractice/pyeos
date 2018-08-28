@@ -147,7 +147,7 @@ void EosVM::updateGas()
 
 void EosVM::updateMem(uint64_t _newMem)
 {
-   eosio_assert(_newMem<64*1024, "running out of memory!");
+   eosio_assert(_newMem<=64*1024+160, "running out of memory!");//2*1024 length array + 160 payload
 	m_newMemSize = (_newMem + 31) / 32 * 32;
 	updateGas();
 	if (m_newMemSize > m_mem.size())
