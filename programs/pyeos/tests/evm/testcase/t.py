@@ -6,6 +6,8 @@ import math
 from web3 import Web3, HTTPProvider, TestRPCProvider, EthereumTesterProvider
 from solc import compile_source
 from web3.contract import ConciseContract
+
+import rodb
 import eosapi
 import wallet
 import initeos
@@ -74,16 +76,12 @@ def init(func):
         func(*args, **kwargs)
     return func_wrapper
 
-
-@init
-def setValue(v=119000):
-    fn_identifier = 'setValue'
+def generate_call_params(func_name, args=(), kwargs={}):
+    fn_identifier = func_name
     for abi in contract_abi:
         if 'name' in abi and abi['name'] == fn_identifier:
             fn_abi = abi
             break
-    args = (v,)
-    kwargs = {}
 
     data = web3.utils.contracts.encode_transaction_data(
             web3,
@@ -92,11 +90,30 @@ def setValue(v=119000):
             fn_abi,
             args,
             kwargs)
+    return data[2:]
+
+@init
+def test_set_value(v=119000):
+    data = generate_call_params('testSetValue', (v,))
     print(data)
-    data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
+    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
+    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
+    print(r['except'])
+    print(r['elapsed'])
+    n = eosapi.N('evm')
+
+    itr = rodb.find_i256(n, n, n, 0)
+    assert itr >= 0
+    value = rodb.get_i256(itr)
+    assert value == v
+
+@init
+def test_get_value():
+    data = generate_call_params('testGetValue', ())
+    print(data)
+    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
     r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
     print(r['except'])
     print(r['elapsed'])
@@ -104,28 +121,8 @@ def setValue(v=119000):
 @init
 def test_transfer():
 
-    fn_identifier = 'testTransfer'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = ()
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
+    data =generate_call_params('testTransfer')
     print(data)
-    data = data[2:]
-    '''
-    ret = eosapi.transfer('eosio', 'evm', 0.2, data)
-    assert ret
-    '''
     balance = eosapi.get_balance('evm')
     args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
     r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
@@ -134,26 +131,8 @@ def test_transfer():
 
 @init
 def test_transfer2():
-
-    fn_identifier = 'testTransfer'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = ()
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
+    data =generate_call_params('testTransfer')
     print(data)
-    data = data[2:]
-
     balance = eosapi.get_balance('evm')
     ret = eosapi.transfer('eosio', 'evm', 0.0001, data)
     assert ret
@@ -161,88 +140,24 @@ def test_transfer2():
 
 @init
 def test_memory():
-
-    fn_identifier = 'testMemory'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = ()
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
+    data =generate_call_params('testMemory')
     print(data)
-    data = data[2:]
-    '''
-    ret = eosapi.transfer('eosio', 'evm', 0.2, data)
-    assert ret
-    '''
-
     args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
     r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
     print(r['elapsed'])
 
 @init
 def test_memory2():
-
-    fn_identifier = 'testMemory2'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = ()
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
+    data =generate_call_params('testMemory2')
     print(data)
-    data = data[2:]
-    '''
-    ret = eosapi.transfer('eosio', 'evm', 0.2, data)
-    assert ret
-    '''
-    try:
-        args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-        r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-        print(r['elapsed'])
-    except Exception as e:
-        unittest.assertEqual(1, 0, "broken")
+    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
+    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
+    print(r['elapsed'])
 
 @init
 def test2(count=200):
-    fn_identifier = 'setValue'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = (1,)
-    kwargs = {}
-    print('+++fn_abi', fn_abi)
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
-    print(data)
-    data = data[2:]
-    args = {'from':'eosio', 'to':'evm', 'amount':10, 'data':data}
-
+    data =generate_call_params('testSetValue', (10,))
+    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
     actions = []
     for i in range(count):
         action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
@@ -256,27 +171,10 @@ def test2(count=200):
 
 @init
 def test3(count=200):
-    fn_identifier = 'setValue'
-
-    for abi in contract_abi:
-        if 'name' in abi and abi['name'] == fn_identifier:
-            fn_abi = abi
-            break
-    args = (100,)
-    kwargs = {}
-
-    data = web3.utils.contracts.encode_transaction_data(
-            web3,
-            fn_identifier,
-            contract_abi,
-            fn_abi,
-            args,
-            kwargs)
-    print(data)
-    data = data[2:]
     transactions = []
     for i in range(count):
-        args = {'from':'eosio', 'to':'evm', 'amount':i, 'data':data}
+        data =generate_call_params('testSetValue', (i,))
+        args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
         args = eosapi.pack_args('evm', 'ethtransfer', args)
         action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
         transactions.append([action,])
@@ -284,20 +182,17 @@ def test3(count=200):
     assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
-@init
-def test4():
-    main_class = '<stdin>:KittyCore'
-    with open('../../programs/pyeos/contracts/evm/cryptokitties.sol', 'r') as f:
-        contract_source_code = f.read()
-        contract_interface = compile(contract_source_code, main_class)
-        deploy(contract_interface)
-        kitties_test(contract_interface)
-
 import unittest
 
 class EVMTestCase(unittest.TestCase):
     def setUp(self):
         pass
+
+    def test_set_value(self):
+        test_set_value(100)
+
+    def test_get_value(self):
+        test_get_value()
 
     def test_transfer(self):
         test_transfer()

@@ -1,7 +1,9 @@
 pragma solidity ^0.4.8;
 contract Tester {
-    uint myaddress;
+    uint myvalue;
+    address owner;
     function Greeter() public {
+      owner = msg.sender;
     }
 
     function testTransfer() payable public returns (uint) {
@@ -9,17 +11,23 @@ contract Tester {
         return 0;
     }
     
-    function testMemory() payable public {
+    function testMemory() public {
         uint256[] memory b = new uint256[](2*1024);
     }
 
-    function testMemory2() payable public {
+    function testMemory2() public {
         uint256[] memory b = new uint256[](64*1024);
     }
 
-    function setValue(uint v) payable public {
-        myaddress = v*100;
-        myaddress = v*100;
-        myaddress = v*100;
+    function testSetValue(uint v) public {
+        myvalue = v;
+    }
+
+    function testGetValue() public returns (uint) {
+        return myvalue;
+    }
+
+    function testSuicide() public {
+        suicide(owner);
     }
 }
