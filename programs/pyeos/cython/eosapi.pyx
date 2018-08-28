@@ -134,6 +134,7 @@ cdef extern from "eosapi_.hpp":
 
     uint64_t ethaddr2n_(string& addr);
     void n2ethaddr_(uint64_t n, string& addr);
+    uint64_t get_code_update_time_ms_(string& name);
 
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
@@ -886,3 +887,6 @@ def sha3(string& s):
     result = bytes(32)
     get_vm_api()[0].sha3(s.c_str(), s.size(), result, len(result))
     return result.hex()
+
+def get_code_update_time_ms(string& name):
+    return get_code_update_time_ms_(name)

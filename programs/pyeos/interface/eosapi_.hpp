@@ -134,6 +134,8 @@ void sha256_(string& data, string& hash); // @suppress("Ambiguous problem")
 uint64_t ethaddr2n_(string& addr);
 void n2ethaddr_(uint64_t n, string& addr);
 
+uint64_t get_code_update_time_ms_(string& name);
+
 extern "C" {
 	int has_option(const char* _option);
 	int get_option(const char* option, char *result, int size);

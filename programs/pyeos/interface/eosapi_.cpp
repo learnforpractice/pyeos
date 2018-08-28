@@ -729,6 +729,15 @@ void get_code_hash_(string& name, string& code_hash) {
    return;
 }
 
+uint64_t get_code_update_time_ms_(string& name) {
+   try {
+      controller& ctrl = get_chain_plugin().chain();
+      const auto& a = ctrl.db().get<account_object, by_name>(name);
+      return a.last_code_update.time_since_epoch().count()/1000;
+   }  FC_LOG_AND_DROP();
+   return 0;
+}
+
 int get_table_(string& scope, string& code, string& table, string& result) {
    try {
       auto ro_api = get_chain_plugin().get_read_only_api();
