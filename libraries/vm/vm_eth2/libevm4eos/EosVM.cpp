@@ -226,6 +226,8 @@ void EosVM::interpretCases()
 			ON_OP();
 			if (!m_schedule->haveCreate2)
 				throwBadInstruction();
+         if (m_ext->staticCall)
+             throwDisallowedStateChange();
 
 			m_bounce = &EosVM::caseCreate;
 		}
@@ -297,12 +299,11 @@ void EosVM::interpretCases()
 
 //			m_runGas = toInt63(m_schedule->suicideGas);
 			Address dest = asAddress(m_SP[0]);
-
+#if 0
 			// After EIP158 zero-value suicides do not have to pay account creation gas.
 			if (m_ext->balance(m_ext->myAddress) > 0 || m_schedule->zeroValueTransferChargesNewAccountGas())
 				// After EIP150 hard fork charge additional cost of sending
 				// ethers to non-existing account.
-#if 0
 			   if (m_schedule->suicideChargesNewAccountGas() && !m_ext->exists(dest))
 					m_runGas += m_schedule->callNewAccountGas;
 #endif

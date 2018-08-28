@@ -82,7 +82,7 @@ void EosVM::throwBadStack(unsigned _removed, unsigned _added)
 
 void EosVM::throwRevertInstruction(owning_bytes_ref&& _output)
 {
-	// We can't use BOOST_THROW_EXCEPTION here because it makes a copy of exception inside and RevertInstruction has no copy constructor 
+	// We can't use BOOST_THROW_EXCEPTION here because it makes a copy of exception inside and RevertInstruction has no copy constructor
 	throw RevertInstruction(move(_output));
 }
 
@@ -121,22 +121,13 @@ void EosVM::caseCreate()
 //	m_runGas = toInt63(m_schedule->createGas);
 
 	// Collect arguments.
-	u256 endowment = m_SP[0];
-	u256 salt;
-	u256 initOff;
-	u256 initSize;
+	u256 const endowment = m_SP[0];
+	u256 const initOff = m_SP[1];
+	u256 const initSize = m_SP[2];
 
-	if (m_OP == Instruction::CREATE)
-	{
-		initOff = m_SP[1];
-		initSize = m_SP[2];
-	}
-	else
-	{
-		salt = m_SP[1];
-		initOff = m_SP[2];
-		initSize = m_SP[3];
-	}
+	u256 salt;
+	if (m_OP == Instruction::CREATE2)
+		salt = m_SP[3];
 
 	updateMem(memNeed(initOff, initSize));
 	updateIOGas();
@@ -175,7 +166,7 @@ void EosVM::caseCall()
 	m_bounce = &EosVM::interpretCases;
 
 	// TODO: Please check if that does not actually increases the stack size.
-	//       That was the case before.
+	//	   That was the case before.
 	unique_ptr<CallParameters> callParams(new CallParameters());
 
 	// Clear the return data buffer. This will not free the memory.
@@ -189,9 +180,9 @@ void EosVM::caseCall()
 
 		// Here we have 2 options:
 		// 1. Keep the whole returned memory buffer (owning_bytes_ref):
-		//    higher memory footprint, no memory copy.
+		//	higher memory footprint, no memory copy.
 		// 2. Copy only the return data from the returned memory buffer:
-		//    minimal memory footprint, additional memory copy.
+		//	minimal memory footprint, additional memory copy.
 		// Option 2 used:
 		m_returnData = result.output.toBytes();
 
@@ -227,7 +218,7 @@ bool EosVM::caseCallSetup(CallParameters *callParams, bytesRef& o_output)
 
 	size_t const sizesOffset = haveValueArg ? 3 : 2;
 	u256 inputOffset  = m_SP[sizesOffset];
-	u256 inputSize    = m_SP[sizesOffset + 1];
+	u256 inputSize	= m_SP[sizesOffset + 1];
 	u256 outputOffset = m_SP[sizesOffset + 2];
 	u256 outputSize   = m_SP[sizesOffset + 3];
 	uint64_t inputMemNeed = memNeed(inputOffset, inputSize);
