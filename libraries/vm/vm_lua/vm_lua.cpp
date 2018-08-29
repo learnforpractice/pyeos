@@ -30,10 +30,42 @@ void print(void *context, const char *component, int level, const char *fmt, ...
   va_start(args, fmt);
   n = vsnprintf(print_out + n, sizeof print_out - n, fmt, args);
   va_end(args);
-  printf("%s \n", print_out);
+  vmdlog(print_out);
 }
 
 static lsb_logger printer = { .context = NULL, .cb = print };
+
+int vm_run_lua_script(const char* cfg, const char* script) {
+   luaV_set_check_time_fn(NULL);
+
+   lsb_lua_sandbox *lsb = lsb_create(NULL, "null.lua", cfg, &printer);
+   if (!lsb) {
+      return 0;
+   }
+
+   lsb_err_value ret = lsb_init_ex(lsb, NULL, script);
+   luaV_set_check_time_fn(check_time);
+
+   if (ret) {
+
+      const char* error = lsb_get_error(lsb);
+      if (error) {
+         vmdlog("script error: %s \n", error);
+      }
+
+      lsb_terminate(lsb, NULL);
+      lsb_destroy(lsb);
+      return 0;
+   }
+   static const char *func_name = "apply";
+   lua_State *lua = lsb_get_lua(lsb);
+
+   lsb_terminate(lsb, NULL);
+   lsb_destroy(lsb);
+   return 1;
+}
+
+
 /*
 static const char *cfg = "memory_limit = 65765\n"
     "instruction_limit = 1000\n"
@@ -42,6 +74,7 @@ static const char *cfg = "memory_limit = 65765\n"
     "hash  = {foo = 'bar', hash1 = {subfoo = 'subbar'}}\n"
 */
 static const char *cfg = "memory_limit = 65765\n"
+      "disabled_modules = {io = 0}\n"
     "output_limit = 1024\n"
     "log_level = 7\n";
 
@@ -136,6 +169,7 @@ int _apply(lsb_lua_sandbox *lsb, uint64_t receiver, uint64_t account, uint64_t a
 void vm_init(struct vm_api* api) {
    int ok;
    printf("vm_lua: init\n");
+   api->vm_run_lua_script = vm_run_lua_script;
    vm_register_api(api);
    luaV_set_check_time_fn(check_time);
 //   lua_State *L;

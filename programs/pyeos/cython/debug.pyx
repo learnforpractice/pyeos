@@ -54,6 +54,12 @@ cdef extern from "../interface/debug_.hpp":
 
     void softfloat_test_();
 
+cdef extern from "<eosiolib_native/vm_api.h>":
+    cdef cppclass vm_api:
+        int (*sha3)(const char* data, int size, char* result, int size2)
+        int (*vm_run_lua_script)(const char* cfg, const char* script);
+    vm_api* get_vm_api()
+
 def eval(const char* code):
     pass
 #    get_mpapi().set_debug_mode(1)
@@ -188,4 +194,6 @@ def vm_run_script(_str):
 def softfloat_test():
     softfloat_test_()
 
+def vm_run_lua_script(cfg, script):
+    return get_vm_api()[0].vm_run_lua_script(cfg, script)
 
