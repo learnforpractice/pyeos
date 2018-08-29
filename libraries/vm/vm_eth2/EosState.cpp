@@ -128,7 +128,6 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 //	m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
 //	m_cache[_contract].setStorage(_key, _value);
     uint64_t n = _contract;
-
 	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
 
 	dev::bytes key = dev::toBigEndian(_key);
@@ -138,11 +137,19 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
    int itr = db_find_i256( n, n, n, key.data(), key.size() );
    if (itr < 0) {
-      db_store_i256(n, n, n, payer, key.data(), key.size(), (const char *)value.data(), value.size() );
+      if (_value == 0) {
+
+      } else {
+         db_store_i256(n, n, n, payer, key.data(), key.size(), (const char *)value.data(), value.size() );
+      }
       return;
    }
 
-   db_update_i256( itr, payer, (const char *)value.data(), value.size() );
+   if (_value == 0) {
+      db_remove_i256(itr);
+   } else {
+      db_update_i256( itr, payer, (const char *)value.data(), value.size() );
+   }
    return;
 }
 

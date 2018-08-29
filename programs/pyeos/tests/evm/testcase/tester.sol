@@ -33,6 +33,10 @@ contract Tester {
         return myvalue;
     }
 
+    function testDeleteValue() public {
+        delete myvalue;
+    }
+
     function testCall(address a, uint v) public returns (uint) {
         calleeAddress = a;
         calleeAddress2 = a;

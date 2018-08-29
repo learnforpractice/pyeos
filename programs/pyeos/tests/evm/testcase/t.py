@@ -115,6 +115,16 @@ def test_get_value():
     call('testGetValue', ())
 
 @init
+def test_delete_value():
+    n = eosapi.N('evm')
+    itr = rodb.find_i256(n, n, n, 0)
+    assert itr >= 0
+    call('testDeleteValue', ())
+
+    itr = rodb.find_i256(n, n, n, 0)
+    assert itr < 0
+
+@init
 def test_transfer():
     balance = eosapi.get_balance('evm')
     call('testTransfer', (), amount=10000) #1.0 EOS
@@ -203,9 +213,13 @@ class EVMTestCase(unittest.TestCase):
     def test_get_value(self):
         test_get_value()
 
+    def test_delete_value(self):
+        test_delete_value()
+
+
     def test_transfer(self):
         test_transfer()
-    
+
     def test_transfer2(self):
         test_transfer2()
 
