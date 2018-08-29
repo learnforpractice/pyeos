@@ -286,8 +286,22 @@ void update_db_usage( uint64_t payer, int64_t delta ) {
    ctx().update_db_usage(payer, delta);
 }
 
-bool verify_account_ram_usage( account_name account ) {
+bool verify_account_ram_usage( uint64_t account ) {
    return ctx().control.get_mutable_resource_limits_manager().verify_account_ram_usage_ex(account);
+}
+
+void log_(int level, int line, const char *file, const char *func, const char *fmt, ...) {
+//void log_(const char *output, int level, int line, const char *file, const char *func) {
+   char output[256];
+   va_list args;
+   va_start(args, fmt);
+   vsnprintf(output, sizeof output, fmt, args);
+   va_end(args);
+
+   FC_MULTILINE_MACRO_BEGIN
+    if( (fc::logger::get(DEFAULT_LOGGER)).is_enabled( (fc::log_level::values)level ) )
+       (fc::logger::get(DEFAULT_LOGGER)).log( fc::log_message( fc::log_context((fc::log_level::values)level, file, line, func ), output ));
+   FC_MULTILINE_MACRO_END;
 }
 
 static struct vm_api _vm_api = {
@@ -447,6 +461,9 @@ static struct vm_api _vm_api = {
    .contracts_console = contracts_console,
    .vm_cleanup = nullptr,
    .vm_run_script = nullptr,
+   .vm_run_lua_script = nullptr,
+
+   .log = log_,
 
    .update_db_usage = update_db_usage,
    .verify_account_ram_usage = verify_account_ram_usage,

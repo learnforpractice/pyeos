@@ -196,9 +196,12 @@ struct vm_api {
    void (*check_context_free)(bool context_free);
    bool (*contracts_console)(void);
    void (*update_db_usage)( uint64_t payer, int64_t delta );
-   bool (*verify_account_ram_usage)( account_name account );
+   bool (*verify_account_ram_usage)( uint64_t account );
+
    bool (*vm_cleanup)(void);
    int (*vm_run_script)(const char* str);
+   int (*vm_run_lua_script)(const char* cfg, const char* script);
+   void (*log)(int level, int line, const char *file, const char *func, const char *fmt, ...);
 
    void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const __uint128* sender_id);
@@ -296,6 +299,19 @@ uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 
 int has_option(const char* _option);
 int get_option(const char* option, char *result, int size);
+
+#define vmdlog(fmt...) \
+   get_vm_api()->log(1, __LINE__, __FILE__, __FUNCTION__, fmt);
+
+#define vmilog(fmt...) \
+   get_vm_api()->log(2, __LINE__, __FILE__, __FUNCTION__, fmt);
+
+#define vmwlog(fmt...) \
+   get_vm_api()->log(3, __LINE__, __FILE__, __FUNCTION__, fmt);
+
+#define vmelog(fmt...) \
+   get_vm_api()->log(4, __LINE__, __FILE__, __FUNCTION__, fmt);
+
 
 #define  VM_TYPE_BINARYEN                  0
 #define  VM_TYPE_PY                        1
