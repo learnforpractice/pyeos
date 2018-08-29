@@ -569,6 +569,10 @@ class apply_context {
       int db_get_i256( int iterator, char* buffer, size_t buffer_size );
       int db_find_i256( uint64_t code, uint64_t scope, uint64_t table, key256_t& id );
 
+      int db_end_i256( uint64_t code, uint64_t scope, uint64_t table );
+      int db_previous_i256( int iterator, key256_t& primary );
+
+
       bool get_code(uint64_t _account, std::vector<uint8_t>& v);
       bool get_code_size(uint64_t _account, int& size);
 

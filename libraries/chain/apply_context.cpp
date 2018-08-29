@@ -802,6 +802,46 @@ int apply_context::db_find_i256( uint64_t code, uint64_t scope, uint64_t table, 
    return key256val_cache.add( *obj );
 }
 
+int apply_context::db_previous_i256( int iterator, key256_t& primary ) {
+   const auto& idx = db.get_index<key256_value_index, by_scope_primary>();
+
+   if( iterator < -1 ) // is end iterator
+   {
+      auto tab = key256val_cache.find_table_by_end_iterator(iterator);
+      EOS_ASSERT( tab, invalid_table_iterator, "not a valid end iterator" );
+
+      auto itr = idx.upper_bound(tab->id);
+      if( idx.begin() == idx.end() || itr == idx.begin() ) return -1; // Empty table
+
+      --itr;
+
+      if( itr->t_id != tab->id ) return -1; // Empty table
+
+      primary = itr->primary_key;
+      return key256val_cache.add(*itr);
+   }
+
+   const auto& obj = key256val_cache.get(iterator); // Check for iterator != -1 happens in this call
+
+   auto itr = idx.iterator_to(obj);
+   if( itr == idx.begin() ) return -1; // cannot decrement past beginning iterator of table
+
+   --itr;
+
+   if( itr->t_id != obj.t_id ) return -1; // cannot decrement past beginning iterator of table
+
+   primary = itr->primary_key;
+   return key256val_cache.add(*itr);
+}
+
+int apply_context::db_end_i256( uint64_t code, uint64_t scope, uint64_t table ) {
+   //require_read_lock( code, scope ); // redundant?
+
+   const auto* tab = find_table( code, scope, table );
+   if( !tab ) return -1;
+
+   return key256val_cache.cache_table( *tab );
+}
 
 uint64_t apply_context::next_global_sequence() {
    const auto& p = control.get_dynamic_global_properties();
@@ -818,6 +858,7 @@ uint64_t apply_context::next_recv_sequence( account_name receiver ) {
    });
    return rs.recv_sequence;
 }
+
 uint64_t apply_context::next_auth_sequence( account_name actor ) {
    const auto& rs = db.get<account_sequence_object,by_name>( actor );
    db.modify( rs, [&](auto& mrs ){
