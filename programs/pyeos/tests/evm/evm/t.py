@@ -232,7 +232,7 @@ def setValue(v=119000):
     args = {'from':'eosio', 'to':'evm', 'amount':123, 'data':data}
 #    args = eosapi.pack_args('evm', 'transfer', args)
 #    print(args)
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
+    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
     print(r['except'])
     print(r['elapsed'])
 
@@ -271,7 +271,7 @@ def getValue():
     '''
 
     args = {'from':'eosio', 'to':'evm', 'amount':2000, 'data':data}
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
+    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
     print(r['elapsed'])
 
 @init
@@ -306,7 +306,7 @@ def test2(count=200):
 
     actions = []
     for i in range(count):
-        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        action = ['evm', 'transfer', args, {'eosio':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
@@ -346,8 +346,8 @@ def test3(count=200):
     transactions = []
     for i in range(count):
         args = {'from':'eosio', 'to':'evm', 'amount':i, 'data':data}
-        args = eosapi.pack_args('evm', 'ethtransfer', args)
-        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        args = eosapi.pack_args('evm', 'transfer', args)
+        action = ['evm', 'transfer', args, {'eosio':'active'}]
         transactions.append([action,])
     ret, cost = eosapi.push_transactions(transactions)
     assert ret

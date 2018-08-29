@@ -105,7 +105,8 @@ R"E(
 
 uint64_t ethaddr2n(const char* address, int size) {
    eosio_assert(size == Address::size, "wrong address size");
-   return Address((byte*)address, Address::ConstructFromPointer);
+   dev::bytes b(address, address+size);
+   return Address(b);
 }
 
 void n2ethaddr(uint64_t n, char* address, int size) {
@@ -167,32 +168,31 @@ FC_REFLECT( EthTransfer, (from)(to)(value)(data) )
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 //   ilog("+++++vm_eth2: apply ${n}", ("n", eosio::name{act}.to_string()));
+   if (act == N(transfer)) {
+      if (account == N(eosio.token)) {
+         auto transfer = unpack_action_data<currency::transfer>();
+         eosio_assert(transfer.quantity.symbol == S(4, EOS), "not EOS token");
+         eosio_assert(transfer.quantity.is_valid(), "invalid transfer");
+         eosio_assert(transfer.quantity.amount > 0, "invalid amount");
+   //      dev::bytes data(transfer.memo.begin(), transfer.memo.end());
+         eosio_assert(transfer.memo.size() % 2 == 0, "invalid hex string");
+         eosio::bytes data(transfer.memo.size()/2);
+         fc::from_hex(transfer.memo, data.data(), data.size());
+         run_code(transfer.from, transfer.to, transfer.quantity.amount, *reinterpret_cast<dev::bytes*>(&data), false, false);
+      } else {
+         uint32_t size = action_data_size();
+         eosio::bytes data(size);
+         read_action_data( data.data(), data.size() );
 
-   if (act == N(ethtransfer)) {
-      uint32_t size = action_data_size();
-      eosio::bytes data(size);
-      read_action_data( data.data(), data.size() );
+         EthTransfer et;
+         fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
+         require_auth(et.from);
+         eosio_assert(et.to == account, "bad receiver");
 
-      EthTransfer et;
-      fc::raw::unpack<EthTransfer>((char*)data.data(), (uint32_t)data.size(), et);
-      require_auth(et.from);
-      eosio_assert(et.to == account, "bad receiver");
-
-      run_code(et.from, et.to, et.value, et.data, false, true);
-      return 1;
-   } else if (act == N(transfer)) {
-      auto transfer = unpack_action_data<currency::transfer>();
-      eosio_assert(account == N(eosio.token), "bad token");
-      eosio_assert(transfer.quantity.symbol == S(4, EOS), "not EOS token");
-      eosio_assert(transfer.quantity.is_valid(), "invalid transfer");
-      eosio_assert(transfer.quantity.amount > 0, "invalid amount");
-//      dev::bytes data(transfer.memo.begin(), transfer.memo.end());
-      eosio_assert(transfer.memo.size() % 2 == 0, "invalid hex string");
-      eosio::bytes data(transfer.memo.size()/2);
-      fc::from_hex(transfer.memo, data.data(), data.size());
-      run_code(transfer.from, transfer.to, transfer.quantity.amount, *reinterpret_cast<dev::bytes*>(&data), false, false);
+         run_code(et.from, et.to, et.value, et.data, false, true);
+         return 1;
+      }
    }
-
    return 0;
 }
 

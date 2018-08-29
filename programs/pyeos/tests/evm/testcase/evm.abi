@@ -5,7 +5,7 @@
       "type": "name"
    }],
   "structs": [{
-      "name": "ethtransfer",
+      "name": "transfer",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
@@ -19,8 +19,8 @@
       "name": "sayhello",
       "type": "raw"
     },{
-      "name": "ethtransfer",
-      "type": "ethtransfer"
+      "name": "transfer",
+      "type": "transfer"
     }
   ]
 }
