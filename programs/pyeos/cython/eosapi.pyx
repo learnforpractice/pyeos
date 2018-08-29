@@ -875,13 +875,28 @@ def get_opt(option):
     n = get_option(option, a, len(a))
     return a[:n].decode('utf8')
 
-def ethaddr2n(string& addr):
-    return ethaddr2n_(addr)
+def ethaddr2n(addr):
+    cdef string _addr
+    if addr[:2] == '0x':
+        addr = addr[2:]
+    addr = bytes.fromhex(addr)
+    _addr = addr
+    return ethaddr2n_(_addr)
 
 def n2ethaddr(uint64_t n):
     cdef string addr
     n2ethaddr_(n, addr);
-    return <bytes>addr
+    _addr = <bytes>addr
+    return '0x'+_addr.hex()
+
+def eosname2ethaddr(name):
+    n = s2n(name)
+    return n2ethaddr(n)
+
+def ethaddr2eosname(addr):
+    n = ethaddr2n(addr)
+    return n2s(n)
+
 
 def sha3(string& s):
     result = bytes(32)
