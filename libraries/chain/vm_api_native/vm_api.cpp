@@ -126,18 +126,34 @@ bool is_code_activated( uint64_t account ) {
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {
-   const shared_string& src = db_api::get().get_code(receiver);
-   *size = src.size();
-   return src.data();
+   if (!db_api::get().is_account(receiver)) {
+      *size = 0;
+      return nullptr;
+   }
+   try {
+      const shared_string& src = db_api::get().get_code(receiver);
+      *size = src.size();
+      return src.data();
+   } catch (...) {
+      *size = 0;
+      return nullptr;
+   }
 }
 
 int get_code_id( uint64_t account, char* code_id, size_t size ) {
-   digest_type id = db_api::get().get_code_id(account);
-   if (size != sizeof(id)) {
+   if (!db_api::get().is_account(account)) {
       return 0;
    }
-   memcpy(code_id, id._hash, size);
-   return 1;
+   try {
+      digest_type id = db_api::get().get_code_id(account);
+      if (size != sizeof(id)) {
+         return 0;
+      }
+      memcpy(code_id, id._hash, size);
+      return 1;
+   } catch (...) {
+      return 0;
+   }
 }
 
 int get_code_type( uint64_t account) {
