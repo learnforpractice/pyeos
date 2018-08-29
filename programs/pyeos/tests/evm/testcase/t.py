@@ -18,7 +18,10 @@ from eth_utils import (
     to_dict,
 )
 
-def compile(contract_source_code, main_class):
+def compile(src_file, main_class):
+    abs_src_file = os.path.join(os.path.dirname(__file__), src_file)
+    with open(abs_src_file, 'r') as f:
+        contract_source_code = f.read()
 
     compiled_sol = compile_source(contract_source_code) # Compiled source code
 #    print(compiled_sol)
@@ -26,31 +29,12 @@ def compile(contract_source_code, main_class):
 #    s = json.dumps(compiled_sol[main_class], sort_keys=False, indent=4, separators=(',', ': '))
     for _class in compiled_sol.keys():
         print(_class)
-
     contract_interface = compiled_sol[main_class]
-    return contract_interface
+    return contract_interface['abi'], contract_interface['bin']
 
-contract_abi = None
-def setUp():
-    global contract_abi
-    main_class = '<stdin>:Tester'
-    greeter = os.path.join(os.path.dirname(__file__), 'tester.sol')
-    with open(greeter, 'r') as f:
-        contract_source_code = f.read()
+def deploy(account, bin):
 
-    contract_interface = compile(contract_source_code, main_class)
-    contract_abi = contract_interface['abi']
-    bin = contract_interface['bin']
-#        print(bin)
-
-    account = 'evm'
     actions = []
-    
-    last_update = eosapi.get_code_update_time_ms('evm')
-    modify_time = os.path.getmtime(greeter)*1000
-    if last_update >= modify_time:
-        return
-
     _src_dir = os.path.dirname(__file__)
     abi_file = os.path.join(_src_dir, 'evm.abi')
     setabi = eosapi.pack_setabi(abi_file, eosapi.N(account))
@@ -58,20 +42,35 @@ def setUp():
     actions.append(act)
 
     args = eosapi.pack_args("eosio", 'setcode', {'account':account,'vmtype':2, 'vmversion':0, 'code':bin})
-    act = ['eosio', 'setcode', args, {'evm':'active'}]
+    act = ['eosio', 'setcode', args, {account:'active'}]
     actions.append(act)
 
     r, cost = eosapi.push_actions(actions)
     print(r['except'])
     print(r['elapsed'])
-#        call_contract(contract_interface)
+
+contract_abi, contract_bin = compile('tester.sol', '<stdin>:Tester')
+
+def setUp(account='evm', main_class='<stdin>:Tester', src_file='tester.sol'):
+    global contract_abi
+    if not eosapi.get_account(account):
+        print('evm account not exist, create it.')
+        r = eosapi.create_account2('eosio', account, initeos.key1, initeos.key2)
+        assert r
+
+    abs_src_file = os.path.join(os.path.dirname(__file__), src_file)
+    last_update = eosapi.get_code_update_time_ms(account)
+    modify_time = os.path.getmtime(abs_src_file)*1000
+    if last_update >= modify_time:
+        return
+#        print(bin)
+    contract_abi, bin = compile(src_file, main_class)
+    deploy(account, bin)
+
 
 def init(func):
+    global contract_abi
     def func_wrapper(*args, **kwargs):
-        if not eosapi.get_account('evm'):
-            print('evm account not exist, create it.')
-            r = eosapi.create_account('eosio', 'evm', initeos.key1, initeos.key2)
-            assert r
         setUp()
         func(*args, **kwargs)
     return func_wrapper
@@ -92,42 +91,34 @@ def generate_call_params(func_name, args=(), kwargs={}):
             kwargs)
     return data[2:]
 
+def call(func_name, args = (), amount=0):
+    print(func_name, args)
+    data =generate_call_params(func_name, args)
+    print('+++call parameters:', data)
+    args = {'from':'eosio', 'to':'evm', 'amount':amount, 'data':data}
+    r = eosapi.push_action('evm', 'transfer', args, {'eosio':'active'})
+    print(r['elapsed'])
+
 @init
 def test_set_value(v=119000):
-    data = generate_call_params('testSetValue', (v,))
-    print(data)
-    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-#    args = eosapi.pack_args('evm', 'transfer', args)
-#    print(args)
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-    print(r['except'])
-    print(r['elapsed'])
+    call('testSetValue', (v,))
     n = eosapi.N('evm')
 
     itr = rodb.find_i256(n, n, n, 0)
     assert itr >= 0
     value = rodb.get_i256(itr)
+    print(value)
     assert value == v
 
 @init
 def test_get_value():
-    data = generate_call_params('testGetValue', ())
-    print(data)
-    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-    print(r['except'])
-    print(r['elapsed'])
+    call('testGetValue', ())
 
 @init
 def test_transfer():
-
-    data =generate_call_params('testTransfer')
-    print(data)
     balance = eosapi.get_balance('evm')
-    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-    print(r['elapsed'])
-    assert math.isclose(balance, eosapi.get_balance('evm')++0.0001)
+    call('testTransfer', (), amount=10000) #1.0 EOS
+    assert math.isclose(balance+1, eosapi.get_balance('evm')+0.0001)
 
 @init
 def test_transfer2():
@@ -140,19 +131,37 @@ def test_transfer2():
 
 @init
 def test_memory():
-    data =generate_call_params('testMemory')
-    print(data)
-    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-    print(r['elapsed'])
+    call('testMemory', ())
 
 @init
 def test_memory2():
-    data =generate_call_params('testMemory2')
-    print(data)
-    args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-    r = eosapi.push_action('evm', 'ethtransfer', args, {'eosio':'active'})
-    print(r['elapsed'])
+    call('testMemory2', ())
+
+@init
+def test_call():
+    src_file = 'callee.sol'
+    main_class = '<stdin>:Callee'
+    account = 'callee'
+    if not eosapi.get_account(account):
+        print('account not exist, create it.')
+        r = eosapi.create_account2('eosio', account, initeos.key1, initeos.key2)
+        assert r
+
+    abs_src_file = os.path.join(os.path.dirname(__file__), src_file)
+    last_update = eosapi.get_code_update_time_ms(account)
+    modify_time = os.path.getmtime(abs_src_file)*1000
+    if last_update < modify_time:
+        contract_abi, bin = compile(src_file, main_class)
+        deploy(account, bin)
+    call('testCall', ('0x00000000000000000000000041a3152800000000', 120))
+    n = eosapi.N(account)
+    itr = rodb.find_i256(n, n, n, 0)
+    assert itr >= 0
+    assert rodb.get_i256(itr) == 120
+
+@init
+def test_suicide():
+    call('testSuicide')
 
 @init
 def test2(count=200):
@@ -160,7 +169,7 @@ def test2(count=200):
     args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
     actions = []
     for i in range(count):
-        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        action = ['evm', 'transfer', args, {'eosio':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
@@ -175,8 +184,8 @@ def test3(count=200):
     for i in range(count):
         data =generate_call_params('testSetValue', (i,))
         args = {'from':'eosio', 'to':'evm', 'amount':0, 'data':data}
-        args = eosapi.pack_args('evm', 'ethtransfer', args)
-        action = ['evm', 'ethtransfer', args, {'eosio':'active'}]
+        args = eosapi.pack_args('evm', 'transfer', args)
+        action = ['evm', 'transfer', args, {'eosio':'active'}]
         transactions.append([action,])
     ret, cost = eosapi.push_transactions(transactions)
     assert ret
@@ -189,7 +198,7 @@ class EVMTestCase(unittest.TestCase):
         pass
 
     def test_set_value(self):
-        test_set_value(100)
+        test_set_value()
 
     def test_get_value(self):
         test_get_value()
@@ -207,6 +216,12 @@ class EVMTestCase(unittest.TestCase):
     @unittest.expectedFailure
     def test_memory_out(self):
         test_memory2()
+
+    def test_call(self):
+        test_call()
+
+    def test_suicide(self):
+        test_suicide()
 
     def tearDown(self):
         pass

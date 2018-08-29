@@ -1,7 +1,13 @@
 pragma solidity ^0.4.8;
+contract Callee {
+    function setValue(uint) public returns (uint) {}
+}
+
 contract Tester {
     uint myvalue;
     address owner;
+    address calleeAddress;
+    address calleeAddress2;
     function Greeter() public {
       owner = msg.sender;
     }
@@ -27,7 +33,19 @@ contract Tester {
         return myvalue;
     }
 
+    function testCall(address a, uint v) public returns (uint) {
+        calleeAddress = a;
+        calleeAddress2 = a;
+        return Callee(a).setValue(v);
+    }
+
     function testSuicide() public {
-        suicide(owner);
+       if (owner == msg.sender) { // We check who is calling
+          selfdestruct(owner); //Destruct the contract
+       }
+    }
+    
+    function () payable public {//get called when transfer with no parameters
     }
 }
+
