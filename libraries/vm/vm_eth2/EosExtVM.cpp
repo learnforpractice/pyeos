@@ -199,6 +199,5 @@ h256 EosExtVM::blockHash(u256 _number)
 	std::tie(res, std::ignore) = m_s.execute(envInfo(), m_sealEngine, tx, Permanence::Reverted);
 	return h256(res.output);
 #endif
-	assert(0);
 	return h256(0);
 }

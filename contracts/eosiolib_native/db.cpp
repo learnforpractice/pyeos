@@ -269,8 +269,8 @@ int32_t db_idx_long_double_end(uint64_t code, uint64_t scope, uint64_t table) {
 }
 
 
-int db_store_i256( uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size ) {
-   return get_vm_api()->db_store_i256(scope, table, payer, id, size, buffer, buffer_size);
+int db_store_i256( uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size ) {
+   return get_vm_api()->db_store_i256(code, scope, table, payer, id, size, buffer, buffer_size);
 }
 
 void db_update_i256( int iterator, uint64_t payer, const char* buffer, size_t buffer_size ) {

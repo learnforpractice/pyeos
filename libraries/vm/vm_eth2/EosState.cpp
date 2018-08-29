@@ -106,7 +106,7 @@ void EosState::setCode(Address const& _address, bytes&& _code) {
 
 size_t EosState::codeSize(Address const& _a) const
 {
-	uint64_t n = ((uint64_t*)_a.data())[0];
+    uint64_t n = _a;
 	size_t size = 0;
 	get_code_size(n, size);
 	return size;
@@ -129,7 +129,7 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 //	m_cache[_contract].setStorage(_key, _value);
     uint64_t n = _contract;
 
-//	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
+	ilog( "${n1} : ${n2} : ${n3}", ("n1",_key.str())("n2",_value.str())("n3", n) );
 
 	dev::bytes key = dev::toBigEndian(_key);
 
@@ -138,7 +138,7 @@ void EosState::setStorage(Address const& _contract, u256 const& _key, u256 const
 
    int itr = db_find_i256( n, n, n, key.data(), key.size() );
    if (itr < 0) {
-      db_store_i256(n, n, payer, key.data(), key.size(), (const char *)value.data(), value.size() );
+      db_store_i256(n, n, n, payer, key.data(), key.size(), (const char *)value.data(), value.size() );
       return;
    }
 
