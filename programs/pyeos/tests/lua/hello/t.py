@@ -15,7 +15,7 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('hellolua', 'hello.lua', 'hello.abi', __file__, 11)
+        prepare('hellolua', 'hello.lua', 'hello.abi', __file__, 10)
         func(*args, **kwargs)
     return func_wrapper
 

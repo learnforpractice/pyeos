@@ -207,14 +207,15 @@ int get_table_item_count(uint64_t code, uint64_t scope, uint64_t table) {
 
 }
 
-int db_store_i256( uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size ) {
+int db_store_i256( uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size ) {
    eosio_assert(size == sizeof(key256_t), "wrong id!");
-   key256_t& key = *(key256_t*)id;
-   return ctx().db_store_i256( ctx().get_receiver(), scope, table, payer, key, buffer, buffer_size);
+   key256_t key;
+   memcpy(key.data(),id, 32);
+   return ctx().db_store_i256( code, scope, table, payer, key, buffer, buffer_size);
 }
 
 void db_update_i256( int iterator, uint64_t payer, const char* buffer, size_t buffer_size ) {
-   return ctx().db_update_i256(iterator, payer, buffer, buffer_size);
+   return ctx().db_update_i256(iterator, payer, buffer, buffer_size, false);
 }
 
 void db_remove_i256( int iterator ) {
@@ -226,7 +227,8 @@ int db_get_i256( int iterator, char* buffer, size_t buffer_size ) {
 }
 
 int db_find_i256( uint64_t code, uint64_t scope, uint64_t table, void* id, int size ) {
-   eosio_assert(size == sizeof(key256_t), "wrong id!");
-   key256_t& key = *(key256_t*)id;
+   eosio_assert(size == 32, "wrong id!");
+   key256_t key;
+   memcpy(key.data(),id, 32);
    return ctx().db_find_i256(code, scope, table, key);
 }

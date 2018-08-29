@@ -645,7 +645,8 @@ int db_api_get_i256( int iterator, char* buffer, size_t buffer_size ) {
 }
 
 int db_api_find_i256( uint64_t code, uint64_t scope, uint64_t table, const void* id, int size ) {
-   key256_t& key = *(key256_t*)id;
+   key256_t key;
+   memcpy(key.data(), id, size);
    return db_api::get().db_find_i256(code, scope, table, key);
 }
 
