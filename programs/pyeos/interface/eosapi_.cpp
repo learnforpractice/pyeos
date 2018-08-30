@@ -26,7 +26,6 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 
-
 #include <vm_manager.hpp>
 
 #include <mutex>
@@ -280,7 +279,7 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
    return python::json::to_string(*output);
 }
 
-PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress) {
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
    vector<signed_transaction* > trxs;
    packed_transaction::compression_type compression;
    if (compress) {
@@ -295,6 +294,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
    try {
       for (auto& v: vv) {
          signed_transaction *trx = new signed_transaction();
+         trx->max_ram_usage = max_ram_usage;
          trxs.push_back(trx);
          for(auto& action: v) {
             trx->actions.emplace_back(std::move(action));
@@ -938,5 +938,4 @@ void n2ethaddr_(uint64_t n, string& addr) {
    get_vm_api()->n2ethaddr(n, _addr, sizeof(_addr));
    addr = string(_addr, sizeof(_addr));
 }
-
 

@@ -28,6 +28,7 @@ namespace eosio { namespace chain {
       fc::enum_type<uint8_t,status_enum>   status;
       uint32_t                             cpu_usage_us; ///< total billed CPU usage (microseconds)
       fc::unsigned_int                     net_usage_words; ///<  total billed NET usage, so we can reconstruct resource state when skipping context free data... hard failures...
+      int32_t                              ram_usage; ///< total ram used by transaction
    };
 
    struct transaction_receipt : public transaction_receipt_header {
@@ -43,6 +44,7 @@ namespace eosio { namespace chain {
          fc::raw::pack( enc, status );
          fc::raw::pack( enc, cpu_usage_us );
          fc::raw::pack( enc, net_usage_words );
+         fc::raw::pack( enc, ram_usage );
          if( trx.contains<transaction_id_type>() )
             fc::raw::pack( enc, trx.get<transaction_id_type>() );
          else
@@ -76,6 +78,6 @@ namespace eosio { namespace chain {
 FC_REFLECT_ENUM( eosio::chain::transaction_receipt::status_enum,
                  (executed)(soft_fail)(hard_fail)(delayed)(expired) )
 
-FC_REFLECT(eosio::chain::transaction_receipt_header, (status)(cpu_usage_us)(net_usage_words) )
+FC_REFLECT(eosio::chain::transaction_receipt_header, (status)(cpu_usage_us)(net_usage_words)(ram_usage) )
 FC_REFLECT_DERIVED(eosio::chain::transaction_receipt, (eosio::chain::transaction_receipt_header), (trx) )
 FC_REFLECT_DERIVED(eosio::chain::signed_block, (eosio::chain::signed_block_header), (transactions)(block_extensions) )

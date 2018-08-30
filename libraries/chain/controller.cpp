@@ -564,7 +564,7 @@ struct controller_impl {
 
          auto restore = make_block_restore_point();
          trace->receipt = push_receipt( gtrx.trx_id, transaction_receipt::soft_fail,
-                                        trx_context.billed_cpu_time_us, trace->net_usage );
+                                        trx_context.billed_cpu_time_us, trace->net_usage, trx_context.ram_usage );
          fc::move_append( pending->_actions, move(trx_context.executed) );
 
          trx_context.squash();
@@ -649,7 +649,7 @@ struct controller_impl {
          trace = std::make_shared<transaction_trace>();
          trace->id = gtrx.trx_id;
          trace->scheduled = true;
-         trace->receipt = push_receipt( gtrx.trx_id, transaction_receipt::expired, billed_cpu_time_us, 0 ); // expire the transaction
+         trace->receipt = push_receipt( gtrx.trx_id, transaction_receipt::expired, billed_cpu_time_us, 0, 0 ); // expire the transaction
          emit( self.accepted_transaction, trx );
          emit( self.applied_transaction, trace );
          undo_session.squash();
@@ -679,7 +679,7 @@ struct controller_impl {
          trace->receipt = push_receipt( gtrx.trx_id,
                                         transaction_receipt::executed,
                                         trx_context.billed_cpu_time_us,
-                                        trace->net_usage );
+                                        trace->net_usage, trx_context.ram_usage );
 
          fc::move_append( pending->_actions, move(trx_context.executed) );
 
@@ -744,7 +744,7 @@ struct controller_impl {
          resource_limits.add_transaction_usage( trx_context.bill_to_accounts, cpu_time_to_bill_us, 0,
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
 
-         trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
+         trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0, 0);
 
          emit( self.accepted_transaction, trx );
          emit( self.applied_transaction, trace );
@@ -764,13 +764,14 @@ struct controller_impl {
     */
    template<typename T>
    const transaction_receipt& push_receipt( const T& trx, transaction_receipt_header::status_enum status,
-                                            uint64_t cpu_usage_us, uint64_t net_usage ) {
+                                            uint64_t cpu_usage_us, uint64_t net_usage, int32_t ram_usage ) {
       uint64_t net_usage_words = net_usage / 8;
       EOS_ASSERT( net_usage_words*8 == net_usage, transaction_exception, "net_usage is not divisible by 8" );
       pending->_pending_block_state->block->transactions.emplace_back( trx );
       transaction_receipt& r = pending->_pending_block_state->block->transactions.back();
       r.cpu_usage_us         = cpu_usage_us;
       r.net_usage_words      = net_usage_words;
+      r.ram_usage            = ram_usage;
       r.status               = status;
       return r;
    }
@@ -837,13 +838,14 @@ struct controller_impl {
                transaction_receipt::status_enum s = (trx_context.delay == fc::seconds(0))
                                                     ? transaction_receipt::executed
                                                     : transaction_receipt::delayed;
-               trace->receipt = push_receipt(trx->packed_trx, s, trx_context.billed_cpu_time_us, trace->net_usage);
+               trace->receipt = push_receipt(trx->packed_trx, s, trx_context.billed_cpu_time_us, trace->net_usage, trx_context.ram_usage);
                pending->_pending_block_state->trxs.emplace_back(trx);
             } else {
                transaction_receipt_header r;
                r.status = transaction_receipt::executed;
                r.cpu_usage_us = trx_context.billed_cpu_time_us;
                r.net_usage_words = trace->net_usage / 8;
+               r.ram_usage = trx_context.ram_usage;
                trace->receipt = r;
             }
 

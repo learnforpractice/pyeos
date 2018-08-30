@@ -74,6 +74,7 @@ namespace eosio { namespace chain {
          vector<action_receipt>        executed;
          flat_set<account_name>        bill_to_accounts;
          flat_set<account_name>        validate_ram_usage;
+         int32_t                       ram_usage = 0;
 
          /// the maximum number of virtual CPU instructions of the transaction that can be safely billed to the billable accounts
          uint64_t                      initial_max_billable_cpu = 0;

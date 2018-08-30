@@ -207,6 +207,7 @@ namespace eosio { namespace chain {
 
    void transaction_context::finalize() {
       EOS_ASSERT( is_initialized, transaction_exception, "must first initialize" );
+      EOS_ASSERT( ram_usage < trx.max_ram_usage, transaction_exception, "ram usage exceeded!", ("trx.max_ram_usage", trx.max_ram_usage)("ram_usage", ram_usage));
 
       if( is_input ) {
          auto& am = control.get_mutable_authorization_manager();
@@ -365,6 +366,7 @@ namespace eosio { namespace chain {
       rl.add_pending_ram_usage( account, ram_delta );
       if( ram_delta > 0 ) {
          validate_ram_usage.insert( account );
+         ram_usage += ram_delta;
       }
    }
 

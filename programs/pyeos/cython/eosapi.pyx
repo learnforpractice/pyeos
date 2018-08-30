@@ -96,7 +96,7 @@ cdef extern from "eosapi_.hpp":
         vector[permission_level]    authorization
         vector[char]                data
 
-    object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async, bool _compress)
+    object push_transactions_(vector[vector[action]]& actions, bool sign, uint64_t skip_flag, bool _async, bool _compress, int max_ram_usage)
     void memcpy(char* dst, char* src, size_t len)
 #    void fc_pack_setcode(setcode _setcode, vector<char>& out)
 
@@ -645,7 +645,7 @@ def push_raw_transaction(signed_trx):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
 
-def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False):
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, max_ram_usage=10*1024):
     '''Send transactions
 
     Args:
@@ -713,14 +713,14 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
 
     if has_opt('manual-gen-block'):
         produce_block_start_()
-        ret = push_transactions_(vv, sign, skip_flag, _async, compress)
+        ret = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
         time.sleep(0.5)
         produce_block_end_()
         return ret
     else:
-        return push_transactions_(vv, sign, skip_flag, True, compress)
+        return push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
 
-def push_action(contract, action, args, permissions: Dict, _async=False, sign=True):
+def push_action(contract, action, args, permissions: Dict, _async=False, sign=True, max_ram_usage=10*1024):
     '''Publishing message to blockchain
 
     Args:
@@ -737,7 +737,7 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     assert type(args) in (str, dict, bytes)
 
     act = [contract, action, args, permissions]
-    outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async)
+    outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async, max_ram_usage=max_ram_usage)
     if outputs:
         output = outputs[0]
         if output['except']:
@@ -746,8 +746,8 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
         return output
     return None
 
-def push_actions(actions, _async=False, sign=True):
-    ret, cost = push_transactions([actions,], sign, 0, _async)
+def push_actions(actions, _async=False, sign=True, max_ram_usage=10*1024):
+    ret, cost = push_transactions([actions,], sign, 0, _async, max_ram_usage)
     return ret[0], cost
 
 def push_evm_action(eth_address, args, permissions: Dict, sign=True):

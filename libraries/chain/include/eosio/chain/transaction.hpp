@@ -29,11 +29,12 @@ namespace eosio { namespace chain {
     */
    struct transaction_header {
       time_point_sec         expiration;   ///< the time at which a transaction expires
-      uint16_t               ref_block_num       = 0U; ///< specifies a block num in the last 2^16 blocks.
-      uint32_t               ref_block_prefix    = 0UL; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
       fc::unsigned_int       max_net_usage_words = 0UL; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
-      uint8_t                max_cpu_usage_ms    = 0; /// upper limit on the total CPU time billed for this transaction
+      fc::signed_int         max_ram_usage       = std::numeric_limits<int32_t>::max(); /// max ram used by transaction
       fc::unsigned_int       delay_sec           = 0UL; /// number of seconds to delay this transaction for during which it may be canceled.
+      uint32_t               ref_block_prefix    = 0UL; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
+      uint16_t               ref_block_num       = 0U; ///< specifies a block num in the last 2^16 blocks.
+      uint8_t                max_cpu_usage_ms    = 0; /// upper limit on the total CPU time billed for this transaction
 
       /**
        * @return the absolute block number given the relative ref_block_num
@@ -188,7 +189,7 @@ namespace eosio { namespace chain {
 } } /// namespace eosio::chain
 
 FC_REFLECT( eosio::chain::transaction_header, (expiration)(ref_block_num)(ref_block_prefix)
-                                              (max_net_usage_words)(max_cpu_usage_ms)(delay_sec) )
+                                              (max_net_usage_words)(max_cpu_usage_ms)(delay_sec)(max_ram_usage) )
 FC_REFLECT_DERIVED( eosio::chain::transaction, (eosio::chain::transaction_header), (context_free_actions)(actions)(transaction_extensions) )
 FC_REFLECT_DERIVED( eosio::chain::signed_transaction, (eosio::chain::transaction), (signatures)(context_free_data) )
 FC_REFLECT_ENUM( eosio::chain::packed_transaction::compression_type, (none)(zlib))
