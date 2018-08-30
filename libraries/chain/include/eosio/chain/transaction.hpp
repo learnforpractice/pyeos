@@ -30,7 +30,7 @@ namespace eosio { namespace chain {
    struct transaction_header {
       time_point_sec         expiration;   ///< the time at which a transaction expires
       fc::unsigned_int       max_net_usage_words = 0UL; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
-      fc::signed_int         max_ram_usage       = std::numeric_limits<int32_t>::max(); /// max ram used by transaction
+      int32_t                max_ram_usage       = std::numeric_limits<int32_t>::max(); /// max ram used by transaction
       fc::unsigned_int       delay_sec           = 0UL; /// number of seconds to delay this transaction for during which it may be canceled.
       uint32_t               ref_block_prefix    = 0UL; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
       uint16_t               ref_block_num       = 0U; ///< specifies a block num in the last 2^16 blocks.
