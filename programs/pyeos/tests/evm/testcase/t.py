@@ -116,6 +116,7 @@ def test_get_value():
 
 @init
 def test_delete_value():
+    test_set_value()
     n = eosapi.N('evm')
     itr = rodb.find_i256(n, n, n, 0)
     assert itr >= 0
@@ -248,12 +249,19 @@ def ut():
 
 def suite():
     suite = unittest.TestSuite()
-    testcase = unittest.FunctionTestCase(test_transfer)
-    suite.addTest(testcase)
-    testcase = unittest.FunctionTestCase(test_memory)
-    suite.addTest(testcase)
-    testcase = unittest.FunctionTestCase(test_memory2)
-    suite.addTest(testcase)
+#    suite.addTest(EVMTestCase('test_memory_out'))
+
+    suite.addTest(unittest.FunctionTestCase(test_set_value))
+    suite.addTest(unittest.FunctionTestCase(test_get_value))
+    suite.addTest(unittest.FunctionTestCase(test_delete_value))
+
+    suite.addTest(unittest.FunctionTestCase(test_transfer))
+    suite.addTest(unittest.FunctionTestCase(test_transfer2))
+    suite.addTest(unittest.FunctionTestCase(test_memory))
+    suite.addTest(unittest.FunctionTestCase(test_memory2))
+
+    suite.addTest(unittest.FunctionTestCase(test_call))
+    suite.addTest(unittest.FunctionTestCase(test_suicide))
 
     return suite
 

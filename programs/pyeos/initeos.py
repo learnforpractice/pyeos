@@ -286,7 +286,8 @@ try:
     from evm.evm import t as ee
     from evm.testcase import t as et
 
-    from lua.hello import t as lt
+    from lua.hello import t as lh
+    from lua.testcase import t as lt
 
 #    from biosboot import t as bb
     import d

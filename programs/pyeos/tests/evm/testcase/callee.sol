@@ -6,6 +6,6 @@ contract Callee {
     
     function setValue(uint v) public returns(uint) {
         myvalue = v;
-        return v;
+        return v+1;
     }
 }
