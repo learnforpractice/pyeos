@@ -57,7 +57,7 @@ set_target_properties(vm_wasm_binaryen  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
 
 
-foreach(LIBINDEX RANGE 0 10 1)
+foreach(LIBINDEX RANGE 0 1 1)
     add_library(vm_wasm_wavm-${LIBINDEX} SHARED vm_wasm.cpp)
 
     target_compile_options(vm_wasm_wavm-${LIBINDEX}     PRIVATE   -D_WAVM)

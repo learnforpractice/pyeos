@@ -136,6 +136,10 @@ cdef extern from "eosapi_.hpp":
     void n2ethaddr_(uint64_t n, string& addr);
     uint64_t get_code_update_time_ms_(string& name);
 
+    void transaction_listen_();
+    void transaction_disconnect_();
+
+
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
         int (*sha3)(const char* data, int size, char* result, int size2)
@@ -645,7 +649,7 @@ def push_raw_transaction(signed_trx):
         signed_trx = json.dumps(signed_trx)
     return push_raw_transaction_(signed_trx)
 
-def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, max_ram_usage=10*1024):
+def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, max_ram_usage=10*1024*1024):
     '''Send transactions
 
     Args:
@@ -905,3 +909,9 @@ def sha3(string& s):
 
 def get_code_update_time_ms(string& name):
     return get_code_update_time_ms_(name)
+
+def transaction_listen():
+    transaction_listen_();
+
+def transaction_disconnect():
+    transaction_disconnect_();

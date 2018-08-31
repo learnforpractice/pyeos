@@ -25,6 +25,7 @@ using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
+
 namespace eosio {
 namespace chain {
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
@@ -32,7 +33,7 @@ namespace chain {
 }
 
 #define WAVM_VM_START_INDEX (0x10000)
-
+#define VM_WASM_WAVM_COUNT (1)
 
 typedef void (*fn_on_boost_account)(void* v, uint64_t account, uint64_t expiration);
 void visit_boost_account(fn_on_boost_account fn, void* param);
@@ -224,7 +225,7 @@ int vm_manager::load_vm_wavm() {
    char _path[128];
    const char* _format = "../libs/libvm_wasm_wavm-%d" DYLIB_SUFFIX;
 
-   for (int i=1;i<=10;i++) {
+   for (int i=1;i<=VM_WASM_WAVM_COUNT;i++) {
       snprintf(_path, sizeof(_path), _format, i);
       load_vm_from_path(WAVM_VM_START_INDEX|i, _path);
    }

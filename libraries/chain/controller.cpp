@@ -21,10 +21,12 @@
 #include <fc/scoped_exit.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
+#include <eosio/chain/chain_api.hpp>
 
 
 namespace eosio { namespace chain {
 
+static eosio::chain::chain_api s_api;
 void vm_manager_init();
 bool vm_cleanup();
 
@@ -1384,6 +1386,9 @@ authorization_manager&         controller::get_mutable_authorization_manager()
 controller::controller( const controller::config& cfg )
 :my( new controller_impl( cfg, *this ) )
 {
+   s_api.ctrl = this;
+   s_api.cfg = &my->conf;
+   register_chain_api(&s_api);
 }
 
 controller::~controller() {
