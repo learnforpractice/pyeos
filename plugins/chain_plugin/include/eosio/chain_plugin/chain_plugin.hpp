@@ -570,8 +570,15 @@ public:
    void plugin_startup();
    void plugin_shutdown();
 
-   virtual chain_apis::read_only get_read_only_api() const { return chain_apis::read_only(chain(), get_abi_serializer_max_time()); }
-   virtual chain_apis::read_write get_read_write_api();
+   virtual chain_apis::read_only& get_read_only_api() const {
+      static chain_apis::read_only *ro = nullptr;
+      if (ro == nullptr) {
+         ro = new chain_apis::read_only(chain(), get_abi_serializer_max_time());
+      }
+      return *ro;
+   }
+
+   virtual chain_apis::read_write& get_read_write_api();
 
    virtual void accept_block( const chain::signed_block_ptr block );
    virtual void accept_transaction(const chain::packed_transaction& trx, chain::plugin_interface::next_function<chain::transaction_trace_ptr> next);

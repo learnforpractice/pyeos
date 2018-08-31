@@ -136,6 +136,9 @@ void n2ethaddr_(uint64_t n, string& addr);
 
 uint64_t get_code_update_time_ms_(string& name);
 
+void transaction_listen_();
+void transaction_disconnect_();
+
 extern "C" {
 	int has_option(const char* _option);
 	int get_option(const char* option, char *result, int size);

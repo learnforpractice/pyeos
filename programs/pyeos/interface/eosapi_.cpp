@@ -169,7 +169,7 @@ vector<uint8_t> assemble_wast(const std::string& wast) {
 }
 
 read_only::get_info_results get_info() {
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    eosio::chain_apis::read_only::get_info_params params = {};
    return ro_api.get_info(params);
 }
@@ -198,7 +198,7 @@ fc::variant determine_required_keys(const signed_transaction& trx) {
 //           ("available_keys", variant(public_keys));
 //   read_only::get_required_keys_result
 //   const auto& required_keys = call(host, port, get_required_keys, get_arg);
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    auto results = ro_api.get_required_keys(get_arg);
    return fc::variant(results.required_keys);
 }
@@ -301,7 +301,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          }
          gen_transaction(*trx, sign, 10000000, compression);
       }
-      auto rw = get_chain_plugin().get_read_write_api();
+      auto& rw = get_chain_plugin().get_read_write_api();
 
       for (auto& strx : trxs) {
          PyObject* v;
@@ -382,7 +382,7 @@ PyObject* sign_transaction_(string& trx_json_to_sign, string& str_private_key) {
 PyObject* push_raw_transaction_(string& signed_trx) {
    bool success = false;
 
-   auto rw = get_chain_plugin().get_read_write_api();
+   auto& rw = get_chain_plugin().get_read_write_api();
    chain_apis::read_write::push_transaction_results result;
 
    try {
@@ -475,7 +475,7 @@ PyObject* create_account_(string creator, string newaccount, string owner,
 }
 
 PyObject* get_info_() {
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    chain_apis::read_only::get_info_params params = {};
    chain_apis::read_only::get_info_results results = ro_api.get_info(params);
    return python::json::to_string(results);
@@ -521,7 +521,7 @@ PyObject* get_info_() {
  */
 
 PyObject* get_block_(char* num_or_id) {
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    try {
       chain_apis::read_only::get_block_params params = {string(num_or_id)};
       auto results = ro_api.get_block(params);
@@ -548,7 +548,7 @@ PyObject* get_account_(const char* _name) {
    PyDict dict;
 
    try {
-      auto ro_api = get_chain_plugin().get_read_only_api();
+      auto& ro_api = get_chain_plugin().get_read_only_api();
 
       eosio::chain_apis::read_only::get_account_results result;
       eosio::chain_apis::read_only::get_account_params params = {chain::name(_name).value};
@@ -599,7 +599,7 @@ PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol
       PyArray arr;
       PyDict dict;
 
-      auto ro_api = get_chain_plugin().get_read_only_api();
+      auto& ro_api = get_chain_plugin().get_read_only_api();
 
       eosio::chain_apis::read_only::get_currency_balance_params params = {chain::name(_code), chain::name(_account), _symbol};
       auto result = ro_api.get_currency_balance(params);
@@ -740,7 +740,7 @@ uint64_t get_code_update_time_ms_(string& name) {
 
 int get_table_(string& scope, string& code, string& table, string& result) {
    try {
-      auto ro_api = get_chain_plugin().get_read_only_api();
+      auto& ro_api = get_chain_plugin().get_read_only_api();
       chain_apis::read_only::get_table_rows_params params;
       params.json = true;
       params.scope = scope;
@@ -845,7 +845,7 @@ void fc_pack_updateauth(string& _account, string& _permission, string& _parent, 
 }
 
 void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    eosio::chain_apis::read_only::abi_json_to_bin_params params;
    params = {code, action, fc::json::from_string(json)};
    try {
@@ -855,7 +855,7 @@ void fc_pack_args(uint64_t code, uint64_t action, string& json, string& bin) {
 }
 
 PyObject* fc_unpack_args(uint64_t code, uint64_t action, string& bin) {
-   auto ro_api = get_chain_plugin().get_read_only_api();
+   auto& ro_api = get_chain_plugin().get_read_only_api();
    eosio::chain_apis::read_only::abi_bin_to_json_params params;
    params = {code, action, vector<char>(bin.begin(), bin.end())};
    try {
@@ -939,3 +939,22 @@ void n2ethaddr_(uint64_t n, string& addr) {
    addr = string(_addr, sizeof(_addr));
 }
 
+#include <boost/signals2/connection.hpp>
+boost::signals2::connection cnn;
+boost::signals2::connection cnn2;
+
+void transaction_listen_() {
+   cnn = get_chain_plugin().chain().accepted_transaction.connect( [&]( const chain::transaction_metadata_ptr& t ) {
+      vmdlog("got accepted transaction!");
+   } );
+
+   cnn2 = get_chain_plugin().chain().applied_transaction.connect( [&]( const chain::transaction_trace_ptr& t ) {
+      vmdlog("got applied transaction!");
+   } );
+
+}
+
+void transaction_disconnect_() {
+   cnn.disconnect();
+   cnn2.disconnect();
+}
