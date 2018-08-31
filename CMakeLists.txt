@@ -108,7 +108,7 @@ endif(USE_PCH)
 hunter_add_package(OpenSSL)
 find_package(OpenSSL REQUIRED)
 
-find_package(Secp256k1 REQUIRED)
+#find_package(Secp256k1 REQUIRED)
 
 if(UNIX)
   if(APPLE)
