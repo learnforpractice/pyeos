@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include <eosiolib_native/vm_api.h>
 
 void vm_init(struct vm_api* api) {
