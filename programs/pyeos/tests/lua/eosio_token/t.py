@@ -1,0 +1,74 @@
+import os
+import re
+import sys
+import imp
+import time
+import struct
+
+import debug
+import wallet
+import eosapi
+import initeos
+import traceback
+from eosapi import N, mp_compile, pack_bytes, pack_setabi, push_transactions
+from common import prepare, producer
+
+def init(func, wasm=0):
+    def func_wrapper(*args, **kwargs):
+        if not wasm:
+            prepare('tokentest', 'token.lua', 'eosio.token.abi', __file__, 10)
+        func(*args, **kwargs)
+    return func_wrapper
+
+@init
+def create():
+    msg = {"issuer":"eosio","maximum_supply":"11000000000000.0000 EOS"}
+    r = eosapi.push_action('tokentest', 'create', msg, {'tokentest':'active'})
+    print(r)
+
+@init
+def issue():
+    r = eosapi.push_action('tokentest','issue',{"to":"eosio","quantity":"10000000000.0000 EOS","memo":""},{'eosio':'active'})
+    assert r
+
+@init
+def issue2():
+    r = eosapi.push_action('tokentest','issue',{"to":"hello","quantity":"10000000000.0000 EOS","memo":""},{'eosio':'active'})
+    assert r
+
+@init
+def transfer():
+    msg = {"from":"eosio", "to":"hello", "quantity":"1.0000 EOS", "memo":"m"}
+    r = eosapi.push_action('tokentest', 'transfer', msg, {'eosio':'active'})
+
+
+@init
+def test1(count=100):
+    actions = []
+    for i in range(count):
+        action = ['tokentest','issue',{"to":"eosio","quantity":"1.0000 EOS","memo":str(i)},{'eosio':'active'}]
+        actions.append(action)
+
+    ret, cost = eosapi.push_actions(actions)
+    assert ret and not ret['except']
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
+@init
+def test2(count=100):
+    _from = 'eosio'
+    _to = 'hello'
+
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+    actions = []
+    for i in range(count):
+        action = ['tokentest','transfer',{"from":_from, "to":_to, "quantity":"0.0010 EOS", "memo":str(i)},{_from:'active'}]
+        actions.append(action)
+
+    ret, cost = eosapi.push_actions(actions)
+    if ret['except']:
+        print(ret['except'])
+    assert not ret['except']
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
