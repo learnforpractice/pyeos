@@ -7,11 +7,28 @@ typedef int (*fn_check_time)(void);
 extern "C" lsb_err_value lsb_init_ex(lsb_lua_sandbox *lsb, const char *state_file, const char* str_code);
 extern "C" void luaV_set_check_time_fn(fn_check_time fn);
 void lsb_register_vm_api(lsb_lua_sandbox *lsb);
+static lua_State *current_state = NULL;
+
+class scoped_state {
+public:
+   scoped_state(lua_State *s) {
+      current_state = s;
+   }
+   ~scoped_state() {
+      current_state = NULL;
+   }
+};
 
 int check_time() {
    try {
       get_vm_api()->checktime();
    } catch (...) {
+      if (current_state) {
+         lua_pushstring(current_state, "execution timeout!");
+         lua_error(current_state);
+      } else {
+         throw;
+      }
       return 0;
    }
    return 1;
@@ -134,6 +151,7 @@ int _apply(lsb_lua_sandbox *lsb, uint64_t receiver, uint64_t account, uint64_t a
    static const char *func_name = "apply";
    lua_State *lua = lsb_get_lua(lsb);
    if (!lua) return 0;
+   scoped_state s(lua);
 
    if (lsb_pcall_setup(lsb, func_name)) return 1;
 

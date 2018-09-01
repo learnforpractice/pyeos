@@ -317,7 +317,6 @@ def create_account2(creator, account, owner_key, active_key):
     r, cost =  push_actions(actions)
     if r['except']:
         raise Exception(JsonStruct(r))
-        return False
     return True
 
 def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
