@@ -250,15 +250,15 @@ def get_accounts(public_key):
 def get_currency_balance(string& _code, string& _account, string& _symbol = 'EOS'):
     return get_currency_balance_(_code, _account, _symbol)
 
-def get_balance(account):
-    ret = get_currency_balance('eosio.token', account, 'EOS')
+def get_balance(account, token_account='eosio.token'):
+    ret = get_currency_balance(token_account, account, 'EOS')
     if ret:
         return ret[0]/10000.0
     return 0.0
 
-def transfer(_from, _to, _amount, _memo=''):
+def transfer(_from, _to, _amount, _memo='', token_account='eosio.token'):
     args = {"from":_from, "to":_to, "quantity":'%.4f EOS'%(_amount,), "memo":_memo}
-    r = push_action('eosio.token', 'transfer', args, {_from:'active'})
+    r = push_action(token_account, 'transfer', args, {_from:'active'})
     if r and not r['except']:
         return True
     return False
