@@ -42,6 +42,8 @@ static int action_data_size_ (lua_State *L) {
 
 static int read_action_data_ (lua_State *L) {
    size_t size = action_data_size();
+   printf("++++++read_action_data: %d \n", size);
+
    if (size <= 0) {
       lua_pushnil(L);
       return 1;
@@ -165,6 +167,22 @@ static int db_end_i64_(lua_State *L) {
    return 1;
 }
 
+static int rshift_(lua_State *L) {
+   uint64_t n = luaL_checknumber(L, 1);
+   uint64_t by = luaL_checknumber(L, 2);
+   n = n>>by;
+   lua_pushinteger(L, n);
+   return 1;
+}
+
+static int lshift_(lua_State *L) {
+   uint64_t n = luaL_checknumber(L, 1);
+   uint64_t by = luaL_checknumber(L, 2);
+   n = n<<by;
+   lua_pushinteger(L, n);
+   return 1;
+}
+
 void lsb_register_vm_api(lsb_lua_sandbox *lsb) {
    lsb_add_function(lsb, is_account_,                 "is_account");
    lsb_add_function(lsb, read_action_data_,           "read_action_data");
@@ -183,8 +201,9 @@ void lsb_register_vm_api(lsb_lua_sandbox *lsb) {
    lsb_add_function(lsb, db_end_i64_,                 "db_end_i64");
    lsb_add_function(lsb, s2n_,                        "s2n");
    lsb_add_function(lsb, s2n_,                        "N");
-   lsb_add_function(lsb, n2s_,                         "n2s");
-
+   lsb_add_function(lsb, n2s_,                        "n2s");
+   lsb_add_function(lsb, rshift_,                     "rshift");
+   lsb_add_function(lsb, lshift_,                     "lshift");
 }
 
 
