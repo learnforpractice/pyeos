@@ -23,14 +23,14 @@ static char print_out[2048] = { 0 };
 
 void print(void *context, const char *component, int level, const char *fmt, ...)
 {
-  (void)context;
-  va_list args;
-  int n = snprintf(print_out, sizeof print_out, "%d %s ", level,
+   (void)context;
+   va_list args;
+   int n = snprintf(print_out, sizeof print_out, "%d %s ", level,
                    component ? component : "unnamed");
-  va_start(args, fmt);
-  n = vsnprintf(print_out + n, sizeof print_out - n, fmt, args);
-  va_end(args);
-  vmdlog(print_out);
+   va_start(args, fmt);
+   n = vsnprintf(print_out + n, sizeof print_out - n, fmt, args);
+   va_end(args);
+   vmdlog(print_out);
 }
 
 static lsb_logger printer = { .context = NULL, .cb = print };
@@ -73,7 +73,7 @@ static const char *cfg = "memory_limit = 65765\n"
     "array = {'foo', 99}\n"
     "hash  = {foo = 'bar', hash1 = {subfoo = 'subbar'}}\n"
 */
-static const char *cfg = "memory_limit = 65765\n"
+static const char *cfg = "memory_limit = 1024*1024\n"
       "disabled_modules = {io = 0}\n"
     "output_limit = 1024\n"
     "log_level = 7\n";
@@ -89,20 +89,33 @@ lsb_lua_sandbox *load_account(uint64_t account) {
    if (!lsb) {
       return NULL;
    }
+
+   lsb_register_vm_api(lsb);
+
    lsb_err_value ret = lsb_init_ex(lsb, NULL, str_code);
    if (ret) {
       lsb_terminate(lsb, NULL);
       lsb_destroy(lsb);
+      const char* error = lsb_get_error(lsb);
+      if (error) {
+         eosio_assert(0, error);
+      } else {
+         eosio_assert(0, "unknown error!");
+      }
       return NULL;
    }
-
-   lsb_register_vm_api(lsb);
 
    static const char *func_name = "apply";
    lua_State *lua = lsb_get_lua(lsb);
    if (!lua) {
       lsb_terminate(lsb, NULL);
       lsb_destroy(lsb);
+      const char* error = lsb_get_error(lsb);
+      if (error) {
+         eosio_assert(0, error);
+      } else {
+         eosio_assert(0, "unknown error!");
+      }
       return NULL;
    }
 
@@ -142,7 +155,7 @@ int _apply(lsb_lua_sandbox *lsb, uint64_t receiver, uint64_t account, uint64_t a
       //    lsb_terminate(lsb, err);
       return 0;
    }
-
+#if 0
    int nresults = lua_gettop(lua) - top;
 //   printf("++++++++++++nresults: %d \n", nresults);
 
@@ -159,6 +172,7 @@ int _apply(lsb_lua_sandbox *lsb, uint64_t receiver, uint64_t account, uint64_t a
    }
 
    int status = (int)lua_tointeger(lua, -1);
+#endif
    lua_pop(lua, 1);
 
    lsb_pcall_teardown(lsb);
@@ -183,6 +197,12 @@ void vm_deinit() {
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_lua: setcode\n");
+   auto itr = account_map.find(account);
+   if (itr != account_map.end()) {
+      lsb_lua_sandbox *lsb = itr->second;
+      lsb_terminate(lsb, NULL);
+      lsb_destroy(lsb);
+   }
    load_account(account);
    return 0;
 }
