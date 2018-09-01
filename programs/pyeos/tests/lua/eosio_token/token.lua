@@ -46,9 +46,10 @@ local multi_index = class(function(multi_index)
     function multi_index.store(self, payer)
       itr = db_find_i64(self.code, self.scope, self.table_id, self.get_primary_key())
       if itr >= 0 then
-        db_update_i64(itr, self.pack())
+        db_update_i64(itr, payer, self.pack())
       else
-        db_store_i64(self.scope, self.table_id, self.get_primary_key(), self.pack())
+        print('+++db_store_i64:', self.scope, self.table_id, payer)
+        db_store_i64(self.scope, self.table_id, payer, self.get_primary_key(), self.pack())
       end
       return 0;
     end
@@ -119,7 +120,7 @@ function Asset:new(amount, symbol)
 end
 
 function Asset:pack()
-  return string.pack('nn', self._amount, self._symbol)
+  return string.pack('JJ', self._amount, self._symbol)
 end
 
 function Asset:unpack(data)
@@ -134,7 +135,7 @@ local Asset = class(function(A)
     end
 
     function Asset.pack(self)
-      return string.pack('nn', self.amount, self.symbol)
+      return string.pack('JJ', self.amount, self.symbol)
     end
     return Asset
 end, {})
@@ -156,9 +157,19 @@ local Balance = class(function(Balance)
     end
     
     function Balance.add(self, amount, payer)
+        self.a.amount = self.a.amount + amount
+        self.store(payer)
     end
     
     function Balance.sub(self, amount)
+        print('+++self.a.amount:', self.a.amount)
+        assert(self.a.amount >= amount, 'balance not enough')
+        self.a.amount = self.a.amount + amount
+        if self.a.amount == 0 then
+            self.erase()
+        else
+            self.store(self.owner)
+        end
     end
     
     function Balance.get_primary_key(self)
@@ -166,16 +177,14 @@ local Balance = class(function(Balance)
     end
     
     function Balance.pack(self)
-      return string.pack('nn', self.a.amount, self.a.symbol)
+        return string.pack('JJ', self.a.amount, self.a.symbol)
+    end
+
+    function Balance.unpack(self, data)
+        self.a.amount, self.a.symbol = string.unpack('JJ', data)
     end
     return Balance
 end, {multi_index})
-
-function Balance.unpack(self, data)
-  owner, symbol = string.unpack('nn', data)
-  return Balance(owner,symbol)
-end
-
 
 local currency_stats = class(function(currency_stats)
     function currency_stats.__init__(self, symbol)
@@ -197,43 +206,63 @@ local currency_stats = class(function(currency_stats)
     end
 
     function currency_stats.pack(self)
-        s1 = self._supply
-        s2 = self._max_supply
-        return string.pack('nc8nc8n', s1._amount, s1._symbol, s2._amount, s2._symbol, self._issuer)
+        s1 = self.supply
+        s2 = self.max_supply
+        return string.pack('JJJJJ', s1.amount, s1.symbol, s2.amount, s2.symbol, self.issuer)
     end
     
     function currency_stats.unpack(self, data)
         s1 = self.supply
         s2 = self.max_supply
-        s1._amount, s1._symbol, s2._amount, s2._symbol, self._issuer = string.unpack('nc8nc8n', data)
+        s1.amount, s1.symbol, s2.amount, s2.symbol, self.issuer = string.unpack('JJJJJ', data)
     end
 
     return currency_stats
 end, {multi_index})
 
+
 function _create(msg)
     require_auth(_code)
     issuer, amount, symbol = string.unpack('JJJ', msg)
-    print(issuer, amount, symbol)
     
     cs = currency_stats(symbol)
-   
-    if cs.issuer then
+    if cs.issuer ~= 0 then
         error('currency has already been created')
     end
 
-    cs._issuer = issuer
-    cs._max_supply.amount = amount
-    cs:store(_code)
+    cs.issuer = issuer
+    cs.max_supply.amount = amount
+    cs.store(_code)
 end
 
 
 function _issue(msg)
+    _to, amount, symbol = string.unpack('JJJ', msg:sub(1,24))
+--        memo = eoslib.unpack_bytes(msg[24:])
+    cs = currency_stats(symbol)
+    assert(cs.issuer, 'currency does not exists')
+    print('----cs.issuer:', cs.issuer)
+    require_auth(cs.issuer)
+    cs.supply.amount = cs.supply.amount + amount
+    assert(cs.supply.amount < cs.max_supply.amount, 'supply overflow!')
+    cs.store(cs.issuer)
+
+    acc = Balance(_to, symbol)
+    acc.add(amount, cs.issuer)
 end
 
 function _transfer(msg)
+    _from, to, amount, symbol = string.unpack('JJJJ', msg:sub(1,32))
+--    print('transfer:', _from, to, amount, symbol)
+    require_auth(_from)
+    require_recipient(_from)
+    require_recipient(to)
+--        memo = eoslib.unpack_bytes(msg[32:])
+    a1 = Balance(_from, symbol)
+    a2 = Balance(to, symbol)
+    a1.sub(amount)
+    a2.add(amount, _from)
 end
-
 
 function apply(receiver, account, act)
   msg = read_action_data()
