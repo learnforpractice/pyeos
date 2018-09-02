@@ -78,6 +78,21 @@ def test_io():
     r = eosapi.push_action('luatest', 'sayhello', '', {'luatest':'active'})
     print(r)
 
+def test_string_find():
+#http://lua-users.org/lists/lua-l/2011-02/msg01595.html
+    test_code = '''
+    require 'string'
+    function apply(receiver, account, act)
+        if act == N('sayhello') then
+            string.find(string.rep("a", 50), string.rep("a?", 50)..string.rep("a", 50))
+        end
+        return 1
+    end
+    '''
+    deploy('luatest', test_code)
+    r = eosapi.push_action('luatest', 'sayhello', '', {'luatest':'active'})
+    print(r)
+
 cfg ='''disabled_modules = {io = 1, os=1}
 memory_limit = 1024*64
 output_limit = 1024
@@ -123,6 +138,11 @@ class LUATestCase(unittest.TestCase):
     @unittest.expectedFailure
     def test_memory(self):
         test_memory()
+
+    @unittest.expectedFailure
+    def test_string_find(self):
+        test_string_find()
+
 
     def tearDown(self):
         pass

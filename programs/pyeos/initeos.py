@@ -271,7 +271,7 @@ try:
     from python.rpctest import t as rt
     from python.simpleauction import t as st
     from wasm.lab import t as wt
-    
+
     from python.vote import t as vt2
     from native.native import t as nt
     from python.vmstore import t as vt
@@ -288,6 +288,7 @@ try:
 
     from lua.hello import t as lh
     from lua.testcase import t as lt
+    from lua.eosio_token import t as le
 
 #    from biosboot import t as bb
     import d
