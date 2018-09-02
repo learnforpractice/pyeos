@@ -90,10 +90,28 @@ static const char *cfg = "memory_limit = 65765\n"
     "array = {'foo', 99}\n"
     "hash  = {foo = 'bar', hash1 = {subfoo = 'subbar'}}\n"
 */
+#if 0
 static const char *cfg = "memory_limit = 1024*1024\n"
-      "disabled_modules = {io = 0}\n"
-    "output_limit = 1024\n"
-    "log_level = 7\n";
+   "disable_modules = {io = 1, os=1}\n"
+   "output_limit = 1024\n"
+   "log_level = 7\n"
+   "remove_entries = { os = {'getenv', 'execute'},  string = {'dump'} }\n";
+#endif
+
+static const char *cfg =
+"memory_limit = 1024*1024*1\n"
+"instruction_limit = 10000\n"
+"output_limit = 64*1024\n"
+"path = '/modules/?.lua'\n"
+"cpath = '/modules/?.so'\n"
+"remove_entries = {\n"
+"[''] =\n"
+"{'collectgarbage','coroutine','dofile','load','loadfile','loadstring',\n"
+"'newproxy','print'},\n"
+"os = {'getenv','execute','exit','remove','rename','setlocale','tmpname'}\n"
+"}\n"
+"disable_modules = {io = 1, os=1}\n";
+
 
 lsb_lua_sandbox *load_account(uint64_t account) {
    size_t size = 0;

@@ -93,7 +93,7 @@ def test_string_find():
     r = eosapi.push_action('luatest', 'sayhello', '', {'luatest':'active'})
     print(r)
 
-cfg ='''disabled_modules = {io = 1, os=1}
+cfg ='''disable_modules = {io = 1, os=1}
 memory_limit = 1024*64
 output_limit = 1024
 log_level = 7
