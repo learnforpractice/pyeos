@@ -15,6 +15,7 @@ PyObject* PyInit_inspector();
 PyObject* PyInit__struct(void);
 int PyObject_GC_GetCount();
 PyObject* PyInit_struct2(void);
+PyObject* PyInit_sys2(void);
 
 PyThreadState* Py_NewInterpreterEx(void);
 }
@@ -36,6 +37,43 @@ bool vm_cleanup() {
    }
    return false;
 }
+
+static vector<char> print_buffer;
+
+#define CONSOLE_GREEN "\033[32m"
+#define CONSOLE_BLACK "\033[30m"
+
+extern "C" void debug_print(const char* str, int len) {
+   for (int i=0;i<len;i++) {
+      if (str[i] == '\n') {
+         time_t rawtime;
+         struct tm * timeinfo;
+         char buffer [32];
+
+         time (&rawtime);
+         timeinfo = localtime (&rawtime);
+         strftime (buffer,80,"%T",timeinfo);
+
+         string s(print_buffer.data(), print_buffer.size());
+
+         PyFrameObject *f = PyThreadState_GET()->frame;
+         const char* filename = PyUnicode_AsUTF8(f->f_code->co_filename);
+         const char* name = PyUnicode_AsUTF8(f->f_code->co_name);
+
+         if(isatty(fileno(stdout))) {
+            fprintf( stdout, "%s", CONSOLE_GREEN );
+         }
+         fprintf(stdout, "%-10s %4d %-20s %-20s %s", buffer, PyFrame_GetLineNumber(f), filename, name, s.c_str());
+         fprintf(stdout, "%s\n", CONSOLE_BLACK);
+
+         print_buffer.clear();
+         continue;
+      }
+      print_buffer.push_back(str[i]);
+   }
+}
+
+
 
 int vm_run_script(const char* str) {
    return PyRun_SimpleString(str);
@@ -68,57 +106,15 @@ void vm_init(struct vm_api* api) {
    PyImport_AppendInittab("db", PyInit_db);
    PyImport_AppendInittab("inspector", PyInit_inspector);
    PyImport_AppendInittab("vm_cpython", PyInit_vm_cpython);
+   PyImport_AppendInittab("sys2", PyInit_sys2);
 
    Py_InitializeEx(0);
-//   _Py_InitializeEx_Private(0, 0);
 
 //   PyInit_eoslib();
 //   PyInit_db();
 //   PyInit_inspector();
 //   PyInit_vm_cpython();
 //   init_function_whitelist();
-
-
-   PyThreadState *mainstate, *substate;
-#ifdef WITH_THREAD
-   PyGILState_STATE gilstate;
-#endif
-
-   mainstate = PyThreadState_Get();
-
-#ifdef WITH_THREAD
-   PyEval_InitThreads();
-   PyEval_ReleaseThread(mainstate);
-
-   gilstate = PyGILState_Ensure();
-#endif
-
-#if 0
-   PyThreadState_Swap(NULL);
-
-//   substate = Py_NewInterpreterEx();
-   substate = Py_NewInterpreter();
-   {
-      static unsigned char M___hello__[] = {
-            0xe3,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,
-            0x00,0x40,0x00,0x00,0x00,0x73,0x0c,0x00,0x00,0x00,0x65,0x00,0x64,0x00,0x83,0x01,
-            0x01,0x00,0x64,0x01,0x53,0x00,0x29,0x02,0x7a,0x12,0x68,0x65,0x6c,0x6c,0x6f,0x2c,
-            0x77,0x6f,0x72,0x6c,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x4e,0x29,0x01,0xda,
-            0x05,0x70,0x72,0x69,0x6e,0x74,0xa9,0x00,0x72,0x02,0x00,0x00,0x00,0x72,0x02,0x00,
-            0x00,0x00,0xda,0x05,0x68,0x65,0x6c,0x6c,0x6f,0xda,0x08,0x3c,0x6d,0x6f,0x64,0x75,
-            0x6c,0x65,0x3e,0x02,0x00,0x00,0x00,0x73,0x00,0x00,0x00,0x00,
-      };
-
-      #define SIZE (int)sizeof(M___hello__)
-
-      PyImport_ImportFrozenModuleObjectExEx("hello", (char*)M___hello__, SIZE);
-   }
-#endif
-
-   if (PyImport_ImportFrozenModule("__hello__") <= 0) {
-       printf("can't import __hello__\n");
-       exit(0);
-   }
 
    PyImport_ImportModule("_struct");
    PyImport_ImportModule("eoslib");
@@ -184,24 +180,6 @@ void prepare_env(uint64_t account) {
 
       module = PyInit_struct2();
       s->modules["_struct"] = module;
-
-
-#if 0
-      PyObject* module = PyImport_ImportModule("_struct");
-      s->modules["_struct"] = module;
-
-      module = PyImport_ImportModule("eoslib");
-      s->modules["eoslib"] = module;
-
-      module = PyImport_ImportModule("db");
-      s->modules["db"] = module;
-
-      module = PyImport_ImportModule("inspector");
-      s->modules["inspector"] = module;
-
-      module = PyImport_ImportModule("vm_cpython");
-      s->modules["vm_cpython"] = module;
-#endif
       s_sandbox_map[account] = std::move(s);
    } else {
       PyThreadState_Swap(itr->second->state);
