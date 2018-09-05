@@ -1,9 +1,8 @@
+#include <map>
+
 #include "vm_cpython.h"
-
 #include <Python.h>
-
 #include <eosiolib_native/vm_api.h>
-
 #include <inspector/inspector.hpp>
 
 static struct vm_api* s_api;
@@ -15,12 +14,14 @@ PyObject* PyInit_vm_cpython();
 PyObject* PyInit_inspector();
 PyObject* PyInit__struct(void);
 int PyObject_GC_GetCount();
+PyObject* PyInit_struct2(void);
+
+PyThreadState* Py_NewInterpreterEx(void);
 }
 
 int cpython_setcode(uint64_t account, string& code);
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 int init_function_whitelist();
-extern "C" PyThreadState *Py_NewInterpreterEx(void);
 
 void get_code(uint64_t account, string& code) {
    size_t size;
@@ -38,6 +39,20 @@ bool vm_cleanup() {
 
 int vm_run_script(const char* str) {
    return PyRun_SimpleString(str);
+}
+
+extern "C" int PyImport_ImportFrozenModuleObjectEx(const struct _frozen *p);
+
+extern "C" PyObject *PyImport_ImportFrozenModuleObjectExEx(const char *_name, const char *_code, int _size);
+
+extern "C" PyObject *PyImport_LoadCodeObject(const char *_name, const char *_code, int _size);
+
+PyObject* vm_load_module(string& name, string& bytecode) {
+   return PyImport_ImportFrozenModuleObjectExEx(name.c_str(), bytecode.c_str(), bytecode.size());
+}
+
+PyObject* vm_load_codeobject(string& name, string& bytecodes) {
+   return PyImport_LoadCodeObject(name.c_str(), bytecodes.c_str(), bytecodes.size());
 }
 
 void vm_init(struct vm_api* api) {
@@ -78,10 +93,32 @@ void vm_init(struct vm_api* api) {
    gilstate = PyGILState_Ensure();
 #endif
 
+#if 0
    PyThreadState_Swap(NULL);
 
 //   substate = Py_NewInterpreterEx();
    substate = Py_NewInterpreter();
+   {
+      static unsigned char M___hello__[] = {
+            0xe3,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,
+            0x00,0x40,0x00,0x00,0x00,0x73,0x0c,0x00,0x00,0x00,0x65,0x00,0x64,0x00,0x83,0x01,
+            0x01,0x00,0x64,0x01,0x53,0x00,0x29,0x02,0x7a,0x12,0x68,0x65,0x6c,0x6c,0x6f,0x2c,
+            0x77,0x6f,0x72,0x6c,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x4e,0x29,0x01,0xda,
+            0x05,0x70,0x72,0x69,0x6e,0x74,0xa9,0x00,0x72,0x02,0x00,0x00,0x00,0x72,0x02,0x00,
+            0x00,0x00,0xda,0x05,0x68,0x65,0x6c,0x6c,0x6f,0xda,0x08,0x3c,0x6d,0x6f,0x64,0x75,
+            0x6c,0x65,0x3e,0x02,0x00,0x00,0x00,0x73,0x00,0x00,0x00,0x00,
+      };
+
+      #define SIZE (int)sizeof(M___hello__)
+
+      PyImport_ImportFrozenModuleObjectExEx("hello", (char*)M___hello__, SIZE);
+   }
+#endif
+
+   if (PyImport_ImportFrozenModule("__hello__") <= 0) {
+       printf("can't import __hello__\n");
+       exit(0);
+   }
 
    PyImport_ImportModule("_struct");
    PyImport_ImportModule("eoslib");
@@ -103,15 +140,88 @@ struct vm_api* get_vm_api() {
    return s_api;
 }
 
+void memory_trace_stop();
+
+struct sandbox {
+   PyThreadState* state;
+   std::map<string, PyObject*> modules;
+};
+
+static std::map<uint64_t, std::unique_ptr<sandbox>> s_sandbox_map;
+static uint64_t s_current_account = 0;
+
+extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
+   auto itr = s_sandbox_map.find(s_current_account);
+   if (itr == s_sandbox_map.end()) {
+      return NULL;
+   }
+
+   auto itr2 = itr->second->modules.find(module_name);
+   if (itr2 == itr->second->modules.end()) {
+      return NULL;
+   }
+   return itr2->second;
+}
+
+void prepare_env(uint64_t account) {
+   auto itr = s_sandbox_map.find(account);
+   if (itr == s_sandbox_map.end()) {
+      PyThreadState_Swap(NULL);
+      std::unique_ptr<sandbox> s = std::make_unique<sandbox>();
+      s->state = Py_NewInterpreterEx();
+
+      PyObject* module = PyInit_eoslib();
+      s->modules["eoslib"] = module;
+
+      module = PyInit_db();
+      s->modules["db"] = module;
+
+      module = PyInit_inspector();
+      s->modules["inspector"] = module;
+
+      module = PyInit_vm_cpython();
+      s->modules["vm_cpython"] = module;
+
+      module = PyInit_struct2();
+      s->modules["_struct"] = module;
+
+
+#if 0
+      PyObject* module = PyImport_ImportModule("_struct");
+      s->modules["_struct"] = module;
+
+      module = PyImport_ImportModule("eoslib");
+      s->modules["eoslib"] = module;
+
+      module = PyImport_ImportModule("db");
+      s->modules["db"] = module;
+
+      module = PyImport_ImportModule("inspector");
+      s->modules["inspector"] = module;
+
+      module = PyImport_ImportModule("vm_cpython");
+      s->modules["vm_cpython"] = module;
+#endif
+      s_sandbox_map[account] = std::move(s);
+   } else {
+      PyThreadState_Swap(itr->second->state);
+   }
+}
+
 int vm_setcode(uint64_t account) {
    string code;
    get_code(account, code);
+   s_current_account = account;
+
+   memory_trace_stop();
 
    enable_injected_apis(0);
    enable_create_code_object(1);
    enable_filter_set_attr(0);
    enable_filter_get_attr(0);
    enable_inspect_obj_creation(0);
+
+   prepare_env(account);
 
    int ret = cpython_setcode(account, code);
    get_vm_api()->eosio_assert(ret, "setcode failed!");
@@ -149,11 +259,16 @@ int error_handler(string& error) {
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   s_current_account = receiver;
+
+   memory_trace_stop();
    enable_injected_apis(0);
    enable_create_code_object(1);
    enable_filter_set_attr(0);
    enable_filter_get_attr(0);
    enable_inspect_obj_creation(0);
+
+   prepare_env(receiver);
 
    int ret = cpython_apply(receiver, account, act);
    if (ret == -1) {

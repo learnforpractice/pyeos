@@ -462,6 +462,7 @@ static struct vm_api _vm_api = {
    .vm_cleanup = nullptr,
    .vm_run_script = nullptr,
    .vm_run_lua_script = nullptr,
+   .vm_cpython_compile = nullptr,
 
    .log = log_,
 

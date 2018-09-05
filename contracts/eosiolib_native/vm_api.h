@@ -202,6 +202,7 @@ struct vm_api {
    int (*vm_run_script)(const char* str);
    int (*vm_run_lua_script)(const char* cfg, const char* script);
    void (*log)(int level, int line, const char *file, const char *func, const char *fmt, ...);
+   const char *(*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size);
 
    void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const __uint128* sender_id);

@@ -13,6 +13,7 @@ import importlib
 import db
 import debug
 import eoslib
+import marshal
 
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
@@ -38,6 +39,11 @@ def _load_module(account, code):
     except Exception as e:
         logging.exception(e)
     return None
+
+cdef extern void cpython_compile(string& name, string& code, string& result):
+    cdef string _result
+    co = compile(code, name, 'exec')
+    (&result)[0] = marshal.dumps(co)
 
 cdef extern int cpython_setcode(uint64_t account, string& code):
     if _load_module(account, code):
