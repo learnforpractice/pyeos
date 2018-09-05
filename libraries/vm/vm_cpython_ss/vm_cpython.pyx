@@ -49,6 +49,14 @@ cdef extern from "vm_cpython.h":
     void Py_SetRecursionLimit(int new_limit)
     int Py_GetRecursionLimit()
 
+    object vm_load_module(string& name, string& bytecode)
+    object vm_load_codeobject(string& name, string& bytecodes)
+
+cdef extern from "<eosiolib_native/vm_api.h>":
+    cdef cppclass vm_api:
+        const char *(*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size)
+    vm_api* get_vm_api()
+
 def _get_code(uint64_t account):
     cdef string code
     get_code(account,  code)
@@ -121,13 +129,23 @@ def validate(co):
     return True
 
 def load_module(account, code):
+    cdef int code_size = 0
+    cdef const char *result
+    cdef string _code
+    name = eoslib.n2s(account)
+    result = get_vm_api()[0].vm_cpython_compile(name, code, len(code), &code_size)
+    _code = string(result, code_size)
+
     try:
         name = eoslib.n2s(account)
         enable_injected_apis(1)
         enable_create_code_object(1)
         enable_filter_set_attr(0)
         enable_filter_get_attr(0)
-        co = compile(code, name, 'exec')
+
+        co = vm_load_codeobject(name, _code)
+
+#        co = compile(code, name, 'exec')
         ret = co
         if validate(co):
             py_modules[account] = co
