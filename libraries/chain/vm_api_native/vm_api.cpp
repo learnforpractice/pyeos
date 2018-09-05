@@ -290,18 +290,35 @@ bool verify_account_ram_usage( uint64_t account ) {
    return ctx().control.get_mutable_resource_limits_manager().verify_account_ram_usage_ex(account);
 }
 
+static vector<char> print_buffer;
+
 void log_(int level, int line, const char *file, const char *func, const char *fmt, ...) {
 //void log_(const char *output, int level, int line, const char *file, const char *func) {
    char output[256];
    va_list args;
    va_start(args, fmt);
-   vsnprintf(output, sizeof output, fmt, args);
+   int len = vsnprintf(output, sizeof output, fmt, args);
    va_end(args);
 
-   FC_MULTILINE_MACRO_BEGIN
-    if( (fc::logger::get(DEFAULT_LOGGER)).is_enabled( (fc::log_level::values)level ) )
-       (fc::logger::get(DEFAULT_LOGGER)).log( fc::log_message( fc::log_context((fc::log_level::values)level, file, line, func ), output ));
-   FC_MULTILINE_MACRO_END;
+   for (int i=0;i<len;i++) {
+      if (output[i] == '\n') {
+         string s(print_buffer.data(), print_buffer.size());
+
+         FC_MULTILINE_MACRO_BEGIN
+          if( (fc::logger::get(DEFAULT_LOGGER)).is_enabled( (fc::log_level::values)level ) )
+             (fc::logger::get(DEFAULT_LOGGER)).log( fc::log_message( fc::log_context((fc::log_level::values)level, file, line, func ), s.c_str() ));
+         FC_MULTILINE_MACRO_END;
+
+         print_buffer.clear();
+
+         continue;
+      }
+      print_buffer.push_back(output[i]);
+   }
+}
+
+bool is_debug_mode_() {
+   return appbase::app().debug_mode();
 }
 
 static struct vm_api _vm_api = {
@@ -463,6 +480,7 @@ static struct vm_api _vm_api = {
    .vm_run_script = nullptr,
    .vm_run_lua_script = nullptr,
    .vm_cpython_compile = nullptr,
+   .is_debug_mode = is_debug_mode_,
 
    .log = log_,
 
