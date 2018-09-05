@@ -128,7 +128,7 @@ republish to the testnet if it's been changed during the running of t.test(). Yo
 
 # Debugging With C++ Smart Contract
 
-On Eos, C++ Smart Contract code is compile to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now It's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
+On Eos, C++ Smart Contract code is compiled to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now it's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
 
 There is a short video on youtube for quick start:
 
