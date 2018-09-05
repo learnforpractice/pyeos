@@ -270,6 +270,8 @@ try:
     from python.backyard import t as bt
     from python.rpctest import t as rt
     from python.simpleauction import t as st
+    from python.testcase import t as pt
+
     from wasm.lab import t as wt
 
     from python.vote import t as vt2
