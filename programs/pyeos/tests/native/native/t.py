@@ -13,7 +13,7 @@ from tools import cpp2wast
 
 from common import prepare, Sync, producer
 
-print('please make sure you are running the following command before test')
+print('please make sure you are running the following command before testing')
 print('./pyeos/pyeos --manual-gen-block --debug -i')
 
 def init(wasm=False):
