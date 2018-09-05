@@ -2,9 +2,13 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
+#ifndef EOSIOLIB_CRYPTO_H_
+#define EOSIOLIB_CRYPTO_H_
+
 #include <eosiolib/types.h>
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 /**
  *  @defgroup cryptoapi Chain API
@@ -42,7 +46,7 @@ extern "C" {
  *  eosio::print("sha256 hash generated from data equals provided hash");
  *  @endcode
  */
-void assert_sha256( const char* data, uint32_t length, const checksum256* hash );
+void assert_sha256( const char* data, uint32_t length, const struct checksum256* hash );
 
 /**
  *  Tests if the sha1 hash generated from data matches the provided checksum.
@@ -67,7 +71,7 @@ void assert_sha256( const char* data, uint32_t length, const checksum256* hash )
  *  eosio::print("sha1 hash generated from data equals provided hash");
  *  @endcode
  */
-void assert_sha1( const char* data, uint32_t length, const checksum160* hash );
+void assert_sha1( const char* data, uint32_t length, const struct checksum160* hash );
 
 /**
  *  Tests if the sha512 hash generated from data matches the provided checksum.
@@ -92,7 +96,7 @@ void assert_sha1( const char* data, uint32_t length, const checksum160* hash );
  *  eosio::print("sha512 hash generated from data equals provided hash");
  *  @endcode
  */
-void assert_sha512( const char* data, uint32_t length, const checksum512* hash );
+void assert_sha512( const char* data, uint32_t length, const struct checksum512* hash );
 
 /**
  *  Tests if the ripemod160 hash generated from data matches the provided checksum.
@@ -116,7 +120,7 @@ void assert_sha512( const char* data, uint32_t length, const checksum512* hash )
  *  eosio::print("ripemod160 hash generated from data equals provided hash");
  *  @endcode
  */
-void assert_ripemd160( const char* data, uint32_t length, const checksum160* hash );
+void assert_ripemd160( const char* data, uint32_t length, const struct checksum160* hash );
 
 /**
  *  Hashes `data` using `sha256` and stores result in memory pointed to by hash.
@@ -134,7 +138,7 @@ void assert_ripemd160( const char* data, uint32_t length, const checksum160* has
  *  eos_assert( calc_hash == hash, "invalid hash" );
  *  @endcode
  */
-void sha256( const char* data, uint32_t length, checksum256* hash );
+void sha256( const char* data, uint32_t length, struct checksum256* hash );
 
 /**
  *  Hashes `data` using `sha1` and stores result in memory pointed to by hash.
@@ -152,7 +156,7 @@ void sha256( const char* data, uint32_t length, checksum256* hash );
  *  eos_assert( calc_hash == hash, "invalid hash" );
  *  @endcode
  */
-void sha1( const char* data, uint32_t length, checksum160* hash );
+void sha1( const char* data, uint32_t length, struct checksum160* hash );
 
 /**
  *  Hashes `data` using `sha512` and stores result in memory pointed to by hash.
@@ -170,7 +174,7 @@ void sha1( const char* data, uint32_t length, checksum160* hash );
  *  eos_assert( calc_hash == hash, "invalid hash" );
  *  @endcode
  */
-void sha512( const char* data, uint32_t length, checksum512* hash );
+void sha512( const char* data, uint32_t length, struct checksum512* hash );
 
 /**
  *  Hashes `data` using `ripemod160` and stores result in memory pointed to by hash.
@@ -188,7 +192,7 @@ void sha512( const char* data, uint32_t length, checksum512* hash );
  *  eos_assert( calc_hash == hash, "invalid hash" );
  *  @endcode
  */
-void ripemd160( const char* data, uint32_t length, checksum160* hash );
+void ripemd160( const char* data, uint32_t length, struct checksum160* hash );
 
 /**
  *  Calculates the public key used for a given signature and hash used to create a message.
@@ -205,7 +209,7 @@ void ripemd160( const char* data, uint32_t length, checksum160* hash );
  *  @code
  *  @endcode
  */
-int recover_key( const checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
+int recover_key( const struct checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
 
 /**
  *  Tests a given public key with the generated key from digest and the signature.
@@ -233,8 +237,12 @@ int recover_key( const checksum256* digest, const char* sig, size_t siglen, char
  *  eosio::print("pub key matches the pub key generated from digest");
  *  @endcode
  */
-void assert_recover_key( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+void assert_recover_key( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 
 /// }@cryptocapi
 
+#ifdef __cplusplus
 }
+#endif
+
+#endif//EOSIOLIB_CRYPTO_H_
