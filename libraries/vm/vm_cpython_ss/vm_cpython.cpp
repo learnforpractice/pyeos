@@ -149,6 +149,8 @@ struct sandbox {
 static std::map<uint64_t, std::unique_ptr<sandbox>> s_sandbox_map;
 static uint64_t s_current_account = 0;
 
+PyObject* load_module_from_db(uint64_t account, uint64_t code_name);
+
 extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
    auto itr = s_sandbox_map.find(s_current_account);
    if (itr == s_sandbox_map.end()) {
@@ -157,7 +159,8 @@ extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
 
    auto itr2 = itr->second->modules.find(module_name);
    if (itr2 == itr->second->modules.end()) {
-      return NULL;
+      uint64_t _module_name = get_vm_api()->string_to_uint64(module_name);
+      return load_module_from_db(s_current_account, _module_name);//load module from code ext
    }
    return itr2->second;
 }
@@ -176,10 +179,10 @@ void prepare_env(uint64_t account) {
       s->modules["db"] = module;
 
       module = PyInit_inspector();
-      s->modules["inspector"] = module;
+//      s->modules["inspector"] = module;
 
       module = PyInit_vm_cpython();
-      s->modules["vm_cpython"] = module;
+//      s->modules["vm_cpython"] = module;
 
       module = PyInit_struct2();
       s->modules["_struct"] = module;
