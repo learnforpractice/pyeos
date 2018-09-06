@@ -132,7 +132,7 @@ int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* 
 
    uint64_t payer = account;
    auto itr = db_find_i64(account, account, N(code), code_name);
-   if (itr < 0) {
+   if (itr >= 0) {
       db_update_i64(itr, payer, compiled_code, result_size);
    } else {
       db_store_i64(account, N(code), payer, code_name, compiled_code, result_size);
