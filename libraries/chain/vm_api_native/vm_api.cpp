@@ -105,6 +105,9 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
 
    auto code_id = fc::sha256::hash( code, (uint32_t)code_size );
 
+   int64_t old_size  = (int64_t)account.code.size() * config::setcode_ram_bytes_multiplier;
+   int64_t new_size  = code_size * config::setcode_ram_bytes_multiplier;
+
    ctx().db.modify( account, [&]( auto& a ) {
       a.vm_type = vm_type;
       a.last_code_update = ctx().control.pending_block_time();
@@ -113,6 +116,11 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
       if( code_size > 0 )
          memcpy( a.code.data(), code, code_size );
    });
+
+   if (new_size != old_size) {
+      ctx().trx_context.add_ram_usage( user_account, new_size - old_size );
+   }
+
 }
 
 bool is_code_activated( uint64_t account ) {
