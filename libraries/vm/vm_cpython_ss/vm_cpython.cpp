@@ -188,6 +188,9 @@ void prepare_env(uint64_t account) {
 
 int vm_setcode(uint64_t account) {
    string code;
+   char name[32];
+   int bytecode_size = 0;
+
    get_code(account, code);
    s_current_account = account;
 
@@ -201,6 +204,15 @@ int vm_setcode(uint64_t account) {
 
    prepare_env(account);
 
+   memset(name, 0, sizeof(name));
+   get_vm_api()->uint64_to_string(account, name, sizeof(name));
+
+   const char* bytecodes = get_vm_api()->vm_cpython_compile(name, code.c_str(), code.size(), &bytecode_size);
+   eosio_assert(bytecode_size != 0, "compile python code failed!");
+
+   get_vm_api()->set_code(account, VM_TYPE_PY, bytecodes, bytecode_size);
+
+   code = string(bytecodes, bytecode_size);
    int ret = cpython_setcode(account, code);
    get_vm_api()->eosio_assert(ret, "setcode failed!");
    return 1;

@@ -42,8 +42,11 @@ def _load_module(account, code):
 
 cdef extern void cpython_compile(string& name, string& code, string& result):
     cdef string _result
-    co = compile(code, name, 'exec')
-    (&result)[0] = marshal.dumps(co)
+    try:
+        co = compile(code, name, 'exec')
+        (&result)[0] = marshal.dumps(co)
+    except:
+        pass
 
 cdef extern int cpython_setcode(uint64_t account, string& code):
     if _load_module(account, code):
