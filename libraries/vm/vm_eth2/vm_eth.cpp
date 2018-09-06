@@ -216,7 +216,7 @@ bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& 
    dev::bytes output;
    Address contractDestination = Address(_receiver);
    Address sender = Address(_sender);
-   Address receiver = Address(_receiver);
+//   Address receiver = Address(_receiver);
    Address origin = Address(_receiver);
 
    set_sender(_sender);

@@ -54,7 +54,8 @@ cdef extern from "vm_cpython.h":
 
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
-        const char *(*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size)
+        const char* (*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size)
+        const char* (*load_code_ext)(uint64_t account, uint64_t code_name, size_t* code_size);
     vm_api* get_vm_api()
 
 def _get_code(uint64_t account):
@@ -64,6 +65,7 @@ def _get_code(uint64_t account):
 
 __current_module = None
 py_modules = {}
+py_imported_modules = {}
 
 ModuleType = type(inspector)
 
@@ -127,6 +129,31 @@ def validate(co):
                 return False
 
     return True
+
+cdef extern object load_module_from_db(uint64_t account, uint64_t code_name):
+    cdef const char* bytecodes = NULL;
+    cdef size_t code_size = 0;
+    cdef string _bytecodes;
+
+    if code_name in py_imported_modules:
+        return py_imported_modules[code_name]
+
+    bytecodes = get_vm_api()[0].load_code_ext(account, code_name, &code_size)
+    if code_size == 0:
+        return None
+
+    _bytecodes = string(bytecodes, code_size)
+
+    try:
+        name = eoslib.n2s(code_name)
+        co = vm_load_codeobject(name, _bytecodes)
+        module = type(db)(name)
+        exec(co, module.__dict__)
+        py_imported_modules[code_name] = module
+        return module
+    except:
+        pass
+    return None
 
 cdef object load_module(uint64_t account, string& bytecodes):
     cdef int code_size = 0
@@ -210,6 +237,13 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
     enable_inspect_obj_creation(0);
 
     del module
+
+    key = None
+    while len(py_imported_modules) > 0:
+        for _key in py_imported_modules:
+            key = _key
+            break
+        del py_imported_modules[_key]
 
     _tracemalloc.stop()
     Py_SetRecursionLimit(limit)
