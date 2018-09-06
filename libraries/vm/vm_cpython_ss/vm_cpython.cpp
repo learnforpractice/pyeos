@@ -57,15 +57,18 @@ extern "C" void debug_print(const char* str, int len) {
          string s(print_buffer.data(), print_buffer.size());
 
          PyFrameObject *f = PyThreadState_GET()->frame;
-         const char* filename = PyUnicode_AsUTF8(f->f_code->co_filename);
-         const char* name = PyUnicode_AsUTF8(f->f_code->co_name);
+         if (f) {
+            const char* filename = PyUnicode_AsUTF8(f->f_code->co_filename);
+            const char* name = PyUnicode_AsUTF8(f->f_code->co_name);
 
-         if(isatty(fileno(stdout))) {
-            fprintf( stdout, "%s", CONSOLE_GREEN );
+            if(isatty(fileno(stdout))) {
+               fprintf( stdout, "%s", CONSOLE_GREEN );
+            }
+            fprintf(stdout, "%-10s %4d %-20s %-20s %s", buffer, PyFrame_GetLineNumber(f), filename, name, s.c_str());
+            fprintf(stdout, "%s\n", CONSOLE_BLACK);
+         } else {
+            fprintf(stdout, "%s\n", s.c_str());
          }
-         fprintf(stdout, "%-10s %4d %-20s %-20s %s", buffer, PyFrame_GetLineNumber(f), filename, name, s.c_str());
-         fprintf(stdout, "%s\n", CONSOLE_BLACK);
-
          print_buffer.clear();
          continue;
       }
