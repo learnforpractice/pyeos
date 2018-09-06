@@ -123,6 +123,32 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
 
 }
 
+int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size) {
+   int result_size = 0;
+   const char* compiled_code;
+   if (vm_type == VM_TYPE_PY) {
+      compiled_code = get_vm_api()->vm_cpython_compile(name(account).to_string().c_str(), src_code, code_size, &result_size);
+   }
+
+   uint64_t payer = account;
+   auto itr = db_find_i64(account, account, N(code), code_name);
+   if (itr < 0) {
+      db_update_i64(itr, payer, compiled_code, result_size);
+   } else {
+      db_store_i64(account, N(code), payer, code_name, compiled_code, result_size);
+   }
+   return 1;
+}
+
+const char* load_code_ext(uint64_t account, uint64_t code_name, size_t* code_size) {
+   int itr = db_api_find_i64(account, account, N(code), code_name);
+   if (itr <0) {
+      *code_size = 0;
+      return nullptr;
+   }
+   return db_api_get_i64_exex( itr, code_size );
+}
+
 bool is_code_activated( uint64_t account ) {
    try {
       const auto& account_obj = ctx().db.get<account_object,by_name>(account);
@@ -511,6 +537,8 @@ static struct vm_api _vm_api = {
 
    .get_code = get_code,
    .set_code = set_code,
+   .set_code_ext = set_code_ext,
+   .load_code_ext = load_code_ext,
    .get_code_id = get_code_id,
    .get_code_type = get_code_type,
 

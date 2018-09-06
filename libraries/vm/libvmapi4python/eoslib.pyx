@@ -98,6 +98,9 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint64_t  (*current_time)();
         uint32_t  (*now)();
 
+        int (*set_code_ext)(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size);
+
+
     vm_api& api()
 
 cdef extern from "eoslib_.hpp" namespace "eosio::chain":
@@ -255,5 +258,6 @@ def get_balance(account, symbol=None):
     api().get_balance(account, symbol, &amount)
     return amount
 
-_code = N('eosio.token')
+def set_code_ext(uint64_t account, int vm_type, uint64_t code_name, src_code):
+    return api().set_code_ext(account, vm_type, code_name, src_code, len(src_code));
 
