@@ -382,14 +382,14 @@ def get_transaction(id):
     return None
 
 def get_code(name):
-    cdef string wast
+    cdef string code
     cdef string abi
     cdef string code_hash
     cdef int vm_type
 
     vm_type = 0
-    if 0 == get_code_(name, wast, abi, code_hash, vm_type):
-        return [<bytes>wast, <bytes>abi, code_hash, vm_type]
+    if 0 == get_code_(name, code, abi, code_hash, vm_type):
+        return [<bytes>code, <bytes>abi, code_hash, vm_type]
     return []
 
 def get_table(string& scope, string& code, string& table):

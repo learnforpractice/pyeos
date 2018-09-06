@@ -143,30 +143,31 @@ def prepare(account, src, abi, full_src_path, code_type = None):
 
     old_code, _abi, old_code_hash, vm_type = eosapi.get_code(account)
 
-    need_update = False
     if code_type == CODE_TYPE_PY:
-        co = compile(code, account, 'exec')
-        old_co = marshal.loads(old_code)
         try:
-            if not compare_code_object(old_co, co):
-                need_update = True
+            co = compile(code, account, 'exec')
+        except Exception as e:
+            print(e)
+            return
+        try:
+            old_co = marshal.loads(old_code)
+            if compare_code_object(old_co, co):
+                return
             else:
                 print('no need to update!')
         except Exception as e:
             print(e)
-            need_update = True
     else:
         code_hash = eosapi.sha256(code)
-        if code_hash != old_code_hash:
-            need_update = True
+        if code_hash == old_code_hash:
+            return
 
-    if need_update:
-        print('Updating contract', src)
-        if code_type == 0:
-            _set_contract(account, src, abi)
-        else:
-            r = eosapi.set_contract(account, src, abi, code_type)
-            assert r, 'set_contract failed'
+    print('Updating contract', src)
+    if code_type == 0:
+        _set_contract(account, src, abi)
+    else:
+        r = eosapi.set_contract(account, src, abi, code_type)
+        assert r, 'set_contract failed'
 
 class Sync(object):
     def __init__(self, _account, _dir = None, _ignore = []):
