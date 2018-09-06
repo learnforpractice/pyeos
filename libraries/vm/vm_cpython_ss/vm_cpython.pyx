@@ -128,10 +128,13 @@ def validate(co):
 
     return True
 
-def load_module(account, bytecodes):
+def load_module(account, code):
     cdef int code_size = 0
     cdef const char *result
+    cdef string _code
     name = eoslib.n2s(account)
+#    result = get_vm_api()[0].vm_cpython_compile(name, code, len(code), &code_size)
+#    _code = string(result, code_size)
 
     try:
         name = eoslib.n2s(account)
@@ -139,8 +142,8 @@ def load_module(account, bytecodes):
         enable_create_code_object(1)
         enable_filter_set_attr(0)
         enable_filter_get_attr(0)
-
-        co = vm_load_codeobject(name, bytecodes)
+        print(code)
+        co = vm_load_codeobject(name, code)
 
 #        co = compile(code, name, 'exec')
         ret = co
@@ -154,12 +157,12 @@ def load_module(account, bytecodes):
         print('vm.load_module', e)
     return None
 
-cdef extern int cpython_setcode(uint64_t account, string& bytecodes): # with gil:
+cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     set_current_account(account)
     if account in py_modules:
         del py_modules[account]
-
-    ret = load_module(account, bytecodes)
+    bs = <bytes>(&code)[0]
+    ret = load_module(account, bs)
     set_current_account(0)
 
     if ret:
@@ -167,12 +170,15 @@ cdef extern int cpython_setcode(uint64_t account, string& bytecodes): # with gil
     return 0
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) except -1: # with gil:
+    cdef string code
+
     set_current_account(receiver)
     mod = None
     if receiver in py_modules:
         co = py_modules[receiver]
     else:
-        bytecodes = _get_code(receiver)
+        get_code(receiver, code)
+        bytecodes = <bytes>code
         co = load_module(receiver, bytecodes)
     if not co:
         return 0
