@@ -3,9 +3,12 @@ import time
 import pickle
 
 import os
-import rodb as db
 import sys
 import imp
+import types
+import marshal
+
+import rodb as db
 import initeos
 import eosapi
 from tools import cpp2wast
@@ -93,6 +96,19 @@ def build_native(account, full_src_path):
     lib_file = os.path.join(_src_dir, 'lib{0}.dylib'.format(account))
     debug.set_debug_contract(account, lib_file)
 
+def compare_code_object(co1, co2):
+    if len(co1.co_consts) != len(co2.co_consts):
+        raise Exception('code object not the same')
+    if co1 != co2:
+        raise Exception('code object not the same')
+    i = 0
+    for _co1 in co1.co_consts:
+        _co2 = co2.co_consts[i]
+        i += 1
+        if type(_co1) == types.CodeType:
+            compare_code_object(_co1, _co2)
+    return True
+
 def prepare(account, src, abi, full_src_path, code_type = None):
     _src_dir = os.path.dirname(os.path.abspath(full_src_path))
     if not code_type:
@@ -125,9 +141,26 @@ def prepare(account, src, abi, full_src_path, code_type = None):
     if code_type == CODE_TYPE_WAST:
         code = eosapi.wast2wasm(code)
 
-    code_hash = eosapi.sha256(code)
-    old_hash = eosapi.get_code_hash(account)
-    if code_hash != old_hash:
+    old_code, _abi, old_code_hash, vm_type = eosapi.get_code(account)
+
+    need_update = False
+    if code_type == CODE_TYPE_PY:
+        co = compile(code, account, 'exec')
+        old_co = marshal.loads(old_code)
+        try:
+            if not compare_code_object(old_co, co):
+                need_update = True
+            else:
+                print('no need to update!')
+        except Exception as e:
+            print(e)
+            need_update = True
+    else:
+        code_hash = eosapi.sha256(code)
+        if code_hash != old_code_hash:
+            need_update = True
+
+    if need_update:
         print('Updating contract', src)
         if code_type == 0:
             _set_contract(account, src, abi)
