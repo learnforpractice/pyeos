@@ -128,22 +128,20 @@ def validate(co):
 
     return True
 
-def load_module(account, code):
+cdef object load_module(uint64_t account, string& bytecodes):
     cdef int code_size = 0
     cdef const char *result
-    cdef string _code
     name = eoslib.n2s(account)
 #    result = get_vm_api()[0].vm_cpython_compile(name, code, len(code), &code_size)
 #    _code = string(result, code_size)
 
     try:
-        name = eoslib.n2s(account)
         enable_injected_apis(1)
         enable_create_code_object(1)
         enable_filter_set_attr(0)
         enable_filter_get_attr(0)
-        print(code)
-        co = vm_load_codeobject(name, code)
+#        print(<bytes>(&bytecodes)[0])
+        co = vm_load_codeobject(name, bytecodes)
 
 #        co = compile(code, name, 'exec')
         ret = co
@@ -162,7 +160,7 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     if account in py_modules:
         del py_modules[account]
     bs = <bytes>(&code)[0]
-    ret = load_module(account, bs)
+    ret = load_module(account, code)
     set_current_account(0)
 
     if ret:
