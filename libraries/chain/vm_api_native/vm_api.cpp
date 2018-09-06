@@ -98,7 +98,7 @@ int get_balance(uint64_t _account, uint64_t _symbol, int64_t* amount) {
    return 1;
 }
 
-void set_code(uint64_t user_account, int vm_type, char* code, int code_size) {
+void set_code(uint64_t user_account, int vm_type, const char* code, int code_size) {
    FC_ASSERT(code != NULL && code_size != 0);
 
    const auto& account = ctx().db.get<account_object,by_name>(user_account);

@@ -68,7 +68,7 @@ extern "C" uint64_t string_to_uint64_(const char* str) {
    return 0;
 }
 
-void set_code(uint64_t user_account, int vm_type, char* code, int code_size) {
+void set_code(uint64_t user_account, int vm_type, const char* code, int code_size) {
    FC_ASSERT(false, "fixme");
 }
 
