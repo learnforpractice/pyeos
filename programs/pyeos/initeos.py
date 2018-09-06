@@ -278,6 +278,7 @@ try:
     from native.native import t as nt
     from python.vmstore import t as vt
     from python.inspector import t as it
+    from python.deploytest import t as pd
 
     from eosio_token import t as tt
     from hello import t as ht
