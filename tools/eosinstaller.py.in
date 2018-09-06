@@ -11,7 +11,7 @@ for root, dirs, files in os.walk("${CMAKE_BINARY_DIR}"):
     if root == libs_path:
         continue
     for f in files:
-        if f.endswith("${CMAKE_SHARED_LIBRARY_SUFFIX}"):
+        if f.endswith("${CMAKE_SHARED_LIBRARY_SUFFIX}") or f.endswith('.jar'):
             src = os.path.join(root, f)
             dst = os.path.join(libs_path, f)
             if not os.path.exists(dst):

@@ -151,6 +151,7 @@ static const char *vm_eth_lib = "../libs/libvm_eth" DYLIB_SUFFIX;
 static const char *vm_eth_hera = "../libs/libvm_hera" DYLIB_SUFFIX;
 static const char *vm_eth_evmjit = "../libs/libvm_evmjit" DYLIB_SUFFIX;
 static const char *vm_lua = "../libs/libvm_lua" DYLIB_SUFFIX;
+static const char *vm_java = "../libs/libvm_java" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -212,6 +213,8 @@ bool vm_manager::init(struct vm_api* api) {
    load_vm_from_path(VM_TYPE_EVMJIT, vm_eth_evmjit);
 
    load_vm_from_path(VM_TYPE_LUA, vm_lua);
+
+   load_vm_from_path(VM_TYPE_JAVA, vm_java);
 
    return true;
 }

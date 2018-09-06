@@ -30,6 +30,8 @@ if (BUILD_VM_JULIA)
 set (DEPS ${DEPS} vm_julia)
 endif()
 
+set (DEPS ${DEPS} vm_java)
+
 if (EVMJIT)
 set (DEPS ${DEPS} vm_evmjit)
 endif()
