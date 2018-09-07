@@ -1,5 +1,7 @@
 #include "VMMain.h"
 #include <stdio.h>
+#include <string.h>
+#include <eosiolib_native/vm_api.h>
 
 /*
  * Class:     vmapi4java
@@ -20,8 +22,8 @@ JNIEXPORT void JNICALL Java_VMMain_apply(JNIEnv *env, jobject obj, jlong p1, jlo
  * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_VMMain_is_1account
-  (JNIEnv *, jobject, jlong){
-   return true;
+  (JNIEnv *, jobject, jlong account){
+   return is_account((uint64_t)account);
 }
 
 /*
@@ -30,8 +32,11 @@ JNIEXPORT jboolean JNICALL Java_VMMain_is_1account
  * Signature: (Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_VMMain_s2n
-  (JNIEnv *, jobject, jstring){
-   return 0;
+  (JNIEnv *env, jobject o, jstring str){
+   jboolean isCopy = false;
+   const char* _str = env->GetStringUTFChars(str, &isCopy);
+   printf("+++++++++isCopy %d %s\n", isCopy, _str);
+   return get_vm_api()->string_to_uint64(_str);
 }
 
 /*
@@ -40,8 +45,11 @@ JNIEXPORT jlong JNICALL Java_VMMain_s2n
  * Signature: (J)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_VMMain_n2s
-  (JNIEnv *env, jobject, jlong){
-   return env->NewStringUTF("hello,world");
+  (JNIEnv *env, jobject o, jlong account){
+   char name[32];
+   memset(name, 0, sizeof(name));
+   get_vm_api()->uint64_to_string(account, name, sizeof(name));
+   return env->NewStringUTF(name);
 }
 
 /*
@@ -50,8 +58,8 @@ JNIEXPORT jstring JNICALL Java_VMMain_n2s
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_VMMain_action_1data_1size
-  (JNIEnv *, jobject){
-   return 0;
+  (JNIEnv *env, jobject o){
+   return action_data_size();
 }
 
 /*
@@ -61,7 +69,14 @@ JNIEXPORT jint JNICALL Java_VMMain_action_1data_1size
  */
 JNIEXPORT jbyteArray JNICALL Java_VMMain_read_1action_1data
   (JNIEnv *env, jobject){
-   return env->NewByteArray(10);
+   uint32_t size = action_data_size();
+   char *buf = new char[size];
+   read_action_data(buf, size);
+
+   jbyteArray jarr = env->NewByteArray(10);
+   env->SetByteArrayRegion(jarr, 0, size, (jbyte*) buf);
+   delete[] buf;
+   return jarr;
 }
 
 /*
@@ -70,7 +85,9 @@ JNIEXPORT jbyteArray JNICALL Java_VMMain_read_1action_1data
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_VMMain_require_1recipient
-  (JNIEnv *, jobject, jlong){}
+  (JNIEnv *, jobject, jlong account){
+   require_recipient(account);
+}
 
 /*
  * Class:     VMMain
@@ -78,7 +95,9 @@ JNIEXPORT void JNICALL Java_VMMain_require_1recipient
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_VMMain_require_1auth
-  (JNIEnv *, jobject, jlong){}
+  (JNIEnv *, jobject, jlong account){
+   require_auth(account);
+}
 
 /*
  * Class:     VMMain
@@ -86,8 +105,15 @@ JNIEXPORT void JNICALL Java_VMMain_require_1auth
  * Signature: (JJJJ[B)I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1store_1i64
-  (JNIEnv *, jobject, jlong, jlong, jlong, jlong, jbyteArray){
-   return 0;
+  (JNIEnv *env, jobject, jlong scope, jlong table_id, jlong payer, jlong id, jbyteArray jdata){
+
+   jsize len = env->GetArrayLength(jdata);
+   char* buf = new char[len];
+   env->GetByteArrayRegion(jdata, 0, len, (jbyte*)buf);
+
+   int itr = db_store_i64(scope, table_id, payer, id, buf, len);
+   delete[] buf;
+   return itr;
 }
 
 /*
@@ -96,7 +122,13 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1store_1i64
  * Signature: (I[B)V
  */
 JNIEXPORT void JNICALL Java_VMMain_db_1update_1i64
-  (JNIEnv *, jobject, jint, jbyteArray){
+  (JNIEnv *env, jobject, jint itr, jlong payer, jbyteArray jdata){
+
+   jsize len = env->GetArrayLength(jdata);
+   char* buf = new char[len];
+   env->GetByteArrayRegion(jdata, 0, len, (jbyte*)buf);
+   delete[] buf;
+   db_update_i64(itr, payer, buf, len);
    return;
 }
 
@@ -106,8 +138,8 @@ JNIEXPORT void JNICALL Java_VMMain_db_1update_1i64
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_VMMain_db_1remove_1i64
-  (JNIEnv *, jobject, jint){
-
+  (JNIEnv *, jobject, jint itr){
+   db_remove_i64(itr);
 }
 
 /*
@@ -116,8 +148,17 @@ JNIEXPORT void JNICALL Java_VMMain_db_1remove_1i64
  * Signature: (I)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_VMMain_db_1get_1i64
-  (JNIEnv *env, jobject, jint){
-   return env->NewByteArray(10);
+  (JNIEnv *env, jobject o, jint itr){
+   int size = db_get_i64(itr, nullptr, 0);
+   if (size == 0) {
+      return NULL;
+   }
+   char *buf = new char[size];
+   db_get_i64(itr, buf, size);
+
+   jbyteArray jarr = env->NewByteArray(10);
+   env->SetByteArrayRegion(jarr, 0, size, (jbyte*) buf);
+   return jarr;
 }
 
 /*
@@ -126,8 +167,9 @@ JNIEXPORT jbyteArray JNICALL Java_VMMain_db_1get_1i64
  * Signature: (I)J
  */
 JNIEXPORT jlong JNICALL Java_VMMain_db_1next_1i64
-  (JNIEnv *, jobject, jint){
-   return 0;
+  (JNIEnv *, jobject, jint itr){
+   uint64_t primary = 0;
+   return db_next_i64(itr, &primary);
 }
 
 /*
@@ -136,8 +178,9 @@ JNIEXPORT jlong JNICALL Java_VMMain_db_1next_1i64
  * Signature: (I)J
  */
 JNIEXPORT jlong JNICALL Java_VMMain_db_1previous_1i64
-  (JNIEnv *, jobject, jint){
-   return 0;
+  (JNIEnv *, jobject, jint itr){
+   uint64_t primary = 0;
+   return db_previous_i64(itr, &primary);
 }
 
 /*
@@ -146,8 +189,8 @@ JNIEXPORT jlong JNICALL Java_VMMain_db_1previous_1i64
  * Signature: (JJJJ)I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1find_1i64
-  (JNIEnv *, jobject, jlong, jlong, jlong, jlong){
-   return 0;
+  (JNIEnv *, jobject, jlong code, jlong scope, jlong table_id, jlong id){
+   return db_find_i64(code, scope, table_id, id);
 }
 
 /*
@@ -156,8 +199,8 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1find_1i64
  * Signature: (JJJJ)I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1lowerbound_1i64
-  (JNIEnv *, jobject, jlong, jlong, jlong, jlong){
-   return 0;
+  (JNIEnv *, jobject, jlong code, jlong scope, jlong table_id, jlong id){
+   return db_lowerbound_i64(code, scope, table_id, id);
 }
 
 /*
@@ -166,8 +209,8 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1lowerbound_1i64
  * Signature: (JJJJ)I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1upperbound_1i64
-  (JNIEnv *, jobject, jlong, jlong, jlong, jlong){
-   return 0;
+  (JNIEnv *, jobject, jlong code, jlong scope, jlong table_id, jlong id){
+   return db_upperbound_i64(code, scope, table_id, id);
 }
 
 /*
@@ -176,6 +219,6 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1upperbound_1i64
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1end_1i64
-  (JNIEnv *, jobject){
-   return 0;
+  (JNIEnv *, jobject, jlong code, jlong scope, jlong table_id){
+   return db_end_i64(code, scope, table_id);
 }

@@ -90,10 +90,10 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1store_1i64
 /*
  * Class:     VMMain
  * Method:    db_update_i64
- * Signature: (I[B)V
+ * Signature: (IJ[B)V
  */
 JNIEXPORT void JNICALL Java_VMMain_db_1update_1i64
-  (JNIEnv *, jobject, jint, jbyteArray);
+  (JNIEnv *, jobject, jint, jlong, jbyteArray);
 
 /*
  * Class:     VMMain
@@ -154,10 +154,10 @@ JNIEXPORT jint JNICALL Java_VMMain_db_1upperbound_1i64
 /*
  * Class:     VMMain
  * Method:    db_end_i64
- * Signature: ()I
+ * Signature: (JJJ)I
  */
 JNIEXPORT jint JNICALL Java_VMMain_db_1end_1i64
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jlong, jlong, jlong);
 
 #ifdef __cplusplus
 }

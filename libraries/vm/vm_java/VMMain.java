@@ -28,7 +28,7 @@ public class VMMain extends ClassLoader{
 	
 	private native int db_store_i64(long scope, long table_id, long payer, long id, byte[] data);
 	
-	private native void db_update_i64(int itr, byte[] data);
+	private native void db_update_i64(int itr, long payer, byte[] data);
 	
 	private native void db_remove_i64(int itr);
 	
@@ -44,7 +44,7 @@ public class VMMain extends ClassLoader{
 	
 	private native int db_upperbound_i64(long code, long scope, long table_id, long id);
 	
-	private native int db_end_i64();
+	private native int db_end_i64(long code, long scope, long table_id);
 
 	public VMMain(ClassLoader parent) {
 		super(parent);
