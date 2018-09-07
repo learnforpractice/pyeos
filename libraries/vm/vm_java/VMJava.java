@@ -1,7 +1,8 @@
 //package myjni;
  
-public class vmapi4java {
-   static {
+public class VMJava {
+/*
+	static {
       System.loadLibrary("/Users/newworld/dev/pyeos/build-debug/libs/libvm_javad.dylib");
    }
    // A native method that receives nothing and returns void
@@ -20,9 +21,11 @@ public class vmapi4java {
 		}
 		return output;
 	}
+*/
 
    public static void main(String[] args) {
-      new vmapi4java().sayHello();  // invoke the native method
+	   System.out.println("hello,world");
+      //new VMJava().sayHello();  // invoke the native method
    }
 }
 

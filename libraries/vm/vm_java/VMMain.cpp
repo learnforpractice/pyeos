@@ -1,4 +1,4 @@
-#include "vmapi4java.h"
+#include "VMJava.h"
 #include <stdio.h>
 
 /*
@@ -6,7 +6,7 @@
  * Method:    sayHello
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_vmapi4java_sayHello
+JNIEXPORT void JNICALL Java_VMJava_sayHello
   (JNIEnv *env, jobject jobj) {
    printf("hello,world\n");
 }
