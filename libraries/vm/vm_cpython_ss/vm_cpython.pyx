@@ -5,12 +5,12 @@ from libcpp.vector cimport vector
 from libcpp.map cimport map
 from cpython.ref cimport PyObject
 
-import db
+#import db
 import eoslib
 import struct
 import _tracemalloc
 
-import vm
+#import vm
 import inspector
 
 cdef extern from "<stdint.h>":
@@ -147,7 +147,7 @@ cdef extern object load_module_from_db(uint64_t account, uint64_t code_name):
     try:
         name = eoslib.n2s(code_name)
         co = vm_load_codeobject(name, _bytecodes)
-        module = type(db)(name)
+        module = type(eoslib)(name)
         exec(co, module.__dict__)
         py_imported_modules[code_name] = module
         return module
@@ -186,7 +186,6 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
     set_current_account(account)
     if account in py_modules:
         del py_modules[account]
-    bs = <bytes>(&code)[0]
     ret = load_module(account, code)
     set_current_account(0)
 

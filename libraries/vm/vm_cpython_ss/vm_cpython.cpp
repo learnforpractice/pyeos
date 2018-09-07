@@ -17,6 +17,8 @@ int PyObject_GC_GetCount();
 PyObject* PyInit_struct2(void);
 PyObject* PyInit_sys2(void);
 
+PyObject* PyInit__tracemalloc(void);
+
 PyThreadState* Py_NewInterpreterEx(void);
 }
 
@@ -87,6 +89,8 @@ extern "C" int PyImport_ImportFrozenModuleObjectEx(const struct _frozen *p);
 extern "C" PyObject *PyImport_ImportFrozenModuleObjectExEx(const char *_name, const char *_code, int _size);
 
 extern "C" PyObject *PyImport_LoadCodeObject(const char *_name, const char *_code, int _size);
+
+void prepare_env(uint64_t account);
 
 PyObject* vm_load_module(string& name, string& bytecode) {
    return PyImport_ImportFrozenModuleObjectExEx(name.c_str(), bytecode.c_str(), bytecode.size());
@@ -168,24 +172,41 @@ extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
 void prepare_env(uint64_t account) {
    auto itr = s_sandbox_map.find(account);
    if (itr == s_sandbox_map.end()) {
+      PyObject* module;
+      PyObject* name;
+
       PyThreadState_Swap(NULL);
       std::unique_ptr<sandbox> s = std::make_unique<sandbox>();
       s->state = Py_NewInterpreterEx();
 
-      PyObject* module = PyInit_eoslib();
+      module = PyInit__struct();
+      s->modules["struct"] = module;
+      name = PyUnicode_FromString("struct");
+      _PyImport_SetModule(name, module);
+
+      module = PyInit__tracemalloc();
+      s->modules["_tracemalloc"] = module;
+      name = PyUnicode_FromString("_tracemalloc");
+      _PyImport_SetModule(name, module);
+
+      module = PyInit_inspector();
+      name = PyUnicode_FromString("inspector");
+      _PyImport_SetModule(name, module);
+
+      module = PyInit_vm_cpython();
+      name = PyUnicode_FromString("vm_cpython");
+      _PyImport_SetModule(name, module);
+
+      module = PyInit_eoslib();
+      name = PyUnicode_FromString("eoslib");
+      _PyImport_SetModule(name, module);
       s->modules["eoslib"] = module;
 
       module = PyInit_db();
+      name = PyUnicode_FromString("db");
+      _PyImport_SetModule(name, module);
       s->modules["db"] = module;
 
-      module = PyInit_inspector();
-//      s->modules["inspector"] = module;
-
-      module = PyInit_vm_cpython();
-//      s->modules["vm_cpython"] = module;
-
-      module = PyInit_struct2();
-      s->modules["_struct"] = module;
       s_sandbox_map[account] = std::move(s);
    } else {
       PyThreadState_Swap(itr->second->state);
