@@ -149,14 +149,15 @@ def prepare(account, src, abi, full_src_path, code_type = None):
         except Exception as e:
             print(e)
             return
-        try:
-            old_co = marshal.loads(old_code)
-            if compare_code_object(old_co, co):
-                return
-            else:
-                print('no need to update!')
-        except Exception as e:
-            print(e)
+        if old_code:
+            try:
+                old_co = marshal.loads(old_code)
+                if compare_code_object(old_co, co):
+                    return
+                else:
+                    print('no need to update!')
+            except Exception as e:
+                print(e)
     else:
         code_hash = eosapi.sha256(code)
         if code_hash == old_code_hash:
