@@ -3,7 +3,7 @@
 #include <eosiolib_native/vm_api.h>
 #include <jni.h>
 
-#include "VMJava.h"
+#include "VMMain.h"
 
 static JavaVM *vm = nullptr;
 static JNIEnv *env = nullptr;
@@ -21,8 +21,8 @@ void vm_init(struct vm_api* api) {
    JavaVMOption options[1];
 //   options[0].optionString    = "-Djava.class.path=../vmapi4java.jar";
 //   options[0].optionString    = "-Djava.class.path=/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/lib;/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java";
-//   options[0].optionString    = "-Djava.class.path=/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java";
-   options[0].optionString    = "-Djava.class.path=/Users/newworld/eclipse-workspace/javatest";
+   options[0].optionString    = "-Djava.class.path=/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java";
+//   options[0].optionString    = "-Djava.class.path=/Users/newworld/eclipse-workspace/javatest";
 
    vm_args.options            = options;
    vm_args.nOptions           = 1;
