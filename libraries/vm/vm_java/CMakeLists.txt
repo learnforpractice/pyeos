@@ -1,7 +1,7 @@
 #set(JAVA_HOME "/Library/Java/JavaVirtualMachines/jdk-10.0.2.jdk")
 
-#find_package(JNI)
-#find_package(Java)
+find_package(JNI)
+find_package(Java)
 
 if (JNI_FOUND)
     message (STATUS "++++++++++++++JAVA_AWT_LIBRARY=${JAVA_AWT_LIBRARY}")
@@ -32,8 +32,15 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VMJava.class
-    COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -source 1.6 -target 1.6 -bootclasspath ${RT_JAR_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
+#-bootclasspath ${RT_JAR_PATH}
+    COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -source 1.6 -target 1.6 --class-path /Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java ${CMAKE_CURRENT_BINARY_DIR}/Contract.class
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contract.class
+    COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -source 1.6 -target 1.6 ${CMAKE_CURRENT_SOURCE_DIR}/Contract.java
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/Contract.java
 )
 
 add_library(vm_java SHARED 
@@ -42,6 +49,7 @@ add_library(vm_java SHARED
             inspector.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/NativeInterface.h
             ${CMAKE_CURRENT_BINARY_DIR}/VMJava.jar
+            ${CMAKE_CURRENT_BINARY_DIR}/Contract.class
             )
 
 target_link_libraries(vm_java PRIVATE eosiolib_native ${JAVA_LIB})

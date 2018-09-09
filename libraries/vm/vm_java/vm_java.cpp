@@ -50,7 +50,7 @@ int vm_setcode(uint64_t account) {
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    JNIEnv* env = nullptr;
-   printf("+++++vm_java: apply %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+//   printf("+++++vm_java: apply %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
    vm->AttachCurrentThread((void**)&env, nullptr);
    jclass main_class = nullptr;
    jmethodID apply_method = nullptr;

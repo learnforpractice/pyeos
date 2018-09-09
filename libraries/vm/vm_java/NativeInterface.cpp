@@ -14,13 +14,13 @@ JNIEXPORT void JNICALL Java_NativeInterface_sayHello(JNIEnv *env, jclass jobj) {
 
 JNIEXPORT jbyteArray JNICALL Java_NativeInterface_get_1code
   (JNIEnv *env, jclass o, jlong account) {
-   printf("++++Java_NativeInterface_get_1code %llu %d\n", account, sizeof(jlong));
+//   printf("++++Java_NativeInterface_get_1code %llu %d\n", account, sizeof(jlong));
    if (get_vm_api()->get_code_type(account) != VM_TYPE_JAVA) {
       return NULL;
    }
    size_t len = 0;
    const char* code = get_vm_api()->get_code(account, &len);
-   printf("+++code size: %d \n", len);
+//   printf("+++code size: %d \n", len);
    jbyteArray jarr = env->NewByteArray(len);
    env->SetByteArrayRegion(jarr, 0, len, (jbyte*)code);
    return jarr;
@@ -45,7 +45,7 @@ JNIEXPORT jlong JNICALL Java_NativeInterface_s2n
   (JNIEnv *env, jclass o, jstring str){
    jboolean isCopy = false;
    const char* _str = env->GetStringUTFChars(str, &isCopy);
-   printf("+++++++++isCopy %d %s\n", isCopy, _str);
+//   printf("+++++++++isCopy %d %s\n", isCopy, _str);
    uint64_t n = get_vm_api()->string_to_uint64(_str);
    if (isCopy) {
       env->ReleaseStringUTFChars(str, _str);
@@ -62,7 +62,7 @@ JNIEXPORT jstring JNICALL Java_NativeInterface_n2s
   (JNIEnv *env, jclass o, jlong account){
    char name[32];
    memset(name, 0, sizeof(name));
-   printf("+++++Java_NativeInterface_n2s %llu\n", account);
+//   printf("+++++Java_NativeInterface_n2s %llu\n", account);
    get_vm_api()->uint64_to_string(account, name, sizeof(name));
    return env->NewStringUTF(name);
 }

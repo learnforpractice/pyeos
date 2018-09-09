@@ -30,7 +30,9 @@ if (BUILD_VM_JULIA)
 set (DEPS ${DEPS} vm_julia)
 endif()
 
-set (DEPS ${DEPS} vm_java)
+if (NOT "$ENV{JAVA_HOME}" STREQUAL "")
+   set (DEPS ${DEPS} vm_java)
+endif()
 
 if (EVMJIT)
 set (DEPS ${DEPS} vm_evmjit)
