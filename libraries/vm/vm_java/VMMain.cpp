@@ -12,8 +12,16 @@ JNIEXPORT void JNICALL Java_VMMain_sayHello(JNIEnv *env, jobject jobj) {
    printf("++++++++++++++hello,world\n");
 }
 
-JNIEXPORT void JNICALL Java_VMMain_apply(JNIEnv *env, jobject obj, jlong p1, jlong p2, jlong p3) {
-   printf("++++++%lld %lld %lld \n", p1, p2, p3);
+JNIEXPORT jbyteArray JNICALL Java_VMMain_get_1code
+  (JNIEnv *env, jobject o, jlong account) {
+   if (get_vm_api()->get_code_type(account) != VM_TYPE_JAVA) {
+      return NULL;
+   }
+   size_t len = 0;
+   const char* code = get_vm_api()->get_code(account, &len);
+   jbyteArray jarr = env->NewByteArray(10);
+   env->SetByteArrayRegion(jarr, 0, len, (jbyte*)code);
+   return jarr;
 }
 
 /*

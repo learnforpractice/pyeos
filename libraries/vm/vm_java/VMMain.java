@@ -1,6 +1,7 @@
 //package javatest;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 public class VMMain extends ClassLoader{
 	static {
@@ -9,9 +10,10 @@ public class VMMain extends ClassLoader{
 	}
 	
 	private native void sayHello();
-	private native void apply(long receiver, long account, long act);
+//	private native void apply(long receiver, long account, long act);
 
-
+	private native byte[] get_code(long account);
+	
 	private native boolean is_account (long account);
 
 	private native long s2n(String account);
@@ -51,29 +53,64 @@ public class VMMain extends ClassLoader{
 	}
 
 	public Class getClass(String name) throws ClassNotFoundException {
-		byte[] b = loadClassFromFTP(name);
+		byte[] b = loadClassFromDB(name);
 		return defineClass(name, b, 0, b.length);
 	}
 	
 	@Override
 	public Class loadClass(String name) throws ClassNotFoundException {
-		if (name.startsWith("com.baeldung")) {
-			System.out.println("Loading Class from Custom Class Loader");
-			return getClass(name);
-		}
-		return super.loadClass(name);
+		return getClass(name);
 	}
 	
-	private byte[] loadClassFromFTP(String fileName) {
-		return new byte[1024];
+	private byte[] loadClassFromDB(String fileName) {
+		long n = s2n(fileName);
+		return get_code(n);
 	}
 	
 	public static void main(String[] argv) {
 		for (String s: argv) {
 			System.out.println("+++:"+s);
 		}
-		new VMMain(null).sayHello();
-		new VMMain(null).apply(1, 2, 3);
+		try {
+			VMMain vmMain = new VMMain(null);
+			vmMain.sayHello();
+			vmMain.apply(1, 2, 3);
+			Class test = vmMain.loadClass("Test");
+			Class mainArgType[] = { long.class, long.class, long.class };
+			Method main = test.getMethod("apply", mainArgType);
+			
+			Object argsArray[] = { 11, 22, 33 };
+			main.invoke(null, argsArray);
+		} catch (ClassNotFoundException ex) {
+			System.out.println(ex);
+		} catch (NoSuchMethodException ex) {
+			System.out.println(ex);
+		} catch (IllegalAccessException ex) {
+			System.out.println(ex);
+		} catch (InvocationTargetException ex)  {
+			System.out.println(ex);
+		}
+	}
+	
+	public static int apply(long receiver, long account, long act) {
+		System.out.println(receiver+":"+account+":"+act);
+		try {
+			VMMain vmMain = new VMMain(null);
+			Class test = vmMain.loadClass("Test");
+			Class mainArgType[] = { long.class, long.class, long.class };
+			Method main = test.getMethod("apply", mainArgType);
+			Object argsArray[] = { receiver, account, act };
+			main.invoke(null, argsArray);
+		} catch (ClassNotFoundException ex) {
+			System.out.println(ex);
+		} catch (NoSuchMethodException ex) {
+			System.out.println(ex);
+		} catch (IllegalAccessException ex) {
+			System.out.println(ex);
+		} catch (InvocationTargetException ex)  {
+			System.out.println(ex);
+		}
+		return 1;
 	}
 }
 

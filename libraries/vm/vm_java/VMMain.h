@@ -17,11 +17,11 @@ JNIEXPORT void JNICALL Java_VMMain_sayHello
 
 /*
  * Class:     VMMain
- * Method:    apply
- * Signature: (JJJ)V
+ * Method:    get_code
+ * Signature: (J)[B
  */
-JNIEXPORT void JNICALL Java_VMMain_apply
-  (JNIEnv *, jobject, jlong, jlong, jlong);
+JNIEXPORT jbyteArray JNICALL Java_VMMain_get_1code
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     VMMain

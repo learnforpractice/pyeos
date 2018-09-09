@@ -5,10 +5,14 @@
 
 #include "VMMain.h"
 
-static JavaVM *vm = nullptr;
-static JNIEnv *env = nullptr;
+static JavaVM* vm = nullptr;
+static JNIEnv* env = nullptr;
 
 void invoke_class(JNIEnv* env);
+
+JNIEnv* vm_get_env() {
+   return env;
+}
 
 void vm_init(struct vm_api* api) {
    printf("vm_java: init\n");
@@ -31,7 +35,6 @@ void vm_init(struct vm_api* api) {
 
    // Construct a VM
    jint res = JNI_CreateJavaVM(&vm, (void **)&env, &vm_args);
-   invoke_class(env);
 }
 
 void vm_deinit() {
@@ -40,63 +43,22 @@ void vm_deinit() {
 //   vm->DestroyJavaVM();
 }
 
-void invoke_class(JNIEnv* env)
-{
-    jclass hello_world_class = nullptr;
-    jmethodID main_method = nullptr;
-    jmethodID square_method = nullptr;
-    jmethodID power_method = nullptr;
-    jint number=20;
-    jint exponent=3;
-
-    hello_world_class = env->FindClass("java/lang/String");
-//    hello_world_class = env->FindClass("javatest/Main");
-    hello_world_class = env->FindClass("VMMain");
-    main_method = env->GetStaticMethodID(hello_world_class, "main", "([Ljava/lang/String;)V");
-    square_method = env->GetStaticMethodID(hello_world_class, "square", "(I)I");
-    power_method = env->GetStaticMethodID(hello_world_class, "power", "(II)I");
-    env->CallStaticVoidMethod(hello_world_class, main_method, NULL);
-
-    const char *days[]={"Sunday",
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday"};
-
-   jstring str;
-   jobjectArray day = 0;
-   jsize len = 7;
-   int i;
-
-   day = env->NewObjectArray(len,env->FindClass("java/lang/String"),0);
-
-   for(i=0;i<7;i++)
-   {
-      str = env->NewStringUTF(days[i]);
-      env->SetObjectArrayElement(day,i,str);
-   }
-
-   env->CallStaticIntMethod(hello_world_class, main_method, day);
-
-#if 0
-    printf("%d squared is %d\n", number,
-        env->CallStaticIntMethod(hello_world_class, square_method, number));
-
-    printf("%d raised to the %d power is %d\n", number, exponent,
-        env->CallStaticIntMethod(hello_world_class, power_method, number, exponent));
-#endif
-}
-
 int vm_setcode(uint64_t account) {
    printf("+++++vm_java: setcode\n");
-   invoke_class(env);
    return 0;
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    printf("+++++vm_java: apply\n");
+   jclass main_class = nullptr;
+   jmethodID apply_method = nullptr;
+   main_class = env->FindClass("VMMain");
+   apply_method = env->GetStaticMethodID(main_class, "apply", "(JJJ)I");
+
+   jlongArray args = env->NewLongArray(3);
+   uint64_t _args[3] = {1,2,3};
+   env->SetLongArrayRegion(args, 0, 3, (jlong*)_args);
+   env->CallStaticIntMethod(main_class, apply_method, args);
    return 1;
 }
 
