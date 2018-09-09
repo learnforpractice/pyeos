@@ -1,3 +1,4 @@
+*.class
 deps
 bridge.go
 _obj

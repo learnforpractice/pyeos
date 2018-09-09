@@ -49,16 +49,16 @@ int vm_setcode(uint64_t account) {
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   printf("+++++vm_java: apply\n");
+   JNIEnv* env = nullptr;
+   printf("+++++vm_java: apply %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+   vm->AttachCurrentThread((void**)&env, nullptr);
    jclass main_class = nullptr;
    jmethodID apply_method = nullptr;
-   main_class = env->FindClass("VMMain");
+   main_class = env->FindClass("VMJava");
    apply_method = env->GetStaticMethodID(main_class, "apply", "(JJJ)I");
 
-   jlongArray args = env->NewLongArray(3);
-   uint64_t _args[3] = {1,2,3};
-   env->SetLongArrayRegion(args, 0, 3, (jlong*)_args);
-   env->CallStaticIntMethod(main_class, apply_method, args);
+   env->CallStaticIntMethod(main_class, apply_method, (jlong)receiver, (jlong)account, (jlong)act);
+   vm->DetachCurrentThread();
    return 1;
 }
 

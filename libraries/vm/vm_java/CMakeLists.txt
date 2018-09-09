@@ -19,29 +19,29 @@ set(RT_JAR_PATH "${RT_JAR_PATH}/../jre/lib/rt.jar")
 set(JAVA_LIB "$ENV{JAVA_HOME}/lib/server/libjvm.dylib")
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.h
-    COMMAND javac -h ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.java
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.java
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/NativeInterface.h
+    COMMAND javac -h ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VMMain.jar
-    COMMAND jar cvfm ${CMAKE_CURRENT_BINARY_DIR}/VMMain.jar ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt ${CMAKE_CURRENT_BINARY_DIR}/*.class
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/VMMain.class ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VMJava.jar
+    COMMAND jar cvfm ${CMAKE_CURRENT_BINARY_DIR}/VMJava.jar ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt ${CMAKE_CURRENT_BINARY_DIR}/*.class
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/VMJava.class ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VMMain.class
-    COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -source 1.6 -target 1.6 -bootclasspath ${RT_JAR_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.java
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.java
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VMJava.class
+    COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -source 1.6 -target 1.6 -bootclasspath ${RT_JAR_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/VMJava.java
 )
 
 add_library(vm_java SHARED 
             vm_java.cpp
-            VMMain.cpp
+            NativeInterface.cpp
             inspector.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/VMMain.h
-            ${CMAKE_CURRENT_BINARY_DIR}/VMMain.jar
+            ${CMAKE_CURRENT_SOURCE_DIR}/NativeInterface.h
+            ${CMAKE_CURRENT_BINARY_DIR}/VMJava.jar
             )
 
 target_link_libraries(vm_java PRIVATE eosiolib_native ${JAVA_LIB})

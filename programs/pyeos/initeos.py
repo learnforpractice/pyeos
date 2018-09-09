@@ -285,13 +285,15 @@ try:
     from counter import t as ct1
     from credit import t as ct2
 
-    from julia.hello import t as jh
+    from julia.hello import t as juh
     from evm.evm import t as ee
     from evm.testcase import t as et
 
     from lua.hello import t as lh
     from lua.testcase import t as lt
     from lua.eosio_token import t as le
+
+    from java.hello import t as jh
 
 #    from biosboot import t as bb
     import d
