@@ -1,7 +1,7 @@
 import java.io.*;
 
-public class Hello extends Contract {
-	public Hello() {
+public class Hellojava extends Contract {
+	public Hellojava() {
 		
 	}
 	public int apply(long receiver, long account, long act) {

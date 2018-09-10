@@ -17,19 +17,19 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('hello', 'Hello.java', 'Hello.abi', __file__, 12)
+        prepare('hellojava', 'Hellojava.java', 'Hellojava.abi', __file__, 12)
         func(*args, **kwargs)
     return func_wrapper
 
 @init
 def test():
-    eosapi.push_action('hello', 'sayhello', 'hello,worldddd', {'hello':'active'})
+    eosapi.push_action('hellojava', 'sayhello', 'hello,worldddd', {'hellojava':'active'})
 
 @init
 def test2(count=100):
     actions = []
     for i in range(count):
-        action = ['hello', 'sayhello', str(i), {'hello':'active'}]
+        action = ['hellojava', 'sayhello', str(i), {'hellojava':'active'}]
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
