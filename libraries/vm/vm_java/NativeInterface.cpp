@@ -12,6 +12,21 @@ JNIEXPORT void JNICALL Java_NativeInterface_sayHello(JNIEnv *env, jclass jobj) {
    printf("++++++++++++++hello,world\n");
 }
 
+JNIEXPORT void JNICALL Java_NativeInterface_eosio_1assert
+  (JNIEnv *env, jclass, jboolean b, jstring jstr) {
+   if (!b) {
+      char msg[128];
+      jboolean isCopy = false;
+      jsize len = env->GetStringUTFLength(jstr);
+      const char* _str = env->GetStringUTFChars(jstr, &isCopy);
+      int copy_len = len >= sizeof(msg) ? sizeof(msg) - 1 : len;
+      memset(msg, 0, sizeof(msg));
+      memcpy(msg, _str, copy_len);
+      env->ReleaseStringUTFChars(jstr, _str);
+      eosio_assert(0, msg);
+   }
+}
+
 JNIEXPORT jbyteArray JNICALL Java_NativeInterface_get_1code
   (JNIEnv *env, jclass o, jlong account) {
 //   printf("++++Java_NativeInterface_get_1code %llu %d\n", account, sizeof(jlong));
@@ -47,9 +62,7 @@ JNIEXPORT jlong JNICALL Java_NativeInterface_s2n
    const char* _str = env->GetStringUTFChars(str, &isCopy);
 //   printf("+++++++++isCopy %d %s\n", isCopy, _str);
    uint64_t n = get_vm_api()->string_to_uint64(_str);
-   if (isCopy) {
-      env->ReleaseStringUTFChars(str, _str);
-   }
+   env->ReleaseStringUTFChars(str, _str);
    return (jlong)n;
 }
 

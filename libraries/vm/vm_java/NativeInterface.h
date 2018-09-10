@@ -25,6 +25,14 @@ JNIEXPORT jbyteArray JNICALL Java_NativeInterface_get_1code
 
 /*
  * Class:     NativeInterface
+ * Method:    eosio_assert
+ * Signature: (ZLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_NativeInterface_eosio_1assert
+  (JNIEnv *, jclass, jboolean, jstring);
+
+/*
+ * Class:     NativeInterface
  * Method:    is_account
  * Signature: (J)Z
  */
