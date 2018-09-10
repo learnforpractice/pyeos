@@ -1,4 +1,5 @@
 //package javatest;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,9 +22,29 @@ class NativeInterface extends ClassLoader {
 //		System.out.println(System.getProperty("user.dir")+"/../libs/libvm_javad.dylib");
 		String OS = System.getProperty("os.name", "generic").toLowerCase();
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
-			System.load(System.getProperty("user.dir")+"/../libs/libvm_java.dylib");
+			String filePath = System.getProperty("user.dir")+"/../libs/libvm_java.dylib";
+			File f = new File(filePath);
+			if (f.exists()) {
+				System.load(filePath);
+			}
+			
+			filePath = System.getProperty("user.dir")+"/../libs/libvm_javad.dylib";
+			f = new File(filePath);
+			if (f.exists()) {
+				System.load(filePath);
+			}
 		} else {
-			System.load(System.getProperty("user.dir")+"/../libs/libvm_java.so");
+			String filePath = System.getProperty("user.dir")+"/../libs/libvm_java.so";
+			File f = new File(filePath);
+			if (f.exists()) {
+				System.load(filePath);
+			}
+			
+			filePath = System.getProperty("user.dir")+"/../libs/libvm_javad.so";
+			f = new File(filePath);
+			if (f.exists()) {
+				System.load(filePath);
+			}
 		}
 	}
 	
@@ -309,7 +330,7 @@ public class VMJava {
     }
 
     public static int apply(final long receiver, final long account, final long act) {
-//		System.out.println("+++++apply:"+receiver+":"+account+":"+n2s(act));
+//		System.out.println("+++++apply:"+n2s(receiver)+":"+account+":"+n2s(act));
 		try {
 	    	if (account_map.containsKey(receiver)) {
 				Class cls = account_map.get(receiver);
@@ -339,7 +360,6 @@ public class VMJava {
 			ex.printStackTrace();
 			return 0;
 		}
-
 		return_value = 0;
 		if (unprivileged == null) {
 			unprivileged = new Runnable() {
@@ -376,7 +396,6 @@ public class VMJava {
 				VMJava.confine(unprivileged.getClass(), new Permissions());
 			}
 		}
-
 		try {
 			if (thread == null) {
 				thread = new Thread(unprivileged);
