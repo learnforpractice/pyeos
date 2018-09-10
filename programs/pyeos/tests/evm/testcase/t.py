@@ -48,9 +48,10 @@ def deploy(account, bin):
     r, cost = eosapi.push_actions(actions)
     print(r['except'])
     print(r['elapsed'])
-
-contract_abi, contract_bin = compile('tester.sol', '<stdin>:Tester')
-
+try:
+    contract_abi, contract_bin = compile('tester.sol', '<stdin>:Tester')
+except Exception as e:
+    print(e)
 def setUp(account='evm', main_class='<stdin>:Tester', src_file='tester.sol'):
     global contract_abi
     if not eosapi.get_account(account):

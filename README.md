@@ -171,8 +171,9 @@ Please see the example in pyeos/programs/pyeos/tests/lua/hello
 ## Java Smart Contract Development
 Please see the example in pyeos/programs/pyeos/tests/java/hello
 
-Reminder: for this want to try Java Smart Contract, please update JDK to version 10 or above.
-And then set JAVA_HOME to the appropriate JDK or JRE root directory
+Reminder: For these who want to try Java Smart Contract, please update JDK to version 10 or above,
+and then set JAVA_HOME to the appropriate JDK root directory
+
 <a name="smartcontractdebuggingcplusplus"></a>
 
 # Debugging With C++ Smart Contract
