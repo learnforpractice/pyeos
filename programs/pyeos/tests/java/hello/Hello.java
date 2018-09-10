@@ -13,10 +13,6 @@ public class Hello extends Contract {
 		if (act != VMJava.s2n("sayhello")) {
 			return 0;
 		}
-//		System.out.println("+++++apply:"+receiver);
-		
-		VMJava java = new VMJava();
-
 /*
 		try {
 			System.getProperty("user.dir");
@@ -31,21 +27,21 @@ public class Hello extends Contract {
 		}
 */
 
-			byte[] data;
-			int itr = java.db_find_i64(code, scope, table_id, key);
-			data = java.read_action_data();
+		byte[] data;
+		int itr = VMJava.db_find_i64(code, scope, table_id, key);
+		data = VMJava.read_action_data();
 //			System.out.println("+++++data.length:"+data.length);
 //			System.out.println("++++"+new String(data, "UTF-8"));
 
-			if (itr < 0) {
-				VMJava.db_store_i64(scope, payer, table_id, key, data);
-			} else {
-				byte[] old_data = java.db_get_i64(itr);
+		if (itr < 0) {
+			VMJava.db_store_i64(scope, payer, table_id, key, data);
+		} else {
+			byte[] old_data = VMJava.db_get_i64(itr);
 //				System.out.println("+++++old_data.length:"+old_data.length);
-				VMJava.db_update_i64(itr, payer, data);
-			}
+			VMJava.db_update_i64(itr, payer, data);
+		}
 
-		System.out.println("hello, java world!");
+//		System.out.println("hello, java world!");
 		return 1;
 	}
 }

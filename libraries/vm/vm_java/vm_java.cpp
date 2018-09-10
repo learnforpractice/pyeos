@@ -22,15 +22,18 @@ void vm_init(struct vm_api* api) {
    vm_args.version = JNI_VERSION_10;
    JNI_GetDefaultJavaVMInitArgs(&vm_args);
 
-   JavaVMOption options[2];
+   JavaVMOption options[4];
 //   options[0].optionString    = "-Djava.class.path=../vmapi4java.jar";
 //   options[0].optionString    = "-Djava.class.path=/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/lib;/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java";
-   options[0].optionString    = "-Djava.class.path=/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java";
+//   options[0].optionString    = "-Djava.class.path=/Users/newworld/dev/pyeos/build/libraries/vm/vm_java";
 //   options[0].optionString    = "-Djava.class.path=/Users/newworld/eclipse-workspace/javatest";
-   options[1].optionString = "-agentpath:../libs/libvm_javad.dylib";
+   options[0].optionString    = "-Djava.class.path=../libs/VMJava.jar";
+   options[1].optionString = "-agentpath:../libs/libvm_java" DYLIB_SUFFIX;
+   options[2].optionString = "-Xmx256M";
+   options[3].optionString = "-Xms256M";
 
    vm_args.options            = options;
-   vm_args.nOptions           = 2;
+   vm_args.nOptions           = 4;
    vm_args.ignoreUnrecognized = JNI_TRUE;
 
    // Construct a VM
@@ -43,22 +46,60 @@ void vm_deinit() {
 //   vm->DestroyJavaVM();
 }
 
+static jclass main_class = nullptr;
+static jmethodID apply_method = nullptr;
+static jmethodID setcode_method = nullptr;
+
 int vm_setcode(uint64_t account) {
-   printf("+++++vm_java: setcode\n");
-   return 0;
+   vmdlog("+++++vm_java: setcode\n");
+   JNIEnv* env = nullptr;
+//   printf("+++++vm_java: apply\n");// %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+   vm->AttachCurrentThread((void**)&env, nullptr);
+   if (main_class == nullptr) {
+      main_class = env->FindClass("VMJava");
+   }
+   if (main_class == nullptr) {
+      vmdlog("VMJava class not found!");
+      return 0;
+   }
+
+   if (setcode_method == nullptr) {
+      setcode_method = env->GetStaticMethodID(main_class, "setcode", "(J)I");
+   }
+   if (setcode_method == nullptr) {
+      vmdlog("apply method not found in VMJava");
+      return 0;
+   }
+
+   env->CallStaticIntMethod(main_class, setcode_method, (jlong)account);
+//   vm->DetachCurrentThread();
+   return 1;
 }
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    JNIEnv* env = nullptr;
-//   printf("+++++vm_java: apply %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+//   printf("+++++vm_java: apply\n");// %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
    vm->AttachCurrentThread((void**)&env, nullptr);
-   jclass main_class = nullptr;
-   jmethodID apply_method = nullptr;
-   main_class = env->FindClass("VMJava");
-   apply_method = env->GetStaticMethodID(main_class, "apply", "(JJJ)I");
+   if (main_class == nullptr) {
+      main_class = env->FindClass("VMJava");
+   }
+   if (main_class == nullptr) {
+      printf("VMJava class not found!\n");
+      vmdlog("VMJava class not found!");
+      return 0;
+   }
+
+   if (apply_method == nullptr) {
+      apply_method = env->GetStaticMethodID(main_class, "apply", "(JJJ)I");
+   }
+   if (apply_method == nullptr) {
+      printf("apply method not found in VMJava \n");
+      vmdlog("apply method not found in VMJava");
+      return 0;
+   }
 
    env->CallStaticIntMethod(main_class, apply_method, (jlong)receiver, (jlong)account, (jlong)act);
-   vm->DetachCurrentThread();
+//   vm->DetachCurrentThread();
    return 1;
 }
 

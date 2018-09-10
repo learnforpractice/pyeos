@@ -18,8 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 
 class NativeInterface extends ClassLoader {
 	static {
-		System.out.println(System.getProperty("user.dir")+"/../libs/libvm_javad.dylib");
-		System.load(System.getProperty("user.dir")+"/../libs/libvm_javad.dylib");
+//		System.out.println(System.getProperty("user.dir")+"/../libs/libvm_javad.dylib");
+		System.load(System.getProperty("user.dir")+"/../libs/libvm_java.dylib");
 	}
 	
 	public static native void sayHello();
@@ -269,6 +269,28 @@ public class VMJava {
 
     static Map<Object, Contract> account_map = new HashMap();
 
+    public static int setcode(long account) {
+		try {
+			NativeInterface vmMain = new NativeInterface(VMJava.class.getClassLoader());
+			Class cls = vmMain.loadClass(n2s(account));
+			Contract c = (Contract)cls.getConstructor().newInstance();
+			account_map.put(account, c);
+			return 1;
+		} catch (ClassNotFoundException ex) {
+			System.out.println(ex);
+		} catch (NoSuchMethodException ex) {
+			System.out.println(ex);
+		} catch (IllegalAccessException ex) {
+			System.out.println(ex);
+		} catch (InvocationTargetException ex)  {
+			Thread.dumpStack();
+			System.out.println(ex);
+		} catch (InstantiationException ex) {
+			System.out.println(ex);
+		}
+		return 0;
+    }
+
     public static int apply(final long receiver, final long account, final long act) {
 //		System.out.println("+++++:"+receiver+":"+account+":"+act);
 
@@ -311,7 +333,8 @@ public class VMJava {
 		    			c.apply(receiver, account, act);
 	      			}
 	    		} catch (Exception ex) {
-	    			Thread.dumpStack();
+	    			ex.printStackTrace();
+//	    			Thread.dumpStack();
 	    		}
 	    		return;
 	          }

@@ -113,7 +113,8 @@ def compare_code_object(co1, co2):
     return True
 
 def compile_java_code(src_dir, src_file):
-    class_path = '/Users/newworld/dev/pyeos/build-debug/libraries/vm/vm_java'
+    class_path = os.path.abspath('.')
+    class_path = os.path.join(class_path, '../libs/VMJava.jar')
     cmds = "javac -d {src_dir} -source 1.6 -target 1.6 --class-path {class_path} {src_file}".format(src_dir=src_dir, class_path=class_path, src_file=src_file)
     cmds = shlex.split(cmds)
     print(cmds)

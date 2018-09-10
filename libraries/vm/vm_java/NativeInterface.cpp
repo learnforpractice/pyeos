@@ -153,7 +153,7 @@ JNIEXPORT void JNICALL Java_NativeInterface_db_1update_1i64
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_NativeInterface_db_1remove_1i64
-  (JNIEnv *, jclass, jint itr){
+  (JNIEnv *, jclass, jint itr) {
    db_remove_i64(itr);
 }
 
