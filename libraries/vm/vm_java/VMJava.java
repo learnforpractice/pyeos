@@ -269,26 +269,17 @@ public class VMJava {
         VMJava.confine(clasS, new ProtectionDomain(null, permissions));
     }
 
-    static Map<Object, Contract> account_map = new HashMap();
-	static int return_value = 0;
+    private static Map<Object, Class> account_map = new HashMap();
+    private static int return_value = 0;
+    private static Contract contract = null;
 
     public static int setcode(long account) {
 		try {
 			NativeInterface vmMain = new NativeInterface(VMJava.class.getClassLoader());
 			Class cls = vmMain.loadClass(n2s(account));
-			Contract c = (Contract)cls.getConstructor().newInstance();
-			account_map.put(account, c);
+			account_map.put(account, cls);
 			return 1;
 		} catch (ClassNotFoundException ex) {
-			System.out.println(ex);
-		} catch (NoSuchMethodException ex) {
-			System.out.println(ex);
-		} catch (IllegalAccessException ex) {
-			System.out.println(ex);
-		} catch (InvocationTargetException ex)  {
-			Thread.dumpStack();
-			System.out.println(ex);
-		} catch (InstantiationException ex) {
 			System.out.println(ex);
 		}
 		return 0;
@@ -296,30 +287,34 @@ public class VMJava {
 
     public static int apply(final long receiver, final long account, final long act) {
 //		System.out.println("+++++:"+receiver+":"+account+":"+act);
-
-		if (account_map.containsKey(receiver)) {
-		} else {
-			try {
+		try {
+	    	if (account_map.containsKey(receiver)) {
+				Class cls = account_map.get(receiver);
+				contract = (Contract)cls.getConstructor().newInstance();
+			} else {
 				NativeInterface vmMain = new NativeInterface(VMJava.class.getClassLoader());
 				Class cls = vmMain.loadClass(n2s(receiver));
-  				Contract c = (Contract)cls.getConstructor().newInstance();
-  				account_map.put(receiver, c);
-			} catch (ClassNotFoundException ex) {
-				System.out.println(ex);
-				return 0;
-			} catch (NoSuchMethodException ex) {
-    			System.out.println(ex);
-    		} catch (IllegalAccessException ex) {
-    			System.out.println(ex);
-    		} catch (InvocationTargetException ex)  {
-    			Thread.dumpStack();
-    			System.out.println(ex);
-    		} catch (InstantiationException ex) {
-    			System.out.println(ex);
-    			return 0;
-    		}
+				account_map.put(receiver, cls);
+				contract = (Contract)cls.getConstructor().newInstance();
+			}
+		} catch (ClassNotFoundException ex) {
+			System.out.println(ex);
+			return 0;
+		} catch (InvocationTargetException ex)  {
+			Thread.dumpStack();
+			System.out.println(ex);
+			return 0;
+		} catch (InstantiationException ex) {
+			System.out.println(ex);
+			return 0;
+		} catch (NoSuchMethodException ex) {
+			ex.printStackTrace();
+			return 0;
+		} catch (IllegalAccessException ex) {
+			ex.printStackTrace();
+			return 0;
 		}
-		
+
 		return_value = 0;
 		Runnable unprivileged = new Runnable() {
 	          public void run() {
@@ -331,10 +326,9 @@ public class VMJava {
 	    			final Object argsArray[] = { receiver, account, act };
 	    			main.invoke(null, argsArray);
 	    			*/
-	      			Contract c;
-	      			if (account_map.containsKey(receiver)) {
-	      				c = account_map.get(receiver);
-		    			c.apply(receiver, account, act);
+	      			if (contract != null) {
+	      				contract.apply(receiver, account, act);
+	      				contract = null;
 	      			}
 		      		return_value = 1;
 	      		} catch (Exception ex) {
@@ -351,7 +345,7 @@ public class VMJava {
 		      VMJava.confine(unprivileged.getClass(), new Permissions());
 	      }
 	      unprivileged.run(); // Throws a SecurityException.
-	      System.out.println("++++return_value:"+return_value);
+//	      System.out.println("++++return_value:"+return_value);
 	      return return_value;
 	}
 }
