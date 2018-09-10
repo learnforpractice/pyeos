@@ -29,6 +29,14 @@ def testfileaccess():
 def testmemory():
     eosapi.push_action('testcase', 'testmemory', '', {'testcase':'active'})
 
+@init
+def testcall():
+    eosapi.push_action('testcase', 'testcall', '', {'testcase':'active'})
+
+@init
+def testtimeout():
+    eosapi.push_action('testcase', 'testtimeout', '', {'testcase':'active'})
+
 class LUATestCase(unittest.TestCase):
     def setUp(self):
         pass
@@ -44,6 +52,14 @@ class LUATestCase(unittest.TestCase):
     @unittest.expectedFailure
     def testmemory(self):
         testmemory()
+
+    @unittest.expectedFailure
+    def testcall(self):
+        testcall()
+
+    @unittest.expectedFailure
+    def testtimeout(self):
+        testtimeout()
 
     def tearDown(self):
         pass

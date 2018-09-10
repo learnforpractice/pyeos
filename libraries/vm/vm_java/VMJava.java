@@ -25,6 +25,8 @@ class NativeInterface extends ClassLoader {
 	public static native void sayHello();
 //	public static native void apply(long receiver, long account, long act);
 
+	public static native boolean check_time();
+
 	public static native byte[] get_code(long account);
 	
 	public static native void eosio_assert (boolean condition, String msg);
@@ -72,6 +74,9 @@ class NativeInterface extends ClassLoader {
 //		System.out.println("+++++loadClass: " + name);
 		if (name.toLowerCase() == name) {
 			byte[] b = loadClassFromDB(name);
+			if (b == null) {
+				return null;
+			}
 			name = name.substring(0, 1).toUpperCase() + name.substring(1);
 			return defineClass(name, b, 0, b.length);
 		}
@@ -83,6 +88,9 @@ class NativeInterface extends ClassLoader {
 		long n = s2n(fileName);
 		System.out.println(n+":"+fileName);
 		byte[] code = get_code(n);
+		if (code == null) {
+			System.out.println("+++loadClassFromDB, code is empty!");
+		}
 		return code;
 	}
 	
@@ -94,7 +102,11 @@ class NativeInterface extends ClassLoader {
 }
 
 public class VMJava {
-    public static byte[] get_code(long account) {
+	private static boolean check_time() {
+		return NativeInterface.check_time();
+	}
+
+	private static byte[] get_code(long account) {
         return NativeInterface.get_code(account);
     }
     
@@ -272,6 +284,12 @@ public class VMJava {
     private static Map<Object, Class> account_map = new HashMap();
     private static int return_value = 0;
     private static Contract contract = null;
+    private static Runnable unprivileged = null;
+    private static Thread thread = null;
+
+    private static Object mutex1 = new Object();
+    private static Object mutex2 = new Object();
+    private static boolean executionFinish = false;
 
     public static int setcode(long account) {
 		try {
@@ -280,13 +298,13 @@ public class VMJava {
 			account_map.put(account, cls);
 			return 1;
 		} catch (ClassNotFoundException ex) {
-			System.out.println(ex);
+			ex.printStackTrace();
 		}
 		return 0;
     }
 
     public static int apply(final long receiver, final long account, final long act) {
-//		System.out.println("+++++:"+receiver+":"+account+":"+act);
+//		System.out.println("+++++apply:"+receiver+":"+account+":"+n2s(act));
 		try {
 	    	if (account_map.containsKey(receiver)) {
 				Class cls = account_map.get(receiver);
@@ -294,18 +312,20 @@ public class VMJava {
 			} else {
 				NativeInterface vmMain = new NativeInterface(VMJava.class.getClassLoader());
 				Class cls = vmMain.loadClass(n2s(receiver));
+				if (cls == null) {
+					return 1;
+				}
 				account_map.put(receiver, cls);
 				contract = (Contract)cls.getConstructor().newInstance();
 			}
 		} catch (ClassNotFoundException ex) {
-			System.out.println(ex);
+			ex.printStackTrace();
 			return 0;
 		} catch (InvocationTargetException ex)  {
-			Thread.dumpStack();
-			System.out.println(ex);
+			ex.printStackTrace();
 			return 0;
 		} catch (InstantiationException ex) {
-			System.out.println(ex);
+			ex.printStackTrace();
 			return 0;
 		} catch (NoSuchMethodException ex) {
 			ex.printStackTrace();
@@ -316,36 +336,84 @@ public class VMJava {
 		}
 
 		return_value = 0;
-		Runnable unprivileged = new Runnable() {
-	          public void run() {
-	      		try {
-	    			// Set the most strict permissions.
-	      			/*
-	    			Class mainArgType[] = { long.class, long.class, long.class };
-	    			Method main = cls.getMethod("apply", mainArgType);
-	    			final Object argsArray[] = { receiver, account, act };
-	    			main.invoke(null, argsArray);
-	    			*/
-	      			if (contract != null) {
-	      				contract.apply(receiver, account, act);
-	      				contract = null;
-	      			}
-		      		return_value = 1;
-	      		} catch (Exception ex) {
-	    			ex.printStackTrace();
-	    			return_value = 0;
-//	    			Thread.dumpStack();
-	    		}
-	          }
-	      };
+		if (unprivileged == null) {
+			unprivileged = new Runnable() {
+				public void run() {
+					while (true) {
+						try {
+							executionFinish = false;
+							try {
+								if (contract != null) {
+									contract.apply(receiver, account, act);
+									contract = null;
+								}
+								return_value = 1;
+							} catch (Exception ex) {
+								ex.printStackTrace();
+								return_value = 0;
+							}
+							executionFinish = true;
+							synchronized(mutex1) {
+								mutex1.notify();
+							}
+							synchronized(mutex2) {
+								mutex2.wait();
+							}
+						} catch (InterruptedException ex) {
+							ex.printStackTrace();
+							return;
+						}
+					}
+				}
+			};
+			if (VMJava.contains(unprivileged.getClass())) {
+			} else {
+				VMJava.confine(unprivileged.getClass(), new Permissions());
+			}
+		}
 
-	      // Set the most strict permissions.
-	      if (VMJava.contains(unprivileged.getClass())) {
-	      } else {
-		      VMJava.confine(unprivileged.getClass(), new Permissions());
-	      }
-	      unprivileged.run(); // Throws a SecurityException.
-//	      System.out.println("++++return_value:"+return_value);
-	      return return_value;
+		try {
+			if (thread == null) {
+				thread = new Thread(unprivileged);
+				thread.start();
+			} else {
+				synchronized(mutex2) {
+					mutex2.notify();
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		boolean timeout = true;
+
+		for (int i=0;i<1000;i++) {
+			try {
+				//TODO: checktime in loop
+				synchronized(mutex1) {
+					mutex1.wait(1, 100000);//wait for 0.1ms
+				}
+				if (!check_time()) {
+					break;
+				}
+				if (executionFinish) {
+					timeout = false;
+					break;
+				}
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+
+		if (timeout) {
+			System.out.println("execution timeout!");
+			thread.interrupt();
+			thread = new Thread(unprivileged);
+			return_value = 0;
+		}
+//		System.out.println("+++444");
+//		System.out.println("VMJava apply returned!");
+		return return_value;
 	}
 }

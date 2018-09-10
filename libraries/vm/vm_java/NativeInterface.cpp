@@ -3,6 +3,8 @@
 #include <string.h>
 #include <eosiolib_native/vm_api.h>
 
+extern "C" void checktime();
+
 /*
  * Class:     vmapi4java
  * Method:    sayHello
@@ -10,6 +12,21 @@
  */
 JNIEXPORT void JNICALL Java_NativeInterface_sayHello(JNIEnv *env, jclass jobj) {
    printf("++++++++++++++hello,world\n");
+}
+
+/*
+ * Class:     NativeInterface
+ * Method:    check_time
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_NativeInterface_check_1time
+  (JNIEnv *, jclass) {
+   try {
+      get_vm_api()->checktime();
+   } catch (...) {
+      return false;
+   }
+   return true;
 }
 
 JNIEXPORT void JNICALL Java_NativeInterface_eosio_1assert
@@ -35,6 +52,9 @@ JNIEXPORT jbyteArray JNICALL Java_NativeInterface_get_1code
    }
    size_t len = 0;
    const char* code = get_vm_api()->get_code(account, &len);
+   if (len == 0 || code == NULL) {
+      return NULL;
+   }
 //   printf("+++code size: %d \n", len);
    jbyteArray jarr = env->NewByteArray(len);
    env->SetByteArrayRegion(jarr, 0, len, (jbyte*)code);

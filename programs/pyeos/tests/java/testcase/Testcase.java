@@ -7,6 +7,12 @@ public class Testcase extends Contract {
 	long N(String name) {
 		return VMJava.s2n(name);
 	}
+	
+	void infiniteRecursive() {
+		long[] l = new long[100];
+		infiniteRecursive();
+	}
+	
 	public int apply(long receiver, long account, long act) throws Exception{
 		long code = receiver;
 		long scope = receiver;
@@ -25,6 +31,13 @@ public class Testcase extends Contract {
 		} else if (act == N("testmemory")) {
 			int size = 1024*1024*1024;//
 			long[] xs = new long[size];
+		} else if (act == N("testcall")) {
+			infiniteRecursive();
+		} else if (act == N("testtimeout")) {
+			boolean b = true;
+			while(b) {
+				
+			}
 		}
 		return 1;
 	}

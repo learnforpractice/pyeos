@@ -78,13 +78,12 @@ int vm_setcode(uint64_t account) {
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    JNIEnv* env = nullptr;
-//   printf("+++++vm_java: apply\n");// %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+//   printf("+++++vm_java: apply %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
    vm->AttachCurrentThread((void**)&env, nullptr);
    if (main_class == nullptr) {
       main_class = env->FindClass("VMJava");
    }
    if (main_class == nullptr) {
-      printf("VMJava class not found!\n");
       vmdlog("VMJava class not found!");
       return 0;
    }
@@ -93,7 +92,6 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       apply_method = env->GetStaticMethodID(main_class, "apply", "(JJJ)I");
    }
    if (apply_method == nullptr) {
-      printf("apply method not found in VMJava \n");
       vmdlog("apply method not found in VMJava");
       return 0;
    }

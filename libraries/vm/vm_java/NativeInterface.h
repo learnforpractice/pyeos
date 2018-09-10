@@ -17,6 +17,14 @@ JNIEXPORT void JNICALL Java_NativeInterface_sayHello
 
 /*
  * Class:     NativeInterface
+ * Method:    check_time
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_NativeInterface_check_1time
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     NativeInterface
  * Method:    get_code
  * Signature: (J)[B
  */
