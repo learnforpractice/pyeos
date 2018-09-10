@@ -98,8 +98,11 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
       return 0;
    }
 
-   env->CallStaticIntMethod(main_class, apply_method, (jlong)receiver, (jlong)account, (jlong)act);
-//   vm->DetachCurrentThread();
+   jint ret = env->CallStaticIntMethod(main_class, apply_method, (jlong)receiver, (jlong)account, (jlong)act);
+   vmdlog("ret %d \n", ret);
+
+   eosio_assert(ret != 0, "call apply failed!");
+   //   vm->DetachCurrentThread();
    return 1;
 }
 

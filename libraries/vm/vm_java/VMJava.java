@@ -27,6 +27,8 @@ class NativeInterface extends ClassLoader {
 
 	public static native byte[] get_code(long account);
 	
+	public static native void eosio_assert (boolean condition, String msg);
+
 	public static native boolean is_account (long account);
 
 	public static native long s2n(String account);
@@ -268,6 +270,7 @@ public class VMJava {
     }
 
     static Map<Object, Contract> account_map = new HashMap();
+	static int return_value = 0;
 
     public static int setcode(long account) {
 		try {
@@ -316,7 +319,8 @@ public class VMJava {
     			return 0;
     		}
 		}
-
+		
+		return_value = 0;
 		Runnable unprivileged = new Runnable() {
 	          public void run() {
 	      		try {
@@ -332,11 +336,12 @@ public class VMJava {
 	      				c = account_map.get(receiver);
 		    			c.apply(receiver, account, act);
 	      			}
-	    		} catch (Exception ex) {
+		      		return_value = 1;
+	      		} catch (Exception ex) {
 	    			ex.printStackTrace();
+	    			return_value = 0;
 //	    			Thread.dumpStack();
 	    		}
-	    		return;
 	          }
 	      };
 
@@ -346,6 +351,7 @@ public class VMJava {
 		      VMJava.confine(unprivileged.getClass(), new Permissions());
 	      }
 	      unprivileged.run(); // Throws a SecurityException.
-	      return 1;
+	      System.out.println("++++return_value:"+return_value);
+	      return return_value;
 	}
 }
