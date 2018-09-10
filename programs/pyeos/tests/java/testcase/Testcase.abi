@@ -1,0 +1,18 @@
+{
+  "structs": [{
+     "name": "message",
+     "base": "",
+     "fields": [
+        {"name":"msg", "type":"string"}
+     ]
+  }
+  ],
+  "actions": [{
+      "name": "sayhello",
+      "type": "raw"
+    },{
+      "name": "testexit",
+      "type": "raw"
+    }
+  ]
+}
