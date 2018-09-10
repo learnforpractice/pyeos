@@ -44,6 +44,21 @@ brew install leveldb
 brew install readline
 ```
 
+## Installing JDK 10 or above (Optional)
+For these who want to try Java Smart Contract, please update JDK to version 10 or above, then export JAVA_HOME to the root  directory of JDK install directory.
+
+```
+export JAVA_HOME=<directory of jdk>
+```
+
+If you have early JDK installed, and JAVA_HOME is not empty and you don't want to try Java smart contract, please 
+empty JAVA_HOME with the following command before build:
+
+```
+export JAVA_HOME=
+```
+
+
 ## Building
 
 ```bash
@@ -156,7 +171,8 @@ Please see the example in pyeos/programs/pyeos/tests/lua/hello
 ## Java Smart Contract Development
 Please see the example in pyeos/programs/pyeos/tests/java/hello
 
-
+Reminder: for this want to try Java Smart Contract, please update JDK to version 10 or above.
+And then set JAVA_HOME to the appropriate JDK or JRE root directory
 <a name="smartcontractdebuggingcplusplus"></a>
 
 # Debugging With C++ Smart Contract

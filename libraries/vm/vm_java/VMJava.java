@@ -19,7 +19,12 @@ import java.lang.reflect.InvocationTargetException;
 class NativeInterface extends ClassLoader {
 	static {
 //		System.out.println(System.getProperty("user.dir")+"/../libs/libvm_javad.dylib");
-		System.load(System.getProperty("user.dir")+"/../libs/libvm_java.dylib");
+		String OS = System.getProperty("os.name", "generic").toLowerCase();
+		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+			System.load(System.getProperty("user.dir")+"/../libs/libvm_java.dylib");
+		} else {
+			System.load(System.getProperty("user.dir")+"/../libs/libvm_java.so");
+		}
 	}
 	
 	public static native void sayHello();

@@ -16,7 +16,11 @@ endif()
 get_filename_component(RT_JAR_PATH ${Java_JAVA_EXECUTABLE} DIRECTORY)
 
 set(RT_JAR_PATH "${RT_JAR_PATH}/../jre/lib/rt.jar")
+if (APPLE)
 set(JAVA_LIB "$ENV{JAVA_HOME}/lib/server/libjvm.dylib")
+else()
+set(JAVA_LIB "$ENV{JAVA_HOME}/lib/server/libjvm.so")
+endif()
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 set(DEBUG_FLAG "d")
@@ -67,4 +71,5 @@ target_include_directories(vm_java PRIVATE ${Boost_INCLUDE_DIR}
     PRIVATE ${CMAKE_SOURCE_DIR}/contracts
     PRIVATE $ENV{JAVA_HOME}/include
     PRIVATE $ENV{JAVA_HOME}/include/darwin
+    PRIVATE $ENV{JAVA_HOME}/include/linux
 )
