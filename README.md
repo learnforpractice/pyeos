@@ -1,9 +1,21 @@
 A Self Evolving Universal Smart Contract Platform Base on The Development of EOSIO 
 # Table of contents
 1. [Building PyEos](#buildingpyeos)
-2. [Creating Your First Python Smart Contract](#creatsmartcontract)
+
+2. [Smart Contract Development](#smartcontractdevelopment)
+
+   2.1 [Python Smart Contract Development](#pythonsmartcontractdevelopment)
+
+   2.2 [Ethereum Smart Contract Development](#ethereumsmartcontractdevelopment)
+
+   2.3 [Lua Smart Contract Development](#luasmartcontractdevelopment)
+
+   2.4 [Java Smart Contract Development](#javasmartcontractdevelopment)
+
 3. [Debugging With C++ Smart Contract](#smartcontractdebuggingcplusplus)
+
 4. [Debugging With Python Smart Contract](#smartcontractdebuggingpython)
+
 5. [PyEos api overview](#pyeosapioverview)
 
 <a name="buildingPyEos"></a>
@@ -38,11 +50,15 @@ brew install readline
 ./eosio_build.sh
 ```
 
-<a name="creatsmartcontract"></a>
+<a name="smartcontractdevelopment"></a>
 
-# Creating Your First Python Smart Contract
+# Smart Contract Development
 
-### Running PyEos
+<a name="pythonsmartcontractdevelopment"></a>
+
+### Python Smart Contract Development
+
+#### Running PyEos
 
 Open a terminal, cd to [PROJECT_DIR]/build/program, run the following command
 
@@ -78,7 +94,7 @@ and publish their smart contract on testnet.
 
 Although the above steps will never happen in the real world, but it's really provide a great convenience for testing smart contract. Thus save a lot of your precious time and make the development more efficient.
 
-### Generating source code with sketch tool
+#### Generating source code with sketch tool
 
 Run the following command in PyEos console,
 
@@ -102,7 +118,7 @@ In addition, sketch can also create a wasm smart contract project for you, just 
 sketch.create('helloworld', 'helloworld', 'cpp')
 ```
 
-### Testing
+#### Testing
 
 
 Now it's time to run your helloworld smart contract program. Type or copy the following command to the PyEos console:
@@ -123,6 +139,23 @@ Congratulations, you have successfully run your first Python smart contract.
 Now you can open helloworld.py for coding. Once it's done, just run t.test() again, 
 there is no need to run other command to publish your testing smart contract, the smart contract will be automatically
 republish to the testnet if it's been changed during the running of t.test(). You can also edit the testing code in t.py for testing your smart contract. Once it's done, just run t.test() again, there is no need to run reload(t), PyEos will do the magic for you. That also works at the situation of adding a new function in test. 
+
+<a name="ethereumsmartcontractdevelopment"></a>
+
+## Ethereum Smart Contract Development
+Please see the example in pyeos/programs/pyeos/tests/evm/evm
+
+<a name="luasmartcontractdevelopment"></a>
+
+## Lua Smart Contract Development
+
+Please see the example in pyeos/programs/pyeos/tests/lua/hello
+
+<a name="javasmartcontractdevelopment"></a>
+
+## Java Smart Contract Development
+Please see the example in pyeos/programs/pyeos/tests/java/hello
+
 
 <a name="smartcontractdebuggingcplusplus"></a>
 
