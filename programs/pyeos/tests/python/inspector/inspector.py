@@ -132,10 +132,13 @@ def test_change_builtin_module4():
 @assert_failure
 def test_import():
     import pickle
+    print(pickle);
+    assert pickle
 
 @assert_failure
 def test_import2():
-    __import__("db")
+    a = __import__("db")
+    print('test_import2', a)
 
 @assert_failure
 def test_crash1():
@@ -233,6 +236,10 @@ def test_timeout():
     while True:
         pass
 
+@assert_failure
+def test_open():
+    a = open('a.txt', 'wb')
+
 def apply(receiver, code, action):
     print('+++++action:', n2s(action))
     if not action == N('sayhello'):
@@ -256,7 +263,6 @@ def apply(receiver, code, action):
     if 1:
         test_reload()
         test_context_manager()
-        test_import2()
 
 #----------------------------
     
@@ -280,5 +286,7 @@ def apply(receiver, code, action):
     test_set_func()
 
     test_import()
+    test_import2()
     test_str_format()
+    test_open()
     test_timeout()
