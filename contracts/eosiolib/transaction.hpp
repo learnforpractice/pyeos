@@ -29,11 +29,12 @@ namespace eosio {
       {}
 
       time_point_sec  expiration;
-      uint16_t        ref_block_num;
-      uint32_t        ref_block_prefix;
       unsigned_int    net_usage_words = 0UL; /// number of 8 byte words this transaction can serialize into after compressions
-      uint8_t         max_cpu_usage_ms = 0UL; /// number of CPU usage units to bill transaction for
+      int32_t         max_ram_usage; /// max ram used by transaction
       unsigned_int    delay_sec = 0UL; /// number of CPU usage units to bill transaction for
+      uint32_t        ref_block_prefix;
+      uint16_t        ref_block_num;
+      uint8_t         max_cpu_usage_ms = 0UL; /// number of CPU usage units to bill transaction for
 
       EOSLIB_SERIALIZE( transaction_header, (expiration)(ref_block_num)(ref_block_prefix)(net_usage_words)(max_cpu_usage_ms)(delay_sec) )
    };
