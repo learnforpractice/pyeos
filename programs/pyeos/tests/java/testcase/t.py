@@ -37,7 +37,7 @@ def testcall():
 def testtimeout():
     eosapi.push_action('testcase', 'testtimeout', '', {'testcase':'active'})
 
-class LUATestCase(unittest.TestCase):
+class JavaTestCase(unittest.TestCase):
     def setUp(self):
         pass
 

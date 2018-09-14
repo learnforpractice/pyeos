@@ -23,7 +23,8 @@ def init(func):
 
 @init
 def test():
-    eosapi.push_action('hellojava', 'sayhello', 'hello,worldddd', {'hellojava':'active'})
+    r = eosapi.push_action('hellojava', 'sayhello', 'hello,worldddd', {'hellojava':'active'})
+    print(r)
 
 @init
 def test2(count=100):

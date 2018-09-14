@@ -410,11 +410,11 @@ public class VMJava {
 		}
 		boolean timeout = true;
 
-		for (int i=0;i<1000;i++) {
+		for (int i=0;i<10000;i++) {
 			try {
 				//TODO: checktime in loop
 				synchronized(mutex1) {
-					mutex1.wait(1, 100000);//wait for 0.1ms
+					mutex1.wait(0, 100000);//wait for 0.1ms
 				}
 				if (!check_time()) {
 					break;

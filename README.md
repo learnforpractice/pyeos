@@ -16,7 +16,7 @@ A Self Evolving Universal Smart Contract Platform Base on The Development of EOS
 
 4. [Debugging With Python Smart Contract](#smartcontractdebuggingpython)
 
-5. [PyEos api overview](#pyeosapioverview)
+5. [PyEos API overview](#pyeosapioverview)
 
 <a name="buildingPyEos"></a>
 
@@ -45,14 +45,14 @@ brew install readline
 ```
 
 ## Installing JDK 10 or above (Optional)
-For these who want to try Java Smart Contract, please update JDK to version 10 or above, then export JAVA_HOME to the root  directory of JDK install directory.
+For those who want to try Java Smart Contract, please update JDK to version 10 or above, then export JAVA_HOME to the root  directory of JDK install directory.
 
 ```
 export JAVA_HOME=<directory of jdk>
 ```
 
-If you have early JDK installed, and JAVA_HOME is not empty and you don't want to try Java smart contract, please 
-empty JAVA_HOME with the following command before build:
+If you have earlier JDK installed and JAVA_HOME is not empty and you don't want to try Java smart contract, please 
+empty JAVA_HOME with the following command before building:
 
 ```
 export JAVA_HOME=
@@ -178,7 +178,7 @@ and then set JAVA_HOME to the appropriate JDK root directory
 
 # Debugging With C++ Smart Contract
 
-On Eos, C++ Smart Contract code is compiled to WebAssembly bytecode, that makes debugging C++ suffer. Fortunately now it's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
+On Eos, C++ Smart Contract code is compiled to WebAssembly bytecode, that makes debugging C++ Smart Contract suffer. Fortunately now it's able to compile C++ Smart Contract to a shared library, that makes debugging a C++ Smart Contract as easy as debugging a normal C++ project. 
 
 There is a short video on youtube for quick start:
 
@@ -293,7 +293,7 @@ Enjoy it!
 
 <a name="pyeosapioverview"></a>
 
-# PyEos api overview
+# PyEos API overview
 
 #### eosapi.get_info
 ```python

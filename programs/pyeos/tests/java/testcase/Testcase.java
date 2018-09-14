@@ -23,8 +23,6 @@ public class Testcase extends Contract {
 		if (act == N("testexit")) {
 			System.exit(0);
 		} else if (act == N("testfile")) {
-			System.getProperty("user.dir");
-
 			PrintWriter out = new PrintWriter(new FileWriter("OutFile.txt"));
 			out.println("hello,world");
 			out.close();
@@ -32,6 +30,7 @@ public class Testcase extends Contract {
 			int size = 1024*1024*1024;//
 			long[] xs = new long[size];
 		} else if (act == N("testcall")) {
+			System.out.println("+++testcall");
 			infiniteRecursive();
 		} else if (act == N("testtimeout")) {
 			boolean b = true;
