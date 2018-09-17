@@ -49,6 +49,10 @@ cdef extern void cpython_compile(string& name, string& code, string& result):
         pass
 
 cdef extern int cpython_setcode(uint64_t account, string& code):
+    if not code.size():
+        if account in py_modules:
+            del py_modules[account]
+        return 1
     if _load_module(account, code):
         return 1
     return 0

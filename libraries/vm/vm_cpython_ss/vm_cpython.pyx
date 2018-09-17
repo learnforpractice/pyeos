@@ -183,6 +183,10 @@ cdef object load_module(uint64_t account, string& bytecodes):
     return None
 
 cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
+    if not code.size():
+        if account in py_modules:
+            del py_modules[account]
+        return 1
     set_current_account(account)
     if account in py_modules:
         del py_modules[account]

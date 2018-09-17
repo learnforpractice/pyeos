@@ -52,8 +52,14 @@ static jmethodID setcode_method = nullptr;
 
 int vm_setcode(uint64_t account) {
    vmdlog("+++++vm_java: setcode\n");
+   size_t size = 0;
+   const char* code = get_vm_api()->get_code(account, &size);
+   if (size <= 0) {
+      return 1;
+   }
+
    JNIEnv* env = nullptr;
-//   printf("+++++vm_java: apply\n");// %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
+   //   printf("+++++vm_java: apply\n");// %llu %llu %llu %d\n", receiver, account, act, sizeof(jlong));
    vm->AttachCurrentThread((void**)&env, nullptr);
    if (main_class == nullptr) {
       main_class = env->FindClass("VMJava");

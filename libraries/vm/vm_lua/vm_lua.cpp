@@ -233,12 +233,13 @@ void vm_deinit() {
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_lua: setcode\n");
-   auto itr = account_map.find(account);
-   if (itr != account_map.end()) {
-      lsb_lua_sandbox *lsb = itr->second;
-      lsb_terminate(lsb, NULL);
-      lsb_destroy(lsb);
+   size_t size = 0;
+   const char* code = get_vm_api()->get_code(account, &size);
+   if (size <= 0) {
+      return vm_unload(account);
    }
+
+   vm_unload(account);
    load_account(account);
    return 0;
 }
@@ -273,3 +274,14 @@ int vm_call(uint64_t account, uint64_t func) {
    printf("+++++vm_lua: call\n");
    return 0;
 }
+
+int vm_unload(uint64_t account) {
+   auto itr = account_map.find(account);
+   if (itr != account_map.end()) {
+      lsb_lua_sandbox *lsb = itr->second;
+      lsb_terminate(lsb, NULL);
+      lsb_destroy(lsb);
+   }
+   return 1;
+}
+

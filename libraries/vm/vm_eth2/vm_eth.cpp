@@ -151,6 +151,9 @@ int vm_setcode(uint64_t account) {
    printf("+++++vm_eth2: setcode\n");
    size_t size = 0;
    const char* code = get_code(account, &size);
+   if (size <= 0) {
+      return 1;
+   }
    dev::bytes _code(code, code+size);
    run_code(account, account, 0,  _code, true, false);
    return 1;

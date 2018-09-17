@@ -295,6 +295,8 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act);
 int vm_call(uint64_t account, uint64_t func);
 
 int vm_preload(uint64_t account);
+
+int vm_load(uint64_t account);
 int vm_unload(uint64_t account);
 
 struct vm_api* get_vm_api(void);

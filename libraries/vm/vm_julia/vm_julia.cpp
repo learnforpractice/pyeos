@@ -26,6 +26,12 @@ static bool _init = false;
 
 int vm_setcode(uint64_t account) {
    printf("+++++vm_julia: setcode\n");
+   size_t size = 0;
+   const char* code = get_vm_api()->get_code(account, &size);
+   if (size <= 0) {
+      return 1;
+   }
+
    if (!_init) {
       jl_init();
       _init = true;

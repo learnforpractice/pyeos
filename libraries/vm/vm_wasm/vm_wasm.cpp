@@ -48,6 +48,12 @@ struct vm_api* get_vm_api() {
 }
 
 int vm_setcode(uint64_t account) {
+   size_t size = 0;
+   const char* code = get_vm_api()->get_code(account, &size);
+   if (size <= 0) {
+      wasm_unload(account);
+      return 1;
+   }
    wasm_setcode(account);
    return 0;
 }
