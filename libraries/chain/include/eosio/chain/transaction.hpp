@@ -6,6 +6,7 @@
 
 #include <eosio/chain/action.hpp>
 #include <numeric>
+//#include <appbase/application.hpp>
 
 namespace eosio { namespace chain {
 
@@ -188,8 +189,9 @@ namespace eosio { namespace chain {
 
 } } /// namespace eosio::chain
 
-FC_REFLECT( eosio::chain::transaction_header, (expiration)(ref_block_num)(ref_block_prefix)
-                                              (max_net_usage_words)(max_cpu_usage_ms)(delay_sec)(max_ram_usage) )
+FC_REFLECT_EX( eosio::chain::transaction_header, (expiration)(ref_block_num)(ref_block_prefix)
+                                              (max_net_usage_words)(max_cpu_usage_ms)(delay_sec), (max_ram_usage) )
+
 FC_REFLECT_DERIVED( eosio::chain::transaction, (eosio::chain::transaction_header), (context_free_actions)(actions)(transaction_extensions) )
 FC_REFLECT_DERIVED( eosio::chain::signed_transaction, (eosio::chain::transaction), (signatures)(context_free_data) )
 FC_REFLECT_ENUM( eosio::chain::packed_transaction::compression_type, (none)(zlib))
