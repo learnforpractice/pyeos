@@ -83,7 +83,7 @@ genesis = '''
 }
 '''
 
-genesis2 = '''
+genesis = '''
 {
   "initial_timestamp": "2018-06-08T08:08:08.888",
   "initial_key": "EOS7EarnUhcyYqmdnPon8rm7mBCTnBoot6o7fE2WzjvEX2TdggbL3",
@@ -435,48 +435,32 @@ def init():
     #load common libraries
 #    t.load_all()
 
-peers = ('173.242.25.101:7115',
-'18.191.33.148:59876',
-'185.253.188.1:19877',
-'40.114.68.16:9876',
-'api-full1.eoseoul.io:9876',
-'api-full2.eoseoul.io:9876',
-'bp.antpool.com:443',
-'bp.cryptolions.io:9876',
-'dc1.eosemerge.io:9876',
-'eno.eosvan.io:19866',
-'eos.infinitystones.io:9876',
-'eos.nodepacific.com:9876',
-'eosapi.blockmatrix.network:13546',
-'eosbp.eosvillage.io:8181',
-'fn001.eossv.org:443',
-'mainnet.eoscalgary.io:5222',
-'mars.fnp2p.eosbixin.com:443',
-'node.eosio.lt:9878',
-'node1.eosnewyork.io:6987',
-'node2.eosarmy.io:3330',
-'node2.eosnewyork.io:6987',
-'node2.eosphere.io:9876',
-'p2p.eos.bitspace.no:9876',
-'p2p.genereos.io:9876',
-'p2p.meet.one:9876',
-'p2p.one.eosdublin.io:9876',
-'p2p.saltblock.io:19876',
-'p2p.two.eosdublin.io:9876',
-'peer.eosjrr.io:9876',
-'peer.eosn.io:9876',
-'peer.main.alohaeos.com:9876',
-'peer1.eospalliums.org:9876',
-'peer1.eosthu.com:8080',
-'peer1.mainnet.eos.store:80',
-'peer1.mainnet.helloeos.com.cn:80',
-'peer2.eospalliums.org:9876',
-'peer2.mainnet.helloeos.com.cn:80',
-'peering.mainnet.eoscanada.com:9876',
-'pub1.eostheworld.io:9876',
-'pub2.eostheworld.io:9876',
-'publicnode.cypherglass.com:9876',
-'seed2.greymass.com:9876')
+peers = ("api-full1.eoseoul.io:9876",
+"api-full2.eoseoul.io:9876",
+"bp.antpool.com:443",
+"bp.cryptolions.io:9876",
+"eos.nodepacific.com:9876",
+"eosapi.blockmatrix.network:13546",
+"fn001.eossv.org:443",
+"mainnet.eoscalgary.io:5222",
+"mars.fnp2p.eosbixin.com:443",
+"node.eosio.lt:9878",
+"node1.eosnewyork.io:6987",
+"node2.eosnewyork.io:6987",
+"p2p.eos.bitspace.no:9876",
+"p2p.genereos.io:9876",
+"p2p.meet.one:9876",
+"p2p.one.eosdublin.io:9876",
+"p2p.two.eosdublin.io:9876",
+"peer.eosjrr.io:9876",
+"peer.eosn.io:9876",
+"peer.main.alohaeos.com:9876",
+"peer1.eosthu.com:8080",
+"peer2.mainnet.helloeos.com.cn:80",
+"peering.mainnet.eoscanada.com:9876",
+"pub1.eostheworld.io:9876",
+"publicnode.cypherglass.com:9876",
+"seed2.greymass.com:9876")
 
 def peers_connect():
     for peer in peers:
@@ -508,3 +492,17 @@ def start_console():
     console = PyEosConsole(locals = globals())
     console.interact(banner='Welcome to PyEos')
 
+import socket
+def check_connections():
+    for peer in peers:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(2)
+            addr, port = peer.split(':')
+            port = int(port)
+            s.connect((addr, port))
+            s.close()
+            print('"%s",'%(peer,))
+        except Exception as ex:
+            pass
+#            print(ex)
