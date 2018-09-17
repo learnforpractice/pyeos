@@ -31,6 +31,12 @@ namespace eosio { namespace chain {
    }
 
    int wasm_interface::setcode( uint64_t account) {
+      size_t size = 0;
+      const char* code;
+      code = get_code( account, &size );
+      if (size <= 0) {
+         return my->unload_module(account);
+      }
       my->get_instantiated_module(account);
       return 0;
    }
