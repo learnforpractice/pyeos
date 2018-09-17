@@ -72,3 +72,19 @@ def test2(count=100):
 
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
+#@init
+def test3(count=100):
+    _from = 'eosio'
+    _to = 'hello'
+
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+    actions = []
+    for i in range(count):
+        action = ['eosio.token','transfer',{"from":_from, "to":_to, "quantity":"0.0010 EOS", "memo":str(i)},{_from:'active'}]
+        actions.append([action])
+
+    ret, cost = eosapi.push_transactions(actions)
+    print(eosapi.get_balance(_from), eosapi.get_balance(_to))
+
+    print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+
