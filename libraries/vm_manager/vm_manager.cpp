@@ -592,6 +592,10 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
       do {
          bool expired = false;
          bool _boosted = false;
+         if (get_vm_api()->is_replay()) {
+            vm_map[VM_TYPE_WAVM]->apply(receiver, account, act);
+            return 1;
+         }
          _boosted = is_boost_account(receiver, expired);
          if (!_boosted) {
             unload_account(receiver);
