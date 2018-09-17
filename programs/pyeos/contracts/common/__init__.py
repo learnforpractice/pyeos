@@ -168,7 +168,7 @@ def prepare(account, src, abi, full_src_path, code_type = None):
         except Exception as e:
             print(e)
             return
-        if old_code:
+        if old_code and vm_type == CODE_TYPE_PY:
             try:
                 old_co = marshal.loads(old_code)
                 if compare_code_object(old_co, co):
