@@ -71,20 +71,20 @@ extern "C" int native_apply( uint64_t receiver, uint64_t code, uint64_t action )
 
 action_trace apply_context::exec_one()
 {
-   const auto &a = control.db().get<account_object, by_name>(receiver);
-   control.set_action_object(get_receiver(), act);
-
 //   apply_context::__ctx = this;
    auto cleanup = fc::make_scoped_exit([&](){
       current_context = nullptr;
    });
-
+   
    current_context = this;
    auto start = fc::time_point::now();
 
    const auto& cfg = control.get_global_properties().configuration;
    do {
    try {
+//      const auto &a = control.db().get<account_object, by_name>(receiver);
+//      control.set_action_object(get_receiver(), act);
+
       const auto& a = control.get_account( receiver );
       privileged = a.privileged;
       auto native = control.find_apply_handler( receiver, act.account, act.name );
