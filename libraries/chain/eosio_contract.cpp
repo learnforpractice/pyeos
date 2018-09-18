@@ -137,12 +137,6 @@ void apply_eosio_setcode(apply_context& context) {
    auto  act = context.act.data_as<setcode>();
    const auto& account = db.get<account_object,by_name>(act.account);
 
-   if (!appbase::app().debug_mode()) {
-      if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
-         throw FC_EXCEPTION( fc::exception, "code updated in less than 10m from the previous update");
-      }
-   }
-
    jit_account_deactivate(act.account.value);
 
    context.require_authorization(act.account);
@@ -151,6 +145,11 @@ void apply_eosio_setcode(apply_context& context) {
    if (appbase::app().is_eos_main_net()) {
 
    } else {
+      if (!appbase::app().debug_mode()) {
+         if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
+            throw FC_EXCEPTION( fc::exception, "code updated in less than 10m from the previous update");
+         }
+      }
       if (account.code.size() > 0) {
          vm_manager::get().apply(account.vm_type, account.name, account.name, N(setcode));
       }
