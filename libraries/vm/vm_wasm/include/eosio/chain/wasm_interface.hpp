@@ -52,6 +52,7 @@ namespace eosio { namespace chain {
          enum class vm_type {
             wavm,
             binaryen,
+            wabt
          };
          static wasm_interface& get();
          ~wasm_interface();

@@ -2,7 +2,7 @@ set(HEADERS
     ${CMAKE_SOURCE_DIR}/externals/magic_get/include
     ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/Include
     ${CMAKE_SOURCE_DIR}/contracts
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     ${CMAKE_SOURCE_DIR}/libraries/chain/include
     ${CMAKE_SOURCE_DIR}/externals/binaryen/src )
@@ -29,10 +29,11 @@ add_library(vm_wasm_binaryen SHARED
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
-           vm_api.cpp name.cpp) 
+           vm_api.cpp
+           name.cpp)
 
 target_compile_options(vm_wasm_binaryen PRIVATE -D_BINARYEN)
-target_link_libraries(vm_wasm_binaryen  PRIVATE binaryen softfloat builtins fc)
+target_link_libraries(vm_wasm_binaryen  PRIVATE wavm-shared binaryen softfloat builtins fc)
 
 target_include_directories(vm_wasm_binaryen PRIVATE ${HEADERS})
 
@@ -43,7 +44,8 @@ add_library(vm_wasm_wavm STATIC
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
-           vm_api.cpp name.cpp) 
+           vm_api.cpp
+           name.cpp) 
 
 target_compile_options(vm_wasm_wavm     PRIVATE   -D_WAVM)
 target_link_libraries(vm_wasm_wavm       PRIVATE eosiolib_native wavm-shared softfloat builtins fc)
@@ -58,10 +60,11 @@ add_library(vm_wasm_wabt SHARED
            wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
-           vm_api.cpp name.cpp) 
+           vm_api.cpp
+           name.cpp) 
 
 target_compile_options(vm_wasm_wabt PRIVATE -D_WABT)
-target_link_libraries(vm_wasm_wabt  PRIVATE wabt softfloat builtins fc)
+target_link_libraries(vm_wasm_wabt  PRIVATE wavm-shared wabt softfloat builtins fc)
 
 target_include_directories(vm_wasm_wabt PRIVATE ${HEADERS}
     ${CMAKE_SOURCE_DIR}/libraries/wabt

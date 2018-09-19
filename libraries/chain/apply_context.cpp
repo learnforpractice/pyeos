@@ -23,7 +23,9 @@ int py_debug_enabled_() {
    return 0;
 }
 
-bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
+bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
+   return false;
+}
 
 namespace eosio { namespace chain {
 

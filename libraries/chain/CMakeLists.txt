@@ -42,16 +42,16 @@ add_library( eosio_chain
 #             chain_config.cpp
 #             block_trace.cpp
 #              wast_to_wasm.cpp
-              wasm_interface.cpp
+#              wasm_interface.cpp
 #              wasm_eosio_validation.cpp
 #              wasm_eosio_injection.cpp
               apply_context.cpp
               abi_serializer.cpp
               asset.cpp
 
-             webassembly/wavm.cpp
-             webassembly/binaryen.cpp
-             webassembly/wabt.cpp
+#             webassembly/wavm.cpp
+#             webassembly/binaryen.cpp
+#             webassembly/wabt.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp

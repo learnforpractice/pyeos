@@ -1406,9 +1406,15 @@ public:
 };
 
 void wasm_init_api() {
+
+}
+
+#if 0
+void wasm_init_api() {
    REGISTER_INJECTED_INTRINSICS(call_depth_api,
       (call_depth_assert,  void()               )
    );
+
 
 REGISTER_INTRINSICS(compiler_builtins,
    (__ashlti3,     void(int, int64_t, int64_t, int)               )
@@ -1670,6 +1676,7 @@ REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_ui64_to_f64,    double(int64_t)       )
 );
 }
+#endif
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;
@@ -1678,6 +1685,8 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
       runtime = eosio::chain::wasm_interface::vm_type::wavm;
    else if (s == "binaryen")
       runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+   else if (s == "wabt")
+      runtime = eosio::chain::wasm_interface::vm_type::wabt;
    else
       in.setstate(std::ios_base::failbit);
    return in;

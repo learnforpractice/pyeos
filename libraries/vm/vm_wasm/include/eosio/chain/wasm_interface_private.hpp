@@ -62,7 +62,7 @@ namespace eosio { namespace chain {
 #elif defined(_BINARYEN)
          runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
 #elif defined(_WABT)
-         runtime_interface = std::make_unique<webassembly::binaryen::wabt_runtime>();
+         runtime_interface = std::make_unique<webassembly::wabt_runtime::wabt_runtime>();
 #else
    #error unkown mode
 #endif

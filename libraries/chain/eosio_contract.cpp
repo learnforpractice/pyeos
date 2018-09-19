@@ -187,7 +187,7 @@ void apply_eosio_setcode(apply_context& context) {
    });
 
    if (new_size != old_size) {
-      context.trx_context.add_ram_usage( act.account, new_size - old_size );
+      context.add_ram_usage( act.account, new_size - old_size );
    }
    vm_manager::get().setcode(act.vmtype, act.account);
 }
@@ -292,7 +292,7 @@ void apply_eosio_setconfig(apply_context& context) {
    });
 
    if (new_size != old_size) {
-      context.trx_context.add_ram_usage( act.account, new_size - old_size );
+      context.add_ram_usage( act.account, new_size - old_size );
    }
 }
 

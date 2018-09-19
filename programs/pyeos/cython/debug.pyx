@@ -77,51 +77,6 @@ def run_code(string code):
     pass
     #run_code_(code)
 
-def enable():
-    py_debug_enable_(1)
-    import pydevd
-    pydevd.settrace(suspend=False)
-
-def disable():
-    py_debug_enable_(0)
-    import pydevd
-    pydevd.stoptrace()
-
-def is_enabled():
-    return py_debug_enabled_()
-
-def enable_wasm_debug():
-    wasm_debug_enable_(1)
-
-def disable_wasm_debug():
-    wasm_debug_enable_(0)
-
-def is_wasm_debug_enabled():
-    return wasm_debug_enabled_()
-
-def set_debug_contract(_account, path):
-    if _account or path:
-        if not os.path.exists(path):
-            raise Exception(path + " does not exists")
-    if path.endswith('.py'):
-        sys.path.insert(0, path)
-    set_debug_contract_(_account, path)
-
-def get_debug_contract():
-    return get_debug_contract_()
-
-def wasm_enable_native_contract(b):
-    wasm_enable_native_contract_(b);
-
-def wasm_is_native_contract_enabled():
-    return wasm_is_native_contract_enabled_();
-
-def app_set_debug_mode(d):
-    app_set_debug_mode_(d)
-
-def wasm_test_action(const char* cls, const char* method):
-    return wasm_test_action_(cls, method)
-
 callback = None
 cdef extern int block_on_action(int block, object trx):
     global callback

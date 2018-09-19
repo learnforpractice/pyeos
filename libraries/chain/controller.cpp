@@ -104,7 +104,7 @@ struct controller_impl {
    optional<pending_state>        pending;
    block_state_ptr                head;
    fork_database                  fork_db;
-   wasm_interface                 wasmif;
+//   wasm_interface                 wasmif;
    resource_limits_manager        resource_limits;
    authorization_manager          authorization;
    controller::config             conf;
@@ -159,7 +159,7 @@ struct controller_impl {
         cfg.reversible_cache_size ),
     blog( cfg.blocks_dir ),
     fork_db( cfg.state_dir ),
-    wasmif( cfg.wasm_runtime ),
+//    wasmif( cfg.wasm_runtime ),
     resource_limits( db ),
     authorization( s, db ),
     conf( cfg ),
@@ -1428,7 +1428,7 @@ void controller::startup() {
    if( !my->head ) {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
-    my->wasmif.init();
+//    my->wasmif.init();
     vm_manager_init();
     my->init();
 }
@@ -1779,7 +1779,9 @@ const apply_handler* controller::find_apply_handler( account_name receiver, acco
    return nullptr;
 }
 wasm_interface& controller::get_wasm_interface() {
-   return my->wasmif;
+   wasm_interface* wasmif = nullptr;
+   EOS_ASSERT( false, transaction_exception, "get_wasm_interface has been deprecated!" );
+//   return my->wasmif;
 }
 
 const account_object& controller::get_account( account_name name )const

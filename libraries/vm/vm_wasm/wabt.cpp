@@ -32,13 +32,12 @@ class wabt_instantiated_module : public wasm_instantiated_module_interface {
          if(_env->GetMemoryCount())
             _initial_memory_configuration = _env->GetMemory(0)->page_limits;
       }
-
-      void apply(apply_context& context) override {
+      void apply(uint64_t receiver, uint64_t account, uint64_t act) override {
          //reset mutable globals
          for(const auto& mg : _initial_globals)
             mg.first->typed_value = mg.second;
 
-         wabt_apply_instance_vars this_run_vars{nullptr, context};
+         wabt_apply_instance_vars this_run_vars{nullptr};
          static_wabt_vars = &this_run_vars;
 
          //reset memory to inital size & copy back in initial data
@@ -50,15 +49,44 @@ class wabt_instantiated_module : public wasm_instantiated_module_interface {
             memcpy(memory->data.data(), _initial_memory.data(), _initial_memory.size());
          }
 
-         _params[0].set_i64(uint64_t(context.receiver));
-         _params[1].set_i64(uint64_t(context.act.account));
-         _params[2].set_i64(uint64_t(context.act.name));
+         _params[0].set_i64(receiver);
+         _params[1].set_i64(account);
+         _params[2].set_i64(act);
 
          ExecResult res = _executor.RunStartFunction(_instatiated_module);
          EOS_ASSERT( res.result == interp::Result::Ok, wasm_execution_error, "wabt start function failure (${s})", ("s", ResultToString(res.result)) );
 
          res = _executor.RunExportByName(_instatiated_module, "apply", _params);
          EOS_ASSERT( res.result == interp::Result::Ok, wasm_execution_error, "wabt execution failure (${s})", ("s", ResultToString(res.result)) );
+      }
+
+      uint64_t call(const std::string &entry_point, const std::vector <uint64_t> & _args) override {
+         //reset mutable globals
+         for(const auto& mg : _initial_globals) {
+            mg.first->typed_value = mg.second;
+         }
+
+         wabt_apply_instance_vars this_run_vars{nullptr};
+         static_wabt_vars = &this_run_vars;
+
+         //reset memory to inital size & copy back in initial data
+         if(_env->GetMemoryCount()) {
+            Memory* memory = this_run_vars.memory = _env->GetMemory(0);
+            memory->page_limits = _initial_memory_configuration;
+            memory->data.resize(_initial_memory_configuration.initial * WABT_PAGE_SIZE);
+            memset(memory->data.data(), 0, memory->data.size());
+            memcpy(memory->data.data(), _initial_memory.data(), _initial_memory.size());
+         }
+         TypedValues                                       _params{_args.size(), TypedValue(Type::I64)};
+         for (int i=0;i<_args.size();i++) {
+            _params[i].set_i64(_args[i]);
+         }
+         ExecResult res = _executor.RunStartFunction(_instatiated_module);
+         EOS_ASSERT( res.result == interp::Result::Ok, wasm_execution_error, "wabt start function failure (${s})", ("s", ResultToString(res.result)) );
+
+         res = _executor.RunExportByName(_instatiated_module, entry_point, _params);
+         EOS_ASSERT( res.result == interp::Result::Ok, wasm_execution_error, "wabt execution failure (${s})", ("s", ResultToString(res.result)) );
+         return 1;
       }
 
    private:

@@ -20,7 +20,6 @@ using namespace eosio::chain::webassembly::common;
 
 struct wabt_apply_instance_vars {
    Memory* memory;
-   apply_context& ctx;
 
    char* get_validated_pointer(uint32_t offset, uint32_t size) {
       EOS_ASSERT(memory, wasm_execution_error, "access violation");
@@ -647,8 +646,8 @@ struct intrinsic_function_invoker {
 
    template<MethodSig Method>
    static Ret wrapper(wabt_apply_instance_vars& vars, Params... params, const TypedValues&, int) {
-      class_from_wasm<Cls>::value(vars.ctx).checktime();
-      return (class_from_wasm<Cls>::value(vars.ctx).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      return (class_from_wasm<Cls>::value().*Method)(params...);
    }
 
    template<MethodSig Method>
@@ -663,8 +662,8 @@ struct intrinsic_function_invoker<void, MethodSig, Cls, Params...> {
 
    template<MethodSig Method>
    static void_type wrapper(wabt_apply_instance_vars& vars, Params... params, const TypedValues& args, int offset) {
-      class_from_wasm<Cls>::value(vars.ctx).checktime();
-      (class_from_wasm<Cls>::value(vars.ctx).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      (class_from_wasm<Cls>::value().*Method)(params...);
       return void_type();
    }
 
