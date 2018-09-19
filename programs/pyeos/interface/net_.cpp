@@ -20,7 +20,16 @@ PyObject* connections_() {
 }
 
 string connect_(const string& host) {
-   return get_net_plugin().connect( host );
+   std::shared_ptr<string> result = std::make_shared<string>();
+
+   appbase::app().get_io_service().post([result, host](){
+      *result = get_net_plugin().connect( host );
+      cv->notify_one();
+   });
+
+   std::unique_lock<std::mutex> lk(*m);
+   cv->wait(lk);
+   return *result;
 }
 
 string disconnect_(const string& host) {
