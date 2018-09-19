@@ -10,6 +10,10 @@
 #include <eosio/chain/webassembly/binaryen.hpp>
 #endif
 
+#ifdef _WABT
+#include <eosio/chain/webassembly/wabt.hpp>
+#endif
+
 #include <eosio/chain/webassembly/runtime_interface.hpp>
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/transaction_context.hpp>
@@ -53,11 +57,14 @@ namespace eosio { namespace chain {
 
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
-#ifdef _WAVM
+#if defined(_WAVM)
          runtime_interface = std::make_unique<webassembly::wavm::wavm_runtime>();
-#endif
-#ifdef _BINARYEN
+#elif defined(_BINARYEN)
          runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
+#elif defined(_WABT)
+         runtime_interface = std::make_unique<webassembly::binaryen::wabt_runtime>();
+#else
+   #error unkown mode
 #endif
          //init_native_contract();
       }

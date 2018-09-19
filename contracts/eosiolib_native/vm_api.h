@@ -330,7 +330,8 @@ int get_option(const char* option, char *result, int size);
 #define  VM_TYPE_HERA                      9
 #define  VM_TYPE_LUA                      10
 #define  VM_TYPE_EVMJIT                   11
-#define  VM_TYPE_JAVA                   12
+#define  VM_TYPE_JAVA                     12
+#define  VM_TYPE_WBAT                     13
 
 #ifdef __cplusplus
 }
