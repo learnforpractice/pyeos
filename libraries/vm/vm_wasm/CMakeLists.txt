@@ -51,12 +51,10 @@ target_link_libraries(vm_wasm_wavm       PRIVATE eosiolib_native wavm-shared sof
 
 target_include_directories(vm_wasm_wavm PRIVATE ${HEADERS})
 
-
-
-add_library(vm_wasm_wabt SHARED 
-           vm_wasm.cpp 
+add_library(vm_wasm_wabt SHARED
+           vm_wasm.cpp
            wabt.cpp
-           ${COMMON_SOURCES}) 
+           ${COMMON_SOURCES})
 
 target_compile_options(vm_wasm_wabt PRIVATE -D_WABT)
 target_link_libraries(vm_wasm_wabt  PRIVATE wavm-shared wabt softfloat builtins fc)

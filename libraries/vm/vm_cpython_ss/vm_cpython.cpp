@@ -185,7 +185,6 @@ void prepare_env(uint64_t account) {
       _PyImport_SetModule(name, module);
 
       module = PyInit__tracemalloc();
-      s->modules["_tracemalloc"] = module;
       name = PyUnicode_FromString("_tracemalloc");
       _PyImport_SetModule(name, module);
 
