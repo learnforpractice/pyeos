@@ -1,8 +1,8 @@
+//#include <eosio/chain/apply_context.hpp>
+#include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/webassembly/wavm.hpp>
 #include <eosio/chain/wasm_eosio_constraints.hpp>
 #include <eosio/chain/wasm_eosio_injection.hpp>
-//#include <eosio/chain/apply_context.hpp>
-#include <eosio/chain/exceptions.hpp>
 
 #include "IR/Module.h"
 #include "Platform/Platform.h"
@@ -16,6 +16,7 @@
 
 using namespace IR;
 using namespace Runtime;
+using namespace eosio::chain;
 
 namespace eosio { namespace chain { namespace webassembly { namespace wavm {
 

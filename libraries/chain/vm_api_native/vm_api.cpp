@@ -118,7 +118,7 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
    });
 
    if (new_size != old_size) {
-      ctx().trx_context.add_ram_usage( user_account, new_size - old_size );
+      ctx().add_ram_usage( user_account, new_size - old_size );
    }
 
 }

@@ -19,11 +19,12 @@ namespace eosio { namespace chain {
        * @param wasm - the wasm_interface to use
        * @return
        */
-      static auto value(apply_context& ctx) {
-         return T(ctx);
+      static auto value() {
+         return T();
       }
    };
-   
+
+#if 0
    template<>
    struct class_from_wasm<transaction_context> {
       /**
@@ -37,6 +38,7 @@ namespace eosio { namespace chain {
       }
    };
 
+
    template<>
    struct class_from_wasm<apply_context> {
       /**
@@ -48,6 +50,7 @@ namespace eosio { namespace chain {
          return ctx;
       }
    };
+#endif
 
    /**
     * class to represent an in-wasm-memory array

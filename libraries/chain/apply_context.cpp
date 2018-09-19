@@ -23,7 +23,9 @@ int py_debug_enabled_() {
    return 0;
 }
 
-bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
+bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
+   return false;
+}
 
 namespace eosio { namespace chain {
 
@@ -62,10 +64,6 @@ static inline void print_debug(account_name receiver, const action_trace& ar) {
 
 //apply_context* apply_context::__ctx = nullptr;
 apply_context* apply_context::current_context = nullptr;
-apply_context& apply_context::ctx() {
-   FC_ASSERT(current_context != nullptr, "not in apply_context");
-   return *current_context;
-}
 
 extern "C" int native_apply( uint64_t receiver, uint64_t code, uint64_t action );
 
@@ -131,7 +129,13 @@ action_trace apply_context::exec_one()
 
    action_trace t(r);
    t.trx_id = trx_context.id;
+   t.block_num = control.pending_block_state()->block_num;
+   t.block_time = control.pending_block_time();
+   t.producer_block_id = control.pending_producer_block_id();
+   t.account_ram_deltas = std::move( _account_ram_deltas );
+   _account_ram_deltas.clear();
    t.act = act;
+   t.context_free = context_free;
    t.console = _pending_console_output.str();
 
    trx_context.executed.emplace_back( move(r) );
@@ -157,7 +161,7 @@ void apply_context::exec()
 
    if( _cfa_inline_actions.size() > 0 || _inline_actions.size() > 0 ) {
       EOS_ASSERT( recurse_depth < control.get_global_properties().configuration.max_inline_action_depth,
-                  transaction_exception, "inline action recursion depth reached" );
+                  transaction_exception, "max inline action depth per transaction reached" );
    }
 
    for( const auto& inline_action : _cfa_inline_actions ) {
@@ -330,7 +334,7 @@ void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, a
                   "Replacing a deferred transaction is temporarily disabled." );
 
       // TODO: The logic of the next line needs to be incorporated into the next hard fork.
-      // trx_context.add_ram_usage( ptr->payer, -(config::billable_size_v<generated_transaction_object> + ptr->packed_trx.size()) );
+      // add_ram_usage( ptr->payer, -(config::billable_size_v<generated_transaction_object> + ptr->packed_trx.size()) );
 
       d.modify<generated_transaction_object>( *ptr, [&]( auto& gtx ) {
             gtx.sender      = receiver;
@@ -356,14 +360,16 @@ void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, a
          });
    }
 
-   trx_context.add_ram_usage( payer, (config::billable_size_v<generated_transaction_object> + trx_size) );
+   EOS_ASSERT( control.is_ram_billing_in_notify_allowed() || (receiver == act.account) || (receiver == payer) || privileged,
+               subjective_block_production_exception, "Cannot charge RAM to other accounts during notify." );
+   add_ram_usage( payer, (config::billable_size_v<generated_transaction_object> + trx_size) );
 }
 
 bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, account_name sender ) {
    auto& generated_transaction_idx = db.get_mutable_index<generated_transaction_multi_index>();
    const auto* gto = db.find<generated_transaction_object,by_sender_id>(boost::make_tuple(sender, sender_id));
    if ( gto ) {
-      trx_context.add_ram_usage( gto->payer, -(config::billable_size_v<generated_transaction_object> + gto->packed_trx.size()) );
+      add_ram_usage( gto->payer, -(config::billable_size_v<generated_transaction_object> + gto->packed_trx.size()) );
       generated_transaction_idx.remove(*gto);
    }
    return gto;
@@ -417,10 +423,12 @@ bytes apply_context::get_packed_transaction() {
 void apply_context::update_db_usage( const account_name& payer, int64_t delta ) {
    if( delta > 0 ) {
       if( !(privileged || payer == account_name(receiver)) ) {
+         EOS_ASSERT( control.is_ram_billing_in_notify_allowed() || (receiver == act.account),
+                     subjective_block_production_exception, "Cannot charge RAM to other accounts during notify." );
          require_authorization( payer );
       }
    }
-   trx_context.add_ram_usage(payer, delta);
+   add_ram_usage(payer, delta);
 }
 
 
@@ -875,5 +883,13 @@ int apply_context::get_table_item_count(name code, name scope, name table) {
    return table_obj->count;
 }
 
+void apply_context::add_ram_usage( account_name account, int64_t ram_delta ) {
+   trx_context.add_ram_usage( account, ram_delta );
+
+   auto p = _account_ram_deltas.emplace( account, ram_delta );
+   if( !p.second ) {
+      p.first->delta += ram_delta;
+   }
+}
 
 } } /// eosio::chain

@@ -51,3 +51,6 @@
 [submodule "externals/lua_sandbox"]
 	path = externals/lua_sandbox
 	url = https://github.com/learnforpractice/lua_sandbox.git
+[submodule "libraries/wabt"]
+	path = libraries/wabt
+	url = http://github.com/EOSIO/wabt

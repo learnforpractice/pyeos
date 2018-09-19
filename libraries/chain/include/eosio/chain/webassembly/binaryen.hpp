@@ -3,10 +3,7 @@
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/webassembly/runtime_interface.hpp>
 #include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/apply_context.hpp>
 #include <wasm-interpreter.h>
-#include <softfloat_types.h>
-
 
 namespace eosio { namespace chain { namespace webassembly { namespace binaryen {
 
@@ -38,8 +35,8 @@ using import_lut_type = unordered_map<uintptr_t, intrinsic_registrator::intrinsi
 
 
 struct interpreter_interface : ModuleInstance::ExternalInterface {
-   interpreter_interface(linear_memory_type& memory, call_indirect_table_type& table, import_lut_type& import_lut, const unsigned& initial_memory_size, apply_context& context)
-   :memory(memory),table(table),import_lut(import_lut), current_memory_size(initial_memory_size), context(context)
+   interpreter_interface(linear_memory_type& memory, call_indirect_table_type& table, import_lut_type& import_lut, const unsigned& initial_memory_size)
+   :memory(memory),table(table),import_lut(import_lut), current_memory_size(initial_memory_size)
    {}
 
    void importGlobals(std::map<Name, Literal>& globals, Module& wasm) override
@@ -136,7 +133,6 @@ struct interpreter_interface : ModuleInstance::ExternalInterface {
    call_indirect_table_type&    table;
    import_lut_type&             import_lut;
    unsigned                     current_memory_size;
-   apply_context&               context;
 };
 
 class binaryen_runtime : public eosio::chain::wasm_runtime_interface {
@@ -602,7 +598,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T &, Inputs...>> {
    static auto translate_one(interpreter_interface* interface, Inputs... rest, LiteralList& args, int offset) -> std::enable_if_t<!std::is_const<U>::value, Ret> {
       // references cannot be created for null pointers
       uint32_t ptr = args.at((uint32_t)offset).geti32();
-      EOS_ASSERT(ptr != 0, binaryen_exception, "references cannot be created for null pointers");
+      FC_ASSERT(ptr != 0);
       T* base = array_ptr_impl<T>(interface, ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
          wlog( "misaligned reference" );
@@ -631,8 +627,8 @@ struct intrinsic_function_invoker {
 
    template<MethodSig Method>
    static Ret wrapper(interpreter_interface* interface, Params... params, LiteralList&, int) {
-      class_from_wasm<Cls>::value(interface->context).checktime();
-      return (class_from_wasm<Cls>::value(interface->context).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      return (class_from_wasm<Cls>::value().*Method)(params...);
    }
 
    template<MethodSig Method>
@@ -647,8 +643,8 @@ struct intrinsic_function_invoker<void, MethodSig, Cls, Params...> {
 
    template<MethodSig Method>
    static void_type wrapper(interpreter_interface* interface, Params... params, LiteralList& args, int offset) {
-      class_from_wasm<Cls>::value(interface->context).checktime();
-      (class_from_wasm<Cls>::value(interface->context).*Method)(params...);
+      class_from_wasm<Cls>::value().checktime();
+      (class_from_wasm<Cls>::value().*Method)(params...);
       return void_type();
    }
 

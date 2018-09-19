@@ -34,11 +34,11 @@ config = '''
 #get-transactions-time-limit = 3
 
 # File to read Genesis State from
-genesis-json = genesis.json
+#genesis-json = genesis.json
 
 
 # Minimum size MB of database shared memory file
-shared-file-size = 1024
+#shared-file-size = 1024
 
  # Enable production on a stale chain, since a single-node test chain is pretty much always stale
 enable-stale-production = true

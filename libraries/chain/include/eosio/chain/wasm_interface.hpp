@@ -1,15 +1,48 @@
 #pragma once
+#include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
+#include "Runtime/Linker.h"
+#include "Runtime/Runtime.h"
+
+using namespace std;
 
 namespace eosio { namespace chain {
 
-   class apply_context;
    class wasm_runtime_interface;
-   class controller;
 
    struct wasm_exit {
       int32_t code = 0;
    };
+
+   namespace webassembly { namespace common {
+      class intrinsics_accessor;
+      struct root_resolver : Runtime::Resolver {
+         //when validating is true; only allow "env" imports. Otherwise allow any imports. This resolver is used
+         //in two cases: once by the generic validating code where we only want "env" to pass; and then second in the
+         //wavm runtime where we need to allow linkage to injected functions
+         root_resolver(bool validating = false) : validating(validating) {}
+         bool validating;
+
+         bool resolve(const string& mod_name,
+                      const string& export_name,
+                      IR::ObjectType type,
+                      Runtime::ObjectInstance*& out) override {
+      try {
+         //protect access to "private" injected functions; so for now just simply allow "env" since injected functions
+         //  are in a different module
+         if(validating && mod_name != "env")
+            EOS_ASSERT( false, wasm_exception, "importing from module that is not 'env': ${module}.${export}", ("module",mod_name)("export",export_name) );
+
+         // Try to resolve an intrinsic first.
+         if(Runtime::IntrinsicResolver::singleton.resolve(mod_name,export_name,type, out)) {
+            return true;
+         }
+
+         EOS_ASSERT( false, wasm_exception, "${module}.${export} unresolveable", ("module",mod_name)("export",export_name) );
+         return false;
+      } FC_CAPTURE_AND_RETHROW( (mod_name)(export_name) ) }
+      };
+   } }
 
    /**
     * @class wasm_interface
@@ -20,25 +53,23 @@ namespace eosio { namespace chain {
          enum class vm_type {
             wavm,
             binaryen,
+            wabt
          };
-
-         wasm_interface(vm_type vm);
+         static wasm_interface& get();
          ~wasm_interface();
 
-         //validates code -- does a WASM validation pass and checks the wasm against EOSIO specific constraints
-         static void validate(const controller& control, const bytes& code);
-
-         void call( const digest_type& code_id, const shared_string& code, string& func, vector<uint64_t>& args, apply_context& context );
-
+         int setcode(uint64_t account);
+         uint64_t call(string& func, vector<uint64_t>& args );
          //Calls apply or error on a given code
-         void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
-         bool apply_native(apply_context& ctx);
-         bool apply_debug(uint64_t receiver, uint64_t account, uint64_t act);
-
+         int apply(uint64_t receiver, uint64_t account, uint64_t act);
          bool init();
+         int preload(uint64_t account);
+         int unload(uint64_t account);
+
       private:
+         wasm_interface(vm_type vm);
          unique_ptr<struct wasm_interface_impl> my;
-         vm_type vmtype;
+         friend class eosio::chain::webassembly::common::intrinsics_accessor;
    };
 
 } } // eosio::chain
@@ -47,4 +78,4 @@ namespace eosio{ namespace chain {
    std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime);
 }}
 
-FC_REFLECT_ENUM( eosio::chain::wasm_interface::vm_type, (wavm)(binaryen) )
+FC_REFLECT_ENUM( eosio::chain::wasm_interface::vm_type, (wavm)(binaryen)(wabt) )

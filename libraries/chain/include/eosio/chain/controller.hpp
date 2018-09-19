@@ -16,6 +16,7 @@ namespace chainbase {
 namespace eosio { namespace chain {
 
    class authorization_manager;
+   class apply_context;
 
    namespace resource_limits {
       class resource_limits_manager;
@@ -67,6 +68,7 @@ namespace eosio { namespace chain {
             bool                     disable_replay_opts    =  false;
             bool                     contracts_console      =  false;
             bool                     skip_signature_check   =  false;
+            bool                     allow_ram_billing_in_notify = false;
 
             genesis_state            genesis;
             wasm_interface::vm_type  wasm_runtime = chain::config::default_wasm_runtime;
@@ -75,6 +77,7 @@ namespace eosio { namespace chain {
             validation_mode          block_validation_mode  = validation_mode::FULL;
 
             flat_set<account_name>   resource_greylist;
+            flat_set<account_name>   trusted_producers;
          };
 
          enum class block_status {
@@ -111,6 +114,7 @@ namespace eosio { namespace chain {
           */
          vector<transaction_metadata_ptr> get_unapplied_transactions() const;
          void drop_unapplied_transaction(const transaction_metadata_ptr& trx);
+         void drop_all_unapplied_transactions();
 
          /**
           * These transaction IDs represent transactions available in the head chain state as scheduled
@@ -186,8 +190,9 @@ namespace eosio { namespace chain {
          time_point           fork_db_head_block_time()const;
          account_name         fork_db_head_block_producer()const;
 
-         time_point      pending_block_time()const;
-         block_state_ptr pending_block_state()const;
+         time_point              pending_block_time()const;
+         block_state_ptr         pending_block_state()const;
+         optional<block_id_type> pending_producer_block_id()const;
 
          const producer_schedule_type&    active_producers()const;
          const producer_schedule_type&    pending_producers()const;
@@ -209,6 +214,8 @@ namespace eosio { namespace chain {
          void check_key_list( const public_key_type& key )const;
          bool is_producing_block()const;
 
+         bool is_ram_billing_in_notify_allowed()const;
+
          void add_resource_greylist(const account_name &name);
          void remove_resource_greylist(const account_name &name);
          bool is_resource_greylisted(const account_name &name) const;
@@ -224,7 +231,8 @@ namespace eosio { namespace chain {
 
          virtual int64_t set_proposed_producers( vector<producer_key> producers );
 
-         virtual bool skip_auth_check()const;
+         bool light_validation_allowed(bool replay_opts_disabled_by_policy) const;
+         bool skip_auth_check()const;
          bool skip_db_sessions( )const;
          bool skip_db_sessions( block_status bs )const;
          bool skip_trx_checks()const;
@@ -306,4 +314,5 @@ FC_REFLECT( eosio::chain::controller::config,
             (genesis)
             (wasm_runtime)
             (resource_greylist)
+            (trusted_producers)
           )

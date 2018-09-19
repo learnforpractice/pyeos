@@ -12,9 +12,9 @@
 #include <fc/crypto/xxhash.h>
 
 //#include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/wasm_interface_private.hpp>
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/wasm_interface_private.hpp>
 
 
 namespace eosio {
@@ -1405,10 +1405,12 @@ public:
    }
 };
 
+
 void wasm_init_api() {
    REGISTER_INJECTED_INTRINSICS(call_depth_api,
       (call_depth_assert,  void()               )
    );
+
 
 REGISTER_INTRINSICS(compiler_builtins,
    (__ashlti3,     void(int, int64_t, int64_t, int)               )
@@ -1678,6 +1680,8 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
       runtime = eosio::chain::wasm_interface::vm_type::wavm;
    else if (s == "binaryen")
       runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+   else if (s == "wabt")
+      runtime = eosio::chain::wasm_interface::vm_type::wabt;
    else
       in.setstate(std::ios_base::failbit);
    return in;

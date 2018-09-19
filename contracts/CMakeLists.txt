@@ -17,7 +17,6 @@ add_subdirectory(multi_index_test)
 add_subdirectory(eosio.system)
 add_subdirectory(identity)
 add_subdirectory(stltest)
-add_subdirectory(exchange)
 add_subdirectory(test.inline)
 
 #add_subdirectory(bancor)
