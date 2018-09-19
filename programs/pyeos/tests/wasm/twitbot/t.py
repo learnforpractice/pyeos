@@ -36,9 +36,6 @@ def test(msg='hello,world'):
     msg = {"from":"eosio", "to":"hello", "quantity":"100.0000 EOS", "memo":"m"}
     r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
 
-    with producer:
-        msg = {"from":"hello", "to":"twitbot", "quantity":"1.0000 EOS", "memo":"m"}
-        r = eosapi.push_action('eosio.token', 'transfer', msg, {'hello':'active'})
-
-
+    msg = {"from":"hello", "to":"twitbot", "quantity":"1.0000 EOS", "memo":"m"}
+    r = eosapi.push_action('eosio.token', 'transfer', msg, {'hello':'active'})
 

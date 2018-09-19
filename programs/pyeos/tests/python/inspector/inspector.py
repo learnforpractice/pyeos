@@ -240,6 +240,10 @@ def test_timeout():
 def test_open():
     a = open('a.txt', 'wb')
 
+@assert_failure
+def test_yield():
+    yield from gen()
+
 def apply(receiver, code, action):
     print('+++++action:', n2s(action))
     if not action == N('sayhello'):
@@ -289,4 +293,6 @@ def apply(receiver, code, action):
     test_import2()
     test_str_format()
     test_open()
+    test_yield()
     test_timeout()
+
