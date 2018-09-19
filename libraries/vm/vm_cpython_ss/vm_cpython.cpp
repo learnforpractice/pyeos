@@ -104,8 +104,8 @@ void vm_init(struct vm_api* api) {
    s_api = api;
    vm_register_api(api);
 
-   setenv("PYTHONHOME", "../../libraries/vm/vm_cpython_ss", 1);
-   setenv("PYTHONPATH", "../../libraries/vm/vm_cpython_ss/lib", 1);
+   setenv("PYTHONHOME", "../../externals/python/dist", 1);
+   setenv("PYTHONPATH", "../../externals/python/dist/lib", 1);
 
    Py_NoSiteFlag = 1;
    PyImport_AppendInittab("_struct", PyInit__struct);
