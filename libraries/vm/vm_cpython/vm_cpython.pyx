@@ -68,8 +68,8 @@ def debug_apply(receiver, account, action):
     return 0
 
 cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action) with gil:
-    if debug.get_debug_contract() == receiver:
-        return debug_apply(receiver, account, action)
+#    if debug.get_debug_contract() == receiver:
+#        return debug_apply(receiver, account, action)
     try:
         if receiver in py_modules:
             module = py_modules[receiver]
