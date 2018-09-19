@@ -137,23 +137,12 @@ void resource_limits_manager::add_transaction_usage(const flat_set<account_name>
          uint128_t all_user_weight = state.total_net_weight;
 
          auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight;
-         if (appbase::app().debug_mode()) {
-            if (net_used_in_window <= max_user_use_in_window) {
-
-            } else {
-               wlog("authorizing account '${n}' has insufficient net resources for this transaction",
-               ("n", name(a))
-               ("net_used_in_window",net_used_in_window)
-               ("max_user_use_in_window",max_user_use_in_window) );
-            }
-         } else {
-            EOS_ASSERT( net_used_in_window <= max_user_use_in_window,
-                        tx_net_usage_exceeded,
-                        "authorizing account '${n}' has insufficient net resources for this transaction",
-                        ("n", name(a))
-                        ("net_used_in_window",net_used_in_window)
-                        ("max_user_use_in_window",max_user_use_in_window) );
-         }
+         EOS_ASSERT( net_used_in_window <= max_user_use_in_window,
+                     tx_net_usage_exceeded,
+                     "authorizing account '${n}' has insufficient net resources for this transaction",
+                     ("n", name(a))
+                     ("net_used_in_window",net_used_in_window)
+                     ("max_user_use_in_window",max_user_use_in_window) );
       }
    }
 
@@ -162,17 +151,8 @@ void resource_limits_manager::add_transaction_usage(const flat_set<account_name>
       rls.pending_cpu_usage += cpu_usage;
       rls.pending_net_usage += net_usage;
    });
-   if (appbase::app().debug_mode()) {
-      if (state.pending_cpu_usage > config.cpu_limit_parameters.max) {
-         wlog("++++++pending_cpu_usage: ${n1}, max: ${n2}", ("n1", state.pending_cpu_usage)("n2", config.cpu_limit_parameters.max));
-      }
-      if (state.pending_net_usage > config.net_limit_parameters.max) {
-         wlog("++++++pending_net_usage: ${n1}, max: ${n2}", ("n1", state.pending_net_usage)("n2", config.net_limit_parameters.max));
-      }
-   } else {
-      EOS_ASSERT( state.pending_cpu_usage <= config.cpu_limit_parameters.max, block_resource_exhausted, "Block has insufficient cpu resources" );
-      EOS_ASSERT( state.pending_net_usage <= config.net_limit_parameters.max, block_resource_exhausted, "Block has insufficient net resources" );
-   }
+   EOS_ASSERT( state.pending_cpu_usage <= config.cpu_limit_parameters.max, block_resource_exhausted, "Block has insufficient cpu resources" );
+   EOS_ASSERT( state.pending_net_usage <= config.net_limit_parameters.max, block_resource_exhausted, "Block has insufficient net resources" );
 }
 
 void resource_limits_manager::add_pending_ram_usage( const account_name account, int64_t ram_delta ) {
