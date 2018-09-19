@@ -64,10 +64,6 @@ static inline void print_debug(account_name receiver, const action_trace& ar) {
 
 //apply_context* apply_context::__ctx = nullptr;
 apply_context* apply_context::current_context = nullptr;
-apply_context& apply_context::ctx() {
-   FC_ASSERT(current_context != nullptr, "not in apply_context");
-   return *current_context;
-}
 
 extern "C" int native_apply( uint64_t receiver, uint64_t code, uint64_t action );
 

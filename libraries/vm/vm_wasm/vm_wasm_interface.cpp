@@ -1,4 +1,3 @@
-#include <eosio/chain/wasm_interface_private.hpp>
 #include <eosio/chain/webassembly/runtime_interface.hpp>
 
 #include <boost/asio.hpp>
@@ -6,6 +5,7 @@
 #include <fstream>
 
 #include <fc/crypto/xxhash.h>
+#include "include/eosio/chain/vm_wasm_interface_private.hpp"
 
 using namespace std;
 

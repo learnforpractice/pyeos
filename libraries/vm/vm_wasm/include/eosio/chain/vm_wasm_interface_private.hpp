@@ -1,6 +1,6 @@
 #pragma once
 
-#include "wasm_interface.hpp"
+#include "vm_wasm_interface.hpp"
 
 #ifdef _WAVM
 #include <eosio/chain/webassembly/wavm.hpp>

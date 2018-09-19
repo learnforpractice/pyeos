@@ -12,9 +12,9 @@
 #include <fc/crypto/xxhash.h>
 
 //#include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/wasm_interface_private.hpp>
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include "include/eosio/chain/vm_wasm_interface_private.hpp"
 
 
 namespace eosio {

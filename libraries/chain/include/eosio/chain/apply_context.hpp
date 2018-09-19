@@ -472,7 +472,10 @@ class apply_context {
    /// Execution methods:
    public:
       static apply_context* current_context;
-      static apply_context& ctx();
+      static inline apply_context& ctx() {
+         EOS_ASSERT(current_context != nullptr, chain_exception, "not in apply_context");
+         return *current_context;
+      }
 
       action_trace exec_one();
 
