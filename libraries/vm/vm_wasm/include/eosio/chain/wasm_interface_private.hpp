@@ -117,7 +117,7 @@ namespace eosio { namespace chain {
 #endif
 
 #ifdef _WAVM
-         elog("update code in wavm ${n}", ("n", name(receiver)));
+         elog("update code in wavm mode: ${n}", ("n", name(receiver)));
          if (preload) {
             return load_module(receiver, code, size);
          }
