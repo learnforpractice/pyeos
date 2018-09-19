@@ -49,8 +49,9 @@ add_library( eosio_chain
               abi_serializer.cpp
               asset.cpp
 
-#             webassembly/wavm.cpp
-#             webassembly/binaryen.cpp
+             webassembly/wavm.cpp
+             webassembly/binaryen.cpp
+             webassembly/wabt.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp
@@ -73,7 +74,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain PUBLIC -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain PUBLIC wabt eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
 
 target_include_directories( eosio_chain
                             PUBLIC ${Boost_INCLUDE_DIR}

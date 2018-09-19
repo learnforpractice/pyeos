@@ -223,6 +223,20 @@ namespace eosio { namespace chain {
 
 } } /// eosio::chain
 
+std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
+   std::string s;
+   in >> s;
+   if (s == "wavm")
+      runtime = eosio::chain::wasm_interface::vm_type::wavm;
+   else if (s == "binaryen")
+      runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+   else if (s == "wabt")
+      runtime = eosio::chain::wasm_interface::vm_type::wabt;
+   else
+      in.setstate(std::ios_base::failbit);
+   return in;
+}
+
 bool wasm_apply_debug(uint64_t receiver, uint64_t account, uint64_t act) {
 	/*
 	if (eosio::chain::apply_context::ctx().control.get_wasm_interface().apply_native(eosio::chain::apply_context::ctx())) {

@@ -16,3 +16,9 @@ add_subdirectory( testing )
 add_subdirectory( abi_generator )
 add_subdirectory( fc ) 
 
+
+#turn these off for now
+set(BUILD_TESTS OFF CACHE BOOL "Build GTest-based tests")
+set(BUILD_TOOLS OFF CACHE BOOL "Build wabt tools")
+set(RUN_RE2C OFF CACHE BOOL "Run re2c")
+add_subdirectory( wabt )

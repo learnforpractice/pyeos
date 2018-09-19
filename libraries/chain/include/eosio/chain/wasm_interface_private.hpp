@@ -1,6 +1,14 @@
 #pragma once
 
 #include <eosio/chain/wasm_interface.hpp>
+<<<<<<< HEAD
+=======
+#include <eosio/chain/webassembly/wavm.hpp>
+#include <eosio/chain/webassembly/binaryen.hpp>
+#include <eosio/chain/webassembly/wabt.hpp>
+#include <eosio/chain/webassembly/runtime_interface.hpp>
+#include <eosio/chain/wasm_eosio_injection.hpp>
+>>>>>>> eos/master
 #include <eosio/chain/transaction_context.hpp>
 
 #include <eosio/chain/db_api.hpp>
@@ -34,7 +42,18 @@ namespace eosio { namespace chain {
 
    struct wasm_interface_impl {
       wasm_interface_impl(wasm_interface::vm_type vm) {
+<<<<<<< HEAD
          //init_native_contract();
+=======
+         if(vm == wasm_interface::vm_type::wavm)
+            runtime_interface = std::make_unique<webassembly::wavm::wavm_runtime>();
+         else if(vm == wasm_interface::vm_type::binaryen)
+            runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
+         else if(vm == wasm_interface::vm_type::wabt)
+            runtime_interface = std::make_unique<webassembly::wabt_runtime::wabt_runtime>();
+         else
+            EOS_THROW(wasm_exception, "wasm_interface_impl fall through");
+>>>>>>> eos/master
       }
 
       void init_native_contract() {
@@ -72,6 +91,7 @@ namespace eosio { namespace chain {
 
          fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 
+<<<<<<< HEAD
          std::unique_ptr<native_code_cache> _cache = std::make_unique<native_code_cache>();
          _cache->version = version;
          _cache->handle = handle;
@@ -80,6 +100,12 @@ namespace eosio { namespace chain {
          native_cache[_account] =  std::move(_cache);
          return _apply;
       }
+=======
+#define _REGISTER_INTRINSIC_EXPLICIT(CLS, MOD, METHOD, WASM_SIG, NAME, SIG)\
+   _REGISTER_WAVM_INTRINSIC(CLS, MOD, METHOD, WASM_SIG, NAME, SIG)\
+   _REGISTER_BINARYEN_INTRINSIC(CLS, MOD, METHOD, WASM_SIG, NAME, SIG)\
+   _REGISTER_WABT_INTRINSIC(CLS, MOD, METHOD, WASM_SIG, NAME, SIG)
+>>>>>>> eos/master
 
       fn_apply load_native_contract(uint64_t _account) {
          if (!db_api::get().is_account(_account)) {

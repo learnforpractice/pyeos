@@ -73,6 +73,7 @@ extern "C" {
       WASM_TEST_HANDLER(test_action, read_action_to_0);
       WASM_TEST_HANDLER(test_action, read_action_to_64k);
       WASM_TEST_HANDLER_EX(test_action, require_notice);
+      WASM_TEST_HANDLER_EX(test_action, require_notice_tests);
       WASM_TEST_HANDLER(test_action, require_auth);
       WASM_TEST_HANDLER(test_action, assert_false);
       WASM_TEST_HANDLER(test_action, assert_true);
@@ -81,6 +82,7 @@ extern "C" {
       WASM_TEST_HANDLER_EX(test_action, test_current_receiver);
       WASM_TEST_HANDLER(test_action, test_publication_time);
       WASM_TEST_HANDLER(test_action, test_assert_code);
+      WASM_TEST_HANDLER_EX(test_action, test_ram_billing_in_notify);
 
       // test named actions
       // We enforce action name matches action data type name, so name mangling will not work for these tests.
@@ -149,6 +151,7 @@ extern "C" {
       WASM_TEST_HANDLER(test_transaction, context_free_api);
       WASM_TEST_HANDLER(test_transaction, new_feature);
       WASM_TEST_HANDLER(test_transaction, active_new_feature);
+      WASM_TEST_HANDLER_EX(test_transaction, repeat_deferred_transaction);
 
       //test chain
       WASM_TEST_HANDLER(test_chain, test_activeprods);
