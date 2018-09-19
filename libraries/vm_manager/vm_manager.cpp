@@ -152,7 +152,7 @@ static const char *vm_eth_hera = "../libs/libvm_hera" DYLIB_SUFFIX;
 static const char *vm_eth_evmjit = "../libs/libvm_evmjit" DYLIB_SUFFIX;
 static const char *vm_lua = "../libs/libvm_lua" DYLIB_SUFFIX;
 static const char *vm_java = "../libs/libvm_java" DYLIB_SUFFIX;
-static const char *vm_wasm_wbat = "../libs/vm_wasm_wabt" DYLIB_SUFFIX;
+static const char *vm_wasm_wabt = "../libs/libvm_wasm_wabt" DYLIB_SUFFIX;
 
 vm_manager& vm_manager::get() {
    static vm_manager *mngr = nullptr;
@@ -217,8 +217,7 @@ bool vm_manager::init(struct vm_api* api) {
 
    load_vm_from_path(VM_TYPE_JAVA, vm_java);
 
-   load_vm_from_path(VM_TYPE_WBAT, vm_wasm_wbat);
-
+   load_vm_from_path(VM_TYPE_WABT, vm_wasm_wabt);
    return true;
 }
 
