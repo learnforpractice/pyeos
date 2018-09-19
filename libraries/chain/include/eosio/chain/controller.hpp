@@ -16,6 +16,7 @@ namespace chainbase {
 namespace eosio { namespace chain {
 
    class authorization_manager;
+   class apply_context;
 
    namespace resource_limits {
       class resource_limits_manager;

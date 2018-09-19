@@ -697,6 +697,12 @@ struct intrinsic_function_invoker_wrapper<Ret (Cls::*)(Params...) const volatile
    using type = intrinsic_function_invoker<Ret, Ret (Cls::*)(Params...) const volatile, Cls, Params...>;
 };
 
+#define _ADD_PAREN_1(...) ((__VA_ARGS__)) _ADD_PAREN_2
+#define _ADD_PAREN_2(...) ((__VA_ARGS__)) _ADD_PAREN_1
+#define _ADD_PAREN_1_END
+#define _ADD_PAREN_2_END
+#define _WRAPPED_SEQ(SEQ) BOOST_PP_CAT(_ADD_PAREN_1 SEQ, _END)
+
 #define __INTRINSIC_NAME(LABEL, SUFFIX) LABEL##SUFFIX
 #define _INTRINSIC_NAME(LABEL, SUFFIX) __INTRINSIC_NAME(LABEL,SUFFIX)
 

@@ -14,7 +14,7 @@
 //#include <eosio/chain/wasm_interface.hpp>
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/exceptions.hpp>
-#include "include/eosio/chain/vm_wasm_interface_private.hpp"
+#include <eosio/chain/wasm_interface_private.hpp>
 
 
 namespace eosio {
@@ -1405,11 +1405,7 @@ public:
    }
 };
 
-void wasm_init_api() {
 
-}
-
-#if 0
 void wasm_init_api() {
    REGISTER_INJECTED_INTRINSICS(call_depth_api,
       (call_depth_assert,  void()               )
@@ -1676,7 +1672,6 @@ REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_ui64_to_f64,    double(int64_t)       )
 );
 }
-#endif
 
 std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    std::string s;

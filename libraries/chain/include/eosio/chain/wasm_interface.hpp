@@ -1,14 +1,14 @@
 #pragma once
-#include <eosio/chain/types.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include <eosio/chain/types.hpp>
 #include "Runtime/Linker.h"
 #include "Runtime/Runtime.h"
 
+using namespace std;
+
 namespace eosio { namespace chain {
 
-   class apply_context;
    class wasm_runtime_interface;
-   class controller;
 
    struct wasm_exit {
       int32_t code = 0;
@@ -16,7 +16,6 @@ namespace eosio { namespace chain {
 
    namespace webassembly { namespace common {
       class intrinsics_accessor;
-
       struct root_resolver : Runtime::Resolver {
          //when validating is true; only allow "env" imports. Otherwise allow any imports. This resolver is used
          //in two cases: once by the generic validating code where we only want "env" to pass; and then second in the
@@ -56,17 +55,19 @@ namespace eosio { namespace chain {
             binaryen,
             wabt
          };
-
-         wasm_interface(vm_type vm);
+         static wasm_interface& get();
          ~wasm_interface();
 
-         //validates code -- does a WASM validation pass and checks the wasm against EOSIO specific constraints
-         static void validate(const controller& control, const bytes& code);
-
+         int setcode(uint64_t account);
+         uint64_t call(string& func, vector<uint64_t>& args );
          //Calls apply or error on a given code
-         void apply(const digest_type& code_id, const shared_string& code, apply_context& context);
+         int apply(uint64_t receiver, uint64_t account, uint64_t act);
+         bool init();
+         int preload(uint64_t account);
+         int unload(uint64_t account);
 
       private:
+         wasm_interface(vm_type vm);
          unique_ptr<struct wasm_interface_impl> my;
          friend class eosio::chain::webassembly::common::intrinsics_accessor;
    };

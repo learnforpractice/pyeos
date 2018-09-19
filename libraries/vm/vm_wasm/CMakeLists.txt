@@ -2,7 +2,6 @@ set(HEADERS
     ${CMAKE_SOURCE_DIR}/externals/magic_get/include
     ${CMAKE_SOURCE_DIR}/libraries/wasm-jit/Include
     ${CMAKE_SOURCE_DIR}/contracts
-#    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/libraries/chainbase/include
     ${CMAKE_SOURCE_DIR}/libraries/chain/include
     ${CMAKE_SOURCE_DIR}/libraries/wabt
@@ -10,8 +9,9 @@ set(HEADERS
     ${CMAKE_SOURCE_DIR}/externals/binaryen/src )
 
 set(COMMON_SOURCES
+           vm_api.cpp
            wast_to_wasm.cpp
-           vm_wasm_interface.cpp
+           wasm_interface.cpp
            wasm_eosio_injection.cpp
            name.cpp)
 
