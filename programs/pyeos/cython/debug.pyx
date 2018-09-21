@@ -58,6 +58,10 @@ cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
         int (*sha3)(const char* data, int size, char* result, int size2)
         int (*vm_run_lua_script)(const char* cfg, const char* script);
+
+        void (*vm_set_debug_contract)(uint64_t account, const char* path);
+        const char* (*vm_get_debug_contract)(uint64_t* account);
+
     vm_api* get_vm_api()
 
 def eval(const char* code):
@@ -152,3 +156,11 @@ def softfloat_test():
 def vm_run_lua_script(cfg, script):
     return get_vm_api()[0].vm_run_lua_script(cfg, script)
 
+def vm_set_debug_contract(int vm_type, const char* path):
+        get_vm_api()[0].vm_set_debug_contract(vm_type, path);
+
+def vm_get_debug_contract():
+    cdef uint64_t account = 0
+    cdef const char* path
+    path = get_vm_api()[0].vm_get_debug_contract(&account)
+    return (account, path)

@@ -205,6 +205,9 @@ struct vm_api {
    const char *(*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size);
    bool (*is_debug_mode)(void);
 
+   void (*vm_set_debug_contract)(uint64_t account, const char* path);
+   const char* (*vm_get_debug_contract)(uint64_t* account);
+
    void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const __uint128* sender_id);
 

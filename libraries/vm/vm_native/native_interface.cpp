@@ -41,15 +41,25 @@ namespace eosio { namespace chain {
       uint64_t native = N(native);
       void *handle = nullptr;
 
-      char _path[128];
-      ext_string s = name(_account).to_string();
-      s.replace(".", "_");
-      snprintf(_path, sizeof(_path), "../libs/lib%s_native%s", s.c_str(), DYLIB_SUFFIX);
-      handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
-      if (!handle) {
-       return nullptr;
+      if (get_vm_api()->is_debug_mode()) {
+         uint64_t debug_account = 0;
+         const char* contract_path = get_vm_api()->vm_get_debug_contract(&debug_account);
+         if (_account == debug_account && get_vm_api()->get_code_type(_account) == 0) {
+            handle = dlopen(contract_path, RTLD_LAZY | RTLD_LOCAL);
+         }
       }
-      wlog("loading native contract: ${n1}", ("n1", string(_path)));
+
+      if (!handle) {
+         char _path[128];
+         ext_string s = name(_account).to_string();
+         s.replace(".", "_");
+         snprintf(_path, sizeof(_path), "../libs/lib%s_native%s", s.c_str(), DYLIB_SUFFIX);
+         wlog("loading native contract: ${n1}", ("n1", string(_path)));
+         handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
+         if (!handle) {
+          return nullptr;
+         }
+      }
 
       fn_apply _apply = (fn_apply)dlsym(handle, "apply");
 
@@ -129,7 +139,11 @@ namespace eosio { namespace chain {
    int native_interface::apply(uint64_t receiver, uint64_t account, uint64_t act) {
       auto it = native_cache.find(receiver);
       if (it == native_cache.end()) {
-         return 0;
+         load_native_contract_default(receiver);
+         auto _it = native_cache.find(receiver);
+         if (_it == native_cache.end()) {
+            return 0;
+         }
       }
       it->second->apply(receiver, account, act);
       return 1;

@@ -593,6 +593,12 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
 
    if (type == 0) { //wasm
       do {
+         if (get_vm_api()->is_debug_mode()) {
+            int ret = vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act);
+            if (ret) {
+               return ret;
+            }
+         }
          bool expired = false;
          bool _boosted = false;
          if (get_vm_api()->is_replay()) {

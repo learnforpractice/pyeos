@@ -1,10 +1,28 @@
 
 #include "native_interface.hpp"
-
+#include <string>
 
 static struct vm_api* s_api;
 
+static uint64_t s_debug_account = -1;
+static std::string s_debug_contract_path;
+
+void vm_set_debug_contract(uint64_t account, const char* path) {
+   s_debug_account = account;
+   s_debug_contract_path = path;
+}
+
+const char* vm_get_debug_contract(uint64_t* account) {
+   *account = s_debug_account;
+   if (s_debug_contract_path.size()) {
+      return s_debug_contract_path.c_str();
+   }
+   return nullptr;
+}
+
 void vm_init(struct vm_api* api) {
+   api->vm_set_debug_contract = vm_set_debug_contract,
+   api->vm_get_debug_contract = vm_get_debug_contract,
    s_api = api;
    vm_register_api(api);
 }

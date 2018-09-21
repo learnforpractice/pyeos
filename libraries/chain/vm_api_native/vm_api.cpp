@@ -36,6 +36,11 @@
 #include <eosio/chain/db_api.h>
 
 using namespace eosio::chain;
+
+static vector<char> s_args;
+static vector<char> s_results;
+static int s_call_status = 0;
+
 //native/native.cpp
 int transfer_inline(uint64_t to, int64_t amount, uint64_t symbol);
 int transfer(uint64_t from, uint64_t to, int64_t amount, uint64_t symbol);
@@ -252,9 +257,6 @@ uint64_t wasm_call(const char*func, uint64_t* args , int argc) {
    return vm_manager::get().wasm_call(string(func), _args);
 }
 
-static vector<char> s_args;
-static vector<char> s_results;
-static int s_call_status = 0;
 int call_set_args(const char* args , int len) {
    if (args == NULL || len <=0) {
       return 0;
@@ -354,6 +356,7 @@ void log_(int level, int line, const char *file, const char *func, const char *f
 bool is_debug_mode_() {
    return appbase::app().debug_mode();
 }
+
 
 static struct vm_api _vm_api = {
 //action.cpp
@@ -515,6 +518,9 @@ static struct vm_api _vm_api = {
    .vm_run_lua_script = nullptr,
    .vm_cpython_compile = nullptr,
    .is_debug_mode = is_debug_mode_,
+
+   .vm_set_debug_contract = nullptr,
+   .vm_get_debug_contract = nullptr,
 
    .log = log_,
 
