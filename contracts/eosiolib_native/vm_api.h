@@ -47,15 +47,15 @@ struct vm_api {
    int (*transfer_inline)(uint64_t to, int64_t amount, uint64_t symbol);
    int (*transfer)(uint64_t from, uint64_t to, int64_t amount, uint64_t symbol);
 
-   void (*assert_sha256)( char* data, uint32_t length, const struct checksum256* hash );
-   void (*assert_sha1)( char* data, uint32_t length, const struct checksum160* hash );
+   void (*assert_sha256)( const char* data, uint32_t length, const struct checksum256* hash );
+   void (*assert_sha1)( const char* data, uint32_t length, const struct checksum160* hash );
 
-   void (*assert_sha512)( char* data, uint32_t length, const struct checksum512* hash );
-   void (*assert_ripemd160)( char* data, uint32_t length, const struct checksum160* hash );
-   void (*sha256)( char* data, uint32_t length, struct checksum256* hash );
-   void (*sha1)( char* data, uint32_t length, struct checksum160* hash );
-   void (*sha512)( char* data, uint32_t length, struct checksum512* hash );
-   void (*ripemd160)( char* data, uint32_t length, struct checksum160* hash );
+   void (*assert_sha512)( const char* data, uint32_t length, const struct checksum512* hash );
+   void (*assert_ripemd160)( const char* data, uint32_t length, const struct checksum160* hash );
+   void (*sha256)( const char* data, uint32_t length, struct checksum256* hash );
+   void (*sha1)( const char* data, uint32_t length, struct checksum160* hash );
+   void (*sha512)( const char* data, uint32_t length, struct checksum512* hash );
+   void (*ripemd160)( const char* data, uint32_t length, struct checksum160* hash );
    int (*recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
    void (*assert_recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
 

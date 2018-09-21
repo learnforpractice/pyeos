@@ -41,7 +41,7 @@ void vm_init(struct vm_api* api) {
 }
 
 void vm_deinit() {
-   printf("vm_native finalize\n");
+   printf("vm_python deinit\n");
 }
 
 struct vm_api* get_vm_api() {
