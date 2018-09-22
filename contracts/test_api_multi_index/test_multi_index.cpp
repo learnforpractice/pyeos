@@ -565,7 +565,8 @@ void test_multi_index::idx256_general(uint64_t receiver, uint64_t code, uint64_t
       indexed_by< N(bysecondary), const_mem_fun<record, const key256&, &record::get_secondary> >
    > table( receiver, receiver );
 
-   auto fourtytwo       = key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 42ULL);
+//   auto fourtytwo       = key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 42ULL);
+   auto fourtytwo       = key256{std::array<uint32_t, 8>{{0,0, 0,0, 0,0, 0,42}}};
    //auto onetwothreefour = key256::make_from_word_sequence<uint64_t>(1ULL, 2ULL, 3ULL, 4ULL);
    auto onetwothreefour = key256{std::array<uint32_t, 8>{{0,1, 0,2, 0,3, 0,4}}};
 
@@ -604,11 +605,13 @@ void test_multi_index::idx256_general(uint64_t receiver, uint64_t code, uint64_t
 
    auto secidx = table.get_index<N(bysecondary)>();
 
-   auto lower1 = secidx.lower_bound(key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 40ULL));
+//   auto lower1 = secidx.lower_bound(key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 40ULL));
+   auto lower1 = secidx.lower_bound(key256{std::array<uint32_t, 8>{{0,0, 0,0, 0,0, 0,40}}});
    print("First entry with a secondary key of at least 40 has ID=", lower1->id, ".\n");
    eosio_assert( lower1->id == 1, "idx256_general - lower_bound" );
 
-   auto lower2 = secidx.lower_bound(key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 50ULL));
+//   auto lower2 = secidx.lower_bound(key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 50ULL));
+   auto lower2 = secidx.lower_bound(key256{std::array<uint32_t, 8>{{0,0, 0,0, 0,0, 0,50}}});
    print("First entry with a secondary key of at least 50 has ID=", lower2->id, ".\n");
    eosio_assert( lower2->id == 2, "idx256_general - lower_bound" );
 
