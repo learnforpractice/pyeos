@@ -54,7 +54,7 @@ namespace eosio { namespace chain {
          ext_string s = name(_account).to_string();
          s.replace(".", "_");
          snprintf(_path, sizeof(_path), "../libs/lib%s_native%s", s.c_str(), DYLIB_SUFFIX);
-         wlog("loading native contract: ${n1}", ("n1", string(_path)));
+//         wlog("loading native contract: ${n1}", ("n1", string(_path)));
          handle = dlopen(_path, RTLD_LAZY | RTLD_LOCAL);
          if (!handle) {
           return nullptr;

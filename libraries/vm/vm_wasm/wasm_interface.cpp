@@ -37,6 +37,7 @@ namespace eosio { namespace chain {
       try {
          Serialization::MemoryInputStream stream((U8*)code, size);
          WASM::serialize(stream, module);
+         module.userSections.clear();
       } catch(const Serialization::FatalSerializationException& e) {
          get_vm_api()->eosio_assert(false, e.message.c_str());
       } catch(const IR::ValidationException& e) {
@@ -46,8 +47,8 @@ namespace eosio { namespace chain {
       wasm_validations::wasm_binary_validation validator(get_vm_api()->is_producing_block(), module);
       validator.validate();
 
-      root_resolver resolver(true);
-      LinkResult link_result = linkModule(module, resolver);
+//      root_resolver resolver(true);
+//      LinkResult link_result = linkModule(module, resolver);
 
       //there are a couple opportunties for improvement here--
       //Easy: Cache the Module created here so it can be reused for instantiaion
@@ -63,7 +64,7 @@ namespace eosio { namespace chain {
       }
       validate(code, size);
 
-      my->get_instantiated_module(account);
+//      my->get_instantiated_module(account);
       return 0;
    }
 
