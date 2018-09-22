@@ -35,6 +35,8 @@ void vm_init(struct vm_api* api) {
    api->vm_cpython_compile = vm_cpython_compile;
    s_api = api;
    vm_register_api(api);
+   Py_InitializeEx(0);
+
    PyInit_db();
    PyInit_eoslib();
    PyInit_vm_cpython();

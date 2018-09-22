@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <fc/log/logger.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include <Python.h>
 
 //extern uint32_t EOS_TESTING_GENESIS_TIMESTAMP;
 
@@ -15,9 +16,17 @@ void translate_fc_exception(const fc::exception &e) {
    BOOST_TEST_FAIL("Caught Unexpected Exception");
 }
 
+namespace eosio {
+namespace chain {
+   void set_debug_mode(bool b);
+}
+}
+
 boost::unit_test::test_suite* init_unit_test_suite(int argc, char* argv[]) {
    // Turn off blockchain logging if no --verbose parameter is not added
    // To have verbose enabled, call "tests/chain_test -- --verbose"
+   set_debug_mode(true);
+
    bool is_verbose = false;
    std::string verbose_arg = "--verbose";
    for (int i = 0; i < argc; i++) {
