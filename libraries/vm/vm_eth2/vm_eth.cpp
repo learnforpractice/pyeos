@@ -141,10 +141,6 @@ void vm_deinit() {
    printf("vm_eth finalize\n");
 }
 
-struct vm_api* get_vm_api() {
-   return &s_api;
-}
-
 bool run_code(uint64_t _sender, uint64_t _receiver, int64_t _value, dev::bytes& data, bool create, bool transfer);
 
 int vm_setcode(uint64_t account) {

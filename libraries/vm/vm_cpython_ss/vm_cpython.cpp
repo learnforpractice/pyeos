@@ -102,7 +102,6 @@ PyObject* vm_load_codeobject(string& name, string& bytecodes) {
 
 void vm_init(struct vm_api* api) {
    s_api = api;
-   vm_register_api(api);
 
    setenv("PYTHONHOME", "../../externals/python/dist", 1);
    setenv("PYTHONPATH", "../../externals/python/dist/lib", 1);
@@ -137,10 +136,6 @@ void vm_init(struct vm_api* api) {
 
 void vm_deinit() {
    printf("vm_python_ss finalize\n");
-}
-
-struct vm_api* get_vm_api() {
-   return s_api;
 }
 
 void memory_trace_stop();

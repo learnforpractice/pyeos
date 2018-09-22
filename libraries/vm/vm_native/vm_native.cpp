@@ -24,15 +24,10 @@ void vm_init(struct vm_api* api) {
    api->vm_set_debug_contract = vm_set_debug_contract,
    api->vm_get_debug_contract = vm_get_debug_contract,
    s_api = api;
-   vm_register_api(api);
 }
 
 void vm_deinit() {
    printf("vm_native finalize\n");
-}
-
-struct vm_api* get_vm_api() {
-   return s_api;
 }
 
 int vm_setcode(uint64_t account) {

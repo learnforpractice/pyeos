@@ -34,7 +34,6 @@ void get_code(uint64_t account, string& code) {
 void vm_init(struct vm_api* api) {
    api->vm_cpython_compile = vm_cpython_compile;
    s_api = api;
-   vm_register_api(api);
    Py_InitializeEx(0);
 
    PyInit_db();
@@ -44,10 +43,6 @@ void vm_init(struct vm_api* api) {
 
 void vm_deinit() {
    printf("vm_python deinit\n");
-}
-
-struct vm_api* get_vm_api() {
-   return s_api;
 }
 
 int vm_setcode(uint64_t account) {
