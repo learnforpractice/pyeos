@@ -26,11 +26,13 @@ namespace chain {
 bool is_unittest_mode() {
    return true;
 }
+extern "C" void vm_api_init();
 
 boost::unit_test::test_suite* init_unit_test_suite(int argc, char* argv[]) {
    // Turn off blockchain logging if no --verbose parameter is not added
    // To have verbose enabled, call "tests/chain_test -- --verbose"
    eosio::chain::set_debug_mode(true);
+   vm_api_init();
    get_vm_api()->is_unittest_mode = is_unittest_mode;
 
    bool is_verbose = false;

@@ -635,6 +635,10 @@ void vm_manager_init() {
 #include <dlfcn.h>
 
 extern "C" void vm_api_init() {
+   vm_register_api(&_vm_api);
+}
+
+extern "C" void vm_api_init_ex() {
    char _path[128];
 //   libeosio_native
    vm_register_api(&_vm_api);
