@@ -20,4 +20,4 @@ def t():
     co = marshal.loads(r)
     module = imp.new_module(name)
     exec(co, module.__dict__)
-t()
+

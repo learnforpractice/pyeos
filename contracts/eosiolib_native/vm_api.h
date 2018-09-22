@@ -212,6 +212,8 @@ struct vm_api {
    int  (*wast_to_wasm)( const uint8_t* data, size_t size, uint8_t* wasm, size_t wasm_size );
    bool (*is_producing_block)();
 
+   int (*get_wasm_runtime_type)();
+
    void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const __uint128* sender_id);
 

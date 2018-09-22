@@ -578,7 +578,7 @@ int vm_manager::call(uint64_t account, uint64_t func) {
    return itr->second->call(account, func);
 }
 
-int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
+int vm_manager::local_apply(int vm_type, uint64_t receiver, uint64_t account, uint64_t act) {
 /*
    if (check_new_version(type, vm_names[type])) {
       load_vm_from_ram(type, vm_names[type]);
@@ -590,53 +590,25 @@ int vm_manager::local_apply(int type, uint64_t receiver, uint64_t account, uint6
    }
 #endif
 
-   if (type == 0) { //wasm
-      do {
-         if (get_vm_api()->is_debug_mode()) {
-            int ret = vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act);
-            if (ret) {
-               return ret;
-            }
+   if (vm_type == 0) { //wasm
+      int vm_runtime = get_vm_api()->get_wasm_runtime_type();
+//      wavm/binaryen/wabt
+      if (get_vm_api()->is_debug_mode()) {
+         int ret = vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act);
+         if (ret) {
+            return ret;
          }
-         bool expired = false;
-         bool _boosted = false;
-         if (get_vm_api()->is_replay()) {
-            vm_map[VM_TYPE_WAVM]->apply(receiver, account, act);
-            return 1;
-         }
-         _boosted = is_boost_account(receiver, expired);
-         if (!_boosted) {
-            unload_account(receiver);
-            break;
-         }
-         if (expired) {
-            unload_account(receiver);
-            break;
-         }
-
-         if (!is_jit_account_activated(receiver)) {
-            break;
-         }
-
-         auto itr = preload_account_map.find(receiver);
-         if (itr != preload_account_map.end()) {
-            return itr->second->apply(receiver, account, act);
-         } else {
-            wlog("executing ${n} by jit", ("n", name(receiver)));
-            //accelerating execution by JIT
-            //may fall if code is still in loading, if so, execute it in binaryen
-            //if code was executed in wavm in one BP but executed in binaryen in the next BP,
-            //there is a small probability that the next BP can not execute all the code in one block time
-            //at the situation of network overloading, that may cause a fork and BP will lose some revenue
-            //a vote on jit loading can solve this problem.
-            if (vm_map[VM_TYPE_WAVM]->apply(receiver, account, act)) {
-               return 1;
-            }
-         }
-      } while(false);
+      }
+      if (vm_runtime == 0) {
+         vm_type = VM_TYPE_WAVM;
+      } else if (vm_runtime == 1) {
+         vm_type = VM_TYPE_BINARYEN;
+      } else {
+         vm_type = VM_TYPE_WABT;
+      }
    }
 
-   auto itr = vm_map.find(type);
+   auto itr = vm_map.find(vm_type);
 
    if (itr == vm_map.end()) {
       return 0;

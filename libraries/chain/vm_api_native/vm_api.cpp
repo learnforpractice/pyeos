@@ -34,6 +34,7 @@
 #include <appbase/application.hpp>
 
 #include <eosio/chain/db_api.h>
+#include <eosio/chain/options.hpp>
 
 using namespace eosio::chain;
 
@@ -379,6 +380,10 @@ bool is_producing_block() {
    return ctx().control.is_producing_block();
 }
 
+int get_wasm_runtime_type() {
+   return options::get().get_wasm_runtime_type();
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -543,6 +548,11 @@ static struct vm_api _vm_api = {
 
    .vm_set_debug_contract = nullptr,
    .vm_get_debug_contract = nullptr,
+
+   .wasm_to_wast = nullptr,
+   .wast_to_wasm = nullptr,
+
+   .get_wasm_runtime_type = get_wasm_runtime_type,
 
    .log = log_,
 
