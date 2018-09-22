@@ -579,24 +579,15 @@ int vm_manager::call(uint64_t account, uint64_t func) {
 }
 
 int vm_manager::local_apply(int vm_type, uint64_t receiver, uint64_t account, uint64_t act) {
-/*
-   if (check_new_version(type, vm_names[type])) {
-      load_vm_from_ram(type, vm_names[type]);
-   }
-*/
-#if 0
-   if (vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act)) {
-      return 1;
-   }
-#endif
-
    if (vm_type == 0) { //wasm
       int vm_runtime = get_vm_api()->get_wasm_runtime_type();
 //      wavm/binaryen/wabt
       if (get_vm_api()->is_debug_mode()) {
-         int ret = vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act);
-         if (ret) {
-            return ret;
+         if (!get_vm_api()->is_unittest_mode()) {
+            int ret = vm_map[VM_TYPE_NATIVE]->apply(receiver, account, act);
+            if (ret) {
+               return ret;
+            }
          }
       }
       if (vm_runtime == 0) {

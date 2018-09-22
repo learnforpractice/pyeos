@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <fc/log/logger.hpp>
 #include <eosio/chain/exceptions.hpp>
+#include <eosiolib_native/vm_api.h>
 #include <Python.h>
 
 //extern uint32_t EOS_TESTING_GENESIS_TIMESTAMP;
@@ -22,10 +23,15 @@ namespace chain {
 }
 }
 
+bool is_unittest_mode() {
+   return true;
+}
+
 boost::unit_test::test_suite* init_unit_test_suite(int argc, char* argv[]) {
    // Turn off blockchain logging if no --verbose parameter is not added
    // To have verbose enabled, call "tests/chain_test -- --verbose"
    eosio::chain::set_debug_mode(true);
+   get_vm_api()->is_unittest_mode = is_unittest_mode;
 
    bool is_verbose = false;
    std::string verbose_arg = "--verbose";

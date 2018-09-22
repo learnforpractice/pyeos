@@ -137,11 +137,16 @@ namespace eosio { namespace chain {
    }
 
    int native_interface::apply(uint64_t receiver, uint64_t account, uint64_t act) {
+      size_t size = 0;
+      const char* code = get_vm_api()->get_code(receiver, &size);
+      if (code == nullptr || size <= 0) {
+         return 0;
+      }
       auto it = native_cache.find(receiver);
       if (it == native_cache.end()) {
          load_native_contract_default(receiver);
-         auto _it = native_cache.find(receiver);
-         if (_it == native_cache.end()) {
+         it = native_cache.find(receiver);
+         if (it == native_cache.end()) {
             return 0;
          }
       }
