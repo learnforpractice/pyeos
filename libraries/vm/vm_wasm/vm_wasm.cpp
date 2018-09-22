@@ -26,21 +26,17 @@ namespace chain {
 
 
 static struct vm_api s_api = {};
-struct vm_wasm_api s_vm_wasm_api;
 
 void vm_init(struct vm_api* api) {
    s_api = *api;
-   s_vm_wasm_api.wasm_to_wast = eosio::chain::wasm_to_wast;
-   s_vm_wasm_api.wast_to_wasm = eosio::chain::wast_to_wasm;
+   api->wasm_to_wast = eosio::chain::wasm_to_wast;
+   api->wast_to_wasm = eosio::chain::wast_to_wasm;
+
    eosio::chain::wasm_init_api();
 }
 
 void vm_deinit() {
    printf("vm_wasm vm_deinit\n");
-}
-
-extern "C" struct vm_wasm_api* vm_get_wasm_api() {
-   return &s_vm_wasm_api;
 }
 
 struct vm_api* get_vm_api() {

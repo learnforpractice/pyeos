@@ -55,7 +55,6 @@ public:
 
    bool init(struct vm_api* api);
 
-   struct vm_wasm_api* get_wasm_vm_api();
    struct vm_py_api* get_py_vm_api();
    void *get_eth_vm_api();
 

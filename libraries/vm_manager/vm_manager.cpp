@@ -39,7 +39,6 @@ typedef void (*fn_on_boost_account)(void* v, uint64_t account, uint64_t expirati
 void visit_boost_account(fn_on_boost_account fn, void* param);
 
 typedef struct vm_py_api* (*fn_get_py_vm_api)();
-typedef struct vm_wasm_api* (*fn_get_wasm_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 bool is_boost_account(uint64_t account, bool& expired);
 
@@ -666,21 +665,6 @@ void *vm_manager::get_eth_vm_api() {
    return nullptr;
 }
 
-struct vm_wasm_api* vm_manager::get_wasm_vm_api() {
-   auto itr = vm_map.find(0);
-   if (itr == vm_map.end()) {
-      return nullptr;
-   }
-
-   fn_get_wasm_vm_api _get_wasm_vm_api = (fn_get_wasm_vm_api)dlsym(itr->second->handle, "vm_get_wasm_api");
-   if (_get_wasm_vm_api == nullptr) {
-      return nullptr;
-   }
-
-   struct vm_wasm_api* api = _get_wasm_vm_api();
-   return api;
-}
-
 uint64_t vm_manager::wasm_call(const string& func, vector<uint64_t> args) {
    auto itr = vm_map.find(0);
    if (itr == vm_map.end()) {
@@ -723,18 +707,16 @@ void vm_manager::remove_trusted_account(uint64_t account) {
 namespace eosio { namespace chain {
 
    std::vector<uint8_t> _wast_to_wasm( const std::string& wast ) {
-      std::vector<uint8_t> v(wast.size()*2);
-      struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
-      int size = api->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), v.data(), v.size());
+      int wasm_size = get_vm_api()->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), nullptr, 0);
+      std::vector<uint8_t> v(wasm_size);
+      int size = get_vm_api()->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), v.data(), v.size());
       return std::vector<uint8_t>(v.data(), v.data()+size);
    }
 
    std::string  _wasm_to_wast( const uint8_t* data, uint64_t size ) {
-      struct vm_wasm_api* api = vm_manager::get().get_wasm_vm_api();
-      int wast_size = api->wasm_to_wast( (uint8_t*)data, size, nullptr, 0);
-
+      int wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, nullptr, 0);
       std::vector<uint8_t> v(wast_size);
-      wast_size = api->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
+      wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
       return std::string((char*)v.data(), wast_size);
    }
 

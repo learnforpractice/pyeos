@@ -208,6 +208,9 @@ struct vm_api {
    void (*vm_set_debug_contract)(uint64_t account, const char* path);
    const char* (*vm_get_debug_contract)(uint64_t* account);
 
+   int  (*wasm_to_wast)( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
+   int  (*wast_to_wasm)( const uint8_t* data, size_t size, uint8_t* wasm, size_t wasm_size );
+
    void (*send_deferred)(const __uint128* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
    int (*cancel_deferred)(const __uint128* sender_id);
 
