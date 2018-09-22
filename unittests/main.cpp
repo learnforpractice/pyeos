@@ -25,7 +25,7 @@ namespace chain {
 boost::unit_test::test_suite* init_unit_test_suite(int argc, char* argv[]) {
    // Turn off blockchain logging if no --verbose parameter is not added
    // To have verbose enabled, call "tests/chain_test -- --verbose"
-   set_debug_mode(true);
+   eosio::chain::set_debug_mode(true);
 
    bool is_verbose = false;
    std::string verbose_arg = "--verbose";
