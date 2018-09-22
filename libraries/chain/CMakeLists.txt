@@ -64,6 +64,7 @@ add_library( eosio_chain
 #              micropython_interface.cpp
               native/native.cpp
               vm_api_native/vm_api.cpp
+              options.cpp
               ${HEADERS}
              )
 
