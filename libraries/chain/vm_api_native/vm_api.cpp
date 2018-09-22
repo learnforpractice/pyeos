@@ -165,14 +165,18 @@ bool is_code_activated( uint64_t account ) {
 }
 
 const char* get_code( uint64_t receiver, size_t* size ) {
-   if (!ctx().is_account(receiver)) {
-      *size = 0;
-      return nullptr;
-   }
+   try {
+      if (!ctx().is_account(receiver)) {
+         *size = 0;
+         return nullptr;
+      }
 
-   auto& a = ctx().control.get_account(receiver);
-   *size = a.code.size();
-   return a.code.data();
+      auto& a = ctx().control.get_account(receiver);
+      *size = a.code.size();
+      return a.code.data();
+   } catch (...) {
+
+   }
 
    if (!db_api::get().is_account(receiver)) {
       *size = 0;
