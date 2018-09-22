@@ -330,9 +330,9 @@ namespace eosio { namespace chain { namespace wasm_validations {
                                                                              maximum_function_stack_visitor,
                                                                              ensure_apply_exported_visitor>;
       public:
-         wasm_binary_validation( const eosio::chain::controller& control, IR::Module& mod ) : _module( &mod ) {
+         wasm_binary_validation(bool is_producing_block, IR::Module& mod ) : _module( &mod ) {
             // initialize validators here
-            nested_validator::init(!control.is_producing_block());
+            nested_validator::init(!is_producing_block);
          }
 
          void validate() {

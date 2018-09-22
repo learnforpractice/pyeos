@@ -6,6 +6,9 @@
 
 #include <fc/crypto/xxhash.h>
 #include <eosio/chain/wasm_interface_private.hpp>
+#include <eosio/chain/wasm_eosio_validation.hpp>
+
+#include <eosiolib/system.h>
 
 using namespace std;
 
@@ -29,6 +32,27 @@ namespace eosio { namespace chain {
    bool wasm_interface::init() {
       return true;
    }
+   void wasm_interface::validate(const char* code, size_t size) {
+      Module module;
+      try {
+         Serialization::MemoryInputStream stream((U8*)code, size);
+         WASM::serialize(stream, module);
+      } catch(const Serialization::FatalSerializationException& e) {
+         get_vm_api()->eosio_assert(false, e.message.c_str());
+      } catch(const IR::ValidationException& e) {
+         get_vm_api()->eosio_assert(false, e.message.c_str());
+      }
+
+      wasm_validations::wasm_binary_validation validator(get_vm_api()->is_producing_block(), module);
+      validator.validate();
+
+      root_resolver resolver(true);
+      LinkResult link_result = linkModule(module, resolver);
+
+      //there are a couple opportunties for improvement here--
+      //Easy: Cache the Module created here so it can be reused for instantiaion
+      //Hard: Kick off instantiation in a separate thread at this location
+   }
 
    int wasm_interface::setcode( uint64_t account) {
       size_t size = 0;
@@ -37,6 +61,8 @@ namespace eosio { namespace chain {
       if (size <= 0) {
          return my->unload_module(account);
       }
+      validate(code, size);
+
       my->get_instantiated_module(account);
       return 0;
    }

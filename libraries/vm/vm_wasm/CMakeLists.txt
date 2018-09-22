@@ -13,6 +13,7 @@ set(COMMON_SOURCES
            ${CMAKE_SOURCE_DIR}/libraries/chain/wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
+           ${CMAKE_SOURCE_DIR}/libraries/chain/wasm_eosio_validation.cpp
            name.cpp)
 
 #reference from https://github.com/BYVoid/uchardet/blob/master/src/symbols.cmake

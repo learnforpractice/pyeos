@@ -375,6 +375,10 @@ void set_debug_mode(bool b) {
    appbase::app().set_debug_mode(b);
 }
 
+bool is_producing_block() {
+   return ctx().control.is_producing_block();
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -535,6 +539,7 @@ static struct vm_api _vm_api = {
    .vm_run_lua_script = nullptr,
    .vm_cpython_compile = nullptr,
    .is_debug_mode = is_debug_mode_,
+   .is_producing_block = is_producing_block,
 
    .vm_set_debug_contract = nullptr,
    .vm_get_debug_contract = nullptr,

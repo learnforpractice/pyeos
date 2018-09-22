@@ -58,6 +58,8 @@ namespace eosio { namespace chain {
          static wasm_interface& get();
          ~wasm_interface();
 
+         void validate(const char* code, size_t size);
+
          int setcode(uint64_t account);
          uint64_t call(string& func, vector<uint64_t>& args );
          //Calls apply or error on a given code
