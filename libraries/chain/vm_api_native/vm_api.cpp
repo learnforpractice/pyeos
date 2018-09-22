@@ -372,6 +372,10 @@ bool is_debug_mode_() {
    return appbase::app().debug_mode();
 }
 
+bool is_unittest_mode() {
+   return false;
+}
+
 void set_debug_mode(bool b) {
    appbase::app().set_debug_mode(b);
 }
@@ -544,6 +548,8 @@ static struct vm_api _vm_api = {
    .vm_run_lua_script = nullptr,
    .vm_cpython_compile = nullptr,
    .is_debug_mode = is_debug_mode_,
+   .is_unittest_mode = is_unittest_mode,
+
    .is_producing_block = is_producing_block,
 
    .vm_set_debug_contract = nullptr,
