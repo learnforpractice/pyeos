@@ -135,8 +135,8 @@ static uint64_t vm_names[] = {
 };
 
 static const char* vm_libs_path[] = {
-   "../libs/libvm_wasm_wabt" DYLIB_SUFFIX,
-//   "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
+//   "../libs/libvm_wasm_wabt" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_cpython_ss" DYLIB_SUFFIX,
    "../libs/libvm_eth2" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
@@ -706,23 +706,25 @@ void vm_manager::remove_trusted_account(uint64_t account) {
 
 namespace eosio { namespace chain {
 
-   std::vector<uint8_t> _wast_to_wasm( const std::string& wast ) {
+   std::vector<uint8_t> wast_to_wasm( const std::string& wast ) {
       int wasm_size = get_vm_api()->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), nullptr, 0);
       std::vector<uint8_t> v(wasm_size);
+
       int size = get_vm_api()->wast_to_wasm( (uint8_t*)wast.c_str(), wast.size(), v.data(), v.size());
       return std::vector<uint8_t>(v.data(), v.data()+size);
    }
 
-   std::string  _wasm_to_wast( const uint8_t* data, uint64_t size ) {
-      int wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, nullptr, 0);
+   std::string  wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names ) {
+      int wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, nullptr, 0, strip_names);
       std::vector<uint8_t> v(wast_size);
-      wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size());
+
+      wast_size = get_vm_api()->wasm_to_wast( (uint8_t*)data, size, v.data(), v.size(), strip_names);
       return std::string((char*)v.data(), wast_size);
    }
 
-   std::string _wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names )
+   std::string wasm_to_wast( const uint8_t* data, uint64_t size )
    {
-      return _wasm_to_wast(data, size);
+      return wasm_to_wast(data, size, true);
    }
 }
 }

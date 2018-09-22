@@ -10,7 +10,7 @@ set(HEADERS
 
 set(COMMON_SOURCES
            vm_api.cpp
-           wast_to_wasm.cpp
+           ${CMAKE_SOURCE_DIR}/libraries/chain/wast_to_wasm.cpp
            wasm_interface.cpp
            wasm_eosio_injection.cpp
            name.cpp)

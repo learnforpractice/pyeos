@@ -18,7 +18,7 @@ namespace eosio {
 
 namespace eosio {
 namespace chain {
-   int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size );
+   int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size, bool strip_names );
    int  wast_to_wasm( const uint8_t* data, size_t size, uint8_t* wasm, size_t wasm_size );
 
 }

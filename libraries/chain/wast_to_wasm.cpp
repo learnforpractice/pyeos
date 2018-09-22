@@ -62,11 +62,11 @@ namespace eosio { namespace chain {
 
    } FC_CAPTURE_AND_RETHROW( (wast) ) }  /// wast_to_wasm
 
-   std::string     wasm_to_wast( const std::vector<uint8_t>& wasm, bool strip_names ) {
-      return wasm_to_wast( wasm.data(), wasm.size(), strip_names, strip_names);
+   std::string     wasm_to_wast( const std::vector<uint8_t>& wasm , bool strip_names ) {
+      return wasm_to_wast( wasm.data(), wasm.size(), strip_names);
    } /// wasm_to_wast
 
-   std::string     wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names ) 
+   std::string     wasm_to_wast( const uint8_t* data, uint64_t size, bool strip_names )
    { try {
        IR::Module module;
        Serialization::MemoryInputStream stream((const U8*)data,size);
@@ -78,4 +78,32 @@ namespace eosio { namespace chain {
    } FC_CAPTURE_AND_RETHROW() } /// wasm_to_wast
 
 
+   int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size, bool strip_names )
+   {
+      std::string s = wasm_to_wast(data, size, strip_names);
+      if (wast == nullptr || wast_size == 0) {
+         return s.size();
+      }
+
+      if (wast_size > s.size()) {
+         wast_size = s.size();
+      }
+      memcpy(wast, s.c_str(), wast_size);
+      return wast_size;
+   } /// wasm_to_wast
+
+   int  wast_to_wasm( const uint8_t* data, size_t size, uint8_t* wasm, size_t wasm_size ) {
+      std::string wast((char*)data, size);
+      auto v = wast_to_wasm(wast);
+      if (wasm == nullptr || wasm_size <=0) {
+         return v.size();
+      }
+      if (v.size() < wasm_size) {
+         wasm_size = v.size();
+      }
+      memcpy(wasm, v.data(), wasm_size);
+      return wasm_size;
+   }
+
 } } // eosio::chain
+
