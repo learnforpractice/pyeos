@@ -142,16 +142,19 @@ void apply_eosio_setcode(apply_context& context) {
    context.require_authorization(act.account);
 
    //account can reject code update in setcode action, that make code in account readonly.
+
    if (appbase::app().is_eos_main_net()) {
 
    } else {
-      if (!appbase::app().debug_mode()) {
-         if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
-            throw FC_EXCEPTION( fc::exception, "code updated in less than 10m from the previous update");
+      if (!get_vm_api()->is_unittest_mode()) {
+         if (!appbase::app().debug_mode()) {
+            if (context.control.pending_block_time().sec_since_epoch() - account.last_code_update.sec_since_epoch() < 10*60) {
+               throw FC_EXCEPTION( fc::exception, "code updated in less than 10m from the previous update");
+            }
          }
-      }
-      if (account.code.size() > 0) {
-         vm_manager::get().apply(account.vm_type, account.name, account.name, N(setcode));
+         if (account.code.size() > 0) {
+            vm_manager::get().apply(account.vm_type, account.name, account.name, N(setcode));
+         }
       }
    }
 
