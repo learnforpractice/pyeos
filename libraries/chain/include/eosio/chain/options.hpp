@@ -2,6 +2,7 @@
 #include <appbase/application.hpp>
 #include <boost/program_options.hpp>
 #include <eosio/chain/wasm_interface.hpp>
+#include <eosio/chain/config.hpp>
 
 namespace bpo = boost::program_options;
 using bpo::options_description;
@@ -26,7 +27,7 @@ public:
    ~options();
 private:
    options();
-   vm_type            wasm_runtime = wasm_interface::vm_type::wabt;
+   vm_type            wasm_runtime = eosio::chain::config::default_wasm_runtime;
 
    variables_map & _options;
 };
