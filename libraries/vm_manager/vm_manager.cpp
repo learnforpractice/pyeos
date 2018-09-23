@@ -526,34 +526,42 @@ struct vm_api* vm_manager::get_vm_api() {
    return this->api;
 }
 
-int vm_manager::setcode(int type, uint64_t account) {
+int vm_manager::setcode(int vm_type, uint64_t account) {
 /*
    if (check_new_version(type, vm_names[type])) {
       load_vm_from_ram(type, vm_names[type]);
    }
 */
-   if (type == VM_TYPE_CPYTHON_PRIVILEGED) {
+   if (vm_type == VM_TYPE_CPYTHON_PRIVILEGED) {
       if (this->api->is_privileged(account)) {
       } else {
-         EOS_ASSERT(this->api->has_option("debug"), fc::assert_exception, "set code no allowed");
+         EOS_ASSERT(this->api->has_option("debug"), assert_exception, "set code no allowed");
       }
    }
    if (this->api->run_mode() == 0) {
       if (is_trusted_account(account)) {
       } else {
          if (vm_map.find(VM_TYPE_IPC) != vm_map.end()) {
-            type = VM_TYPE_IPC;
+            vm_type = VM_TYPE_IPC;
          }
       }
    }
 
-   if (type == 0) {
+   if (vm_type == 0) {
       if (account == N(eosio) || account == N(eosio.token)) {
-         //type = 3;
+         //vm_type = 3;
+      }
+      int vm_runtime = get_vm_api()->get_wasm_runtime_type();
+      if (vm_runtime == 0) {
+         vm_type = VM_TYPE_WAVM;
+      } else if (vm_runtime == 1) {
+         vm_type = VM_TYPE_BINARYEN;
+      } else {
+         vm_type = VM_TYPE_WABT;
       }
    }
 
-   auto itr = vm_map.find(type);
+   auto itr = vm_map.find(vm_type);
    if (itr == vm_map.end()) {
       return -1;
    }
