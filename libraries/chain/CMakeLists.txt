@@ -17,8 +17,8 @@ file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
 
 ## SORT .cpp by most likely to change / break compile
-add_library( eosio_chain
-             SHARED
+add_library( eosio_chain_static
+             STATIC
              merkle.cpp
              name.cpp
              transaction.cpp
@@ -65,6 +65,7 @@ add_library( eosio_chain
               native/native.cpp
               vm_api_native/vm_api.cpp
               options.cpp
+              exceptions.cpp
               ${HEADERS}
              )
 
@@ -72,12 +73,12 @@ add_library( eosio_chain
 #set_property(TARGET secp256k PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/build/deps/lib/libsecp256k1.a")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-   target_compile_options(eosio_chain PUBLIC -DDEBUG)
+   target_compile_options(eosio_chain_static PUBLIC -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain PUBLIC wabt eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain_static PUBLIC wabt eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
 
-target_include_directories( eosio_chain
+target_include_directories( eosio_chain_static
                             PUBLIC ${Boost_INCLUDE_DIR}
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                             PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
@@ -92,6 +93,14 @@ target_include_directories( eosio_chain
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/thrift/src
                             PUBLIC ${CMAKE_SOURCE_DIR}/externals/magic_get/include
                             )
+
+## SORT .cpp by most likely to change / break compile
+add_library( eosio_chain
+             SHARED
+              ${HEADERS}
+             )
+
+target_link_libraries( eosio_chain PUBLIC eosio_chain_static)
 
 install( TARGETS eosio_chain
    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
