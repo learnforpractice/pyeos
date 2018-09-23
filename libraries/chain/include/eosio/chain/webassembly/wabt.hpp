@@ -81,7 +81,7 @@ inline null_terminated_ptr null_terminated_ptr_impl(wabt_apply_instance_vars& va
       if(*p++ == '\0')
          return null_terminated_ptr(value);
 
-   FC_THROW_EXCEPTION(wasm_execution_error, "unterminated string");
+   EOS_THROW(wasm_execution_error, "unterminated string");
 }
 
 

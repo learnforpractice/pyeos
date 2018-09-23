@@ -108,3 +108,7 @@ const char* db_api_get_i64_exex( int itr, size_t* buffer_size ) {
    return get_vm_api()->rodb_get_i64_exex(itr, buffer_size);
 }
 
+void vm_api_throw_exception(int type, const char* fmt, ...) {
+   get_vm_api()->throw_exception(type, fmt);
+}
+

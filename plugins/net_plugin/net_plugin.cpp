@@ -1246,7 +1246,7 @@ namespace eosio {
       ,state(in_sync)
    {
       chain_plug = app( ).find_plugin<chain_plugin>( );
-      EOS_ASSERT( chain_plug, chain::missing_chain_plugin_exception, ""  );
+      EOS_ASSERT( chain_plug, missing_chain_plugin_exception, ""  );
    }
 
    constexpr auto sync_manager::stage_str(stages s ) {
@@ -2982,7 +2982,7 @@ namespace eosio {
          }
 
          my->chain_plug = app().find_plugin<chain_plugin>();
-         EOS_ASSERT( my->chain_plug, chain::missing_chain_plugin_exception, ""  );
+         EOS_ASSERT( my->chain_plug, missing_chain_plugin_exception, ""  );
          my->chain_id = app().get_plugin<chain_plugin>().get_chain_id();
          fc::rand_pseudo_bytes( my->node_id.data(), my->node_id.data_size());
          ilog( "my node_id is ${id}", ("id", my->node_id));

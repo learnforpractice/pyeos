@@ -37,11 +37,11 @@ namespace eosio { namespace chain {
       try {
          Serialization::MemoryInputStream stream((U8*)code, size);
          WASM::serialize(stream, module);
-         module.userSections.clear();
+//         module.userSections.clear();
       } catch(const Serialization::FatalSerializationException& e) {
-         get_vm_api()->eosio_assert(false, e.message.c_str());
+         EOS_THROW(wasm_serialization_error, e.message.c_str());
       } catch(const IR::ValidationException& e) {
-         get_vm_api()->eosio_assert(false, e.message.c_str());
+         EOS_THROW(wasm_serialization_error, e.message.c_str());
       }
 
       wasm_validations::wasm_binary_validation validator(get_vm_api()->is_producing_block(), module);

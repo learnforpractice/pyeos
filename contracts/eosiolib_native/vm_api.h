@@ -205,6 +205,7 @@ struct vm_api {
    const char *(*vm_cpython_compile)(const char *name, const char *code, int size, int *result_size);
    bool (*is_debug_mode)(void);
    bool (*is_unittest_mode)(void);
+   void (*throw_exception)(int type, const char *fmt, ...);
 
    void (*vm_set_debug_contract)(uint64_t account, const char* path);
    const char* (*vm_get_debug_contract)(uint64_t* account);

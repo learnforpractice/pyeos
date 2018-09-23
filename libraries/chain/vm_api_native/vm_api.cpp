@@ -38,6 +38,9 @@
 
 using namespace eosio::chain;
 
+//exceptions.cpp
+void fc_throw_exception(int type, const char* fmt, ...);
+
 static vector<char> s_args;
 static vector<char> s_results;
 static int s_call_status = 0;
@@ -388,6 +391,21 @@ int get_wasm_runtime_type() {
    return options::get().get_wasm_runtime_type();
 }
 
+void throw_exception_ex(int type, const char *fmt, ...) {
+   char output[256];
+   memset(output, 0, sizeof(output));
+
+   va_list args;
+   va_start(args, fmt);
+   int len = vsnprintf(output, sizeof output, fmt, args);
+   va_end(args);
+   if (type == 1) {
+      FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, output );
+   } else if (type == 2) {
+      FC_THROW_EXCEPTION( eosio::chain::wasm_serialization_error, output );
+   }
+}
+
 static struct vm_api _vm_api = {
 //action.cpp
    .read_action_data = read_action_data,
@@ -549,7 +567,7 @@ static struct vm_api _vm_api = {
    .vm_cpython_compile = nullptr,
    .is_debug_mode = is_debug_mode_,
    .is_unittest_mode = is_unittest_mode,
-
+   .throw_exception = fc_throw_exception,
    .is_producing_block = is_producing_block,
 
    .vm_set_debug_contract = nullptr,

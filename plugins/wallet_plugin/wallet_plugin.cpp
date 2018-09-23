@@ -20,7 +20,7 @@ static appbase::abstract_plugin& _wallet_plugin = app().register_plugin<wallet_p
 wallet_plugin::wallet_plugin():wallet_manager_ptr(nullptr) {}
 
 wallet_manager& wallet_plugin::get_wallet_manager() {
-   EOS_ASSERT(wallet_manager_ptr, fc::exception, "wallet plugin not initialized!");
+   EOS_ASSERT(wallet_manager_ptr, exception, "wallet plugin not initialized!");
    return *wallet_manager_ptr;
 }
 
@@ -53,7 +53,7 @@ void wallet_plugin::plugin_initialize(const variables_map& options) {
       }
       if (options.count("unlock-timeout")) {
          auto timeout = options.at("unlock-timeout").as<int64_t>();
-         EOS_ASSERT(timeout > 0, chain::invalid_lock_timeout_exception, "Please specify a positive timeout ${t}", ("t", timeout));
+         EOS_ASSERT(timeout > 0, invalid_lock_timeout_exception, "Please specify a positive timeout ${t}", ("t", timeout));
          std::chrono::seconds t(timeout);
          wallet_manager_ptr->set_timeout(t);
       }

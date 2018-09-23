@@ -322,9 +322,9 @@ namespace eosio {
                }
                std::vector<std::string> v;
                boost::split( v, s, boost::is_any_of( ":" ));
-               EOS_ASSERT( v.size() == 3, fc::invalid_arg_exception, "Invalid value ${s} for --filter-on", ("s", s));
+               EOS_ASSERT( v.size() == 3, invalid_arg_exception, "Invalid value ${s} for --filter-on", ("s", s));
                filter_entry fe{v[0], v[1], v[2]};
-               EOS_ASSERT( fe.receiver.value, fc::invalid_arg_exception,
+               EOS_ASSERT( fe.receiver.value, invalid_arg_exception,
                            "Invalid value ${s} for --filter-on", ("s", s));
                my->filter_on.insert( fe );
             }
@@ -334,16 +334,16 @@ namespace eosio {
             for( auto& s : fo ) {
                std::vector<std::string> v;
                boost::split( v, s, boost::is_any_of( ":" ));
-               EOS_ASSERT( v.size() == 3, fc::invalid_arg_exception, "Invalid value ${s} for --filter-out", ("s", s));
+               EOS_ASSERT( v.size() == 3, invalid_arg_exception, "Invalid value ${s} for --filter-out", ("s", s));
                filter_entry fe{v[0], v[1], v[2]};
-               EOS_ASSERT( fe.receiver.value, fc::invalid_arg_exception,
+               EOS_ASSERT( fe.receiver.value, invalid_arg_exception,
                            "Invalid value ${s} for --filter-out", ("s", s));
                my->filter_out.insert( fe );
             }
          }
 
          my->chain_plug = app().find_plugin<chain_plugin>();
-         EOS_ASSERT( my->chain_plug, chain::missing_chain_plugin_exception, ""  );
+         EOS_ASSERT( my->chain_plug, missing_chain_plugin_exception, ""  );
          auto& chain = my->chain_plug->chain();
 
          chain.db().add_index<account_history_index>();
@@ -404,7 +404,7 @@ namespace eosio {
            if( start > pos ) start = 0;
            end   = pos;
         }
-        EOS_ASSERT( end >= start, chain::plugin_exception, "end position is earlier than start position" );
+        EOS_ASSERT( end >= start, plugin_exception, "end position is earlier than start position" );
 
         idump((start)(end));
 

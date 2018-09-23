@@ -11,6 +11,8 @@
 #include "IR/Operators.h"
 #include "WASM/WASM.h"
 
+#include <eosiolib_native/vm_api.h>
+
 namespace eosio { namespace chain { namespace wasm_validations {
 
    // module validators
@@ -72,7 +74,7 @@ namespace eosio { namespace chain { namespace wasm_validations {
          // cast to a type that has a memarg field
          T* memarg_instr = reinterpret_cast<T*>(inst);
          if(memarg_instr->field.o >= wasm_constraints::maximum_linear_memory)
-            FC_THROW_EXCEPTION(wasm_execution_error, "Smart contract used an invalid large memory store/load offset");
+            EOS_THROW(wasm_execution_error, "Smart contract used an invalid large memory store/load offset");
       }
 
    };
@@ -95,7 +97,7 @@ namespace eosio { namespace chain { namespace wasm_validations {
       static constexpr bool kills = true;
       static constexpr bool post = false;
       static void accept( wasm_ops::instr* inst, wasm_ops::visitor_arg& arg ) {
-         FC_THROW_EXCEPTION(wasm_execution_error, "Error, blacklisted opcode ${op} ", 
+         EOS_THROW(wasm_execution_error, "Error, blacklisted opcode ${op} ",
             ("op", inst->to_string()));
       }
    };
