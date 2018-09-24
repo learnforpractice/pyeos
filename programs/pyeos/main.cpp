@@ -154,11 +154,9 @@ int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
-//   setenv("PYTHONHOME", "../../libraries/python", 1);
-//   setenv("PYTHONPATH", "../../libraries/python/lib", 1);
+   vm_api_init();
 
    app().init_args(argc, argv);
-   vm_api_init();
    init_console();
 
    app().set_version(eosio::nodeos::config::version);
