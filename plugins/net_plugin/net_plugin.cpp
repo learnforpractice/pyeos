@@ -2930,7 +2930,7 @@ namespace eosio {
                auto host = host_name( ec );
                if( ec.value() != boost::system::errc::success ) {
 
-                  FC_THROW_EXCEPTION( fc::invalid_arg_exception,
+                  FC_THROW_EXCEPTION( invalid_arg_exception,
                                       "Unable to retrieve host_name. ${msg}", ("msg", ec.message()));
 
                }

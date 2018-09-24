@@ -60,7 +60,9 @@ namespace eosio { namespace chain {
          EOS_ASSERT( false, wasm_exception, "error converting to wasm: ${msg}", ("msg",ss.get()) );
       }
 
-   } FC_CAPTURE_AND_RETHROW( (wast) ) }  /// wast_to_wasm
+   } FC_CAPTURE_AND_RETHROW( (wast) )
+   return std::vector<uint8_t>();
+   }  /// wast_to_wasm
 
    std::string     wasm_to_wast( const std::vector<uint8_t>& wasm , bool strip_names ) {
       return wasm_to_wast( wasm.data(), wasm.size(), strip_names);
@@ -75,7 +77,8 @@ namespace eosio { namespace chain {
           module.userSections.clear();
         // Print the module to WAST.
        return WAST::print(module);
-   } FC_CAPTURE_AND_RETHROW() } /// wasm_to_wast
+   } FC_CAPTURE_AND_RETHROW()
+   } /// wasm_to_wast
 
 
    int  wasm_to_wast( const uint8_t* data, size_t size, uint8_t* wast, size_t wast_size, bool strip_names )

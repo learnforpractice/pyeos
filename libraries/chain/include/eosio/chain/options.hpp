@@ -27,7 +27,7 @@ public:
    ~options();
 private:
    options();
-   vm_type            wasm_runtime = eosio::chain::config::default_wasm_runtime;
+   vm_type            wasm_runtime = eosio::chain::wasm_interface::vm_type::wabt;//eosio::chain::config::default_wasm_runtime;
 
    variables_map & _options;
 };

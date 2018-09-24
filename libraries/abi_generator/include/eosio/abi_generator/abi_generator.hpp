@@ -45,7 +45,7 @@ namespace cl = llvm::cl;
 namespace eosio {
    using namespace eosio::chain;
 
-   FC_DECLARE_EXCEPTION( abi_generation_exception, 999999, "Unable to generate abi" );
+//   FC_DECLARE_EXCEPTION( abi_generation_exception, 999999, "Unable to generate abi" );
 
    #define ABI_ASSERT( TEST, ... ) \
       FC_EXPAND_MACRO( \
@@ -54,11 +54,11 @@ namespace eosio {
          {                                                                      \
            if( fc::enable_record_assert_trip )                                  \
               fc::record_assert_trip( __FILE__, __LINE__, #TEST );              \
-           FC_THROW_EXCEPTION( eosio::abi_generation_exception, #TEST ": "  __VA_ARGS__ ); \
+           FC_THROW_EXCEPTION( abi_generation_exception, #TEST ": "  __VA_ARGS__ ); \
          }                                                                      \
        FC_MULTILINE_MACRO_END \
       )
-   
+
    class ricardian_contracts {
       public:
          ricardian_contracts() = default;

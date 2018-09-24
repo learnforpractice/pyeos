@@ -920,43 +920,25 @@ class console_api : public context_aware_api {
 
 #define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
       int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, array_ptr<const ARR_ELEMENT_TYPE> data, size_t data_len) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_store(scope, table, payer, id, data.value, sizeof(ARR_ELEMENT_TYPE)*data_len);\
+         return API()->db_##IDX##_store(scope, table, payer, id, data.value, data_len);\
       }\
       void db_##IDX##_update( int iterator, uint64_t payer, array_ptr<const ARR_ELEMENT_TYPE> data, size_t data_len ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_update(iterator, payer, data.value, sizeof(ARR_ELEMENT_TYPE)*data_len);\
+         return API()->db_##IDX##_update(iterator, payer, data.value, data_len);\
       }\
       void db_##IDX##_remove( int iterator ) {\
          return API()->db_##IDX##_remove(iterator);\
       }\
       int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<const ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_find_secondary(code, scope, table, data, sizeof(ARR_ELEMENT_TYPE)*data_len, &primary);\
+         return API()->db_##IDX##_find_secondary(code, scope, table, data, data_len, &primary);\
       }\
       int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_find_primary(code, scope, table, data.value, sizeof(ARR_ELEMENT_TYPE)*data_len, primary);\
+         return API()->db_##IDX##_find_primary(code, scope, table, data.value, data_len, primary);\
       }\
       int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_lowerbound(code, scope, table, data.value, sizeof(ARR_ELEMENT_TYPE)*data_len, &primary);\
+         return API()->db_##IDX##_lowerbound(code, scope, table, data.value, data_len, &primary);\
       }\
       int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, array_ptr<ARR_ELEMENT_TYPE> data, size_t data_len, uint64_t& primary ) {\
-         FC_ASSERT( data_len == ARR_SIZE,\
-                    "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
-                    ("given",data_len)("expected",ARR_SIZE) );\
-         return API()->db_##IDX##_upperbound(code, scope, table, data.value, sizeof(ARR_ELEMENT_TYPE)*data_len, &primary);\
+         return API()->db_##IDX##_upperbound(code, scope, table, data.value, data_len, &primary);\
       }\
       int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ) {\
          return API()->db_##IDX##_end(code, scope, table);\
@@ -1170,7 +1152,7 @@ class compiler_builtins : public context_aware_api {
          rhs <<= 64;
          rhs |=  lb;
 
-         FC_ASSERT(rhs != 0, "divide by zero");
+         EOS_ASSERT(rhs != 0, arithmetic_exception, "divide by zero");
 
          lhs /= rhs;
 
@@ -1187,7 +1169,7 @@ class compiler_builtins : public context_aware_api {
          rhs <<= 64;
          rhs |=  lb;
 
-         FC_ASSERT(rhs != 0, "divide by zero");
+         EOS_ASSERT(rhs != 0, arithmetic_exception, "divide by zero");
 
          lhs /= rhs;
          ret = lhs;
@@ -1217,7 +1199,7 @@ class compiler_builtins : public context_aware_api {
          rhs <<= 64;
          rhs |=  lb;
 
-         FC_ASSERT(rhs != 0, "divide by zero");
+         EOS_ASSERT(rhs != 0, arithmetic_exception, "divide by zero");
 
          lhs %= rhs;
          ret = lhs;
@@ -1233,7 +1215,7 @@ class compiler_builtins : public context_aware_api {
          rhs <<= 64;
          rhs |=  lb;
 
-         FC_ASSERT(rhs != 0, "divide by zero");
+         EOS_ASSERT(rhs != 0, arithmetic_exception, "divide by zero");
 
          lhs %= rhs;
          ret = lhs;

@@ -81,7 +81,7 @@ Open a terminal, cd to [PROJECT_DIR]/build/program, run the following command
 ./pyeos/pyeos --manual-gen-block --debug -i  --contracts-console
 ```
 
-If it's the first time you start PyEos, PyEos will create a testing wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:
+If this is the first time you start PyEos, PyEos will create a testing wallet for you, which placed in data-dir/mywallet.wallet, and then console will print the wallet password as below:
 
 ```
 wallet password: PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ

@@ -44,6 +44,8 @@ namespace eosio {
    using std::shared_ptr;
    using websocketpp::connection_hdl;
 
+   using namespace eosio::chain;
+
    static http_plugin_defaults current_http_plugin_defaults;
 
    void http_plugin::set_defaults(const http_plugin_defaults config) {

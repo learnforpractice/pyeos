@@ -48,7 +48,7 @@ struct se_wallet_impl {
       if(error) {
          string error_string = string_for_cferror(error);
          CFRelease(error);
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to get public key from Secure Enclave: ${m}", ("m", error_string));
+         FC_THROW_EXCEPTION(wallet_exception, "Failed to get public key from Secure Enclave: ${m}", ("m", error_string));
       }
 
       return pub_key_data;
@@ -117,7 +117,7 @@ struct se_wallet_impl {
             SecKeyRef key = (SecKeyRef)CFRetain(CFArrayGetValueAtIndex(keyRefs, i));
             _keys[get_public_key(key)] = key;
          }
-         catch(chain::wallet_exception&) {}
+         catch(wallet_exception&) {}
       }
       CFRelease(keyRefs);
       CFRelease(keyAttrDic);
@@ -171,13 +171,13 @@ struct se_wallet_impl {
       CFRelease(accessControlRef);
 
       if(error_string.size())
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to create key in Secure Enclave: ${m}", ("m", error_string));
+         FC_THROW_EXCEPTION(wallet_exception, "Failed to create key in Secure Enclave: ${m}", ("m", error_string));
 
       public_key_type pub;
       try {
          pub = get_public_key(privateKey);
       }
-      catch(chain::wallet_exception&) {
+      catch(wallet_exception&) {
          //possibly we should delete the key here?
          CFRelease(privateKey);
          throw;
@@ -201,7 +201,7 @@ struct se_wallet_impl {
          string error_string = string_for_cferror(error);
          CFRelease(error);
          CFRelease(digestData);
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to sign digest in Secure Enclave: ${m}", ("m", error_string));
+         FC_THROW_EXCEPTION(wallet_exception, "Failed to sign digest in Secure Enclave: ${m}", ("m", error_string));
       }
 
       const UInt8* der_bytes = CFDataGetBytePtr(signature);
@@ -215,7 +215,7 @@ struct se_wallet_impl {
       try {
          kd = get_public_key_data(it->second);
          compact_sig = signature_from_ecdsa(key, kd, sig, d);
-      } catch(chain::wallet_exception&) {
+      } catch(wallet_exception&) {
          CFRelease(signature);
          CFRelease(digestData);
          throw;
@@ -237,13 +237,13 @@ struct se_wallet_impl {
    bool remove_key(string public_key) {
       auto it = _keys.find(public_key_type{public_key});
       if(it == _keys.end())
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Given key to delete not found in Secure Enclave wallet");
+         FC_THROW_EXCEPTION(wallet_exception, "Given key to delete not found in Secure Enclave wallet");
 
       promise<bool> prom;
       future<bool> fut = prom.get_future();
       macos_user_auth(auth_callback, &prom, CFSTR("remove a key from your EOSIO wallet"));
       if(!fut.get())
-         FC_THROW_EXCEPTION(chain::wallet_invalid_password_exception, "Local user authentication failed");
+         FC_THROW_EXCEPTION(wallet_invalid_password_exception, "Local user authentication failed");
 
       CFDictionaryRef deleteDic = CFDictionaryCreate(nullptr, (const void**)&kSecValueRef, (const void**)&it->second, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
@@ -251,7 +251,7 @@ struct se_wallet_impl {
       CFRelease(deleteDic);
 
       if(ret)
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to getremove key from Secure Enclave");
+         FC_THROW_EXCEPTION(wallet_exception, "Failed to getremove key from Secure Enclave");
 
       CFRelease(it->second);
       _keys.erase(it);
@@ -317,7 +317,7 @@ se_wallet::~se_wallet() {
 }
 
 private_key_type se_wallet::get_private_key(public_key_type pubkey) const {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "Obtaining private key for a key stored in Secure Enclave is impossible");
+   FC_THROW_EXCEPTION(wallet_exception, "Obtaining private key for a key stored in Secure Enclave is impossible");
 }
 
 bool se_wallet::is_locked() const {
@@ -333,18 +333,18 @@ void se_wallet::unlock(string password) {
    future<bool> fut = prom.get_future();
    macos_user_auth(detail::auth_callback, &prom, CFSTR("unlock your EOSIO wallet"));
    if(!fut.get())
-      FC_THROW_EXCEPTION(chain::wallet_invalid_password_exception, "Local user authentication failed");
+      FC_THROW_EXCEPTION(wallet_invalid_password_exception, "Local user authentication failed");
    my->locked = false;
 }
 void se_wallet::check_password(string password) {
    //just leave this as a noop for now; remove_key from wallet_mgr calls through here
 }
 void se_wallet::set_password(string password) {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "Secure Enclave wallet cannot have a password set");
+   FC_THROW_EXCEPTION(wallet_exception, "Secure Enclave wallet cannot have a password set");
 }
 
 map<public_key_type, private_key_type> se_wallet::list_keys() {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "Getting the private keys from the Secure Enclave wallet is impossible");
+   FC_THROW_EXCEPTION(wallet_exception, "Getting the private keys from the Secure Enclave wallet is impossible");
 }
 flat_set<public_key_type> se_wallet::list_public_keys() {
    flat_set<public_key_type> keys;
@@ -353,7 +353,7 @@ flat_set<public_key_type> se_wallet::list_public_keys() {
 }
 
 bool se_wallet::import_key(string wif_key, bool save) {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the Secure Enclave wallet");
+   FC_THROW_EXCEPTION(wallet_exception, "It is not possible to import a key in to the Secure Enclave wallet");
 }
 
 string se_wallet::create_key(string key_type) {

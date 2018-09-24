@@ -372,8 +372,9 @@ namespace python
       {
         if (received_eof)
         {
-          if (str.empty())
-            FC_THROW_EXCEPTION( parse_error_exception, "Unexpected EOF" );
+          if (str.empty()) {
+             FC_THROW_EXCEPTION( parse_error_exception, "Unexpected EOF" );
+          }
           else
             return str;
         }
@@ -393,8 +394,9 @@ namespace python
    template<typename T, json::parse_type parser_type>
    variant variant_from_stream( T& in, uint32_t max_depth )
    {
-      if( max_depth == 0 )
-          FC_THROW_EXCEPTION( parse_error_exception, "Too many nested items in JSON input!" );
+      if( max_depth == 0 ) {
+         FC_THROW_EXCEPTION( parse_error_exception, "Too many nested items in JSON input!" );
+      }
       skip_white_space(in);
       variant var;
       while( 1 )

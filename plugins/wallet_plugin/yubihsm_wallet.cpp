@@ -109,9 +109,9 @@ struct yubihsm_wallet_impl {
       size_t blob_sz = 128;
       uint8_t blob[blob_sz];
       if((rc = api.util_get_pubkey(session, key_id, blob, &blob_sz, nullptr)))
-         FC_THROW_EXCEPTION(chain::wallet_exception, "yh_util_get_pubkey failed: ${m}", ("m", api.strerror(rc)));
+         FC_THROW_EXCEPTION(wallet_exception, "yh_util_get_pubkey failed: ${m}", ("m", api.strerror(rc)));
       if(blob_sz != 64)
-         FC_THROW_EXCEPTION(chain::wallet_exception, "unexpected pubkey size from yh_util_get_pubkey");
+         FC_THROW_EXCEPTION(wallet_exception, "unexpected pubkey size from yh_util_get_pubkey");
 
       ///XXX This is junky and common with SE wallet; commonize it
       char serialized_pub_key[sizeof(public_key_data) + 1];
@@ -132,35 +132,35 @@ struct yubihsm_wallet_impl {
 
       try {
          if((rc = api.init_connector(endpoint.c_str(), &connector)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Failled to initialize yubihsm connector URL: ${c}", ("c", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "Failled to initialize yubihsm connector URL: ${c}", ("c", api.strerror(rc)));
          if((rc = api.connect_best(&connector, 1, NULL)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to connect to YubiHSM connector: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "Failed to connect to YubiHSM connector: ${m}", ("m", api.strerror(rc)));
          if((rc = api.create_session_derived(connector, authkey, (const uint8_t *)password.data(), password.size(), false, context, sizeof(context), &session)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to create YubiHSM session: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "Failed to create YubiHSM session: ${m}", ("m", api.strerror(rc)));
          if((rc = api.authenticate_session(session, context, sizeof(context))))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to authenticate YubiHSM session: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "Failed to authenticate YubiHSM session: ${m}", ("m", api.strerror(rc)));
 
          yh_object_descriptor authkey_desc;
          if((rc = api.util_get_object_info(session, authkey, YH_AUTHKEY, &authkey_desc)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Failed to get authkey info: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "Failed to get authkey info: ${m}", ("m", api.strerror(rc)));
 
          authkey_caps = authkey_desc.capabilities;
          authkey_domains = authkey_desc.domains;
 
          if(!api.check_capability(&authkey_caps, "asymmetric_sign_ecdsa"))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "Given authkey cannot perform signing");
+            FC_THROW_EXCEPTION(wallet_exception, "Given authkey cannot perform signing");
 
          size_t found_objects_n = 64*1024;
          yh_object_descriptor found_objs[found_objects_n];
          yh_capabilities find_caps;
          api.capabilities_to_num("asymmetric_sign_ecdsa", &find_caps);
          if((rc = api.util_list_objects(session, 0, YH_ASYMMETRIC, 0, &find_caps, YH_ALGO_EC_P256, nullptr, found_objs, &found_objects_n)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "yh_util_list_objects failed: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "yh_util_list_objects failed: ${m}", ("m", api.strerror(rc)));
 
          for(size_t i = 0; i < found_objects_n; ++i)
             populate_key_map_with_keyid(found_objs[i].id);
       }
-      catch(chain::wallet_exception& e) {
+      catch(wallet_exception& e) {
          lock();
          throw;
       }
@@ -210,7 +210,7 @@ struct yubihsm_wallet_impl {
       yh_rc rc;
       if((rc = api.util_sign_ecdsa(session, it->second, (uint8_t*)d.data(), d.data_size(), der_sig, &der_sig_sz))) {
          lock();
-         FC_THROW_EXCEPTION(chain::wallet_exception, "yh_util_sign_ecdsa failed: ${m}", ("m", api.strerror(rc)));
+         FC_THROW_EXCEPTION(wallet_exception, "yh_util_sign_ecdsa failed: ${m}", ("m", api.strerror(rc)));
       }
 
       ///XXX a lot of this below is similar to SE wallet; commonize it in non-junky way
@@ -240,20 +240,20 @@ struct yubihsm_wallet_impl {
 
    public_key_type create() {
       if(!api.check_capability(&authkey_caps, "asymmetric_gen"))
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Given authkey cannot create keys");
+         FC_THROW_EXCEPTION(wallet_exception, "Given authkey cannot create keys");
 
       yh_rc rc;
       uint16_t new_key_id = 0;
       yh_capabilities creation_caps = {};
       if(api.capabilities_to_num("asymmetric_sign_ecdsa:export_under_wrap", &creation_caps))
-         FC_THROW_EXCEPTION(chain::wallet_exception, "Cannot create caps mask");
+         FC_THROW_EXCEPTION(wallet_exception, "Cannot create caps mask");
 
       try {
          if((rc = api.util_generate_key_ec(session, &new_key_id, "keosd created key", authkey_domains, &creation_caps, YH_ALGO_EC_P256)))
-            FC_THROW_EXCEPTION(chain::wallet_exception, "yh_util_generate_key_ec failed: ${m}", ("m", api.strerror(rc)));
+            FC_THROW_EXCEPTION(wallet_exception, "yh_util_generate_key_ec failed: ${m}", ("m", api.strerror(rc)));
          return populate_key_map_with_keyid(new_key_id)->first;
       }
-      catch(chain::wallet_exception& e) {
+      catch(wallet_exception& e) {
          lock();
          throw;
       }
@@ -285,7 +285,7 @@ yubihsm_wallet::~yubihsm_wallet() {
 }
 
 private_key_type yubihsm_wallet::get_private_key(public_key_type pubkey) const {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "Obtaining private key for a key stored in YubiHSM is impossible");
+   FC_THROW_EXCEPTION(wallet_exception, "Obtaining private key for a key stored in YubiHSM is impossible");
 }
 
 bool yubihsm_wallet::is_locked() const {
@@ -303,11 +303,11 @@ void yubihsm_wallet::check_password(string password) {
    //just leave this as a noop for now; remove_key from wallet_mgr calls through here
 }
 void yubihsm_wallet::set_password(string password) {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "YubiHSM wallet cannot have a password set");
+   FC_THROW_EXCEPTION(wallet_exception, "YubiHSM wallet cannot have a password set");
 }
 
 map<public_key_type, private_key_type> yubihsm_wallet::list_keys() {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "Getting the private keys from the YubiHSM wallet is impossible");
+   FC_THROW_EXCEPTION(wallet_exception, "Getting the private keys from the YubiHSM wallet is impossible");
 }
 flat_set<public_key_type> yubihsm_wallet::list_public_keys() {
    flat_set<public_key_type> keys;
@@ -316,7 +316,7 @@ flat_set<public_key_type> yubihsm_wallet::list_public_keys() {
 }
 
 bool yubihsm_wallet::import_key(string wif_key, bool save) {
-   FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the YubiHSM wallet");
+   FC_THROW_EXCEPTION(wallet_exception, "It is not possible to import a key in to the YubiHSM wallet");
 }
 
 string yubihsm_wallet::create_key(string key_type) {

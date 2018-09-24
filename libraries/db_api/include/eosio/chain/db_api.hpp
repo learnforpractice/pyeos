@@ -15,6 +15,8 @@
 #include <eosio/chain/contract_table_objects.hpp>
 #include <eosio/chain/exceptions.hpp>
 
+using namespace fc;
+
 namespace chainbase { class database; }
 
 namespace eosio { namespace chain {

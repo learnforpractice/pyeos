@@ -12,7 +12,7 @@ namespace eosio {
 
 static appbase::abstract_plugin& _login_plugin = app().register_plugin<login_plugin>();
 
-using namespace eosio;
+using namespace eosio::chain;
 
 struct login_request {
    chain::private_key_type server_ephemeral_priv_key{};

@@ -13,6 +13,7 @@
 
 
 using boost::container::flat_set;
+using namespace fc;
 
 extern "C" void execution_start();
 extern "C" void execution_end();

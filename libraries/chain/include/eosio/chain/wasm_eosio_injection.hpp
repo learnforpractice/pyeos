@@ -460,7 +460,7 @@ namespace eosio { namespace chain { namespace wasm_injections {
             return u8"_eosio_ui64_to_f64";
 
          default:
-            FC_THROW_EXCEPTION( eosio::chain::wasm_execution_error, "Error, unknown opcode in injection ${op}", ("op", opcode));
+            FC_THROW_EXCEPTION( wasm_execution_error, "Error, unknown opcode in injection ${op}", ("op", opcode));
       }
    }
 
