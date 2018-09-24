@@ -67,7 +67,7 @@ uint32_t get_blockchain_parameters_packed(char* packed_blockchain_parameters, ui
 }
 
 void activate_feature( int64_t f ) {
-   FC_ASSERT( !"Unsupported Hardfork Detected" );
+   EOS_ASSERT( false, unsupported_feature, "Unsupported Hardfork Detected" );
 }
 
 }

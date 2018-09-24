@@ -6,7 +6,7 @@ extern "C" {
 
 void eosio_abort() {
    edump(("abort() called"));
-   FC_ASSERT( false, "abort() called");
+   EOS_ASSERT( false, abort_called, "abort() called");
 }
 
 void  eosio_assert( uint32_t test, const char* msg ) {
@@ -51,7 +51,7 @@ void checktime() {
 
 void check_context_free(bool context_free) {
    if( ctx().context_free )
-      FC_ASSERT( context_free, "only context free api's can be used in this context" );
+      EOS_ASSERT( context_free, unaccessible_api, "only context free api's can be used in this context" );
    ctx().used_context_free_api |= !context_free;
 }
 

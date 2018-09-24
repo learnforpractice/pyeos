@@ -46,11 +46,12 @@ int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size 
 }
 
 void assert_privileged() {
-   FC_ASSERT( ctx().privileged, "${code} does not have permission to call this API", ("code",ctx().receiver) );
+   EOS_ASSERT( ctx().privileged, unaccessible_api, "${code} does not have permission to call this API", ("code",ctx().receiver) );
 }
 
 void assert_context_free() {
-   FC_ASSERT( ctx().context_free, "this API may only be called from context_free apply" );
+   /* the context_free_data is not available during normal application because it is prunable */
+   EOS_ASSERT( ctx().context_free, unaccessible_api, "this API may only be called from context_free apply" );
 }
 
 int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size ) {
