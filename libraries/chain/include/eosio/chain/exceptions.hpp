@@ -40,7 +40,7 @@
 #define EOS_ASSERT( expr, exc_type, FORMAT, ... )                \
    FC_MULTILINE_MACRO_BEGIN                                           \
    if( !(expr) ) {                                                      \
-      EOS_THROW(exc_type, FORMAT);                                       \
+      EOS_THROW(exc_type, FORMAT, __VA_ARGS__);                                       \
    }                                                                    \
    FC_MULTILINE_MACRO_END
 #endif
