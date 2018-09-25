@@ -194,8 +194,10 @@ int main(int argc, char** argv) {
 
    wlog("running console...");
    if (app().interactive_mode()) {
-      PyRun_SimpleString("import initeos");
-      PyRun_SimpleString("initeos.start_console()");
+      try {
+         PyRun_SimpleString("import initeos");
+         PyRun_SimpleString("initeos.start_console()");
+      } FC_LOG_AND_DROP();
       wlog("quit app...");
       appbase::app().quit();
    }
