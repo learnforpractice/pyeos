@@ -81,10 +81,10 @@ int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
          return ctx().IDX.store( scope, table, payer, id, *secondary );\
       }\
       void db_##IDX##_update( int iterator, uint64_t payer, const TYPE* secondary ) {\
-         return ctx().IDX.update( iterator, payer, *secondary );\
+         ctx().IDX.update( iterator, payer, *secondary );\
       }\
       void db_##IDX##_remove( int iterator ) {\
-         return ctx().IDX.remove( iterator );\
+         ctx().IDX.remove( iterator );\
       }\
       int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE* secondary, uint64_t* primary ) {\
          return ctx().IDX.find_secondary(code, scope, table, *secondary, *primary);\
@@ -121,10 +121,10 @@ int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
               db_api_exception,\
                     "invalid size of secondary key array for " #IDX ": given ${given} bytes but expected ${expected} bytes",\
                     ("given",data_len)("expected",ARR_SIZE) );\
-         return ctx().IDX.update(iterator, payer, (const ARR_ELEMENT_TYPE*)data);\
+         ctx().IDX.update(iterator, payer, (const ARR_ELEMENT_TYPE*)data);\
       }\
       void db_##IDX##_remove( int iterator ) {\
-         return ctx().IDX.remove(iterator);\
+         ctx().IDX.remove(iterator);\
       }\
       int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const ARR_ELEMENT_TYPE* data, size_t data_len, uint64_t* primary ) {\
          EOS_ASSERT( data_len == ARR_SIZE,\
@@ -171,10 +171,10 @@ int32_t db_end_i64(uint64_t code, uint64_t scope, uint64_t table) {
       }\
       void db_##IDX##_update( int iterator, uint64_t payer, const TYPE* secondary ) {\
          EOS_ASSERT( !is_nan( *secondary ), transaction_exception, "NaN is not an allowed value for a secondary key" );\
-         return ctx().IDX.update( iterator, payer, *secondary );\
+         ctx().IDX.update( iterator, payer, *secondary );\
       }\
       void db_##IDX##_remove( int iterator ) {\
-         return ctx().IDX.remove( iterator );\
+         ctx().IDX.remove( iterator );\
       }\
       int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE* secondary, uint64_t* primary ) {\
          EOS_ASSERT( !is_nan( *secondary ), transaction_exception, "NaN is not an allowed value for a secondary key" );\
