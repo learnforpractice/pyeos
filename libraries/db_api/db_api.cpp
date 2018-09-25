@@ -38,7 +38,12 @@ fc::path get_path() {
 
 db_api::db_api(const action& a, bool rw) :
 db(get_path(), rw ? chainbase::database::read_write: chainbase::database::read_only, config::default_state_size, true),
-act(a)
+act(a),
+idx64(*this),
+idx128(*this),
+idx256(*this),
+idx_double(*this),
+idx_long_double(*this)
 {
    db.add_index<account_index>();
 
