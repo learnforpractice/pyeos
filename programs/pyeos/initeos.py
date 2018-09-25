@@ -519,9 +519,36 @@ def wd():
 def start_console():
     print("start console...")
     init_wallet()
-    signal.signal(signal.SIGINT, original_sigint_handler)
-    console = PyEosConsole(locals = globals())
-    console.interact(banner='Welcome to PyEos')
+
+    start_ipython = False
+
+    if eosapi.has_opt('debug'):
+        try:
+            import IPython
+            start_ipython = True
+            IPython.start_ipython(user_ns=sys.modules['initeos'].__dict__)
+        except:
+            pass
+
+    if not start_ipython:
+        signal.signal(signal.SIGINT, original_sigint_handler)
+        console = PyEosConsole(locals = globals())
+        console.interact(banner='Welcome to PyEos')
+
+def create_account_on_chain(_from_account, new_account, balance, public_key):
+    assert len(new_account) == 12
+    assert balance <= 1.0
+    assert len(public_key) == 53 and public_key[:3] == 'EOS'
+    memo = '%s-%s'%(new_account, public_key)
+    r = eosapi.transfer(_from_account, 'signupeoseos', balance, memo)
+    if r:
+        print('success!')
+    else:
+        print('failture!')
+
+def sellram(account, _bytes):
+    r = eosapi.push_action('eosio', 'sellram', {'account':account, 'bytes':_bytes}, {account:'active'})
+    print(r)
 
 import socket
 def check_connections():
