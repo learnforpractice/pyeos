@@ -13,6 +13,7 @@
 #include <eosio/history_plugin/history_plugin.hpp>
 #include <eosio/chain/plugin_interface.hpp>
 #include <eosio/chain/symbol.hpp>
+#include <eosio/chain/authorization_manager.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -448,6 +449,19 @@ PyObject* get_public_key_(string& wif_key) {
    return py_new_string(pub_key);
 }
 
+bool update_permission_(uint64_t account, const string& owner, const string& active) {
+   auto owner_auth = eosio::chain::authority{1, {{public_key_type(owner), 1}}, {}};
+   auto active_auth = eosio::chain::authority{1, {{public_key_type(active), 1}}, {}};
+
+   auto& authorization = get_db().get_mutable_authorization_manager();
+
+   auto owner_perm = authorization.find_permission(eosio::chain::permission_level{account, eosio::chain::name("owner")});
+   auto active_perm = authorization.find_permission(eosio::chain::permission_level{account, eosio::chain::name("active")});
+
+   authorization.modify_permission( *owner_perm, owner_auth );
+   authorization.modify_permission( *active_perm, active_auth );
+   return true;
+}
 
 PyObject* create_account_(string creator, string newaccount, string owner,
                           string active, int sign) {

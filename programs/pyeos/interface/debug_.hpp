@@ -60,4 +60,7 @@ int vm_run_script_(const char* str);
 
 void softfloat_test_();
 
+bool update_permission_(uint64_t account, const string& owner, const string& active);
+uint64_t string_to_uint64_(string str);
+
 

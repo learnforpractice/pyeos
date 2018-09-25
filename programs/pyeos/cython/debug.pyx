@@ -54,6 +54,9 @@ cdef extern from "../interface/debug_.hpp":
 
     void softfloat_test_();
 
+    bool update_permission_(uint64_t account, const string& owner, const string& active);
+    uint64_t string_to_uint64_(string str);
+
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
         int (*sha3)(const char* data, int size, char* result, int size2)
@@ -164,3 +167,11 @@ def vm_get_debug_contract():
     cdef const char* path
     path = get_vm_api()[0].vm_get_debug_contract(&account)
     return (account, path)
+
+def update_permission(account, const string& owner, const string& active):
+    cdef uint64_t _account;
+    if isinstance(account, str):
+        _account = string_to_uint64_(account)
+    else:
+        _account = account
+    return update_permission_(_account, owner, active);
