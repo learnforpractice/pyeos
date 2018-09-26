@@ -43,7 +43,7 @@ config = '''
  # Enable production on a stale chain, since a single-node test chain is pretty much always stale
 enable-stale-production = true
 # Enable block production with the testnet producers
-producer-name = eosio
+#producer-name = eosio
 
 private-key = ["EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV","5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"]
 
@@ -493,17 +493,17 @@ peers = ("106.10.42.238:9876",
 "publicnode.cypherglass.com:9876",
 "seed2.greymass.com:9876")
 
-def peers_connect():
+def connect_to_peers():
     for peer in peers:
         net.connect(peer)
 
-def peers_cleanup():
+def cleanup_peers():
     for n in net.connections():
         if n['last_handshake']['network_version'] == 0:
             net.disconnect(n['peer'])
 
-pc = peers_connect
-pcu = peers_cleanup
+cp = connect_to_peers
+cup = cleanup_peers
 pbs = produce_block_start
 pbe = produce_block_end
 
@@ -526,25 +526,26 @@ def start_console():
         try:
             import IPython
             start_ipython = True
-            IPython.start_ipython(user_ns=sys.modules['initeos'].__dict__)
         except:
             pass
 
-    if not start_ipython:
+    if start_ipython:
+        IPython.start_ipython(user_ns=sys.modules['initeos'].__dict__)
+    else:
         signal.signal(signal.SIGINT, original_sigint_handler)
         console = PyEosConsole(locals = globals())
         console.interact(banner='Welcome to PyEos')
 
-def create_account_on_chain(_from_account, new_account, balance, public_key):
+def create_account_on_chain(from_account, new_account, balance, public_key):
     assert len(new_account) == 12
     assert balance <= 1.0
     assert len(public_key) == 53 and public_key[:3] == 'EOS'
     memo = '%s-%s'%(new_account, public_key)
-    r = eosapi.transfer(_from_account, 'signupeoseos', balance, memo)
+    r = eosapi.transfer(from_account, 'signupeoseos', balance, memo)
     if r:
         print('success!')
     else:
-        print('failture!')
+        print('failure!')
 
 def sellram(account, _bytes):
     r = eosapi.push_action('eosio', 'sellram', {'account':account, 'bytes':_bytes}, {account:'active'})

@@ -14,6 +14,7 @@
 #include <eosio/chain/plugin_interface.hpp>
 #include <eosio/chain/symbol.hpp>
 #include <eosio/chain/authorization_manager.hpp>
+#include <eosio/chain/producer_schedule.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -94,7 +95,7 @@ history_plugin& get_history_plugin() {
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
-controller& get_db() { return get_chain_plugin().chain(); }
+controller& get_controller() { return get_chain_plugin().chain(); }
 
 wallet_plugin& get_wallet_plugin() {
    return app().get_plugin<eosio::wallet_plugin>();
@@ -256,7 +257,7 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
             (*output)("except", s);
          } else {
             auto trx_trace_ptr = result.get<transaction_trace_ptr>();
-            auto v = get_db().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(300*1000));
+            auto v = get_controller().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(300*1000));
             *output = v.get_object();
             (*output)("except", "");
          }
@@ -449,17 +450,40 @@ PyObject* get_public_key_(string& wif_key) {
    return py_new_string(pub_key);
 }
 
+void modify_permission( const permission_object& permission, const authority& auth ) {
+   get_controller().db().modify( permission, [&](permission_object& po) {
+      po.auth = auth;
+      po.last_updated = fc::time_point::now();
+   });
+}
+
 bool update_permission_(uint64_t account, const string& owner, const string& active) {
    auto owner_auth = eosio::chain::authority{1, {{public_key_type(owner), 1}}, {}};
    auto active_auth = eosio::chain::authority{1, {{public_key_type(active), 1}}, {}};
 
-   auto& authorization = get_db().get_mutable_authorization_manager();
+   auto& authorization = get_controller().get_mutable_authorization_manager();
 
    auto owner_perm = authorization.find_permission(eosio::chain::permission_level{account, eosio::chain::name("owner")});
    auto active_perm = authorization.find_permission(eosio::chain::permission_level{account, eosio::chain::name("active")});
 
-   authorization.modify_permission( *owner_perm, owner_auth );
-   authorization.modify_permission( *active_perm, active_auth );
+   modify_permission( *owner_perm, owner_auth );
+   modify_permission( *active_perm, active_auth );
+   return true;
+}
+
+bool set_proposed_producers_(string& producer, string& public_key) {
+   vector<producer_key> producers;
+   auto key = eosio::chain::producer_key{producer, public_key_type(public_key)};
+   producers.push_back(key);
+
+   producer_schedule_type sch;
+   sch.producers = std::move(producers);
+
+   const auto& gpo = get_controller().get_global_properties();
+   get_controller().db().modify( gpo, [&]( auto& gp ) {
+      gp.proposed_schedule_block_num = 12149;
+      gp.proposed_schedule = std::move(sch);
+   });
    return true;
 }
 
@@ -495,7 +519,7 @@ PyObject* get_info_() {
    return python::json::to_string(results);
 
    PyDict dict;
-   const controller& db = get_db();
+   const controller& db = get_controller();
    string key;
    string value;
 

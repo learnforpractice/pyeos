@@ -62,5 +62,6 @@ void softfloat_test_();
 
 bool update_permission_(uint64_t account, const string& owner, const string& active);
 uint64_t string_to_uint64_(string str);
-
+void list_producers_();
+bool set_proposed_producers_(string& producer, string& public_key);
 

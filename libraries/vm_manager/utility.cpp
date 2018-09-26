@@ -1,5 +1,7 @@
 #include "ro_db.hpp"
 #include <eosiolib/multi_index.hpp>
+#include <eosio.system/eosio.system.hpp>
+
 #include <fc/time.hpp>
 
 using namespace std;
@@ -46,5 +48,16 @@ bool is_boost_account(uint64_t account, bool& expired) {
       return true;
    }
    return false;
+}
+
+using namespace eosiosystem;
+
+void list_producers_() {
+   producers_table        _producers(N(eosio), N(eosio));
+   auto idx = _producers.get_index<N(prototalvote)>();
+
+   for ( auto it = idx.cbegin(); it != idx.cend() && 0 < it->total_votes && it->active(); ++it ) {
+      printf("++++it->owner: %s total votes %f\n", eosio::name{it->owner}.to_string().c_str(), it->total_votes);//it->owner, it->producer_key}, it->location;
+   }
 }
 

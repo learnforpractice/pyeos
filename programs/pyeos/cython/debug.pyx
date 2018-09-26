@@ -56,6 +56,9 @@ cdef extern from "../interface/debug_.hpp":
 
     bool update_permission_(uint64_t account, const string& owner, const string& active);
     uint64_t string_to_uint64_(string str);
+    void list_producers_();
+    bool set_proposed_producers_(string& producer, string& public_key);
+
 
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
@@ -175,3 +178,10 @@ def update_permission(account, const string& owner, const string& active):
     else:
         _account = account
     return update_permission_(_account, owner, active);
+
+def list_producers():
+    list_producers_()
+
+def set_proposed_producers(string& producer, string& public_key):
+    return set_proposed_producers_(producer, public_key)
+

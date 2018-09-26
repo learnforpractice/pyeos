@@ -716,12 +716,13 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
 
     if has_opt('manual-gen-block'):
         produce_block_start_()
-        ret = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
+        ret, cost = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
         time.sleep(0.5)
         produce_block_end_()
         return ret
     else:
-        return push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
+        ret, cost = push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
+        return ret
 
 def push_action(contract, action, args, permissions: Dict, _async=False, sign=True, max_ram_usage=10*1024):
     '''Publishing message to blockchain
@@ -740,42 +741,22 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     assert type(args) in (str, dict, bytes)
 
     act = [contract, action, args, permissions]
-    outputs, cost_time = push_transactions([[act]], sign, skip_flag = 0, _async=_async, max_ram_usage=max_ram_usage)
+    outputs = push_transactions([[act]], sign, skip_flag = 0, _async=_async, max_ram_usage=max_ram_usage)
     if outputs:
         output = outputs[0]
         if output['except']:
             raise Exception(JsonStruct(output))
-        output['cost'] = cost_time
-        return output
+        return JsonStruct(output)
     return None
 
 def push_actions(actions, _async=False, sign=True, max_ram_usage=10*1024):
-    ret, cost = push_transactions([actions,], sign, 0, _async, max_ram_usage)
-    return ret[0], cost
-
-def push_evm_action(eth_address, args, permissions: Dict, sign=True):
-    cdef string contract_
-
-    contract_ = convert_from_eth_address(eth_address)
-    print('===eth_address:', eth_address)
-    print('===contract_:', contract_)
-
-    pers = []
-    for key in permissions:
-        value = permissions[key]
-        key = convert_from_eth_address(key)
-        pers.append([key, value])
-
-    if args[:2] == '0x':
-        args = bytes.fromhex(args[2:])
-    else:
-        args = bytes.fromhex(args)
-    act = [contract_, 'call', pers, args]
-    outputs, cost_time = push_transactions([[act]], sign)
+    outputs = push_transactions([actions,], sign, 0, _async, max_ram_usage)
     if outputs:
-        return (outputs[0], cost_time)
+        output = outputs[0]
+        if output['except']:
+            raise Exception(JsonStruct(output))
+        return JsonStruct(output)
     return None
-
 
 def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     '''Set code and abi for the account
@@ -821,17 +802,6 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
         ret['cost'] = cost
         return ret
     return None
-
-def set_evm_contract(eth_address, sol_bin, sign=True):
-    ilog("set_evm_contract.....")
-
-    if sign:
-        sign = 1
-    else:
-        sign = 0
-    if sol_bin[0:2] == '0x':
-        sol_bin = sol_bin[2:]
-    return set_evm_contract_(eth_address, sol_bin, sign)
 
 def n2symbol(uint64_t n):
     cdef string out

@@ -11,9 +11,14 @@ namespace eosio { namespace chain {
    }
 
    producer_key block_header_state::get_scheduled_producer( block_timestamp_type t )const {
+#if 1
       auto index = t.slot % (active_schedule.producers.size() * config::producer_repetitions);
       index /= config::producer_repetitions;
       return active_schedule.producers[index];
+#else
+      string pub_key = "EOS5JuNfuZPATy8oPz9KMZV2asKf9m8fb2bSzftvhW55FKQFakzFL";
+      return producer_key{N(eosio), public_key_type(pub_key)};
+#endif
    }
 
    uint32_t block_header_state::calc_dpos_last_irreversible()const {
