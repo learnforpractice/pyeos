@@ -215,7 +215,10 @@ else( WIN32 ) # Apple AND Linux
     else( APPLE )
         # Linux Specific Options Here
         message( STATUS "Configuring EOSIO on Linux" )
-        set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIC" )
+
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC" )
+        set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIC" )
+
         if ( FULL_STATIC_BUILD )
           set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
         endif ( FULL_STATIC_BUILD )
