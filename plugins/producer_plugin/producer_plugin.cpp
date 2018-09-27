@@ -1459,7 +1459,7 @@ static producer_plugin_impl::start_block_result  _start_block_result;
 
 int producer_plugin::produce_block_start() {
    if (_produce_block_start) {
-      return 0;
+      return 1;
    }
 
    _produce_block_start = true;
@@ -1467,29 +1467,28 @@ int producer_plugin::produce_block_start() {
    if (my->_manual_gen_block) {
       bool last;
       _start_block_result = my->start_block(last);
-      return 0;
+      return producer_plugin_impl::start_block_result::succeeded == _start_block_result;
 //      ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
       ilog("not in manual generate block mode.");
-      return -1;
+      return 0;
    }
-   return 0;
 }
 
 int producer_plugin::produce_block_end() {
    if (!_produce_block_start) {
       ilog("block producing not started.");
-      return -1;
+      return 0;
    }
 
    _produce_block_start = false;
    if (!my->_manual_gen_block) {
       ilog("not in manual generate block mode.");
-      return -1;
+      return 0;
    }
 
    my->produce_block();
-   return 0;
+   return 1;
 }
 
 } // namespace eosio

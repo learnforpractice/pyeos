@@ -417,14 +417,14 @@ int produce_block_start_() {
    try {
       return get_producer_plugin().produce_block_start();
    } FC_LOG_AND_DROP();
-   return -1;
+   return 0;
 }
 
 int produce_block_end_() {
    try {
       return get_producer_plugin().produce_block_end();
    } FC_LOG_AND_DROP();
-   return -1;
+   return 0;
 }
 
 PyObject* create_key_() {

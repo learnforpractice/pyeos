@@ -715,7 +715,9 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
         vv.push_back(v)
 
     if has_opt('manual-gen-block'):
-        produce_block_start_()
+        ret = produce_block_start_()
+        if not ret:
+            raise Exception('+++produce block failed!')
         ret, cost = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
         time.sleep(0.5)
         produce_block_end_()
