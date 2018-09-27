@@ -179,6 +179,13 @@ class JsonStruct(object):
     def __repr__(self):
         return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
 
+    def __getitem__(self, o):
+        return self.__dict__[o]
+
+    def __contains__(self, o):
+        return o in self.__dict__
+
+
 def s2n(string& name):
     ret = string_to_uint64_(name)
     if ret == 0:
@@ -314,7 +321,7 @@ def create_account2(creator, account, owner_key, active_key):
         act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
-    r, cost =  push_actions(actions)
+    r =  push_actions(actions)
     if r['except']:
         raise Exception(JsonStruct(r))
     return True
@@ -350,7 +357,7 @@ def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
         act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
-    r, cost = push_actions(actions)
+    r = push_actions(actions)
 
     if r and not r['except']:
         return True
@@ -714,17 +721,24 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
 
         vv.push_back(v)
 
+    results = []
     if has_opt('manual-gen-block'):
         ret = produce_block_start_()
         if not ret:
             raise Exception('+++produce block failed!')
-        ret, cost = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
+        results, cost = push_transactions_(vv, sign, skip_flag, _async, compress, max_ram_usage)
         time.sleep(0.5)
         produce_block_end_()
-        return ret
     else:
-        ret, cost = push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
-        return ret
+        results, cost = push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
+    for i in range(len(results)):
+        r = results[i]
+        results[i] = JsonStruct(results[i])
+
+    cost_time = 0
+    for r in results:
+        cost_time += r.elapsed
+    return results, cost_time
 
 def push_action(contract, action, args, permissions: Dict, _async=False, sign=True, max_ram_usage=10*1024):
     '''Publishing message to blockchain
@@ -743,22 +757,22 @@ def push_action(contract, action, args, permissions: Dict, _async=False, sign=Tr
     assert type(args) in (str, dict, bytes)
 
     act = [contract, action, args, permissions]
-    outputs = push_transactions([[act]], sign, skip_flag = 0, _async=_async, max_ram_usage=max_ram_usage)
+    outputs, cost = push_transactions([[act]], sign, skip_flag = 0, _async=_async, max_ram_usage=max_ram_usage)
     if outputs:
         output = outputs[0]
         if output['except']:
-            raise Exception(JsonStruct(output))
-        return JsonStruct(output)
+            raise Exception(output)
+        return output, cost
     return None
 
 def push_actions(actions, _async=False, sign=True, max_ram_usage=10*1024):
-    outputs = push_transactions([actions,], sign, 0, _async, max_ram_usage)
+    outputs, cost = push_transactions([actions,], sign, 0, _async, max_ram_usage)
     if outputs:
         output = outputs[0]
         if output['except']:
-            raise Exception(JsonStruct(output))
-        return JsonStruct(output)
-    return None
+            raise Exception(output)
+        return output, cost
+    return [], 0
 
 def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     '''Set code and abi for the account
@@ -796,12 +810,11 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     setabi = ['eosio', 'setabi', setabi, {account:'active'}]
     actions.append(setabi)
 
-    ret, cost = push_transactions([actions], sign, compress = True)
+    ret = push_transactions([actions], sign, compress = True)
     if ret:
         ret = ret[0]
         if 'except' in ret and ret['except']:
             raise Exception(ret['except'])
-        ret['cost'] = cost
         return ret
     return None
 

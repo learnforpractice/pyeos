@@ -21,7 +21,6 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_action('inspector','sayhello', name, {'inspector':'active'})
-    assert r and not r['except']
-    print('cost time:', r['cost'])
+    r, cost = eosapi.push_action('inspector','sayhello', name, {'inspector':'active'})
+    print('cost time:', cost)
 

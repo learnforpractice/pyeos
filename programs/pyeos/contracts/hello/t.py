@@ -21,9 +21,8 @@ def init(func):
 
 @init
 def test(name='mike'):
-    r = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
-    assert r and not r['except']
-    print('cost time:', r['cost'])
+    r, cost = eosapi.push_action('hello','sayhello', name, {'hello':'active'})
+    print('cost time:', cost)
 #    print(eosapi.JsonStruct(r[0]))
 #    eosapi.produce_block()
 
@@ -40,7 +39,6 @@ def test2(count=100):
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
-    assert ret and not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
@@ -52,9 +50,6 @@ def tt(count=1000):
         actions.append(action)
 
     ret, cost = eosapi.push_actions(actions)
-    print(cost)
-    print(ret['except'])
-    assert ret and not ret['except']
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
@@ -63,22 +58,19 @@ def ttt(count=200):
     for i in range(count):
         args = {"from":'eosio', "to":'eosio.ram', "quantity":'%.4f EOS'%(0.01,), "memo":str(i)}
         args = eosapi.pack_args('eosio.token', 'transfer', args)
-        action = ['eosio.token', 'transfer', args, [['eosio','active']]]
+        action = ['eosio.token', 'transfer', args, {'eosio':'active'}]
         actions.append([action])
 
     ret, cost = eosapi.push_transactions(actions)
-
-    assert ret
     print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
-
 
 @init
 def test3(count=100):
     actions = []
     for i in range(count):
-        act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'hello,world%d'%(i,)]
+        act = ['hello', 'sayhello', b'hello,world%d'%(i,), {'hello':'active'}]
         actions.append([act])
-    r, cost_time = eosapi.push_transactions(actions, True)
+    rr, cost_time = eosapi.push_transactions(actions, True)
     print(1e6/(cost_time/count), cost_time)
 
 @init

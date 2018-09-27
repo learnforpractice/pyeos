@@ -244,11 +244,14 @@ def test_open():
 def test_yield():
     yield from gen()
 
+@assert_failure
+def test_large_pow():
+    99**9999()
+
 def apply(receiver, code, action):
     print('+++++action:', n2s(action))
     if not action == N('sayhello'):
         return 
-
     if 1:
         test_crash2()
     #    test_base_exception()
@@ -294,5 +297,6 @@ def apply(receiver, code, action):
     test_str_format()
     test_open()
     test_yield()
-    test_timeout()
+    test_large_pow()
+#    test_timeout()
 
