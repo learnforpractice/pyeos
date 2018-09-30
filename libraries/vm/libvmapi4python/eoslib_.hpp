@@ -14,10 +14,10 @@
 #include <vector>
 #include <eosiolib_native/vm_api.h>
 
-#include <eosio/chain/action.hpp>
+#include <eosiolib/action.hpp>
 
 using namespace std;
-using namespace eosio::chain;
+using namespace eosio;
 
 uint64_t s2n_(const char* str);
 void n2s_(uint64_t _name, string& out);
@@ -48,7 +48,9 @@ int call_set_args_(string& args);
 int call_get_args_(string& args);
 
 uint64_t call_(uint64_t account, uint64_t func);
+
 int send_inline_(action& action);
+int send_deferred_(uint128_t* id, uint64_t payer, vector<action> actions, int expiration, int delay_sec, int max_ram_usage, bool replace_existing);
 
 //interface/wasm_.cpp
 namespace eosio { namespace chain {

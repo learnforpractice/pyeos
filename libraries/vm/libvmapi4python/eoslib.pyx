@@ -7,22 +7,49 @@ import db
 import struct
 
 cdef extern from "<stdint.h>":
+    ctypedef unsigned int       unsigned_int
+    ctypedef unsigned short     uint16_t
     ctypedef unsigned long long uint64_t
     ctypedef unsigned int       uint32_t
     ctypedef int                int32_t
     ctypedef long long          int64_t
+    ctypedef unsigned char      uint8_t
+
+    #WRONG define, just to pass cython compiler
+    ctypedef long long int128_t "__int128_t"
+    ctypedef unsigned long long uint128_t "__uint128_t"
 
 cdef extern from "<stdlib.h>":
     void memcpy(char* dst, char* src, size_t len)
     char * malloc(size_t size)
     void free(char* ptr)
 
-cdef extern from "<fc/log/logger.hpp>":
-    void ilog(char* log)
-    void elog(char* log)
-
 cdef extern from "<fc/crypto/xxhash.h>":
     uint64_t XXH64(const char *data, size_t length, uint64_t seed);
+
+cdef extern from "<eosiolib/transaction.hpp>":
+    cdef cppclass permission_level:
+          uint64_t    actor;
+          uint64_t permission;
+
+    cdef cppclass action:
+        action()
+        uint64_t                    account
+        uint64_t                    name
+        vector[permission_level]    authorization
+        vector[char]                data
+
+    cdef cppclass transaction:
+        uint32_t        expiration;
+        unsigned_int    net_usage_words
+        int32_t         max_ram_usage
+        unsigned_int    delay_sec
+        uint32_t        ref_block_prefix
+        uint16_t        ref_block_num
+        uint8_t         max_cpu_usage_ms
+
+        vector[action]  actions;
+
 
 cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     ctypedef unsigned long long uint128_t #fake define should be ctypedef __uint128_t uint128_t
@@ -31,13 +58,6 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         permission_level()
         uint64_t    actor
         uint64_t permission
-
-    cdef cppclass action:
-        action()
-        uint64_t                    account
-        uint64_t                    name
-        vector[permission_level]    authorization
-        vector[char]                data
     
     int db_idx_double_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
     int db_idx_double_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
@@ -55,21 +75,51 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
 
     uint64_t call_(uint64_t account, uint64_t func);
     int send_inline_(action& act);
+    int send_deferred_(uint128_t* id, uint64_t payer, vector[action] actions, int expiration, int delay_sec, int max_ram_usage, bool replace_existing)
+
+
+    cdef cppclass checksum256:
+       uint8_t hash[32]
+
+    cdef cppclass checksum160:
+       uint8_t hash[20];
+    
+    cdef cppclass checksum512:
+       uint8_t hash[64];
 
     cdef cppclass vm_api:
-        bool (*is_code_activated)( uint64_t name );
-
+#action.h
         uint32_t (*read_action_data)( void* msg, uint32_t len );
         uint32_t (*action_data_size)();
         void (*require_recipient)( uint64_t name );
         void (*require_auth)( uint64_t name );
-        void (*require_auth2)( uint64_t name, uint64_t permission );
         bool (*has_auth)( uint64_t name );
+        void (*require_auth2)( uint64_t name, uint64_t permission );
         bool (*is_account)( uint64_t name );
-        void (*send_inline)(const char *serialized_action, size_t size);
-        void (*send_context_free_inline)(char *serialized_action, size_t size);
+        void (*send_inline)(char *serialized_action, size_t size);
+        void (*send_context_free_inline)(const char *serialized_action, size_t size);
         uint64_t  (*publication_time)();
         uint64_t (*current_receiver)();
+#chain.h
+        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
+
+
+        void (*assert_sha256)( const char* data, uint32_t length, const checksum256* hash );
+        void (*assert_sha1)( const char* data, uint32_t length, const checksum160* hash );
+        void (*assert_sha512)( const char* data, uint32_t length, const checksum512* hash );
+        void (*assert_ripemd160)( const char* data, uint32_t length, const checksum160* hash );
+        void (*sha256)( const char* data, uint32_t length, checksum256* hash );
+        void (*sha1)( const char* data, uint32_t length, checksum160* hash );
+        void (*sha512)( const char* data, uint32_t length, checksum512* hash );
+        void (*ripemd160)( const char* data, uint32_t length, checksum160* hash );
+        int (*recover_key)( const checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
+        void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+
+
+        void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
+        int (*cancel_deferred)(const uint128_t* sender_id);
+
+        bool (*is_code_activated)( uint64_t name );
         uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
 
         int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount)
@@ -124,9 +174,6 @@ int db_idx256_next( int iterator, uint64_t& primary  )
 int db_idx256_previous( int iterator, uint64_t& primary )
 '''
 
-def is_account(uint64_t account):
-    return api().is_account(account)
-
 def is_code_activated(uint64_t account):
     return api().is_code_activated(account)
 
@@ -151,6 +198,7 @@ def eosio_assert(cond, msg=''):
 def now():
     return api().now()
 
+#action.h
 def read_action():
     cdef int size
     size = api().action_data_size()
@@ -158,11 +206,160 @@ def read_action():
     api().read_action_data(<char*>buf, size);
     return buf
 
+def require_recipient(uint64_t account):
+    return api().require_recipient(account)
+
 def require_auth(uint64_t account):
     return api().require_auth(account)
 
-def require_recipient(uint64_t account):
-    return api().require_recipient(account)
+def has_auth(uint64_t name):
+   return api().has_auth( name )
+
+def require_auth2(uint64_t name, uint64_t permission):
+   api().require_auth2( name, permission );
+
+def is_account( uint64_t name ):
+   return api().is_account( name );
+
+def send_inline(contract, act, args: bytes, permissions):
+    cdef action _act
+    cdef permission_level per
+
+    if isinstance(contract, str):
+        contract = s2n(contract)
+
+    if isinstance(act, str):
+        act = s2n(act)
+
+    _act.account = contract
+    _act.name = act
+    _act.data.resize(len(args))
+
+    memcpy(_act.data.data(), args, len(args))
+    for key in permissions:
+        per.actor = s2n(key)
+        per.permission = s2n(permissions[key])
+        _act.authorization.push_back(per)
+
+    return send_inline_(_act)
+
+def transfer_inline(_to, _amount, symbol=0):
+    if isinstance(_to, str):
+        _to = s2n(_to)
+
+    if not symbol:
+        symbol=bytearray(8)
+        symbol[0] = 4
+        symbol[1] = ord('E')
+        symbol[2] = ord('O')
+        symbol[3] = ord('S')
+        symbol, = struct.unpack('Q', symbol)
+    return api().transfer_inline(_to, _amount, symbol)
+
+def send_context_free_inline(data):
+   api().send_context_free_inline(data, len(data))
+
+def publication_time():
+    return api().publication_time()
+
+def current_receiver():
+   return api().current_receiver()
+
+
+def get_active_producers():
+    cdef uint32_t size
+    cdef vector[uint64_t] producers
+    size = api().get_active_producers(NULL, 0)
+    producers.resize(size/(sizeof(uint64_t)))
+    api().get_active_producers(producers.data(), size)
+    _producers = []
+    for p in producers:
+        _producers.append(n2s(p))
+    return _producers
+
+#crypto.h
+def assert_sha256(data, hash):
+    cdef const char* _hash
+    api().eosio_assert(len(hash) == sizeof(checksum256), 'length mismatch')
+    _hash = hash
+    api().assert_sha256(data, len(data), <const checksum256*>_hash)
+
+def assert_sha1(data, hash):
+    cdef const char* _hash
+    api().eosio_assert(len(hash) == sizeof(checksum160), 'length mismatch')
+    _hash = hash
+    api().assert_sha1(data, len(data), <const checksum160*>_hash)
+
+def assert_sha512(data, hash):
+    cdef const char* _hash
+    api().eosio_assert(len(hash) == sizeof(checksum512), 'length mismatch')
+    _hash = hash
+    api().assert_sha512(data, len(data), <const checksum512*>_hash)
+
+def assert_ripemd160(data, hash):
+    cdef const char* _hash
+    api().eosio_assert(len(hash) == sizeof(checksum160), 'length mismatch')
+    _hash = hash
+    api().assert_ripemd160(data, len(data), <const checksum160*>_hash)
+
+def sha256(data):
+    cdef const char* _hash
+    hash = bytes(sizeof(checksum256))
+    _hash = hash
+    api().sha256(data, len(data), <checksum256*>_hash)
+    return hash
+
+def sha1(data):
+    cdef char* _hash
+    hash = bytes(sizeof(checksum160))
+    _hash = hash
+    api().sha1(data, len(data), <checksum160*>_hash)
+    return hash
+
+def sha512(data):
+    cdef char* _hash
+    hash = bytes(sizeof(checksum512))
+    _hash = hash
+    api().sha512(data, len(data), <checksum512*>_hash)
+    return hash
+
+def ripemd160(data):
+    cdef char* _hash
+    hash = bytes(sizeof(checksum160))
+    _hash = hash
+    api().ripemd160(data, len(data), <checksum160*>_hash)
+    return hash
+
+def send_deferred(id, uint64_t payer, actions, expiration, delay_sec, max_ram_usage, replace_existing=False):
+    cdef uint128_t          _id
+    cdef action             _act
+    cdef vector[action]     _acts
+    cdef permission_level   per
+
+    if len(actions) > 100:
+        raise Exception('action size too large!')
+
+    for a in actions:
+        _act = action()
+        _act.account = s2n(a[0])
+        _act.name = s2n(a[1])
+        _act.data.resize(len(a[2]))
+        memcpy(_act.data.data(), a[2], len(a[2]))
+
+        pers = a[3]
+        for key in pers:
+            per.actor = s2n(key)
+            per.permission = s2n(pers[key])
+            _act.authorization.push_back(per)
+        _acts.push_back(_act)
+
+    _id = id
+    return send_deferred_(&_id, payer, _acts, expiration, delay_sec, max_ram_usage, replace_existing)
+
+def cancel_deferred(id):
+    cdef uint128_t _id
+    _id = id
+    api().cancel_deferred(&_id);
 
 def wasm_call2(uint64_t receiver, string& file_name, string& func, vector[uint64_t]& args):
     cdef vector[char] result
@@ -202,42 +399,6 @@ def call_get_args():
 
 def call(uint64_t account, uint64_t func):
     return call_(account, func)
-
-def send_inline(contract, act, args: bytes, permissions):
-    cdef action _act
-    cdef permission_level per
-
-    if isinstance(contract, str):
-        contract = s2n(contract)
-
-    if isinstance(act, str):
-        act = s2n(act)
-
-    _act.account = contract
-    _act.name = act
-    _act.data.resize(len(args))
-
-    memcpy(_act.data.data(), args, len(args))
-    print(args)
-    for key in permissions:
-        per.actor = s2n(key)
-        per.permission = s2n(permissions[key])
-        _act.authorization.push_back(per)
-
-    return send_inline_(_act)
-
-def transfer_inline(_to, _amount, symbol=0):
-    if isinstance(_to, str):
-        _to = s2n(_to)
-
-    if not symbol:
-        symbol=bytearray(8)
-        symbol[0] = 4
-        symbol[1] = ord('E')
-        symbol[2] = ord('O')
-        symbol[3] = ord('S')
-        symbol, = struct.unpack('Q', symbol)
-    return api().transfer_inline(_to, _amount, symbol)
 
 #    return send_inline('eosio.token', 'transfer', args, {_from:'active'})
 

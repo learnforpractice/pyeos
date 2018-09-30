@@ -1,7 +1,7 @@
 #include "eoslib_.hpp"
 
-#include <eosio/chain/name.hpp>
-#include <fc/io/raw.hpp>
+#include <eosiolib/datastream.hpp>
+#include <eosiolib/transaction.hpp>
 
 extern "C" {
    void  eosio_assert( uint32_t test, const char* msg );
@@ -95,21 +95,31 @@ uint64_t call_(uint64_t account, uint64_t func) {
 }
 
 int send_inline_(action& act) {
-   vector<char> data = fc::raw::pack<action>(act);
+   vector<char> data = eosio::pack<action>(act);
    api().send_inline(data.data(), data.size());
+   return 1;
+}
+
+int send_deferred_(uint128_t* id, uint64_t payer, vector<action> actions, int expiration, int delay_sec, int max_ram_usage, bool replace_existing) {
+   transaction ts;
+   ts.expiration = time_point_sec(expiration);
+   ts.delay_sec = delay_sec;
+   ts.max_ram_usage = max_ram_usage;
+   auto data = eosio::pack<transaction>(ts);
+   api().send_deferred(id, payer, data.data(), data.size(), replace_existing);
    return 1;
 }
 
 void pack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
-   std::vector<char> o = fc::raw::pack<string>(raw);
-   fc::raw::pack<std::vector<char>>(o);
+   std::vector<char> o = eosio::pack<string>(raw);
+   eosio::pack<std::vector<char>>(o);
    out = string(o.begin(), o.end());
 }
 
 void unpack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> v(raw.begin(), raw.end());
-   out = fc::raw::unpack<string>(v);
+   out = eosio::unpack<string>(v);
 }
 
