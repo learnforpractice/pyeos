@@ -259,8 +259,30 @@ def deffer_send():
     ref_block_prefix = 0
     send_deferred(sender_id, payer, now()+5, 0, ref_block, ref_block_prefix, 100000, 100000, 2 , free_actions, actions);
 
+def crypto_test():
+    data = 'hello,world'
+    hash = sha256(data)
+    assert_sha256(data, hash)
+    
+    hash = sha1(data)
+    assert_sha1(data, hash)
+
+    hash = sha512(data)
+    assert_sha512(data, hash)
+
+    hash = ripemd160(data)
+    assert_ripemd160(data, hash)
+
+def t():
+    producers = get_active_producers()
+    print(producers)
+    return
+
 def apply(receiver, code, action):
 #    eosio_delay(190)
+    print('hello,world')
+    crypto_test()
+    return
     if action == N('dbtest'):
 #        db_test()
         db_test_i64()

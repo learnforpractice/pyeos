@@ -36,8 +36,7 @@ def test(name=None):
 
     print('counter begin: ', counter_begin)
 
-    r = eosapi.push_action('counter', 'count', '', {'counter':'active'})
-    assert r and not r['except'] 
+    r, cost = eosapi.push_action('counter', 'count', '', {'counter':'active'})
 
     counter_end = 0
     itr = db.find_i64(code, code, code, counter_id)

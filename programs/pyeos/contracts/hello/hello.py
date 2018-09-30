@@ -1,5 +1,5 @@
 import db
-from eoslib import N, read_action
+from eoslib import N, read_action, send_inline, transfer_inline
 
 def sayHello():
     n = N('hello')
@@ -27,5 +27,7 @@ def apply(receiver, code, action):
     if action == N('sayhello'):
         sayHello()
     elif action == N('play'):
-        play()
+        transfer_inline('eosio', 100)
+#        send_inline('hello', 'sayhello', b'hello,world', {'hello':'active'})
+#        play()
 

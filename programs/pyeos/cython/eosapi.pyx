@@ -265,7 +265,7 @@ def get_balance(account, token_account='eosio.token'):
 
 def transfer(_from, _to, _amount, _memo='', token_account='eosio.token'):
     args = {"from":_from, "to":_to, "quantity":'%.4f EOS'%(_amount,), "memo":_memo}
-    r = push_action(token_account, 'transfer', args, {_from:'active'})
+    r, _ = push_action(token_account, 'transfer', args, {_from:'active'})
     if r and not r['except']:
         return True
     return False
@@ -452,10 +452,12 @@ class Producer(object):
         self.produce_block()
 
     def __enter__(self):
-        produce_block_start_()
+        r = produce_block_start_()
+        assert r
     
     def __exit__(self, type, value, traceback):
-        produce_block_end_()
+        r = produce_block_end_()
+        assert r
         time.sleep(0.5)
 
 producer = Producer()
@@ -628,18 +630,21 @@ def gen_transaction(actions, int expiration=100):
     v = vector[action]()
     for a in actions:
         act = action()
-        act.account = a[0]
-        act.name = a[1]
+        act.account = s2n(a[0])
+        act.name = s2n(a[1])
         pers = vector[permission_level]()
-        for auth in a[2]:
+        for auth in a[3]:
             per = permission_level()
-            per.actor = auth[0]
-            per.permission = auth[1]
+            per.actor = s2n(auth)
+            per.permission = s2n(a[3][auth])
             pers.push_back(per)
         act.authorization = pers
         act.data.resize(0)
-        act.data.resize(len(a[3]))
-        memcpy(act.data.data(), a[3], len(a[3]))
+        act.data.resize(len(a[2]))
+        if isinstance(a[2], dict):
+            pack_args(act.account, act.name, a[2])
+        else:
+            memcpy(act.data.data(), a[2], len(a[2]))
         v.push_back(act)
 
     return gen_transaction_(v, expiration)
@@ -653,7 +658,14 @@ def sign_transaction(trx, string& str_private_key):
 def push_raw_transaction(signed_trx):
     if isinstance(signed_trx, dict):
         signed_trx = json.dumps(signed_trx)
-    return push_raw_transaction_(signed_trx)
+
+    if has_opt('manual-gen-block'):
+        with producer:
+            ret = push_raw_transaction_(signed_trx)
+    else:
+        ret = push_raw_transaction_(signed_trx)
+    if ret:
+        return JsonStruct(ret)
 
 def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, compress=False, max_ram_usage=10*1024*1024):
     '''Send transactions
@@ -899,3 +911,30 @@ def transaction_listen():
 
 def transaction_disconnect():
     transaction_disconnect_();
+
+def update_auth(account, permission, key):
+    if permission == 'active':
+        parent = 'owner'
+    elif permission == 'owner':
+        parent = ''
+    else:
+        parent = ''
+
+    a = {
+        "account": account,
+        "permission": permission,
+        "parent": parent,
+        "auth": {
+            "threshold": 1,
+            "keys": [
+                {
+                    "key": key,
+                    "weight": 1
+                }
+            ],
+            "accounts": [],
+            "waits": []
+        }
+    }
+    push_action('eosio', 'updateauth', a, {'hello':'owner'})
+

@@ -18,8 +18,7 @@ def init(func):
         try:
             ret =  func(*args, **kwargs)
         except Exception as e:
-            s = eosapi.JsonStruct(e.args[0])
-            print(s)
+            print(e)
         return ret
     return func_wrapper
 
@@ -100,7 +99,111 @@ def set_auth():
         }
     }
     eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
-    
+
+def update_auth(account, permission, key):
+    if permission == 'active':
+        parent = 'owner'
+    elif permission == 'owner':
+        parent = ''
+    else:
+        parent = ''
+
+    a = {
+        "account": account,
+        "permission": permission,
+        "parent": parent,
+        "auth": {
+            "threshold": 1,
+            "keys": [
+                {
+                    "key": key,
+                    "weight": 1
+                }
+            ],
+            "accounts": [],
+            "waits": []
+        }
+    }
+    eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
+
+def update_auth2():
+    account = 'hello'
+    permission = 'active'
+    parent = 'owner'
+    a = {
+        "account": account,
+        "permission": permission,
+        "parent": parent,
+        "auth": {
+            "threshold": 2,
+            "keys": [
+                {
+                    "key": "EOS61MgZLN7Frbc2J7giU7JdYjy2TqnfWFjZuLXvpHJoKzWAj7Nst",
+                    "weight": 1
+                }
+            ],
+            "accounts": [{'permission':{'actor':'hello', 'permission':'owner'}, 'weight':1}],
+            "waits": []
+        }
+    }
+    eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
+
+def update_auth3():
+    account = 'hello'
+    permission = 'active'
+    parent = 'owner'
+    keys = ['EOS8TK6xU7M86WqRupHDUzAwwem4gzzDSXWA1byfD2KC1H8WWC9Dk',
+            'EOS6X5BmJUB95F6Tac5t87gTEZUcNGcJpW22MhTzbvMHfMXjiDAMu']
+    keys.sort()
+    a = {
+        "account": account,
+        "permission": permission,
+        "parent": parent,
+        "auth": {
+            "threshold": 2,
+            "keys": [
+                {
+                    "key": keys[0],
+                    "weight": 1
+                },
+                {
+                    "key": keys[1],
+                    "weight": 1
+                }
+            ],
+            "accounts": [],
+            "waits": []
+        }
+    }
+    eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
+
+def update_auth4():
+    account = 'hello'
+    permission = 'owner'
+    parent = ''
+    a = {
+        "account": account,
+        "permission": permission,
+        "parent": parent,
+        "auth": {
+            "threshold": 2,
+            "keys": [
+                {
+                    "key": "5JvmV56XWvVNfnxBncgquTQ5MAyDcD6cbrRoPk1yocaPqwwDYni",
+                    "weight": 1
+                },
+                {
+                    "key": "5JmoVeCr29vcipggfxBywFmQqsz4zpiazzXUoGDDo5iRPab1GFf",
+                    "weight": 1
+                }
+            ],
+            "accounts": [],
+            "waits": []
+        }
+    }
+    eosapi.push_action('eosio', 'updateauth', a, {'hello':'owner'})
+
+
 def create_multisig_account():
     #PW5KKNC8zM2KVLrb1cw4YNXZ69NLK7Fr5B35wHmsPt35tyiYkY4RR
     test_keys = {
@@ -148,24 +251,23 @@ def create_multisig_account():
     eosapi.produce_block()
 
 def gen_trx():
-    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
+    act = ['hello', 'sayhello', b'jack', {'hello':'active'}]
     r = eosapi.gen_transaction([act])
-    print(r)
+    return r
 
 def sign_trx():
-    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
+    act = ['hello', 'sayhello', b'jack', {'hello':'active'}]
     r = eosapi.gen_transaction([act])
-    print(r)
-    r = eosapi.sign_transaction(r, '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
-    r = eosapi.JsonStruct(r)
+    r = eosapi.sign_transaction(r, '5JvmV56XWvVNfnxBncgquTQ5MAyDcD6cbrRoPk1yocaPqwwDYni')
+    r = eosapi.sign_transaction(r, '5JmoVeCr29vcipggfxBywFmQqsz4zpiazzXUoGDDo5iRPab1GFf')
     print(r)
 
-def push_sign_trx():
-    act = [N('hello'), N('sayhello'), [[N('hello'), N('active')]], b'jack']
+def push_signed_trx():
+    act = ['hello', 'sayhello', b'jack', {'hello':'active'}]
     r = eosapi.gen_transaction([act])
+    r = eosapi.sign_transaction(r, '5JvmV56XWvVNfnxBncgquTQ5MAyDcD6cbrRoPk1yocaPqwwDYni')
+    r = eosapi.sign_transaction(r, '5JmoVeCr29vcipggfxBywFmQqsz4zpiazzXUoGDDo5iRPab1GFf')
+    print(r)
+    r = eosapi.push_raw_transaction(r)
 
-    print(json.dumps(r, sort_keys=False, indent=4, separators=(',', ': ')))
 
-    r = eosapi.sign_transaction(r, '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB')
-    eosapi.push_raw_transaction(r)
-    eosapi.produce_block()

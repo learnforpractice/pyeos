@@ -356,7 +356,7 @@ PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
       }
 
       auto info = get_info();
-      trx.expiration = info.head_block_time + fc::seconds(expiration);
+      trx.expiration = fc::time_point::now() + fc::seconds(expiration);;
       trx.set_reference_block(info.head_block_id);
 
 //      trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
@@ -397,14 +397,8 @@ PyObject* push_raw_transaction_(string& signed_trx) {
       controller& ctrl = get_chain_plugin().chain();
       uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
       auto trx_trace_ptr = ctrl.push_transaction(mtrx, fc::time_point::maximum(), cpu_usage);
-
-      success = true;
-
+      return python::json::to_string(trx_trace_ptr);
    }  FC_LOG_AND_DROP();
-
-   if (success) {
-      return python::json::to_string(result);
-   }
    return py_new_none();
 }
 
