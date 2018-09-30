@@ -248,10 +248,23 @@ def test_yield():
 def test_large_pow():
     99**9999()
 
+@assert_failure
+def test_large_pack():
+    import struct
+    a = struct.pack('Q10000000s', N('eosio'), b'hello')
+    print(len(a))
+
+@assert_failure
+def test_large_pack2():
+    import struct
+    a = struct.pack('Q1000000000000000000000000000000000000s', N('eosio'), b'hello')
+    print(len(a))
+
 def apply(receiver, code, action):
     print('+++++action:', n2s(action))
     if not action == N('sayhello'):
         return 
+
     if 1:
         test_crash2()
     #    test_base_exception()
@@ -298,5 +311,7 @@ def apply(receiver, code, action):
     test_open()
     test_yield()
     test_large_pow()
+    test_large_pack()
+    test_large_pack2()
 #    test_timeout()
 

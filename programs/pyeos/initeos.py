@@ -286,14 +286,15 @@ try:
     from credit import t as ct2
 
     from julia.hello import t as juh
-    from evm.evm import t as ee
-    from evm.testcase import t as et
 
     from lua.hello import t as lh
     from lua.testcase import t as lt
     from lua.eosio_token import t as le
 
     from java.hello import t as jh
+
+    from evm.evm import t as ee
+    from evm.testcase import t as et
 
 #    from biosboot import t as bb
     import d
@@ -516,6 +517,8 @@ def wd():
     print('disable native contract')
     debug.wasm_enable_native_contract(0)
 
+pid = os.getpid()
+
 def start_console():
     print("start console...")
     init_wallet()
@@ -529,7 +532,7 @@ def start_console():
         except:
             pass
 
-    if start_ipython:
+    if False: #start_ipython:
         IPython.start_ipython(user_ns=sys.modules['initeos'].__dict__)
     else:
         signal.signal(signal.SIGINT, original_sigint_handler)
