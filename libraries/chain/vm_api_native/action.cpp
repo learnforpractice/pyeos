@@ -53,7 +53,7 @@ void send_inline(const char *data, size_t data_len) {
    ctx().execute_inline(std::move(act));
 }
 
-void send_context_free_inline(char *data, size_t data_len) {
+void send_context_free_inline(const char *data, size_t data_len) {
    //TODO: Why is this limit even needed? And why is it not consistently checked on actions in input or deferred transactions
    EOS_ASSERT( data_len < ctx().control.get_global_properties().configuration.max_inline_action_size, inline_action_too_big,
              "inline action too big" );

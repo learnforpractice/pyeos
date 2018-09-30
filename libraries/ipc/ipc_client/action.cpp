@@ -65,7 +65,7 @@ void send_inline(const char *data, size_t data_len) {
    ipc_client::get().send_inline(data, data_len);
 }
 
-void send_context_free_inline(char *data, size_t data_len) {
+void send_context_free_inline(const char *data, size_t data_len) {
    ipc_client::get().send_context_free_inline(data, data_len);
 }
 

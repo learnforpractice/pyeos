@@ -40,7 +40,7 @@ void send_inline(char *data, size_t data_len) {
    return;
 }
 
-void send_context_free_inline(char *data, size_t data_len) {
+void send_context_free_inline(const char *data, size_t data_len) {
    return;
 }
 

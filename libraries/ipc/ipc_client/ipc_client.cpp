@@ -53,7 +53,7 @@ void ipc_client::send_inline(const char *data, size_t data_len) {
 
 }
 
-void ipc_client::send_context_free_inline(char *data, size_t data_len) {
+void ipc_client::send_context_free_inline(const char *data, size_t data_len) {
 
 }
 

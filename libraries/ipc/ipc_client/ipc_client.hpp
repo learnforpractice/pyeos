@@ -25,7 +25,7 @@ public:
    void require_auth( uint64_t name );
    void require_auth2( uint64_t name, uint64_t permission );
    void send_inline(const char *data, size_t data_len);
-   void send_context_free_inline(char *data, size_t data_len);
+   void send_context_free_inline(const char *data, size_t data_len);
    uint64_t  publication_time();
    uint32_t get_active_producers( uint64_t* producers, uint32_t buffer_size );
 
