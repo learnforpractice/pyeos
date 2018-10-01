@@ -139,6 +139,8 @@ uint64_t get_code_update_time_ms_(string& name);
 void transaction_listen_();
 void transaction_disconnect_();
 
+void get_active_producers_(vector<string>& producers);
+
 extern "C" {
 	int has_option(const char* _option);
 	int get_option(const char* option, char *result, int size);

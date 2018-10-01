@@ -84,6 +84,8 @@ cdef extern from "eosapi_.hpp":
     void pack_bytes_(string& _in, string& out)
     void unpack_bytes_(string& _in, string& out)
 
+    void get_active_producers_(vector[string]& producers)
+
     cdef cppclass permission_level:
         permission_level()
         uint64_t    actor
@@ -266,7 +268,7 @@ def get_balance(account, token_account='eosio.token'):
 def transfer(_from, _to, _amount, _memo='', token_account='eosio.token'):
     args = {"from":_from, "to":_to, "quantity":'%.4f EOS'%(_amount,), "memo":_memo}
     r, _ = push_action(token_account, 'transfer', args, {_from:'active'})
-    if r and not r['except']:
+    if r:
         return True
     return False
 
@@ -937,4 +939,10 @@ def update_auth(account, permission, key):
         }
     }
     push_action('eosio', 'updateauth', a, {'hello':'owner'})
+
+def get_active_producers():
+    cdef vector[string] producers
+    get_active_producers_(producers)
+    return producers
+
 

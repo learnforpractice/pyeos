@@ -990,3 +990,11 @@ void transaction_disconnect_() {
    cnn.disconnect();
    cnn2.disconnect();
 }
+
+void get_active_producers_(vector<string>& producers) {
+   auto aps = get_controller().active_producers();
+   for(const auto& producer : aps.producers ) {
+      producers.push_back(producer.producer_name.to_string());
+   }
+}
+
