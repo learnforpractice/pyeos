@@ -40,7 +40,7 @@ def _load_module(account, code):
         logging.exception(e)
     return None
 
-cdef extern void cpython_compile(string& name, string& code, string& result):
+cdef extern void cpython_compile(string& name, string& code, string& result) with gil:
     cdef string _result
     try:
         co = compile(code, name, 'exec')

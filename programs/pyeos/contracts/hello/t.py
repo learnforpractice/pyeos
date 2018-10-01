@@ -42,7 +42,7 @@ def test2(count=100):
     print('total cost time:%.3f s, cost per action: %.3f ms, actions per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
-def tt(count=1000):
+def tt(count=500):
     actions = []
     for i in range(count):
         args = {"from":'eosio', "to":'eosio.ram', "quantity":'%.4f EOS'%(0.01,), "memo":'hello'}
@@ -70,8 +70,8 @@ def test3(count=100):
     for i in range(count):
         act = ['hello', 'sayhello', b'hello,world%d'%(i,), {'hello':'active'}]
         actions.append([act])
-    rr, cost_time = eosapi.push_transactions(actions, True)
-    print(1e6/(cost_time/count), cost_time)
+    rr, cost = eosapi.push_transactions(actions, True)
+    print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
 def deploy_mpy():

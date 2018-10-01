@@ -24,11 +24,12 @@ public:
       return *_inst;
    }
    int get_wasm_runtime_type();
+   bool is_contracts_console_enabled();
    ~options();
 private:
    options();
-   vm_type            wasm_runtime = eosio::chain::wasm_interface::vm_type::wabt;//eosio::chain::config::default_wasm_runtime;
-
+   vm_type           wasm_runtime = eosio::chain::wasm_interface::vm_type::wabt;//eosio::chain::config::default_wasm_runtime;
+   bool              contracts_console = false;
    variables_map & _options;
 };
 

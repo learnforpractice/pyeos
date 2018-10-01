@@ -751,7 +751,8 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
 
     cost_time = 0
     for r in results:
-        cost_time += r.elapsed
+        if 'elapsed' in r:
+            cost_time += r.elapsed
     return results, cost_time
 
 def push_action(contract, action, args, permissions: Dict, _async=False, sign=True, max_ram_usage=10*1024):

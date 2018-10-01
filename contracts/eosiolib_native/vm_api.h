@@ -49,31 +49,29 @@ struct vm_api {
 
    void (*assert_sha256)( const char* data, uint32_t length, const struct checksum256* hash );
    void (*assert_sha1)( const char* data, uint32_t length, const struct checksum160* hash );
-
    void (*assert_sha512)( const char* data, uint32_t length, const struct checksum512* hash );
    void (*assert_ripemd160)( const char* data, uint32_t length, const struct checksum160* hash );
+   void (*assert_recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+
    void (*sha256)( const char* data, uint32_t length, struct checksum256* hash );
    void (*sha1)( const char* data, uint32_t length, struct checksum160* hash );
    void (*sha512)( const char* data, uint32_t length, struct checksum512* hash );
    void (*ripemd160)( const char* data, uint32_t length, struct checksum160* hash );
    int (*recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
-   void (*assert_recover_key)( const struct checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+   int (*sha3)(const char* data, int size, char* result, int size2);
+
 
    int (*get_table_item_count)(uint64_t code, uint64_t scope, uint64_t table);
 
    int32_t (*db_store_i64)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
    int32_t (*db_store_i64_ex)(uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, uint64_t id,  const char* data, uint32_t len);
-
    void (*db_update_i64)(int32_t iterator, uint64_t payer, const char* data, uint32_t len);
    void (*db_remove_i64)(int32_t iterator);
-
    void (*db_update_i64_ex)( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id, const char* buffer, size_t buffer_size );
    void (*db_remove_i64_ex)( uint64_t scope, uint64_t payer, uint64_t table, uint64_t id );
-
    int32_t (*db_get_i64)(int32_t iterator, void* data, uint32_t len);
    int32_t (*db_get_i64_ex)( int itr, uint64_t* primary, char* buffer, size_t buffer_size );
    const char* (*db_get_i64_exex)( int itr, size_t* buffer_size );
-
    int32_t (*db_next_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_previous_i64)(int32_t iterator, uint64_t* primary);
    int32_t (*db_find_i64)(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
@@ -81,18 +79,17 @@ struct vm_api {
    int32_t (*db_upperbound_i64)(uint64_t code, uint64_t scope, uint64_t table, uint64_t id);
    int32_t (*db_end_i64)(uint64_t code, uint64_t scope, uint64_t table);
 
-   int32_t (*db_idx64_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint64_t* secondary);
-   void (*db_idx64_update)(int32_t iterator, uint64_t payer, const uint64_t* secondary);
-   void (*db_idx64_remove)(int32_t iterator);
-
-
    int (*db_store_i256)( uint64_t code, uint64_t scope, uint64_t table, uint64_t payer, void* id, int size, const char* buffer, size_t buffer_size );
    void (*db_update_i256)( int iterator, uint64_t payer, const char* buffer, size_t buffer_size );
    void (*db_remove_i256)( int iterator );
    int (*db_get_i256)( int iterator, char* buffer, size_t buffer_size );
    int (*db_find_i256)( uint64_t code, uint64_t scope, uint64_t table, void* id, int size );
 
-   int (*sha3)(const char* data, int size, char* result, int size2);
+
+   int32_t (*db_idx64_store)(uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const uint64_t* secondary);
+   void (*db_idx64_update)(int32_t iterator, uint64_t payer, const uint64_t* secondary);
+   void (*db_idx64_remove)(int32_t iterator);
+
 
    int32_t (*db_idx64_next)(int32_t iterator, uint64_t* primary);
    int32_t (*db_idx64_previous)(int32_t iterator, uint64_t* primary);
@@ -279,6 +276,7 @@ struct vm_api {
    uint64_t (*ethaddr2n)(const char* address, int size);
    void (*n2ethaddr)(uint64_t n, char* address, int size);
 
+   int (*is_contracts_console_enabled)();
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };
 

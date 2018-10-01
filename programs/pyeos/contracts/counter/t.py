@@ -49,7 +49,7 @@ def test(name=None):
     assert counter_begin + 1 == counter_end
 
 @init()
-def test2(count=1000, msg='wasm'):
+def test2(count=500, msg='wasm'):
     import time
     import json
 
@@ -85,7 +85,7 @@ def test2(count=1000, msg='wasm'):
     print('msg', msg)
 
 @init()
-def test3(count=1000, msg='wasm'):
+def test3(count=500, msg='wasm'):
     import time
     import json
 
