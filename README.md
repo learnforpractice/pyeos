@@ -37,6 +37,15 @@ sudo apt-get install libleveldb-dev
 sudo apt-get install libreadline-dev
 ```
 
+
+## Installing dependencies (Centos)
+
+```
+sudo yum install leveldb-devel
+sudo yum install readline-devel
+sudo yum install libffi-devel
+```
+
 ## Installing dependencies (macOS)
 
 ```
