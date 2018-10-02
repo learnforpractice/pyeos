@@ -41,14 +41,14 @@ using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
-auto tx_expiration = fc::seconds(120);
-bool tx_force_unique = false;
+static auto tx_expiration = fc::seconds(120);
+static bool tx_force_unique = false;
 
-uint32_t tx_cf_cpu_usage = 0;
-uint32_t tx_net_usage = 0;
+static uint32_t tx_cf_cpu_usage = 0;
+static uint32_t tx_net_usage = 0;
 
-uint32_t tx_max_cpu_usage = 0;
-uint32_t tx_max_net_usage = 0;
+static uint32_t tx_max_cpu_usage = 0;
+static uint32_t tx_max_net_usage = 0;
 
 uint64_t string_to_uint64_(string str) {
    try {
@@ -120,18 +120,18 @@ inline std::vector<name> sort_names(std::vector<name>&& names) {
    return names;
 }
 
-fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
+static fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
 {
    return fc::json::from_string(file_or_str, ptype);
 }
 
-authority parse_json_authority(const std::string& authorityJsonOrFile) {
+static authority parse_json_authority(const std::string& authorityJsonOrFile) {
    try {
       return json_from_file_or_string(authorityJsonOrFile).as<authority>();
    } EOS_RETHROW_EXCEPTIONS(authority_type_exception, "Fail to parse Authority JSON '${data}'", ("data",authorityJsonOrFile))
 }
 
-authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
+static authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
    if (boost::istarts_with(authorityJsonOrFile, "EOS")) {
       try {
          return authority(public_key_type(authorityJsonOrFile));
@@ -170,7 +170,7 @@ vector<uint8_t> assemble_wast(const std::string& wast) {
    }
 }
 
-read_only::get_info_results get_info() {
+static read_only::get_info_results get_info() {
    auto& ro_api = get_chain_plugin().get_read_only_api();
    eosio::chain_apis::read_only::get_info_params params = {};
    return ro_api.get_info(params);
@@ -187,7 +187,7 @@ chain::action generate_nonce() {
    return chain::action( {}, config::system_account_name, "nonce", fc::raw::pack(nonce));
 }
 
-fc::variant determine_required_keys(const signed_transaction& trx) {
+static fc::variant determine_required_keys(const signed_transaction& trx) {
    // TODO better error checking
 //   const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
    auto& wallet_mgr = get_wallet_plugin().get_wallet_manager();
@@ -239,6 +239,44 @@ struct async_result_visitor : public fc::visitor<PyObject*> {
 #include <chrono>
 using namespace std::chrono_literals;
 
+fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none );
+
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
+   vector<signed_transaction* > trxs;
+   packed_transaction::compression_type compression;
+   if (compress) {
+      compression = packed_transaction::zlib;
+   } else {
+      compression = packed_transaction::none;
+   }
+
+   uint64_t cost_time = 0;
+   PyArray _outputs;
+
+   try {
+      for (auto& v: vv) {
+         signed_transaction trx;
+         trx.expiration = fc::time_point::now() + tx_expiration;
+         trx.max_ram_usage = max_ram_usage;
+         for(auto& action: v) {
+            trx.actions.emplace_back(std::move(action));
+         }
+
+         Py_BEGIN_ALLOW_THREADS
+         auto result = push_transaction(trx);
+         _outputs.append(python::json::to_string(result));
+         Py_END_ALLOW_THREADS
+
+      }
+   }  FC_LOG_AND_DROP();
+
+   PyArray res;
+   res.append(_outputs.get());
+   res.append(py_new_uint64(0));
+   return res.get();
+}
+
+
 PyObject* push_transaction_async_(packed_transaction& pt) {
 
    bool ready = false;
@@ -281,7 +319,8 @@ PyObject* push_transaction_async_(packed_transaction& pt) {
    return python::json::to_string(*output);
 }
 
-PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
+
+PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
    vector<signed_transaction* > trxs;
    packed_transaction::compression_type compression;
    if (compress) {

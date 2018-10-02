@@ -126,7 +126,7 @@ target_include_directories( pyeos-shared
 
 add_executable(pyeos main.cpp)
 
-target_link_libraries( pyeos pyeos-shared )
+target_link_libraries( pyeos pyeos-shared cleos-static)
 
 add_dependencies(pyeos nodeos)
 

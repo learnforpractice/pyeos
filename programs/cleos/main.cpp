@@ -300,7 +300,8 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
    auto info = get_info();
 
    if (trx.signatures.size() == 0) { // #5445 can't change txn content if already signed
-      trx.expiration = info.head_block_time + tx_expiration;
+//      trx.expiration = info.head_block_time + tx_expiration;
+      trx.expiration = fc::time_point::now() + tx_expiration;
 
       // Set tapos, default to last irreversible block if it's not specified by the user
       block_id_type ref_block_id = info.last_irreversible_block_id;
@@ -1740,7 +1741,14 @@ CLI::callback_t header_opt_callback = [](CLI::results_t res) {
    return true;
 };
 
-int main( int argc, char** argv ) {
+void cleos_init() {
+   setlocale(LC_ALL, "");
+   bindtextdomain(locale_domain, locale_path);
+   textdomain(locale_domain);
+   context = eosio::client::http::create_http_context();
+}
+
+int eos_main( int argc, char** argv ) {
    setlocale(LC_ALL, "");
    bindtextdomain(locale_domain, locale_path);
    textdomain(locale_domain);

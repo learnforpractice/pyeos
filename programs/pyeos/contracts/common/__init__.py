@@ -97,7 +97,7 @@ def build_native(account, full_src_path):
     cpp2wast.set_src_path(_src_dir)
     cpp2wast.build_native(account+'.cpp', account)
     lib_file = os.path.join(_src_dir, 'lib{0}.dylib'.format(account))
-    debug.set_debug_contract(account, lib_file)
+#    debug.set_debug_contract(account, lib_file)
 
 def compare_code_object(co1, co2):
     if len(co1.co_consts) != len(co2.co_consts):

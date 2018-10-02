@@ -359,7 +359,7 @@ def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
         act = ['eosio', 'delegatebw', args, {creator:'active'}]
         actions.append(act)
 
-    r = push_actions(actions)
+    r, cost = push_actions(actions)
 
     if r and not r['except']:
         return True
@@ -746,8 +746,8 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
     else:
         results, cost = push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
     for i in range(len(results)):
-        r = results[i]
-        results[i] = JsonStruct(results[i])
+        r = results[i]['processed']
+        results[i] = JsonStruct(r)
 
     cost_time = 0
     for r in results:

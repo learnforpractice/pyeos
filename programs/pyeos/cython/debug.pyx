@@ -163,7 +163,7 @@ def vm_run_lua_script(cfg, script):
     return get_vm_api()[0].vm_run_lua_script(cfg, script)
 
 def vm_set_debug_contract(int vm_type, const char* path):
-        get_vm_api()[0].vm_set_debug_contract(vm_type, path);
+    get_vm_api()[0].vm_set_debug_contract(vm_type, path);
 
 def vm_get_debug_contract():
     cdef uint64_t account = 0

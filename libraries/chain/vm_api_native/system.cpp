@@ -46,7 +46,9 @@ uint32_t  now() {
 }
 
 void checktime() {
-   ctx().trx_context.checktime();
+   try {
+      ctx().trx_context.checktime();
+   } FC_LOG_AND_RETHROW();
 }
 
 void check_context_free(bool context_free) {

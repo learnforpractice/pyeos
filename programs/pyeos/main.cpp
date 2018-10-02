@@ -150,10 +150,13 @@ void start_eos() {
    cv.notify_all();
 }
 
+void cleos_init();
+
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
+   cleos_init();
    vm_api_init();
 
    app().init_args(argc, argv);

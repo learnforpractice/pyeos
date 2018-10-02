@@ -1,4 +1,6 @@
-add_executable( ${CLI_CLIENT_EXECUTABLE_NAME} main.cpp httpc.cpp help_text.cpp localize.hpp config.hpp CLI11.hpp)
+add_library( ${CLI_CLIENT_EXECUTABLE_NAME}-static main.cpp httpc.cpp help_text.cpp localize.hpp config.hpp CLI11.hpp)
+
+add_executable( ${CLI_CLIENT_EXECUTABLE_NAME} cleos.cpp)
 if( UNIX AND NOT APPLE )
   set(rt_library rt )
 endif()
@@ -32,10 +34,13 @@ set(LOCALEDIR ${CMAKE_INSTALL_PREFIX}/share/locale)
 set(LOCALEDOMAIN ${CLI_CLIENT_EXECUTABLE_NAME})
 configure_file(config.hpp.in config.hpp ESCAPE_QUOTES)
 
-target_include_directories(${CLI_CLIENT_EXECUTABLE_NAME} PUBLIC ${Intl_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(${CLI_CLIENT_EXECUTABLE_NAME}-static PUBLIC ${Intl_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries( ${CLI_CLIENT_EXECUTABLE_NAME}-static
+                       PRIVATE appbase chain_api_plugin producer_plugin chain_plugin http_plugin eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} ${Intl_LIBRARIES} )
 
 target_link_libraries( ${CLI_CLIENT_EXECUTABLE_NAME}
-                       PRIVATE appbase chain_api_plugin producer_plugin chain_plugin http_plugin eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} ${Intl_LIBRARIES} )
+                       PRIVATE  ${CLI_CLIENT_EXECUTABLE_NAME}-static)
 
 install( TARGETS
    ${CLI_CLIENT_EXECUTABLE_NAME}

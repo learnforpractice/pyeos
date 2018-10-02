@@ -269,6 +269,12 @@ int error_handler(string& error) {
    return 1;
 }
 
+static uint64_t get_microseconds() {
+   struct timeval  tv;
+   gettimeofday(&tv, NULL);
+   return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
+}
+
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    s_current_account = receiver;
 
@@ -280,8 +286,11 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    enable_inspect_obj_creation(0);
 
    prepare_env(receiver);
-
+   uint64_t start = get_microseconds();
    int ret = cpython_apply(receiver, account, act);
+   uint64_t end = get_microseconds() - start;
+//   vmdlog("++++++++++cost time %llu\n", end);
+
    if (ret == -1) {
       string error;
       error_handler(error);
