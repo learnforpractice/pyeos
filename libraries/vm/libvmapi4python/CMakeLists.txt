@@ -20,7 +20,7 @@ add_library(vmapi4python STATIC
 
 set_target_properties(vmapi4python  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vmapi4python PRIVATE eosiolib_native fc python3)
+target_link_libraries(vmapi4python PRIVATE eosiolib_native fc)
 
 target_include_directories(vmapi4python PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include

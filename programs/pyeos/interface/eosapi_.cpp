@@ -340,11 +340,15 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 
          if (async) {
             PyObject* result;
+            variant v;
             uint64_t cost = get_microseconds();
-#if 0
+#if 1
             result = push_transaction_async_(ppt);
 #else
-            auto v = cleos_push_transaction( trx, compression );
+            Py_BEGIN_ALLOW_THREADS
+            v = cleos_push_transaction( trx, compression );
+            Py_END_ALLOW_THREADS
+
             result = python::json::to_string(v);
 #endif
             cost_time += (get_microseconds() - cost);
