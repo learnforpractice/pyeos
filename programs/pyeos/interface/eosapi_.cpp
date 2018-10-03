@@ -279,7 +279,6 @@ PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint
 
 
 PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
-
    bool ready = false;
    fc::mutable_variant_object output;
 
@@ -306,11 +305,19 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
 
    Py_BEGIN_ALLOW_THREADS
    std::unique_lock<std::mutex> lk(m);
+#if 0
    if (!cv->wait_for(lk, 1000ms, [&]{return ready;})) {
       if (!get_chain_plugin().chain().pending_block_state()) {
          output("except", "not in pending block state, ");
       }
    }
+#else
+   cv->wait(lk, [&]{return ready;});
+   if (get_chain_plugin().chain().pending_block_state()) {
+   } else {
+      output("except", "not in pending block state, ");
+   }
+#endif
    Py_END_ALLOW_THREADS
 //   wlog("+++++++++++++push_transaction_async: ${n}", ("n", get_microseconds()-start));
    return python::json::to_string(output);
@@ -378,7 +385,6 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 
 PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
    packed_transaction::compression_type compression = packed_transaction::none;
-   vector<signed_transaction* > trxs;
 
    uint64_t cost_time = 0;
 

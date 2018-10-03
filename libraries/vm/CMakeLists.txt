@@ -23,6 +23,6 @@ if (BUILD_VM_JULIA)
 endif()
 add_subdirectory( vm_lua )
 
-if (NOT "$ENV{JAVA_HOME}" STREQUAL "")
+if (NOT "${JAVA_VM}" STREQUAL "")
    add_subdirectory( vm_java )
 endif()

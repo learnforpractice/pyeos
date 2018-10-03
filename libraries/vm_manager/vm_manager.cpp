@@ -215,7 +215,7 @@ bool vm_manager::init(struct vm_api* api) {
 
    load_vm_from_path(VM_TYPE_LUA, vm_lua);
 
-   load_vm_from_path(VM_TYPE_JAVA, vm_java);
+//   load_vm_from_path(VM_TYPE_JAVA, vm_java);
 
    load_vm_from_path(VM_TYPE_WABT, vm_wasm_wabt);
    return true;
