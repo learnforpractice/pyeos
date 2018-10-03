@@ -194,7 +194,7 @@ static fc::variant determine_required_keys(const signed_transaction& trx) {
 //   flat_set<public_key_type> wallet_manager::get_public_keys() {
    const auto& public_keys = wallet_mgr.get_public_keys();
 
-   eosio::chain_apis::read_only::get_required_keys_params get_arg = {fc::variant((transaction)trx), public_keys};
+   eosio::chain_apis::read_only::get_required_keys_params get_arg = {fc::variant(trx), public_keys};
 //   auto get_arg = fc::mutable_variant_object
 //           ("transaction", (transaction)trx)
 //           ("available_keys", variant(public_keys));
@@ -343,25 +343,27 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          }
          gen_transaction(trx, sign, 10000000, compression);
 
-         std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
-
          if (async) {
             PyObject* result;
             variant v;
             uint64_t cost = get_microseconds();
-#if 1
+#if 0
+            std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
             result = push_transaction_async_(ppt);
 #else
             Py_BEGIN_ALLOW_THREADS
-            v = cleos_push_transaction( trx, compression );
+            try {
+               v = cleos_push_transaction( trx, compression );
+            } FC_LOG_AND_DROP();
+//            wlog("+++++++++++++++cleos_push_transaction end!");
             Py_END_ALLOW_THREADS
-
             result = python::json::to_string(v);
 #endif
             cost_time += (get_microseconds() - cost);
             _outputs.append(result);
          } else {
-             auto mtrx = std::make_shared<transaction_metadata>(*ppt);
+            std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
+            auto mtrx = std::make_shared<transaction_metadata>(*ppt);
              controller& ctrl = get_chain_plugin().chain();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
 

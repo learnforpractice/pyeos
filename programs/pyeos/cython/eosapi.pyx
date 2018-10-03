@@ -746,8 +746,10 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
     else:
         results, cost = push_transactions_(vv, sign, skip_flag, True, compress, max_ram_usage)
     for i in range(len(results)):
-        r = results[i]
-        results[i] = JsonStruct(r)
+#        r = results[i]
+        if results[i]:
+            r = results[i]['processed']
+            results[i] = JsonStruct(r)
 
     cost_time = 0
     for r in results:
