@@ -240,9 +240,9 @@ struct async_result_visitor : public fc::visitor<PyObject*> {
 using namespace std::chrono_literals;
 
 fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none );
+fc::variant cleos_push_transaction( signed_transaction& trx, packed_transaction::compression_type compression = packed_transaction::none );
 
 PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
-   vector<signed_transaction* > trxs;
    packed_transaction::compression_type compression;
    if (compress) {
       compression = packed_transaction::zlib;
@@ -281,8 +281,6 @@ PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint
 PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
 
    bool ready = false;
-//   std::shared_ptr<packed_transaction> ppt(&pt);// = std::make_shared<packed_transaction>();
-   std::shared_ptr<string> ss = std::make_shared<string>();
    fc::mutable_variant_object output;
 
    uint64_t start = get_microseconds();
@@ -341,11 +339,16 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
 
          if (async) {
-            PyObject* v;
+            PyObject* result;
             uint64_t cost = get_microseconds();
-            v = push_transaction_async_(ppt);
+#if 0
+            result = push_transaction_async_(ppt);
+#else
+            auto v = cleos_push_transaction( trx, compression );
+            result = python::json::to_string(v);
+#endif
             cost_time += (get_microseconds() - cost);
-            _outputs.append(v);
+            _outputs.append(result);
          } else {
              auto mtrx = std::make_shared<transaction_metadata>(*ppt);
              controller& ctrl = get_chain_plugin().chain();

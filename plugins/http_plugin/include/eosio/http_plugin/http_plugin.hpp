@@ -50,7 +50,7 @@ namespace eosio {
       string default_unix_socket_path;
       //If non 0, HTTP will be enabled by default on the given port number. If
       // 0, HTTP will not be enabled by default
-      uint16_t default_http_port{0};
+      uint16_t default_http_port{8888};
    };
 
    /**

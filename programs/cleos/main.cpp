@@ -339,6 +339,10 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
    }
 }
 
+fc::variant cleos_push_transaction( signed_transaction& trx, packed_transaction::compression_type compression = packed_transaction::none ) {
+   return call(push_txn_func, packed_transaction(trx, compression));
+}
+
 fc::variant push_actions(std::vector<chain::action>&& actions, int32_t extra_kcpu, packed_transaction::compression_type compression = packed_transaction::none ) {
    signed_transaction trx;
    trx.actions = std::forward<decltype(actions)>(actions);
