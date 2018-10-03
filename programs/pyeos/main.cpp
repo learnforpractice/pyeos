@@ -159,9 +159,6 @@ int main(int argc, char** argv) {
    cleos_init();
    vm_api_init();
 
-   app().init_args(argc, argv);
-   init_console();
-
    app().set_version(eosio::nodeos::config::version);
    app().register_plugin<history_plugin>();
    app().register_plugin<history_api_plugin>();
@@ -170,6 +167,7 @@ int main(int argc, char** argv) {
    app().register_plugin<wallet_api_plugin>();
    app().register_plugin<producer_plugin>();
 
+   init_console();
 
 //      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
    try {

@@ -33,7 +33,7 @@
 #include <mutex>
 #include <condition_variable>
 
-static std::shared_ptr<std::mutex> m(new std::mutex());
+static std::mutex m;
 static std::shared_ptr<std::condition_variable> cv(new std::condition_variable());
 
 
@@ -241,7 +241,7 @@ using namespace std::chrono_literals;
 
 fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none );
 
-PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
+PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
    vector<signed_transaction* > trxs;
    packed_transaction::compression_type compression;
    if (compress) {
@@ -261,12 +261,13 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          for(auto& action: v) {
             trx.actions.emplace_back(std::move(action));
          }
-
+         variant result;
          Py_BEGIN_ALLOW_THREADS
-         auto result = push_transaction(trx);
-         _outputs.append(python::json::to_string(result));
+         try {
+            result = push_transaction(trx);
+         }FC_LOG_AND_DROP();
          Py_END_ALLOW_THREADS
-
+         _outputs.append(python::json::to_string(result["processed"]));
       }
    }  FC_LOG_AND_DROP();
 
@@ -277,51 +278,47 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 }
 
 
-PyObject* push_transaction_async_(packed_transaction& pt) {
+PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
 
    bool ready = false;
-   bool *p = &ready;
-
-   std::shared_ptr<packed_transaction> ppt = std::make_shared<packed_transaction>();
-   *ppt = pt;
-
+//   std::shared_ptr<packed_transaction> ppt(&pt);// = std::make_shared<packed_transaction>();
    std::shared_ptr<string> ss = std::make_shared<string>();
-   std::shared_ptr<fc::mutable_variant_object> output = std::make_shared<fc::mutable_variant_object>();
+   fc::mutable_variant_object output;
 
-   appbase::app().get_io_service().post([ppt, p, ss, output](){
-      app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [p, output](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
+   uint64_t start = get_microseconds();
+
+   appbase::app().get_io_service().post([&](){
+      app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [&](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
          if (result.contains<fc::exception_ptr>()) {
             string s = result.get<fc::exception_ptr>()->to_string();
-            (*output)("except", s);
+            output("except", s);
          } else {
             auto trx_trace_ptr = result.get<transaction_trace_ptr>();
             auto v = get_controller().to_variant_with_abi(*trx_trace_ptr, fc::microseconds(300*1000));
-            *output = v.get_object();
-            (*output)("except", "");
+            output = v.get_object();
+            output("except", "");
          }
          {
-            std::lock_guard<std::mutex> lk(*m);
-            *p = true;
+            std::lock_guard<std::mutex> lk(m);
+            ready = true;
          }
          cv->notify_one();
       });
    });
 
    Py_BEGIN_ALLOW_THREADS
-   std::unique_lock<std::mutex> lk(*m);
-   if (!cv->wait_for(lk, 1000ms, [p]{return *p;})) {
+   std::unique_lock<std::mutex> lk(m);
+   if (!cv->wait_for(lk, 1000ms, [&]{return ready;})) {
       if (!get_chain_plugin().chain().pending_block_state()) {
-         (*output)("except", "not in pending block state, ");
+         output("except", "not in pending block state, ");
       }
    }
    Py_END_ALLOW_THREADS
-
-   return python::json::to_string(*output);
+//   wlog("+++++++++++++push_transaction_async: ${n}", ("n", get_microseconds()-start));
+   return python::json::to_string(output);
 }
 
-
-PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
-   vector<signed_transaction* > trxs;
+PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag, bool async, bool compress, int32_t max_ram_usage) {
    packed_transaction::compression_type compression;
    if (compress) {
       compression = packed_transaction::zlib;
@@ -334,28 +331,23 @@ PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint
 
    try {
       for (auto& v: vv) {
-         signed_transaction *trx = new signed_transaction();
-         trx->max_ram_usage = max_ram_usage;
-         trxs.push_back(trx);
-         for(auto& action: v) {
-            trx->actions.emplace_back(std::move(action));
+         signed_transaction trx;
+         trx.max_ram_usage = max_ram_usage;
+         for(auto& a: v) {
+            trx.actions.emplace_back(std::move(a));
          }
-         gen_transaction(*trx, sign, 10000000, compression);
-      }
-      auto& rw = get_chain_plugin().get_read_write_api();
+         gen_transaction(trx, sign, 10000000, compression);
 
-      for (auto& strx : trxs) {
-         PyObject* v;
-         v = python::json::to_string(*strx);
-         auto pt = packed_transaction(std::move(*strx), compression);
+         std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
 
          if (async) {
+            PyObject* v;
             uint64_t cost = get_microseconds();
-            v = push_transaction_async_(pt);
+            v = push_transaction_async_(ppt);
             cost_time += (get_microseconds() - cost);
-        	 _outputs.append(v);
+            _outputs.append(v);
          } else {
-             auto mtrx = std::make_shared<transaction_metadata>(pt);
+             auto mtrx = std::make_shared<transaction_metadata>(*ppt);
              controller& ctrl = get_chain_plugin().chain();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
 
@@ -367,13 +359,8 @@ PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint
              fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr, fc::microseconds(30*1000) );
              _outputs.append(python::json::to_string(pretty_output));
          }
-
       }
    }  FC_LOG_AND_DROP();
-
-   for (auto& st : trxs) {
-      delete st;
-   }
 
    PyArray res;
    res.append(_outputs.get());
