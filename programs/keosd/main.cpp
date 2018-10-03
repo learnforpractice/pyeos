@@ -33,9 +33,10 @@ bfs::path determine_home_directory()
       home = "./";
    return home;
 }
-
+extern "C" void vm_api_init();
 int main(int argc, char** argv)
 {
+   vm_api_init();
    try {
       bfs::path home = determine_home_directory();
       app().set_default_data_dir(home / "eosio-wallet");
