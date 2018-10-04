@@ -335,8 +335,9 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
             _production_enabled = true;
          }
 
-         if (appbase::app().has_option("print-incoming-block")) {
-            if( fc::time_point::now() - block->timestamp < fc::minutes(5) || (block->block_num() % 1000 == 0) ) {
+
+         if( fc::time_point::now() - block->timestamp < fc::minutes(5) || (block->block_num() % 1000 == 0) ) {
+            if (appbase::app().has_option("print-incoming-block")) {
                ilog("Received block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, conf: ${confs}, latency: ${latency} ms]",
                     ("p",block->producer)("id",fc::variant(block->id()).as_string().substr(8,16))
                     ("n",block_header::num_from_id(block->id()))("t",block->timestamp)
@@ -361,25 +362,25 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
             if (response.contains<fc::exception_ptr>()) {
                _transaction_ack_channel.publish(std::pair<fc::exception_ptr, packed_transaction_ptr>(response.get<fc::exception_ptr>(), trx));
                if (_pending_block_mode == pending_block_mode::producing) {
-                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block num} for producer ${prod} is REJECTING tx: ${txid} : ${why} ",
+                  elog"[TRX_TRACE] Block ${block_num} for producer ${prod} is REJECTING tx: ${txid} : ${why} ",
                         ("block_num", chain.head_block_num() + 1)
                         ("prod", chain.pending_block_state()->header.producer)
                         ("txid", trx->id())
                         ("why",response.get<fc::exception_ptr>()->what()));
                } else {
-                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is REJECTING tx: ${txid} : ${why} ",
+                  elog"[TRX_TRACE] Speculative execution is REJECTING tx: ${txid} : ${why} ",
                           ("txid", trx->id())
                           ("why",response.get<fc::exception_ptr>()->what()));
                }
             } else {
                _transaction_ack_channel.publish(std::pair<fc::exception_ptr, packed_transaction_ptr>(nullptr, trx));
                if (_pending_block_mode == pending_block_mode::producing) {
-                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block num} for producer ${prod} is ACCEPTING tx: ${txid}",
+                  elog"[TRX_TRACE] Block ${block_num} for producer ${prod} is ACCEPTING tx: ${txid}",
                           ("block_num", chain.head_block_num() + 1)
                           ("prod", chain.pending_block_state()->header.producer)
                           ("txid", trx->id()));
                } else {
-                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is ACCEPTING tx: ${txid}",
+                  elog"[TRX_TRACE] Speculative execution is ACCEPTING tx: ${txid}",
                           ("txid", trx->id()));
                }
             }
@@ -409,12 +410,12 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
                if (failure_is_subjective(*trace->except, deadline_is_subjective)) {
                   _pending_incoming_transactions.emplace_back(trx, persist_until_expired, next);
                   if (_pending_block_mode == pending_block_mode::producing) {
-                     fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block num} for producer ${prod} COULD NOT FIT, tx: ${txid} RETRYING ",
+                     elog("[TRX_TRACE] Block ${block_num} for producer ${prod} COULD NOT FIT, tx: ${txid} RETRYING ",
                              ("block_num", chain.head_block_num() + 1)
                              ("prod", chain.pending_block_state()->header.producer)
                              ("txid", trx->id()));
                   } else {
-                     fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution COULD NOT FIT tx: ${txid} RETRYING",
+                     elog("[TRX_TRACE] Speculative execution COULD NOT FIT tx: ${txid} RETRYING",
                              ("txid", trx->id()));
                   }
                } else {
@@ -1050,12 +1051,12 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool 
          while(!persisted_by_expiry.empty() && persisted_by_expiry.begin()->expiry <= pbs->header.timestamp.to_time_point()) {
             auto const& txid = persisted_by_expiry.begin()->trx_id;
             if (_pending_block_mode == pending_block_mode::producing) {
-               fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block num} for producer ${prod} is EXPIRING PERSISTED tx: ${txid}",
+               elog"[TRX_TRACE] Block ${block_num} for producer ${prod} is EXPIRING PERSISTED tx: ${txid}",
                        ("block_num", chain.head_block_num() + 1)
                        ("prod", chain.pending_block_state()->header.producer)
                        ("txid", txid));
             } else {
-               fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is EXPIRING PERSISTED tx: ${txid}",
+               elog"[TRX_TRACE] Speculative execution is EXPIRING PERSISTED tx: ${txid}",
                        ("txid", txid));
             }
 
