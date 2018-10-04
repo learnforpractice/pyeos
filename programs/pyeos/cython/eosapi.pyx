@@ -749,7 +749,7 @@ def push_transactions(actions, sign = True, uint64_t skip_flag=0, _async=False, 
 
     cost_time = 0
     for r in results:
-        if 'elapsed' in r:
+        if r and 'elapsed' in r:
             cost_time += r.elapsed
     return results, cost_time
 
