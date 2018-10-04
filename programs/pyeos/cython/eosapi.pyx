@@ -161,31 +161,27 @@ class JsonStruct(object):
             js = json.loads(js)
         if isinstance(js, str):
             js = json.loads(js)
-        for key in js:
-            value = js[key]
-            if isinstance(value, dict):
-                self.__dict__[key] = JsonStruct(value)
-            elif isinstance(value, list):
-                for i in range(len(value)):
-                    v = value[i]
-                    if isinstance(v, dict):
-                        value[i] = JsonStruct(v)
-                self.__dict__[key] = value
-            else:
-                self.__dict__[key] = value
+        self._dict = js
+
+    def __getattr__(self, attr):
+        if attr in self._dict:
+            ret = self._dict[attr]
+            if isinstance(ret, dict):
+                ret = JsonStruct(ret)
+            return ret
+        super(JsonStruct, self).__getattr__(attr)
 
     def __str__(self):
-#        return str(self.__dict__)
-        return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+        return json.dumps(self, default=lambda x: x._dict, sort_keys=False, indent=4, separators=(',', ': '))
 
     def __repr__(self):
-        return json.dumps(self, default=lambda x: x.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+        return json.dumps(self, default=lambda x: x._dict, sort_keys=False, indent=4, separators=(',', ': '))
 
     def __getitem__(self, o):
-        return self.__dict__[o]
+        return self._dict[o]
 
     def __contains__(self, o):
-        return o in self.__dict__
+        return o in self._dict
 
 
 def s2n(string& name):
