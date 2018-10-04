@@ -267,12 +267,18 @@ PyObject* push_transactions__(vector<vector<chain::action>>& vv, bool sign, uint
             result = push_transaction(trx);
          }FC_LOG_AND_DROP();
          Py_END_ALLOW_THREADS
-         _outputs.append(python::json::to_string(result["processed"]));
+         PyObject* o = python::json::to_string(result["processed"]);
+         _outputs.append(o);
+         Py_DECREF(o);
       }
    }  FC_LOG_AND_DROP();
 
    PyArray res;
-   res.append(_outputs.get());
+
+   PyObject* o = _outputs.get();
+   res.append(o);
+   Py_DECREF(o);
+
    res.append(py_new_uint64(0));
    return res.get();
 }
@@ -361,6 +367,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
 #endif
             cost_time += (get_microseconds() - cost);
             _outputs.append(result);
+            Py_DECREF(result);
          } else {
             std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
             auto mtrx = std::make_shared<transaction_metadata>(*ppt);
@@ -373,13 +380,19 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
              cost_time += (get_microseconds() - cost);
 
              fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr, fc::microseconds(30*1000) );
-             _outputs.append(python::json::to_string(pretty_output));
+             PyObject* o = python::json::to_string(pretty_output);
+             _outputs.append(o);
+             Py_DECREF(o);
          }
       }
    }  FC_LOG_AND_DROP();
 
    PyArray res;
-   res.append(_outputs.get());
+
+   PyObject* o = _outputs.get();
+   res.append(o);
+   Py_DECREF(o);
+
    res.append(py_new_uint64(cost_time));
    return res.get();
 }
@@ -616,18 +629,14 @@ PyObject* get_block_(char* num_or_id) {
  };
  */
 PyObject* get_account_(const char* _name) {
-//   using namespace native::eosio;
-   PyArray arr;
-   PyDict dict;
-
    try {
       auto& ro_api = get_chain_plugin().get_read_only_api();
 
       eosio::chain_apis::read_only::get_account_results result;
       eosio::chain_apis::read_only::get_account_params params = {chain::name(_name).value};
       result = ro_api.get_account(params);
+//      string s = json::json::to_string(result);
       return python::json::to_string(result);
-
    }  catch(...) {
    }
 
@@ -670,7 +679,6 @@ PyObject* get_accounts_(char* public_key) {
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol) {
    try {
       PyArray arr;
-      PyDict dict;
 
       auto& ro_api = get_chain_plugin().get_read_only_api();
 

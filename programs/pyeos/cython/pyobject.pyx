@@ -3,6 +3,14 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 
+class Dict(dict):
+    def __init__(self, args = {}):
+        super(Dict,self).__init__(args)
+
+class List(list):
+    def __init__(self, args = ()):
+        super(List,self).__init__(args)
+
 cdef extern object py_new_bool(int b):
     if b:
         return True
@@ -27,7 +35,7 @@ cdef extern object py_new_float(double n):
     return float(n)
 
 cdef extern object array_create():
-    return []
+    return List()
 
 cdef extern void array_append(object arr, object v):
     arr.append(v)
@@ -48,7 +56,7 @@ cdef extern int array_length(object arr):
     return len(arr)
 
 cdef extern object dict_create():
-    return {}
+    return Dict()
 
 cdef extern void dict_add(object d, object key, object value):
     d[key] = value

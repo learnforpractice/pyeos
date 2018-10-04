@@ -582,6 +582,7 @@ namespace python
          PyObject* obj = to_stream(*itr, format);
          ++itr;
          arr.append(obj);
+         Py_XDECREF(obj);
       }
       return arr.get();
    }
@@ -595,6 +596,7 @@ PyObject* to_stream(const variant_object& o, json::output_formatting format) {
       PyObject* obj = to_stream(itr->value(), format);
       string key = itr->key();
       dict.add(key, obj);
+      Py_XDECREF(obj);
       ++itr;
    }
    return dict.get();

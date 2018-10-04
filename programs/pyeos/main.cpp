@@ -57,6 +57,8 @@ extern "C" {
    PyObject* PyInit_debug();
    PyObject* PyInit_python_contract();
    PyObject* PyInit__struct();
+   PyObject* PyInit_pyobject();
+
 #if 0
    PyObject* PyInit__ssl();
    PyObject* PyInit__posixsubprocess();
@@ -108,6 +110,7 @@ void init_console() {
 #ifdef WITH_THREAD
    PyEval_InitThreads();
 #endif
+   PyInit_pyobject();
    PyInit_wallet();
    PyInit_eosapi();
    PyInit_net();

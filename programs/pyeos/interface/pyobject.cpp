@@ -7,7 +7,14 @@
 #include "pyobject.hpp"
 
 PyArray::PyArray() { arr = array_create(); }
-PyArray::~PyArray() { Py_XDECREF(arr); }
+PyObject* PyArray::get() {
+   Py_XINCREF(arr);
+   return arr;
+}
+
+PyArray::~PyArray() {
+   Py_XDECREF(arr);
+}
 
 void PyArray::append(PyObject* obj) { array_append(arr, obj); }
 
@@ -25,14 +32,16 @@ int PyArray::length() {
    return array_length(arr);
 }
 
-PyObject* PyArray::get() {
-   Py_XINCREF(arr);
-   return arr;
+PyDict::PyDict() {
+   pydict = dict_create();
 }
 
-PyDict::PyDict() { pydict = dict_create(); }
-
 PyDict::PyDict(PyObject* dictObj) { pydict = dictObj; }
+
+PyObject* PyDict::get() {
+   Py_XINCREF(pydict);
+   return pydict;
+}
 
 PyDict::~PyDict() {
    Py_XDECREF(pydict);
@@ -51,22 +60,26 @@ void PyDict::add(std::string& key, PyObject* value) {
    }
    PyObject* pykey = py_new_string(key);
    dict_add(pydict, pykey, value);
+
+   Py_XDECREF(pykey);
 }
 
 void PyDict::add(std::string& key, std::string& value) {
    PyObject* pykey = py_new_string(key);
    PyObject* pyvalue = py_new_string(value);
    dict_add(pydict, pykey, pyvalue);
+
+   Py_XDECREF(pykey);
+   Py_XDECREF(pyvalue);
 }
 
 void PyDict::add(std::string& key, long long n) {
    PyObject* pykey = py_new_string(key);
    PyObject* pyvalue = py_new_int64(n);
    dict_add(pydict, pykey, pyvalue);
+
+   Py_XDECREF(pykey);
+   Py_XDECREF(pyvalue);
 }
 
-PyObject* PyDict::get() {
-   Py_XINCREF(pydict);
-   return pydict;
-}
 
