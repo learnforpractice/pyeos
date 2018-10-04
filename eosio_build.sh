@@ -164,8 +164,8 @@
          ;;
          "CentOS Linux")
             FILE="${SOURCE_DIR}/scripts/eosio_build_centos.sh"
-            CXX_COMPILER=g++
-            C_COMPILER=gcc
+            CXX_COMPILER=/usr/bin/g++
+            C_COMPILER=/usr/bin/gcc
             CMAKE_TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=${PWD}/cmake/polly/gcc-pic.cmake"
             MONGOD_CONF=${HOME}/opt/mongodb/mongod.conf
             export LLVM_DIR=${HOME}/opt/wasm/lib/cmake/llvm

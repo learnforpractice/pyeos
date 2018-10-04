@@ -17,7 +17,7 @@ def init_debug(wasm=True):
                 cpp2wast.set_src_path(_src_dir)
                 cpp2wast.build_native('lab.cpp', 'lab', debug=False)
                 lib_file = os.path.join(_src_dir, 'liblab.dylib')
-                debug.set_debug_contract('lab', lib_file)
+#                debug.set_debug_contract('lab', lib_file)
             return func(*args, **kwargs)
         return func_wrapper
     return init_decorator
@@ -100,11 +100,11 @@ def build_native():
     debug.set_debug_contract('lab', lib_file)
 
 @init()
-@init_debug()
+#@init_debug()
 def test3(count=200):
     actions = []
     for i in range(count):
-        action = ['counter', 'count', str(i), [['counter','active']]]
+        action = ['counter', 'count', str(i), {'counter':'active'}]
         actions.append([action])
 
     ret, cost = eosapi.push_transactions(actions)
