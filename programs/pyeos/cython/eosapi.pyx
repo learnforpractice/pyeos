@@ -60,21 +60,16 @@ cdef extern from "eosapi_.hpp":
 
     object get_accounts_(char* public_key)
     object create_account_(string creator, string newaccount, string owner, string active, int sign)
-    object get_controlled_accounts_(char* account_name);
     object create_key_()
     object get_public_key_(string& wif_key)
 
     object get_actions_(uint64_t account, int pos, int offset)
     object get_transaction_(string& id)
 
-    object set_evm_contract_(string& eth_address, string& sol_bin, bool sign)
-
     int get_code_(string& name, string& wast, string& abi, string& code_hash, int & vm_type)
     int get_table_(string& scope, string& code, string& table, string& result)
 
     object get_currency_balance_(string& _code, string& _account, string& _symbol)
-
-    int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size)
 
     void wast2wasm_( string& wast ,string& result)
     void wasm2wast_(string& wasm, string& result)
@@ -120,9 +115,6 @@ cdef extern from "eosapi_.hpp":
 
     void n_to_symbol_(uint64_t n, string& out)
     uint64_t symbol_to_n_(string& n)
-
-    void zlib_compress_data_(const string& _in, string& out);
-    void zlib_decompress_data_(const string& _int, string& out);
 
     bool debug_mode_()
     void start_eos_()
@@ -246,11 +238,6 @@ def get_account(name):
     if result:
         return JsonStruct(result)
     return None
-
-def get_accounts(public_key):
-    if isinstance(public_key, str):
-        public_key = bytes(public_key, 'utf8')
-    return get_accounts_(public_key)
 
 def get_currency_balance(string& _code, string& _account, string& _symbol = 'EOS'):
     return get_currency_balance_(_code, _account, _symbol)
@@ -460,29 +447,6 @@ class Producer(object):
 
 producer = Producer()
 
-def mp_compile(py_file):
-    '''Compile Micropython source to binary code.
-
-    Args:
-        py_file (str): Python source file path.
-
-    Returns:
-        bytes: Compiled code.
-    '''
-    cdef vector[char] buffer
-    cdef int mpy_size
-    cdef string s
-    buffer.resize(0)
-    buffer.resize(1024*1024)
-    src_data = None
-    with open(py_file, 'r') as f:
-        src_data = f.read()
-    src_data = src_data.encode('utf8')
-    file_name = os.path.basename(py_file)
-    mpy_size = compile_and_save_to_buffer_(file_name, src_data, len(src_data), buffer.data(), buffer.size())
-    s = string(buffer.data(), mpy_size)
-    return <bytes>s
-    
 def hash64(data, uint64_t seed = 0):
     '''64 bit hash using xxhash
 
@@ -841,16 +805,6 @@ def symbol2n(string& n):
 
 def symbolprecision(n):
     return n&0xff
-
-def zlib_compress_data(string& _in):
-    cdef string _out
-    zlib_compress_data_(_in, _out)
-    return <bytes>_out
-
-def zlib_decompress_data(string& data):
-    cdef string _out
-    zlib_decompress_data_(data, _out)
-    return <bytes>_out
 
 def debug_mode():
     return debug_mode_()

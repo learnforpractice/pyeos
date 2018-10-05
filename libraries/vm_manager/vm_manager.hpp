@@ -55,7 +55,6 @@ public:
 
    bool init(struct vm_api* api);
 
-   struct vm_py_api* get_py_vm_api();
    void *get_eth_vm_api();
 
    uint64_t wasm_call(const string& func, vector<uint64_t> args);

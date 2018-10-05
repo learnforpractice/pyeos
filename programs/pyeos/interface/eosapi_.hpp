@@ -71,13 +71,8 @@ bool is_account_(const char* _name);
 
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol);
 
-PyObject* get_accounts_(char* public_key);
-PyObject* get_controlled_accounts_(char* account_name);
-
 PyObject* create_account_(string creator, string newaccount, string owner,
                           string active, int sign);
-
-PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign);
 
 PyObject* create_key_();
 PyObject* get_public_key_(string& wif_key);
@@ -95,8 +90,6 @@ string convert_from_eth_address(string& eth_address);
 
 PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint64_t skip_flag = 0, bool async = false, bool compress = false, int32_t max_ram_usage=std::numeric_limits<int32_t>::max());
 
-
-int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 
 void wast2wasm_( string& wast ,string& result);
 void wasm2wast_(string& wasm, string& result);
@@ -124,8 +117,6 @@ PyObject* get_transaction_(string& id);
 void n_to_symbol_(uint64_t n, string& out);
 uint64_t symbol_to_n_(string& n);
 
-void zlib_compress_data_(const string& in, string& out);
-void zlib_decompress_data_(const string& data, string& out);
 bool debug_mode_();
 
 void get_code_hash_(string& name, string& code_hash); // @suppress("Ambiguous problem")

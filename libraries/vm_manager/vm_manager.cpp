@@ -38,7 +38,6 @@ namespace chain {
 typedef void (*fn_on_boost_account)(void* v, uint64_t account, uint64_t expiration);
 void visit_boost_account(fn_on_boost_account fn, void* param);
 
-typedef struct vm_py_api* (*fn_get_py_vm_api)();
 typedef uint64_t (*fn_wasm_call)(const char* act, uint64_t* args, int argc);
 bool is_boost_account(uint64_t account, bool& expired);
 
@@ -397,9 +396,6 @@ int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
    calls->unload = unload;
 
    vm_map[vm_type] = std::move(calls);
-   if (vm_type == 1) { //micropython
-      get_py_vm_api(); //set printer
-   }
    return 1;
 }
 
@@ -614,26 +610,6 @@ int vm_manager::local_apply(int vm_type, uint64_t receiver, uint64_t account, ui
    }
    itr->second->apply(receiver, account, act);
    return 1;
-}
-
-struct vm_py_api* vm_manager::get_py_vm_api() {
-   auto itr = vm_map.find(1);
-   if (itr == vm_map.end()) {
-      return nullptr;
-   }
-
-   fn_get_py_vm_api _get_py_vm_api = (fn_get_py_vm_api)dlsym(itr->second->handle, "get_py_vm_api");
-   if (_get_py_vm_api == nullptr) {
-      return nullptr;
-   }
-
-   struct vm_py_api* api = _get_py_vm_api();
-   api->set_printer(print);
-   return api;
-}
-
-void *vm_manager::get_eth_vm_api() {
-   return nullptr;
 }
 
 uint64_t vm_manager::wasm_call(const string& func, vector<uint64_t> args) {

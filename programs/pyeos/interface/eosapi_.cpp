@@ -29,6 +29,8 @@
 #include <boost/iostreams/filter/zlib.hpp>
 
 #include <vm_manager.hpp>
+#include <chrono>
+using namespace std::chrono_literals;
 
 #include <mutex>
 #include <condition_variable>
@@ -44,10 +46,6 @@ namespace bio = boost::iostreams;
 static auto tx_expiration = fc::seconds(120);
 static bool tx_force_unique = false;
 
-static uint32_t tx_cf_cpu_usage = 0;
-static uint32_t tx_net_usage = 0;
-
-static uint32_t tx_max_cpu_usage = 0;
 static uint32_t tx_max_net_usage = 0;
 
 uint64_t string_to_uint64_(string str) {
@@ -113,13 +111,6 @@ producer_plugin& get_producer_plugin() {
    */
 }
 
-inline std::vector<name> sort_names(std::vector<name>&& names) {
-   std::sort(names.begin(), names.end());
-   auto itr = std::unique(names.begin(), names.end());
-   names.erase(itr, names.end());
-   return names;
-}
-
 static fc::variant json_from_file_or_string(const string& file_or_str, fc::json::parse_type ptype = fc::json::legacy_parser)
 {
    return fc::json::from_string(file_or_str, ptype);
@@ -138,35 +129,6 @@ static authority parse_json_authority_or_key(const std::string& authorityJsonOrF
       } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
    } else {
       return parse_json_authority(authorityJsonOrFile);
-   }
-}
-
-
-vector<uint8_t> assemble_wast(const std::string& wast) {
-   IR::Module module;
-   std::vector<WAST::Error> parseErrors;
-   WAST::parseModule(wast.c_str(), wast.size(), module, parseErrors);
-   if (parseErrors.size()) {
-      // Print any parse errors;
-      std::cerr << "Error parsing WebAssembly text file:" << std::endl;
-      for (auto& error : parseErrors) {
-         std::cerr << ":" << error.locus.describe() << ": "
-                   << error.message.c_str() << std::endl;
-         std::cerr << error.locus.sourceLine << std::endl;
-         std::cerr << std::setw(error.locus.column(8)) << "^" << std::endl;
-      }
-      FC_ASSERT(!"error parsing wast");
-   }
-
-   try {
-      // Serialize the WebAssembly module.
-      Serialization::ArrayOutputStream stream;
-      WASM::serialize(stream, module);
-      return stream.getBytes();
-   } catch (Serialization::FatalSerializationException& exception) {
-      std::cerr << "Error serializing WebAssembly binary file:" << std::endl;
-      std::cerr << exception.message << std::endl;
-      throw;
    }
 }
 
@@ -228,16 +190,6 @@ bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 10
    }
    return true;
 }
-
-struct async_result_visitor : public fc::visitor<PyObject*> {
-   template<typename T>
-   PyObject* operator()(const T& v) const {
-      return python::json::to_string(v);
-   }
-};
-
-#include <chrono>
-using namespace std::chrono_literals;
 
 fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none );
 fc::variant cleos_push_transaction( signed_transaction& trx, packed_transaction::compression_type compression = packed_transaction::none );
@@ -647,35 +599,6 @@ bool is_account_(const char* _name) {
    return db_api::get().is_account(eosio::chain::name(_name));
 }
 
-PyObject* get_accounts_(char* public_key) {
-   PyArray arr;
-   #if 0
-   try {
-      if (public_key == NULL) {
-         return arr.get();
-      }
-      auto ro_api = app().get_plugin<account_history_plugin>().get_read_only_api();
-      auto rw_api = app().get_plugin<account_history_plugin>().get_read_write_api();
-
-      eosio::account_history_apis::read_only::get_key_accounts_params params =
-         {
-             chain::public_key_type{}
-         };
-
-      eosio::account_history_apis::read_only::get_key_accounts_results results =
-          ro_api.get_key_accounts(params);
-
-      for (auto it = results.account_names.begin();
-           it != results.account_names.end(); ++it) {
-         arr.append(string(*it));
-      }
-   } catch (fc::exception& ex) {
-      elog(ex.to_detail_string());
-   }
-   #endif
-   return arr.get();
-}
-
 PyObject* get_currency_balance_(string& _code, string& _account, string& _symbol) {
    try {
       PyArray arr;
@@ -722,37 +645,6 @@ PyObject* get_transaction_(string& id) {
       auto& ro_api = get_history_plugin().get_read_only_api();
       auto results = ro_api.get_transaction(params);
       return python::json::to_string(fc::variant(results));
-   }  FC_LOG_AND_DROP();
-
-   return py_new_none();
-}
-
-PyObject* set_evm_contract_(string& eth_address, string& sol_bin, bool sign) {
-
-   try {
-      string account = convert_from_eth_address(eth_address);
-
-      setcode handler;
-      handler.vmtype = 2;
-
-      sol_bin = fc::trim(sol_bin);
-      bytes bin;
-      bin.resize(0);
-      bin.resize(sol_bin.size()/2);
-      fc::from_hex(sol_bin, bin.data(), bin.size());
-      handler.account = account;
-      handler.code.assign(bin.begin(), bin.end());
-
-      vector<chain::action> actions;
-      actions.emplace_back(vector<chain::permission_level>{{account,"active"}}, handler);
-
-      std::cout << "Publishing contract..." << std::endl;
-
-      vector<vector<chain::action>> vv;
-      vv.emplace_back(std::move(actions));
-
-      return push_transactions_(vv, sign, 0, false, true);
-
    }  FC_LOG_AND_DROP();
 
    return py_new_none();
@@ -833,18 +725,6 @@ int get_table_(string& scope, string& code, string& table, string& result) {
       return 0;
    }  FC_LOG_AND_DROP();
    return -1;
-}
-
-int compile_and_save_to_buffer_(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
-   auto api = vm_manager::get().get_py_vm_api();
-   if (api == nullptr) {
-      return 0;
-   }
-   return api->compile_and_save_to_buffer(src_name, src_buffer, src_size, buffer, size);
-}
-
-void mp_set_max_execution_time_(int _max) {
-   vm_manager::get().get_py_vm_api()->set_max_execution_time(_max);
 }
 
 void wast2wasm_(string& wast, string& result) {
@@ -974,31 +854,6 @@ struct read_limiter {
 
    size_t _total = 0;
 };
-
-void zlib_compress_data_(const string& _in, string& _out) {
-   try {
-      bytes out;
-      bio::filtering_ostream comp;
-      comp.push(bio::zlib_compressor(bio::zlib::best_compression));
-      comp.push(bio::back_inserter(out));
-      bio::write(comp, _in.c_str(), _in.size());
-      bio::close(comp);
-      _out = string(out.begin(), out.end());
-   } FC_LOG_AND_DROP();
-}
-
-void zlib_decompress_data_(const string& _data, string& _out) {
-   try {
-      bytes out;
-      bio::filtering_ostream decomp;
-      decomp.push(bio::zlib_decompressor());
-      decomp.push(read_limiter<100*1024*1024>()); // limit to 10 megs decompressed for zip bomb protections
-      decomp.push(bio::back_inserter(out));
-      bio::write(decomp, _data.c_str(), _data.size());
-      bio::close(decomp);
-      _out = string(out.begin(), out.end());
-   }  FC_LOG_AND_DROP();
-}
 
 bool debug_mode_() {
    return appbase::app().debug_mode();
