@@ -375,7 +375,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
             } else {
                _transaction_ack_channel.publish(std::pair<fc::exception_ptr, packed_transaction_ptr>(nullptr, trx));
                if (_pending_block_mode == pending_block_mode::producing) {
-                  elog("[TRX_TRACE] Block ${block_num} for producer ${prod} is ACCEPTING tx: ${txid}",
+                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block_num} for producer ${prod} is ACCEPTING tx: ${txid}",
                           ("block_num", chain.head_block_num() + 1)
                           ("prod", chain.pending_block_state()->header.producer)
                           ("txid", trx->id()));
@@ -1051,7 +1051,7 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool 
          while(!persisted_by_expiry.empty() && persisted_by_expiry.begin()->expiry <= pbs->header.timestamp.to_time_point()) {
             auto const& txid = persisted_by_expiry.begin()->trx_id;
             if (_pending_block_mode == pending_block_mode::producing) {
-               elog("[TRX_TRACE] Block ${block_num} for producer ${prod} is EXPIRING PERSISTED tx: ${txid}",
+               fc_dlog(_trx_trace_log, "[TRX_TRACE] Block ${block_num} for producer ${prod} is EXPIRING PERSISTED tx: ${txid}",
                        ("block_num", chain.head_block_num() + 1)
                        ("prod", chain.pending_block_state()->header.producer)
                        ("txid", txid));
