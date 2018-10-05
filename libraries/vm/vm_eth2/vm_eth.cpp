@@ -200,6 +200,14 @@ int vm_call(uint64_t account, uint64_t func) {
 }
 
 
+int vm_preload(uint64_t account) {
+   return 0;
+}
+
+int vm_unload(uint64_t account) {
+   return 0;
+}
+
 static uint64_t g_sender = 0;
 
 void set_sender(uint64_t sender) {

@@ -1,5 +1,13 @@
 add_subdirectory( libevm4eos )
 
+if (APPLE)
+    set(_symbols_list "${CMAKE_SOURCE_DIR}/libraries/vm/symbols.list")
+    set(LINK_FLAGS "${LINK_FLAGS} -Wl,-exported_symbols_list,'${_symbols_list}'")
+else()
+    set(_version_script "${CMAKE_SOURCE_DIR}/libraries/vm/version.script")
+    set(LINK_FLAGS "${LINK_FLAGS} -Wl,--version-script,\"${_version_script}\"")
+endif (APPLE)
+
 add_library(vm_eth2 SHARED 
             EosState.cpp
             EosExecutive.cpp
@@ -18,6 +26,7 @@ include_directories (jsoncpp/include)
 target_compile_options(vm_eth2 PRIVATE -DVM_EVM)
 
 target_link_libraries(vm_eth2 PRIVATE eosiolib_native fc eosvm ethashseal)
+set_target_properties(vm_eth2  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
 target_include_directories(vm_eth2 PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
@@ -40,14 +49,6 @@ add_library(vm_hera SHARED
             vm_eth.cpp)
 
 include_directories (${CPP_ETHEREUM_DIR}/hera/include)
-
-if (APPLE)
-    set(_symbols_list "${CMAKE_CURRENT_SOURCE_DIR}/symbols.list")
-    set(LINK_FLAGS "${LINK_FLAGS} -Wl,-exported_symbols_list,'${_symbols_list}'")
-else()
-    set(_version_script "${CMAKE_CURRENT_SOURCE_DIR}/version.script")
-    set(LINK_FLAGS "${LINK_FLAGS} -Wl,--version-script,\"${_version_script}\"")
-endif (APPLE)
 
 target_link_libraries(vm_hera PRIVATE eosiolib_native hera fc eosvm ethashseal)
 

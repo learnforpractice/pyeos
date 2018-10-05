@@ -1,4 +1,0 @@
-CODEABI_1.0 {
-    global: vm_init;vm_deinit;vm_setcode;vm_apply;vm_call;
-    local: *;
-};
