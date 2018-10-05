@@ -898,4 +898,7 @@ def get_active_producers():
     get_active_producers_(producers)
     return producers
 
+def mp_compile(src):
+    raise Exception("not implemented!")
+
 
