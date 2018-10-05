@@ -568,3 +568,23 @@ def check_connections():
         except Exception as ex:
             pass
 #            print(ex)
+
+def dlbw(_from, _to, net, cpu):
+    args = {'from':_from, 
+            'receiver':_to, 
+            'stake_net_quantity':'%.4f EOS'%(net,), 
+            'stake_cpu_quantity':'%.4f EOS'%(cpu,), 
+            'transfer':False
+            }
+    eosapi.push_action('eosio', 'delegatebw', args, {_from:'active'})
+
+
+def undlbw(_from, _to, net, cpu):
+    args = {'from':_from, 
+            'receiver':_to, 
+            'unstake_net_quantity':'%.4f EOS'%(net,), 
+            'unstake_cpu_quantity':'%.4f EOS'%(cpu,), 
+            'transfer':False
+            }
+    eosapi.push_action('eosio', 'undelegatebw', args, {_from:'active'})
+
