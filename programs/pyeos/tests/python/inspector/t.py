@@ -34,3 +34,13 @@ def test2(name='mike'):
     r, cost = eosapi.push_actions(acts)
     print('cost time:', cost)
 
+
+@init
+def test3(name='mike'):
+    acts = []
+    for i in range(100):
+        act = ['inspector','sayhello', str(i), {'inspector':'active'}]
+        acts.append([act])
+    r, cost = eosapi.push_transactions(acts)
+    print('cost time:', cost)
+

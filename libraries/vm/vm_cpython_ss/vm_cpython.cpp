@@ -290,7 +290,7 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    int ret = cpython_apply(receiver, account, act);
    uint64_t end = get_microseconds() - start;
 //   vmdlog("++++++++++cost time %llu\n", end);
-
+   PyGC_Collect();
    if (ret == -1) {
       string error;
       error_handler(error);
