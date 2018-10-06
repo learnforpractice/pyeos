@@ -21,13 +21,13 @@
 #include <fc/scoped_exit.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
-#include <eosio/chain/chain_api.hpp>
-
 
 namespace eosio { namespace chain {
 
-static eosio::chain::chain_api s_api;
-void vm_manager_init();
+
+extern "C" void vm_manager_init();
+//chain/chain_api.cpp
+void chain_api_init(controller *ctrl, controller::config *cfg);
 bool vm_cleanup();
 
 using resource_limits::resource_limits_manager;
@@ -1405,9 +1405,7 @@ authorization_manager&         controller::get_mutable_authorization_manager()
 controller::controller( const controller::config& cfg )
 :my( new controller_impl( cfg, *this ) )
 {
-   s_api.ctrl = this;
-   s_api.cfg = &my->conf;
-   register_chain_api(&s_api);
+   chain_api_init(this, &my->conf);
 }
 
 controller::~controller() {
@@ -1429,7 +1427,8 @@ void controller::startup() {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
 //    my->wasmif.init();
-    my->init();
+   vm_manager_init();
+   my->init();
 }
 
 chainbase::database& controller::db()const { return my->db; }

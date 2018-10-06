@@ -76,7 +76,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
    target_compile_options(eosio_chain_static PUBLIC -DDEBUG)
 endif()
 
-target_link_libraries( eosio_chain_static PUBLIC wabt eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
+target_link_libraries( eosio_chain_static PUBLIC chain_api eosio_prods_static eos_utilities fc chainbase appbase db_api vm_manager softfloat builtins python3 ${OPENSSL_LIBRARIES})
 
 target_include_directories( eosio_chain_static
                             PUBLIC ${Boost_INCLUDE_DIR}

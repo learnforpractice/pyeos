@@ -10,7 +10,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <eosio/chain/db_api.hpp>
-
+#include <eosio/chain/chain_api.h>
 
 using boost::container::flat_set;
 using namespace fc;
@@ -23,17 +23,7 @@ namespace eosio { namespace chain {
 #include <eosiolib_native/vm_api.h>
 
 fc::path get_path() {
-   fc::path _path;
-   if (get_vm_api()->has_option("data-dir")) {
-	   char buf[128];
-	   memset(buf, 0, sizeof(buf));
-	   int n = get_vm_api()->get_option("data-dir", buf, sizeof(buf));
-	   _path = buf;
-	   _path /="state";
-   } else {
-	   _path = "data-dir/state";
-   }
-   return _path;
+   return fc::path(get_state_dir());
 }
 
 db_api::db_api(const action& a, bool rw) :
