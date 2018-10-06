@@ -8,6 +8,10 @@ namespace eosio { namespace chain {
 static controller *s_ctrl = nullptr;
 static controller::config *s_cfg = nullptr;
 
+controller& get_chain_controller() {
+   return *s_ctrl;
+}
+
 void chain_api_init(controller *ctrl, controller::config *cfg) {
    s_ctrl = ctrl;
    s_cfg = cfg;

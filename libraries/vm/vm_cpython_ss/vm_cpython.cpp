@@ -129,7 +129,7 @@ void vm_init(struct vm_api* api) {
    PyImport_ImportModule("db");
    PyImport_ImportModule("inspector");
    PyImport_ImportModule("vm_cpython");
-   PyImport_ImportModule("readline");
+//   PyImport_ImportModule("readline");
 
 //   enable_injected_apis_();
 

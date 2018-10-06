@@ -36,5 +36,5 @@ namespace eosio { namespace chain {
 
 using namespace eosio::chain;
 
-void register_chain_api(void* api);
+void register_chain_api(chain_api* api);
 chain_api& get_chain_api();

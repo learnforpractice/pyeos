@@ -44,6 +44,11 @@ using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
 
+namespace eosio { namespace chain {
+   controller& get_chain_controller();
+}
+}
+
 static auto tx_expiration = fc::seconds(120);
 static bool tx_force_unique = false;
 
@@ -94,7 +99,7 @@ history_plugin& get_history_plugin() {
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
-controller& get_controller() { return *get_chain_api().ctrl; }
+controller& get_controller() { return get_chain_controller(); }
 
 wallet_plugin& get_wallet_plugin() {
    return app().get_plugin<eosio::wallet_plugin>();
@@ -312,7 +317,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             } FC_LOG_AND_DROP();
 //            wlog("+++++++++++++++cleos_push_transaction end!");
             Py_END_ALLOW_THREADS
-            result = python::json::to_string(v);
+            result = python::json::to_string(v["processed"]);
 #endif
             cost_time += (get_microseconds() - cost);
             _outputs.append(result);
