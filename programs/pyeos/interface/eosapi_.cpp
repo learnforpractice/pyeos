@@ -94,7 +94,7 @@ history_plugin& get_history_plugin() {
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
-controller& get_controller() { return *get_chain_api()->ctrl; }
+controller& get_controller() { return *get_chain_api().ctrl; }
 
 wallet_plugin& get_wallet_plugin() {
    return app().get_plugin<eosio::wallet_plugin>();
