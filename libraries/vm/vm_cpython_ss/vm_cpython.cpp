@@ -16,6 +16,7 @@ PyObject* PyInit__struct(void);
 int PyObject_GC_GetCount();
 PyObject* PyInit_struct2(void);
 PyObject* PyInit_sys2(void);
+PyObject* PyInit_readline(void);
 
 PyObject* PyInit__tracemalloc(void);
 
@@ -113,6 +114,7 @@ void vm_init(struct vm_api* api) {
    PyImport_AppendInittab("inspector", PyInit_inspector);
    PyImport_AppendInittab("vm_cpython", PyInit_vm_cpython);
    PyImport_AppendInittab("sys2", PyInit_sys2);
+   PyImport_AppendInittab("readline", PyInit_readline);
 
    Py_InitializeEx(0);
 
@@ -127,6 +129,8 @@ void vm_init(struct vm_api* api) {
    PyImport_ImportModule("db");
    PyImport_ImportModule("inspector");
    PyImport_ImportModule("vm_cpython");
+   PyImport_ImportModule("readline");
+
 //   enable_injected_apis_();
 
    init_function_whitelist();

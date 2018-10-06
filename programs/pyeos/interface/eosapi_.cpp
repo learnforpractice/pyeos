@@ -15,6 +15,7 @@
 #include <eosio/chain/symbol.hpp>
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/producer_schedule.hpp>
+#include <eosio/chain/chain_api.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -93,7 +94,7 @@ history_plugin& get_history_plugin() {
 
 uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
-controller& get_controller() { return get_chain_plugin().chain(); }
+controller& get_controller() { return *get_chain_api()->ctrl; }
 
 wallet_plugin& get_wallet_plugin() {
    return app().get_plugin<eosio::wallet_plugin>();
@@ -265,13 +266,13 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
    std::unique_lock<std::mutex> lk(m);
 #if 0
    if (!cv->wait_for(lk, 1000ms, [&]{return ready;})) {
-      if (!get_chain_plugin().chain().pending_block_state()) {
+      if (!get_controller().pending_block_state()) {
          output("except", "not in pending block state, ");
       }
    }
 #else
    cv->wait(lk, [&]{return ready;});
-   if (get_chain_plugin().chain().pending_block_state()) {
+   if (get_controller().pending_block_state()) {
    } else {
       output("except", "not in pending block state, ");
    }
@@ -323,7 +324,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          } else {
             std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
             auto mtrx = std::make_shared<transaction_metadata>(*ppt);
-             controller& ctrl = get_chain_plugin().chain();
+             controller& ctrl = get_controller();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
 
              auto deadline = fc::time_point::now() + fc::milliseconds(100);
@@ -652,7 +653,7 @@ PyObject* get_transaction_(string& id) {
 
 int get_code_(string& name, string& wast, string& str_abi, string& code_hash, int& vm_type) {
    try {
-      controller& db = get_chain_plugin().chain();
+      controller& db = get_controller();
 
       chain_apis::read_only::get_code_results result;
       result.account_name = name;

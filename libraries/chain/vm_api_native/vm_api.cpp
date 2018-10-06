@@ -37,6 +37,20 @@
 #include <eosio/chain/options.hpp>
 
 using namespace eosio::chain;
+#include <appbase/platform.hpp>
+#include <dlfcn.h>
+
+extern "C" void vm_api_init();
+
+class init_vm_api {
+public:
+   init_vm_api() {
+      vm_api_init();
+   }
+};
+
+static init_vm_api _init_vm_api;
+
 
 //exceptions.cpp
 void fc_throw_exception(int type, const char* fmt, ...);
@@ -80,6 +94,7 @@ static inline apply_context& ctx() {
 #include "transaction.cpp"
 #include "print.cpp"
 #include "permission.cpp"
+
 
 uint64_t get_action_account() {
    return ctx().act.account.value;
@@ -398,7 +413,7 @@ int is_contracts_console_enabled() {
 static struct vm_api _vm_api = {
 };
 
-void vm_manager_init() {
+extern "C" void vm_manager_init() {
    //action.cpp
    vm_register_api(&_vm_api);
    vm_manager::get().init(&_vm_api);
@@ -406,9 +421,6 @@ void vm_manager_init() {
    s_args.reserve(256);
    s_results.reserve(256);
 }
-
-#include <appbase/platform.hpp>
-#include <dlfcn.h>
 
 static bool s_init = false;
 extern "C" void vm_api_init() {

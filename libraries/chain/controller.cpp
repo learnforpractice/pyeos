@@ -1429,7 +1429,6 @@ void controller::startup() {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
 //    my->wasmif.init();
-    vm_manager_init();
     my->init();
 }
 
