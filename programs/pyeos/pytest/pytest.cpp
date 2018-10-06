@@ -55,7 +55,6 @@ void init_console() {
 }
 
 int main(int argc, char** argv) {
-   vm_manager_init();
    try {
       tester main;
       main.create_account(N(newacc));

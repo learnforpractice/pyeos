@@ -242,9 +242,10 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
    fc::mutable_variant_object output;
 
    uint64_t start = get_microseconds();
-
-   appbase::app().get_io_service().post([&](){
+   int counter = 0;
+   appbase::app().get_io_service().dispatch([&](){
       app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [&](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
+         counter = 1;
          if (result.contains<fc::exception_ptr>()) {
             string s = result.get<fc::exception_ptr>()->to_string();
             output("except", s);
@@ -263,21 +264,16 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
    });
 
    Py_BEGIN_ALLOW_THREADS
-   std::unique_lock<std::mutex> lk(m);
-#if 0
-   if (!cv->wait_for(lk, 1000ms, [&]{return ready;})) {
-      if (!get_controller().pending_block_state()) {
-         output("except", "not in pending block state, ");
-      }
-   }
-#else
-   cv->wait(lk, [&]{return ready;});
    if (get_controller().pending_block_state()) {
+      std::unique_lock<std::mutex> lk(m);
+      cv->wait(lk, [&]{return ready;});
    } else {
       output("except", "not in pending block state, ");
    }
-#endif
    Py_END_ALLOW_THREADS
+   if (counter != 1) {
+      EOS_ASSERT(0, chain_exception, "bad things happened");
+   }
 //   wlog("+++++++++++++push_transaction_async: ${n}", ("n", get_microseconds()-start));
    return python::json::to_string(output);
 }
@@ -306,7 +302,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             PyObject* result;
             variant v;
             uint64_t cost = get_microseconds();
-#if 0
+#if 1
             std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
             result = push_transaction_async_(ppt);
 #else

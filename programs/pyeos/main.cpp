@@ -146,7 +146,6 @@ int main(int argc, char** argv) {
    } catch (...) {
       return -1;
    }
-   vm_manager_init();
 
    bool readonly = app().has_option("read-only");
    if (readonly) {
