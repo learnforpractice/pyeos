@@ -32,6 +32,7 @@
 
 using namespace appbase;
 using namespace eosio;
+using namespace eosio::chain;
 
 static bool init_finished = false;
 static bool shutdown_finished = false;
@@ -50,7 +51,7 @@ extern "C" {
    PyObject* PyInit_wallet();
    PyObject* PyInit_net();
 
-//only used in debug
+//only used in debugging
    PyObject* PyInit_eoslib();
    PyObject* PyInit_db();
    PyObject* PyInit_rodb();
@@ -59,19 +60,10 @@ extern "C" {
    PyObject* PyInit__struct();
    PyObject* PyInit_pyobject();
 
-#if 0
-   PyObject* PyInit__ssl();
-   PyObject* PyInit__posixsubprocess();
-   PyObject* PyInit_readline();
-   PyObject* PyInit_select();
-   PyObject* PyInit_math();
-   PyObject* PyInit__socket();
-   PyObject* PyInit_array();
-#endif
-
    //vm_manager.cpp
    void vm_deinit_all();
    void vm_api_init();
+   void vm_manager_init();
 }
 
 bool is_init_finished() {
@@ -80,36 +72,9 @@ bool is_init_finished() {
 
 
 void init_console() {
-//   init_api();
-
-#if 0
-   PyImport_AppendInittab("_struct", PyInit__struct);
-   PyImport_AppendInittab("_ssl", PyInit__ssl);
-   PyImport_AppendInittab("_socket", PyInit__socket);
-   PyImport_AppendInittab("_posixsubprocess", PyInit__posixsubprocess);
-
-   PyImport_AppendInittab("readline", PyInit_readline);
-   PyImport_AppendInittab("select", PyInit_select);
-   PyImport_AppendInittab("math", PyInit_math);
-   PyImport_AppendInittab("array", PyInit_array);
-#endif
-
    Py_InitializeEx(0);
-
-#if 0
-   PyImport_ImportModule("_struct");
-   PyImport_ImportModule("_ssl");
-   PyImport_ImportModule("_socket");
-   PyImport_ImportModule("_posixsubprocess");
-   PyImport_ImportModule("readline");
-   PyImport_ImportModule("select");
-   PyImport_ImportModule("math");
-   PyImport_ImportModule("array");
-#endif
-
-#ifdef WITH_THREAD
    PyEval_InitThreads();
-#endif
+
    PyInit_pyobject();
    PyInit_wallet();
    PyInit_eosapi();
@@ -130,7 +95,6 @@ void init_console() {
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("import initeos;initeos.preinit()");
-
 }
 
 void start_eos() {
@@ -156,11 +120,11 @@ void start_eos() {
 void cleos_init();
 
 int main(int argc, char** argv) {
+
    g_argc = argc;
    g_argv = argv;
 
    cleos_init();
-   vm_api_init();
 
    app().set_version(eosio::nodeos::config::version);
    app().register_plugin<history_plugin>();
@@ -182,6 +146,7 @@ int main(int argc, char** argv) {
    } catch (...) {
       return -1;
    }
+   vm_manager_init();
 
    bool readonly = app().has_option("read-only");
    if (readonly) {

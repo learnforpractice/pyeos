@@ -66,7 +66,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cython/net.pyx
 )
 
-add_library(pyeos-shared main.cpp interface/json.cpp interface/eosapi_.cpp 
+add_library(pyeos-shared interface/json.cpp interface/eosapi_.cpp 
     interface/wallet_.cpp interface/pyobject.cpp
     interface/math_.cpp  
     interface/debug_.cpp
@@ -83,15 +83,11 @@ add_library(pyeos-shared main.cpp interface/json.cpp interface/eosapi_.cpp
 
 if( APPLE )
 target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
-    chain_api_plugin history_api_plugin history_plugin txn_test_gen_plugin
-    producer_plugin chain_plugin net_plugin http_plugin wallet_plugin wallet_api_plugin
-    chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
+    eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3  intl )
 else( APPLE )
 target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
-    chain_api_plugin history_api_plugin history_plugin
-    producer_plugin chain_plugin net_plugin http_plugin wallet_plugin wallet_api_plugin
-    chainbase eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
+    eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3 util  -Xlinker -export-dynamic)
 endif( APPLE )
 
@@ -126,9 +122,14 @@ target_include_directories( pyeos-shared
 
 add_executable(pyeos main.cpp)
 
-target_link_libraries( pyeos pyeos-shared cleos-static)
+target_link_libraries( pyeos pyeos-shared cleos-static chain_api_plugin history_api_plugin history_plugin txn_test_gen_plugin
+    producer_plugin chain_plugin net_plugin http_plugin wallet_plugin wallet_api_plugin)
 
 add_dependencies(pyeos nodeos)
+
+
+add_executable(pytest pytest/pytest.cpp)
+target_link_libraries( pytest pyeos-shared eosio_testing cleos-static net_plugin wallet_plugin history_plugin)
 
 
 install( TARGETS
