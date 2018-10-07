@@ -247,10 +247,8 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
    fc::mutable_variant_object output;
 
    uint64_t start = get_microseconds();
-   int counter = 0;
    appbase::app().get_io_service().dispatch([&](){
       app().get_method<plugin_interface::incoming::methods::transaction_async>()(ppt, true, [&](const fc::static_variant<fc::exception_ptr, transaction_trace_ptr>& result) mutable -> void{
-         counter = 1;
          if (result.contains<fc::exception_ptr>()) {
             string s = result.get<fc::exception_ptr>()->to_string();
             output("except", s);
@@ -268,17 +266,10 @@ PyObject* push_transaction_async_(std::shared_ptr<packed_transaction> ppt) {
       });
    });
 
+   std::unique_lock<std::mutex> lk(m);
    Py_BEGIN_ALLOW_THREADS
-   if (get_controller().pending_block_state()) {
-      std::unique_lock<std::mutex> lk(m);
       cv->wait(lk, [&]{return ready;});
-   } else {
-      output("except", "not in pending block state, ");
-   }
    Py_END_ALLOW_THREADS
-   if (counter != 1) {
-      EOS_ASSERT(0, chain_exception, "bad things happened");
-   }
 //   wlog("+++++++++++++push_transaction_async: ${n}", ("n", get_microseconds()-start));
    return python::json::to_string(output);
 }
@@ -299,7 +290,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          signed_transaction trx;
          trx.max_ram_usage = max_ram_usage;
          for(auto& a: v) {
-            trx.actions.emplace_back(std::move(a));
+            trx.actions.push_back(a);
          }
          gen_transaction(trx, sign, 10000000, compression);
 
@@ -308,7 +299,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             variant v;
             uint64_t cost = get_microseconds();
 #if 1
-            std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
+            std::shared_ptr<packed_transaction> ppt(new packed_transaction(trx, compression));
             result = push_transaction_async_(ppt);
 #else
             Py_BEGIN_ALLOW_THREADS
@@ -323,7 +314,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             _outputs.append(result);
             Py_DECREF(result);
          } else {
-            std::shared_ptr<packed_transaction> ppt(new packed_transaction(std::move(trx), compression));
+            std::shared_ptr<packed_transaction> ppt(new packed_transaction(trx, compression));
             auto mtrx = std::make_shared<transaction_metadata>(*ppt);
              controller& ctrl = get_controller();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
