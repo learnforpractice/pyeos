@@ -49,6 +49,8 @@ namespace eosio { namespace chain {
 }
 }
 
+wallet_manager& wm();
+
 static auto tx_expiration = fc::seconds(120);
 static bool tx_force_unique = false;
 
@@ -101,14 +103,6 @@ uint32_t now2_() { return fc::time_point::now().sec_since_epoch(); }
 
 controller& get_controller() { return get_chain_controller(); }
 
-wallet_plugin& get_wallet_plugin() {
-   return app().get_plugin<eosio::wallet_plugin>();
-}
-
-wallet_manager& get_wm() {
-   return get_wallet_plugin().get_wallet_manager();
-}
-
 producer_plugin& get_producer_plugin() {
    return app().get_plugin<eosio::producer_plugin>();
    /*
@@ -156,11 +150,7 @@ chain::action generate_nonce() {
 }
 
 static fc::variant determine_required_keys(const signed_transaction& trx) {
-   // TODO better error checking
-//   const auto& public_keys = call(wallet_host, wallet_port, wallet_public_keys);
-   auto& wallet_mgr = get_wallet_plugin().get_wallet_manager();
-//   flat_set<public_key_type> wallet_manager::get_public_keys() {
-   const auto& public_keys = wallet_mgr.get_public_keys();
+   const auto& public_keys = wm().get_public_keys();
 
    eosio::chain_apis::read_only::get_required_keys_params get_arg = {fc::variant(trx), public_keys};
 //   auto get_arg = fc::mutable_variant_object

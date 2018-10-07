@@ -1,20 +1,8 @@
-#include <boost/asio.hpp>
-#include <fc/exception/exception.hpp>
-#include <fc/io/json.hpp>
 #include <fc/variant.hpp>
-#include <iostream>
-#include <string>
-#include <vector>
-
-#include <boost/thread.hpp>
-#include <fc/log/logger_config.hpp>
-
-#include <eosio/chain/exceptions.hpp>
-#include <fc/io/json.hpp>
-
-#include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/wallet_plugin/wallet_manager.hpp>
-#include <eosio/wallet_plugin/wallet_plugin.hpp>
+#include <eosio/chain/chain_api.hpp>
+#include <eosio/chain/controller.hpp>
+#include <eosio/chain/authorization_manager.hpp>
 
 #include <Python.h>
 #include "pyobject.hpp"
@@ -22,54 +10,27 @@
 using namespace std;
 using namespace eosio;
 using namespace eosio::chain;
+using namespace eosio::wallet;
 
-wallet_manager& wm() {
-//   abstract_plugin& plugin = app().get_plugin("eosio::wallet_plugin");
-//   return static_cast<wallet_plugin*>(&plugin)->get_wallet_manager();
-   wallet_plugin& plugin = app().get_plugin<wallet_plugin>();//("eosio::wallet_plugin");
-   return plugin.get_wallet_manager();
+//chain/chain_api.hpp
+namespace eosio { namespace chain {
+   controller& get_chain_controller();
+}
 }
 
-chain_plugin& get_chain_plugin();//eosapi_.cpp
+wallet_manager& wm() {
+   static wallet_manager* wm = nullptr;
+   if (!wm) {
+      wm = new wallet_manager();
+   }
+   return *wm;
+}
 
 void sign_transaction(signed_transaction& trx) {
    const auto& public_keys = wm().get_public_keys();
-   auto& ro_api = get_chain_plugin().get_read_only_api();
-
-   eosio::chain_apis::read_only::get_required_keys_params params = {fc::variant(trx), public_keys};
-   eosio::chain_apis::read_only::get_required_keys_result required_keys = ro_api.get_required_keys(params);
-
-#if 0
-   for (auto& key : required_keys.required_keys) {
-      wlog(string(key));
-   }
-#endif
-
-   eosio::chain_apis::read_only::get_info_params _params = {};
-   auto info = ro_api.get_info(_params);
-   trx = wm().sign_transaction(trx, required_keys.required_keys, info.chain_id);
+   auto required_keys_set = get_chain_controller().get_authorization_manager().get_required_keys( trx, public_keys, fc::seconds( 10 ));
+   trx = wm().sign_transaction(trx, required_keys_set, get_chain_controller().get_chain_id());
 }
-
-PyObject* sign_transaction_(void *signed_trx) {
-   if (signed_trx == NULL) {
-      return py_new_bool(false);
-   }
-
-   try {
-      signed_transaction& trx = *((signed_transaction*)signed_trx);
-      sign_transaction(trx);
-      return py_new_bool(true);
-   } catch (fc::assert_exception& e) {
-      elog(e.to_detail_string());
-   } catch (fc::exception& e) {
-      elog(e.to_detail_string());
-   } catch (boost::exception& ex) {
-      elog(boost::diagnostic_information(ex));
-   }
-
-   return py_new_bool(false);
-}
-
 
 PyObject* wallet_create_(std::string& name) {
    string password = "";

@@ -67,9 +67,3 @@ def unlock(string& name, string& password) -> bool:
 
 def import_key(string& name, string& wif_key, save=True) -> bool:
     return wallet_import_key_(name, wif_key, save)
-
-def sign_transaction(signed_trx):
-    cdef uint64_t ptr
-    ptr = signed_trx()
-    return  sign_transaction_(<void*>ptr)
-
