@@ -341,12 +341,12 @@ PyObject* gen_transaction_(vector<chain::action>& v, int expiration) {
    try {
       signed_transaction trx;
       for(auto& action: v) {
-         trx.actions.push_back(std::move(action));
+         trx.actions.push_back(action);
       }
 
       auto info = get_info();
       trx.expiration = fc::time_point::now() + fc::seconds(expiration);;
-      trx.set_reference_block(info.head_block_id);
+      trx.set_reference_block(info.last_irreversible_block_id);
 
 //      trx.max_kcpu_usage = (tx_max_cpu_usage + 1023)/1024;
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
