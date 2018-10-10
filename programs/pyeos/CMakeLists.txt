@@ -79,7 +79,7 @@ add_library(pyeos-shared interface/json.cpp interface/eosapi_.cpp
     wrap/rodb.wrap.cpp
     wrap/debug.wrap.cpp
     wrap/net.wrap.cpp
-    ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/wallet_manager.cpp
+#    ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/wallet_manager.cpp
     )
 
 if( APPLE )
@@ -122,14 +122,17 @@ target_include_directories( pyeos-shared
 
 add_executable(pyeos main.cpp)
 
-target_link_libraries( pyeos pyeos-shared cleos-static chain_api_plugin history_api_plugin history_plugin txn_test_gen_plugin
+target_link_libraries( pyeos pyeos-shared cleos-static chain_api_plugin wallet_plugin history_api_plugin history_plugin txn_test_gen_plugin
     producer_plugin chain_plugin net_plugin http_plugin)
 
 add_dependencies(pyeos nodeos)
 
 
-add_executable(pytest pytest/pytest.cpp)
-target_link_libraries( pytest pyeos-shared eosio_testing cleos-static net_plugin history_plugin)
+add_executable(pytest 
+   pytest/pytest.cpp
+)
+
+target_link_libraries( pytest pyeos-shared eosio_testing cleos-static wallet_plugin net_plugin history_plugin)
 
 
 install( TARGETS

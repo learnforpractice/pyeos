@@ -133,7 +133,6 @@ cdef extern from "eosapi_.hpp":
     void transaction_listen_();
     void transaction_disconnect_();
 
-
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
         int (*sha3)(const char* data, int size, char* result, int size2)
@@ -603,10 +602,14 @@ def gen_transaction(actions, int expiration=100):
         act.authorization = pers
         act.data.resize(0)
         act.data.resize(len(a[2]))
-        if isinstance(a[2], dict):
-            pack_args(act.account, act.name, a[2])
-        else:
-            memcpy(act.data.data(), a[2], len(a[2]))
+
+
+        args = a[2]
+        if isinstance(args, dict):
+            args = pack_args(a[0], a[1], args)
+        act.data.resize(0)
+        act.data.resize(len(args))
+        memcpy(act.data.data(), args, len(args))
         v.push_back(act)
 
     return gen_transaction_(v, expiration)
@@ -901,5 +904,3 @@ def get_active_producers():
 
 def mp_compile(src):
     raise Exception("not implemented!")
-
-
