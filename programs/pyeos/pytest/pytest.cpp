@@ -1,5 +1,4 @@
-#include <Python.h>
-#include <eosio/testing/tester.hpp>
+#include "pytest.hpp"
 
 using namespace eosio::testing;
 

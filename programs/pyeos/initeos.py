@@ -1,23 +1,22 @@
-import os
-import re
-import sys
+from imp import reload
 import imp
+import os
 import signal
-import pickle
-import traceback
-
-
-import rodb
-import net
-import wallet
-import eosapi
-import debug
-
-from eosapi import *
+import socket
+import sys
 
 from code import InteractiveConsole
+import debug
+from eosapi import *
+import eosapi
+import net
+import pickle
+import re
+import rodb
 from tools import sketch
-from imp import reload
+import traceback
+import wallet
+
 
 tests = os.path.join(os.path.dirname(__file__), 'tests')
 sys.path.insert(0, tests)
@@ -26,6 +25,7 @@ libs = os.path.join(os.path.dirname(__file__), 'libs')
 sys.path.insert(0, libs)
 
 from console import PyEosConsole
+
 
 
 #debug.add_trusted_account('hello')
@@ -481,7 +481,6 @@ def sellram(account, _bytes):
     r = eosapi.push_action('eosio', 'sellram', {'account':account, 'bytes':_bytes}, {account:'active'})
     print(r)
 
-import socket
 def check_connections():
     for peer in peers:
         try:
@@ -514,4 +513,3 @@ def undlbw(_from, _to, net, cpu):
             'transfer':False
             }
     eosapi.push_action('eosio', 'undelegatebw', args, {_from:'active'})
-

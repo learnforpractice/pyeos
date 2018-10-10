@@ -329,3 +329,83 @@ def acc_test2(value_ex):
 
 
 
+
+def t1():
+    while True:
+        import time
+        import traceback
+        try:
+            ct1.test3(500)
+            time.sleep(1.0)
+        except Exception as e:
+            traceback.print_exc()
+            time.sleep(1.0)
+
+
+def t2():
+    while True:
+        import time
+        try:
+            ht.test3()
+            time.sleep(1.0)
+        except Exception as e:
+            print(e)
+            time.sleep(1.0)
+
+def t3():
+    while True:
+        import time
+        try:
+            it.test3()
+            time.sleep(1.0)
+        except Exception as e:
+            print(e)
+            time.sleep(1.0)
+
+abi = '''
+{
+   "version": "eosio::abi/1.0",
+   "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+   }],
+  "structs": [{
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [],
+  "tables": [],
+  "ricardian_clauses": [],
+  "abi_extensions": []
+}
+'''
+            
+def t4():
+    args = {"from": 'eosio',
+            "to": 'hello',
+            "quantity": '0.0001 EOS',
+            "memo": 'hello,world'
+    }
+    
+    r = eosapi.pack_args2(abi, 'transfer', args)
+    print(r)
+
+def t5():
+    args = {"from": 'hello',
+            "to": 'eosio',
+            "quantity": '0.0001 EOS',
+            "memo": 'hello,world'
+    }
+    act = ['eosio.token', 'transfer', args, {'hello':'active'}]
+    push_action(*act)
+
+def t6():
+    from python.apitest import t
+    t.push_signed_trx2()
