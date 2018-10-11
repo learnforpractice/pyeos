@@ -531,7 +531,7 @@ int vm_manager::setcode(int vm_type, uint64_t account) {
    if (vm_type == VM_TYPE_CPYTHON_PRIVILEGED) {
       if (this->api->is_privileged(account)) {
       } else {
-         EOS_ASSERT(this->api->has_option("debug"), assert_exception, "set code no allowed");
+         EOS_ASSERT(this->api->has_option("debug"), assert_exception, "set code not allowed");
       }
    }
    if (this->api->run_mode() == 0) {
