@@ -197,6 +197,11 @@ cdef extern int cpython_setcode(uint64_t account, string& code): # with gil:
         return 1
     return 0
 
+cdef extern int cpython_clearcode(uint64_t account): # with gil:
+    if account in py_modules:
+        del py_modules[account]
+    return 1
+
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) except -1: # with gil:
     cdef string code
 

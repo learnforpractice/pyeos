@@ -3,6 +3,8 @@
 #include "vm_cpython.h"
 #include <Python.h>
 #include <eosiolib_native/vm_api.h>
+#include <eosiolib/types.hpp>
+
 #include <inspector/inspector.hpp>
 
 static struct vm_api* s_api;
@@ -24,6 +26,8 @@ PyThreadState* Py_NewInterpreterEx(void);
 }
 
 int cpython_setcode(uint64_t account, string& code);
+int cpython_clearcode(uint64_t account);
+
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 int init_function_whitelist();
 
@@ -153,9 +157,12 @@ static std::map<uint64_t, std::unique_ptr<sandbox>> s_sandbox_map;
 static uint64_t s_current_account = 0;
 
 PyObject* load_module_from_db(uint64_t account, uint64_t code_name);
+int vm_apply_no_throw(uint64_t receiver, uint64_t account, uint64_t act);
+int error_handler(string& error);
 
-extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
-   auto itr = s_sandbox_map.find(s_current_account);
+extern "C" PyObject* vm_cpython_load_module(const char* account_name, const char* module_name) {
+   uint64_t _account_name = NN(account_name);
+   auto itr = s_sandbox_map.find(_account_name);
    if (itr == s_sandbox_map.end()) {
       return NULL;
    }
@@ -163,9 +170,17 @@ extern "C" PyObject* vm_cpython_load_module(const char* module_name) {
    auto itr2 = itr->second->modules.find(module_name);
    if (itr2 == itr->second->modules.end()) {
       uint64_t _module_name = get_vm_api()->string_to_uint64(module_name);
-      return load_module_from_db(s_current_account, _module_name);//load module from code ext
+      return load_module_from_db(_account_name, _module_name);//load module from code ext
    }
    return itr2->second;
+}
+
+extern "C" PyObject* vm_cpython_load_module_from_current_account(const char* module_name) {
+   char account_name[13];
+   memset(account_name, 0, sizeof(account_name));
+   uint64_t account = current_receiver();
+   get_vm_api()->uint64_to_string(account, account_name, sizeof(account_name));
+   return vm_cpython_load_module(account_name, module_name);
 }
 
 void prepare_env(uint64_t account) {
@@ -233,13 +248,23 @@ int vm_setcode(uint64_t account) {
    get_vm_api()->uint64_to_string(account, name, sizeof(name));
 
    const char* bytecodes = get_vm_api()->vm_cpython_compile(name, code.c_str(), code.size(), &bytecode_size);
-   eosio_assert(bytecode_size != 0, "compile python code failed!");
+   eosio_assert(bytecode_size != 0, "Compiling python code failed!");
 
    get_vm_api()->set_code(account, VM_TYPE_PY, bytecodes, bytecode_size);
 
    code = string(bytecodes, bytecode_size);
    int ret = cpython_setcode(account, code);
    get_vm_api()->eosio_assert(ret, "setcode failed!");
+
+   ret = vm_apply_no_throw(account, account, 0);
+   memory_trace_stop();
+   if (ret == -1) {
+      cpython_clearcode(account);
+      string error;
+      error_handler(error);
+      get_vm_api()->eosio_assert(0, error.c_str());
+   }
+
    return 1;
 }
 
@@ -279,7 +304,7 @@ static uint64_t get_microseconds() {
    return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
 }
 
-int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+int vm_apply_no_throw(uint64_t receiver, uint64_t account, uint64_t act) {
    s_current_account = receiver;
 
    memory_trace_stop();
@@ -291,10 +316,11 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 
    prepare_env(receiver);
    uint64_t start = get_microseconds();
-   int ret = cpython_apply(receiver, account, act);
-   uint64_t end = get_microseconds() - start;
-//   vmdlog("++++++++++cost time %llu\n", end);
-   PyGC_Collect();
+   return cpython_apply(receiver, account, act);
+}
+
+int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   int ret = vm_apply_no_throw(receiver, account, act);
    if (ret == -1) {
       string error;
       error_handler(error);
