@@ -192,6 +192,8 @@ def preinit():
     sys.exit(0)
 
 try:
+    from contracts.eosio_code import t as ct
+
     from python.apitest import t as at
     from python.cryptokitties import t as kt
     from python.backyard import t as bt

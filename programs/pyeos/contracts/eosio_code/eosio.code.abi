@@ -5,12 +5,24 @@
      "base": "",
      "fields": [
         {"name":"msg", "type":"string"}
-     ]
-  }
+     ],
+  },{
+     "name": "setcode",
+     "base": "",
+     "fields": [
+        {"name":"account",    "type":"name"}
+        {"name":"code_name",  "type":"name"},
+        {"name":"code_type",  "type":"uint8"},
+        {"name":"code",       "type":"bytes"},
+     ],
+   }
   ],
   "actions": [{
       "name": "sayhello",
       "type": "raw"
+    },{
+      "name": "setcode",
+      "type": "setcode"
     }
   ]
 }

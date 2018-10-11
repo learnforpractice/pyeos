@@ -1,5 +1,9 @@
 import db
+import struct
+import eoslib
 from eoslib import N, read_action, send_inline, transfer_inline
+
+#a = bytes(1024*1024*1024)
 
 def sayHello():
     n = N('hello')
@@ -26,8 +30,9 @@ def play():
 def apply(receiver, code, action):
     if action == N('sayhello'):
         sayHello()
-    elif action == N('play'):
-        transfer_inline('eosio', 100)
-#        send_inline('hello', 'sayhello', b'hello,world', {'hello':'active'})
-#        play()
+    elif action == N('setcode'):
+        data = read_action()
+        code_account, code_name, code_type = struct.unpack('QQB', data[:17])
+        src_code = eoslib.unpack_bytes(data[17:])
+        eoslib.set_code_ext(code_account, 1, code_name, src_code)
 
