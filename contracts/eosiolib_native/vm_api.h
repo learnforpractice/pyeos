@@ -234,6 +234,7 @@ struct vm_api {
 
    int (*set_code_ext)(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size);
    const char* (*load_code_ext)(uint64_t account, uint64_t code_name, size_t* code_size);
+   bool (*check_code_auth)(uint64_t account, uint64_t code_account, uint64_t code_name);
 
    void (*rodb_remove_i64)( int32_t itr );
    int32_t (*rodb_get_i64)( int32_t itr, char* buffer, size_t buffer_size );

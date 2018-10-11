@@ -150,28 +150,48 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
 int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size) {
    int result_size = 0;
    const char* compiled_code;
+
+   require_auth(account);
+
    if (vm_type == VM_TYPE_PY) {
       compiled_code = get_vm_api()->vm_cpython_compile(name(account).to_string().c_str(), src_code, code_size, &result_size);
    }
 
    uint64_t payer = account;
-   auto itr = db_find_i64(account, account, N(code), code_name);
+   uint64_t scope = N(eosio.code);
+   uint64_t table_id = account;
+   auto itr = db_find_i64(N(eosio.code), scope, table_id, code_name);
    if (itr >= 0) {
-      db_update_i64(itr, payer, compiled_code, result_size);
+      if (code_size == 0 || src_code == nullptr) {
+         db_remove_i64(itr);
+      } else {
+         db_update_i64(itr, payer, compiled_code, result_size);
+      }
    } else {
-      db_store_i64(account, N(code), payer, code_name, compiled_code, result_size);
+      db_store_i64(scope, table_id, payer, code_name, compiled_code, result_size);
    }
    return 1;
 }
 
 const char* load_code_ext(uint64_t account, uint64_t code_name, size_t* code_size) {
-   int itr = db_api_find_i64(account, account, N(code), code_name);
+   uint64_t code = N(eosio.code);
+   uint64_t scope = code;
+   uint64_t table_id = account;
+   uint64_t id = code_name;
+
+   int itr = db_api_find_i64(code, scope, table_id, id);
    if (itr <0) {
       *code_size = 0;
       return nullptr;
    }
    return db_api_get_i64_exex( itr, code_size );
 }
+
+bool check_code_auth(uint64_t account, uint64_t code_account, uint64_t code_name) {
+   //TODO check authorization of code
+   return true;
+}
+
 
 bool is_code_activated( uint64_t account ) {
    try {
@@ -623,6 +643,8 @@ extern "C" void vm_api_init() {
       _vm_api.set_code = set_code;
       _vm_api.set_code_ext = set_code_ext;
       _vm_api.load_code_ext = load_code_ext;
+      _vm_api.check_code_auth = check_code_auth,
+
       _vm_api.get_code_id = get_code_id;
       _vm_api.get_code_type = get_code_type;
 
