@@ -111,15 +111,22 @@ int send_deferred_(uint128_t* id, uint64_t payer, vector<action> actions, int ex
 }
 
 void pack_bytes_(string& in, string& out) {
-   string raw(in.c_str(),in.length());
-   std::vector<char> o = eosio::pack<string>(raw);
-   eosio::pack<std::vector<char>>(o);
-   out = string(o.begin(), o.end());
+   try {
+      string raw(in.c_str(),in.length());
+      std::vector<char> o = eosio::pack<string>(raw);
+      eosio::pack<std::vector<char>>(o);
+      out = string(o.begin(), o.end());
+   } catch (...) {
+
+   }
 }
 
 void unpack_bytes_(string& in, string& out) {
-   string raw(in.c_str(),in.length());
-   std::vector<char> v(raw.begin(), raw.end());
-   out = eosio::unpack<string>(v);
-}
+   try {
+      string raw(in.c_str(),in.length());
+      std::vector<char> v(raw.begin(), raw.end());
+      out = eosio::unpack<string>(v);
+   } catch (...) {
 
+   }
+}
