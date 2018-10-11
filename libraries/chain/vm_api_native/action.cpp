@@ -20,7 +20,7 @@ uint32_t action_data_size() {
 }
 
 uint64_t current_receiver() {
-   return ctx().receiver;
+   return ctx().get_receiver();
 }
 
 void require_recipient( uint64_t name ) {
