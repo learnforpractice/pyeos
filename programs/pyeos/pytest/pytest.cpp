@@ -1,5 +1,6 @@
 #include "pytest.hpp"
 #include <appbase/application.hpp>
+#include <eosiolib_native/vm_api.h>
 
 using namespace eosio::testing;
 
@@ -59,9 +60,14 @@ void init_console() {
    PyRun_SimpleString("import initeos;initeos.init_wallet()");
 }
 
+bool is_unittest_mode() {
+   return true;
+}
+
 void init_wallet();
 int main(int argc, char** argv) {
    init_wallet();
+   get_vm_api()->is_unittest_mode = is_unittest_mode;
 
    appbase::app().initialize<>(argc, argv);
    init_console();
