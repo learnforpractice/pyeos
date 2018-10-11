@@ -55,9 +55,9 @@ private-key = ["EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV","5KQwrPbw
 
 
 plugin = eosio::producer_plugin
-plugin = eosio::wallet_api_plugin
-plugin = eosio::chain_api_plugin
-plugin = eosio::history_api_plugin
+#plugin = eosio::wallet_api_plugin
+#plugin = eosio::chain_api_plugin
+#plugin = eosio::history_api_plugin
 
 '''
 
@@ -129,6 +129,8 @@ def init_wallet():
     if not data_dir:
         data_dir = 'data-dir'
 
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
     psw_file = os.path.join(data_dir, 'data.pkl')
     wallet.set_dir(data_dir)
     if not os.path.exists(os.path.join(data_dir, 'mywallet.wallet')):
@@ -450,7 +452,6 @@ pid = os.getpid()
 
 def start_console():
     print("start console...")
-    init_wallet()
 
     start_ipython = False
 

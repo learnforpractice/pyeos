@@ -116,11 +116,14 @@ void start_eos() {
 }
 
 void cleos_init();
+void init_wallet();
 
 int main(int argc, char** argv) {
 
    g_argc = argc;
    g_argv = argv;
+
+   init_wallet();
 
    cleos_init();
 
@@ -143,7 +146,6 @@ int main(int argc, char** argv) {
    } catch (...) {
       return -1;
    }
-
    bool readonly = app().has_option("read-only");
    if (readonly) {
       wlog("+++++++++read only mode");
@@ -160,6 +162,7 @@ int main(int argc, char** argv) {
    wlog("running console...");
    if (app().interactive_mode()) {
       try {
+         PyRun_SimpleString("import initeos;initeos.init_wallet()");
          PyRun_SimpleString("import initeos");
          PyRun_SimpleString("initeos.start_console()");
       } FC_LOG_AND_DROP();

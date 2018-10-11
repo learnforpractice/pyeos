@@ -4,6 +4,9 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/authorization_manager.hpp>
 
+#include <eosio/chain/eos_api.hpp>
+#include <eosiolib_native/vm_api.h>
+
 #include <Python.h>
 #include "pyobject.hpp"
 
@@ -173,16 +176,27 @@ PyObject* wallet_unlock_(string& name, string& password) {
    return py_new_bool(true);
 }
 
-PyObject* wallet_import_key_(string& name, string& wif_key, bool save) {
+bool wallet_import_key(const std::string& name, const std::string& wif_key, bool save) {
    try {
+      vmdlog("++++%s \n", wif_key.c_str());
       wm().import_key(name, wif_key, save);
+      return true;
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());
-      return py_new_bool(false);
+      return false;
    } catch (...) {
-      return py_new_bool(false);
+      return false;
    }
-   return py_new_bool(true);
+   return false;
+}
+
+void init_wallet() {
+   eos_api::get().wallet_import_key = wallet_import_key;
+}
+
+PyObject* wallet_import_key_(string& name, string& wif_key, bool save) {
+   bool ret = wallet_import_key(name, wif_key, save);
+   return py_new_bool(ret);
 }
 
 PyObject* wallet_save_(string& name) {

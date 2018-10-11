@@ -1,4 +1,5 @@
 #include "pytest.hpp"
+#include <appbase/application.hpp>
 
 using namespace eosio::testing;
 
@@ -29,7 +30,9 @@ extern "C" {
 
 void init_console() {
    Py_InitializeEx(0);
-   PyEval_InitThreads();
+    PyRun_SimpleString("print('hello,world')");
+
+    PyEval_InitThreads();
 
    PyInit_pyobject();
    PyInit_wallet();
@@ -45,23 +48,34 @@ void init_console() {
         "sys.path.append('../../programs/pyeos');"
         "sys.path.append('../../programs/pyeos/contracts');"
    );
-   PyRun_SimpleString("import readline");
+    PyRun_SimpleString("print('hello,world')");
+
+    PyRun_SimpleString("import readline");
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import debug;");
    PyRun_SimpleString("from imp import reload;");
-//   PyRun_SimpleString("import initeos;initeos.preinit()");
+   PyRun_SimpleString("import initeos;initeos.preinit()");
+   PyRun_SimpleString("import initeos;initeos.init_wallet()");
 }
 
+void init_wallet();
 int main(int argc, char** argv) {
+   init_wallet();
+
+   appbase::app().initialize<>(argc, argv);
+   init_console();
+   tester main;
    try {
-      tester main;
       main.create_account(N(newacc));
-      auto b = main.produce_block();
-      init_console();
-      PyRun_SimpleString("import initeos");
-      PyRun_SimpleString("initeos.start_console()");
+//      auto b = main.produce_block();
    } FC_LOG_AND_DROP();
+
+   PyRun_SimpleString("print('hello,world')");
+   PyRun_SimpleString("import initeos");
+   PyRun_SimpleString("initeos.start_console()");
+
+   appbase::app().quit();
    return 1;
 }
 

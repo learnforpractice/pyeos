@@ -4,6 +4,8 @@
 #include <eosio/chain/contract_table_objects.hpp>
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/abi_serializer.hpp>
+#include <eosio/chain/eos_api.hpp>
+
 #include <fc/io/json.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/tuple/tuple_io.hpp>
@@ -184,7 +186,10 @@ namespace eosio { namespace testing {
 
          template< typename KeyType = fc::ecc::private_key_shim >
          static private_key_type get_private_key( name keyname, string role = "owner" ) {
-            return private_key_type::regenerate<KeyType>(fc::sha256::hash(string(keyname)+role));
+            private_key_type key = private_key_type::regenerate<KeyType>(fc::sha256::hash(string(keyname)+role));
+            std::string wif_key = std::string(key);
+            eos_api::get().wallet_import_key("mywallet", wif_key, false);
+            return key;
          }
 
          template< typename KeyType = fc::ecc::private_key_shim >
