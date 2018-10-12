@@ -322,14 +322,14 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             _outputs.append(result);
             Py_DECREF(result);
          } else {
-            std::shared_ptr<packed_transaction> ppt(new packed_transaction(trx, compression));
-            auto mtrx = std::make_shared<transaction_metadata>(*ppt);
+            auto packed_trx = packed_transaction(trx, compression);
+//            auto trx_meta = transaction_metadata(packed_trx);
              controller& ctrl = chain_controller();
              uint32_t cpu_usage = ctrl.get_global_properties().configuration.min_transaction_cpu_usage;
 
              auto deadline = fc::time_point::now() + fc::milliseconds(100);
              uint64_t cost = get_microseconds();
-             auto trx_trace_ptr = ctrl.push_transaction(mtrx, deadline, cpu_usage);
+             auto trx_trace_ptr = ctrl.push_transaction(std::make_shared<transaction_metadata>(packed_trx), deadline, cpu_usage);
              cost_time += (get_microseconds() - cost);
 
              fc::variant pretty_output = ctrl.to_variant_with_abi( *trx_trace_ptr, fc::microseconds(30*1000) );
