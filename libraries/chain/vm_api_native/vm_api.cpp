@@ -147,6 +147,11 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
 
 }
 
+bool check_code_auth(uint64_t account, uint64_t code_account, uint64_t code_name) {
+   //TODO check authorization of code
+   return true;
+}
+
 int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size) {
    int result_size = 0;
    const char* compiled_code;
@@ -173,11 +178,17 @@ int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* 
    return 1;
 }
 
-const char* load_code_ext(uint64_t account, uint64_t code_name, size_t* code_size) {
+const char* load_code_ext(uint64_t code_account, uint64_t code_name, size_t* code_size) {
    uint64_t code = N(eosio.code);
    uint64_t scope = code;
-   uint64_t table_id = account;
+   uint64_t table_id = code_account;
    uint64_t id = code_name;
+
+   uint64_t receiver = get_vm_api()->current_receiver();
+   if (!get_vm_api()->check_code_auth(receiver, code_account, code_name)) {
+      *code_size = 0;
+      return nullptr;
+   }
 
 #if 0
    int itr = db_find_i64(code, scope, table_id, id);
@@ -195,12 +206,6 @@ const char* load_code_ext(uint64_t account, uint64_t code_name, size_t* code_siz
    return db_api_get_i64_exex( itr, code_size );
 #endif
 }
-
-bool check_code_auth(uint64_t account, uint64_t code_account, uint64_t code_name) {
-   //TODO check authorization of code
-   return true;
-}
-
 
 bool is_code_activated( uint64_t account ) {
    try {

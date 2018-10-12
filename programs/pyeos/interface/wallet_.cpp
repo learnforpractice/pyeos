@@ -178,8 +178,10 @@ PyObject* wallet_unlock_(string& name, string& password) {
 
 bool wallet_import_key(const std::string& name, const std::string& wif_key, bool save) {
    try {
-      vmdlog("++++%s \n", wif_key.c_str());
+//      vmdlog("++++%s \n", wif_key.c_str());
       wm().import_key(name, wif_key, save);
+      return true;
+   } catch (key_exist_exception& ex) {
       return true;
    } catch (fc::exception& ex) {
       elog(ex.to_detail_string());

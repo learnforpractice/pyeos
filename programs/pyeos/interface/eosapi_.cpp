@@ -16,6 +16,7 @@
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/producer_schedule.hpp>
 #include <eosio/chain/chain_api.hpp>
+#include <eosio/chain/eos_api.hpp>
 
 #include "fc/bitutil.hpp"
 #include "json.hpp"
@@ -180,8 +181,8 @@ static fc::variant determine_required_keys(const signed_transaction& trx) {
 bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
 
-//   trx.expiration = info.head_block_time + tx_expiration;
-   trx.expiration = fc::time_point::now() + tx_expiration;
+   trx.expiration = info.head_block_time + tx_expiration;
+//   trx.expiration = fc::time_point::now() + tx_expiration;
 
    trx.set_reference_block(info.head_block_id);
 
@@ -289,6 +290,9 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
    uint64_t cost_time = 0;
    PyArray _outputs;
 
+   if (get_vm_api()->is_debug_mode()) {
+      eos_api::get().produce_block_start();
+   }
    try {
       for (auto& v: vv) {
          signed_transaction trx;
@@ -298,7 +302,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          }
          gen_transaction(trx, sign, 10000000, compression);
 
-         if (async) {
+         if (!get_vm_api()->is_debug_mode() && !get_vm_api()->is_unittest_mode()) {
             PyObject* result;
             variant v;
             uint64_t cost = get_microseconds();
@@ -335,6 +339,10 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
          }
       }
    }  FC_LOG_AND_DROP();
+
+   if (get_vm_api()->is_debug_mode()) {
+      eos_api::get().produce_block_end();
+   }
 
    PyArray res;
 
@@ -405,23 +413,44 @@ PyObject* push_raw_transaction_(string& signed_trx) {
    return py_new_none();
 }
 
-int produce_block_() {
-//   return get_producer_plugin().produce_block();
-   return 0;
-}
-
-int produce_block_start_() {
+static int produce_block_start() {
    try {
       return get_producer_plugin().produce_block_start();
    } FC_LOG_AND_DROP();
    return 0;
 }
 
-int produce_block_end_() {
+static int produce_block_end() {
    try {
       return get_producer_plugin().produce_block_end();
    } FC_LOG_AND_DROP();
    return 0;
+}
+
+static int produce_block() {
+   if (produce_block_start()) {
+      return produce_block_end();
+   }
+   return 0;
+}
+
+
+int produce_block_() {
+   return produce_block();
+}
+
+int produce_block_start_() {
+   return produce_block_start();
+}
+
+int produce_block_end_() {
+   return produce_block_end();
+}
+
+void init_producer() {
+   eos_api::get().produce_block_start = produce_block_start;
+   eos_api::get().produce_block_end = produce_block_end;
+   eos_api::get().produce_block = produce_block;
 }
 
 PyObject* create_key_() {

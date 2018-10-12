@@ -83,11 +83,11 @@ add_library(pyeos-shared interface/json.cpp interface/eosapi_.cpp
     )
 
 if( APPLE )
-target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
+target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api eos_api
     eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3  intl )
 else( APPLE )
-target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api
+target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api eos_api
     eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 
     python3 util  -Xlinker -export-dynamic)
 endif( APPLE )

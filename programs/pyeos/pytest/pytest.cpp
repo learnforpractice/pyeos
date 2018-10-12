@@ -1,6 +1,7 @@
 #include "pytest.hpp"
 #include <appbase/application.hpp>
 #include <eosiolib_native/vm_api.h>
+#include <eosio/chain/eos_api.hpp>
 
 using namespace eosio::testing;
 
@@ -65,22 +66,46 @@ bool is_unittest_mode() {
 }
 
 void init_wallet();
+
+tester* main_tester = nullptr;
+static int produce_block_start() {
+   return 1;
+}
+
+static int produce_block_end() {
+   main_tester->produce_block();
+   return 1;
+}
+
+static int produce_block() {
+   main_tester->produce_block();
+   return 1;
+}
+
 int main(int argc, char** argv) {
    init_wallet();
+
    get_vm_api()->is_unittest_mode = is_unittest_mode;
+   get_vm_api()->is_debug_mode = is_unittest_mode;
 
    appbase::app().initialize<>(argc, argv);
    init_console();
-   tester main;
+   main_tester = new tester();
+
+   eos_api::get().produce_block_start = produce_block_start;
+   eos_api::get().produce_block_end = produce_block_end;
+   eos_api::get().produce_block = produce_block;
+
    try {
-      main.create_account(N(newacc));
-//      auto b = main.produce_block();
+      main_tester->create_account(N(newacc));
+//      auto b = main_tester.produce_block();
    } FC_LOG_AND_DROP();
 
    PyRun_SimpleString("print('hello,world')");
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.start_console()");
 
+   delete main_tester;
    appbase::app().quit();
    return 1;
 }

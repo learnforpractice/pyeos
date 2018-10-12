@@ -23,6 +23,9 @@ public:
 
 //   void wallet_import_key(const std::string& name, const std::string& wif_key, bool save);
    bool (*wallet_import_key)(const std::string& name, const std::string& wif_key, bool save);
+   int (*produce_block_start)();
+   int (*produce_block_end)();
+   int (*produce_block)();
 };
 
 } } // namespace eosio::chain

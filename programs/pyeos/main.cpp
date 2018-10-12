@@ -117,6 +117,7 @@ void start_eos() {
 
 void cleos_init();
 void init_wallet();
+void init_producer();
 
 int main(int argc, char** argv) {
 
@@ -124,7 +125,7 @@ int main(int argc, char** argv) {
    g_argv = argv;
 
    init_wallet();
-
+   init_producer();
    cleos_init();
 
    app().set_version(eosio::nodeos::config::version);
