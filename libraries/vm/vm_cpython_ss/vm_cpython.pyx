@@ -146,7 +146,7 @@ cdef extern object load_module_from_db(uint64_t account, uint64_t code_name):
         return None
 
     _bytecodes = string(bytecodes, code_size)
-    print('+++code_name:', code_name, code_size)
+#    print('+++code_name:', code_name, code_size)
 #    print(_bytecodes)
     try:
         name = eoslib.n2s(code_name)

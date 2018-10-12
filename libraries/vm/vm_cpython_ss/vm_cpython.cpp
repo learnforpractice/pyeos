@@ -280,11 +280,20 @@ int error_handler(string& error) {
       return 0;
    }
 
+   show_error(_value);
+
    char buffer[256];
    Py_ssize_t size;
-   const char *err = PyUnicode_AsUTF8AndSize(_value, &size);
-   int n = snprintf(buffer, sizeof(buffer), "\n+++++traceback: %s\n", err);
-   error = string(buffer, n);
+   int n = 0;
+   if (PyUnicode_Check(_value)) {
+      const char *err = PyUnicode_AsUTF8AndSize(_value, &size);
+      n = snprintf(buffer, sizeof(buffer), "\n+++++traceback: %s\n", err);
+      error = string(buffer, n);
+   } else {
+      n = snprintf(buffer, sizeof(buffer), "\n+++++traceback:\n");
+      error = string(buffer, n);
+   }
+
    while (_tb) {
       PyCodeObject *code = _tb->tb_frame->f_code;
       const char* file_name = PyUnicode_AsUTF8(code->co_filename);
