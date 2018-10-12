@@ -3,6 +3,7 @@
 #include <eosiolib_native/vm_api.h>
 #include <eosio/chain/eos_api.hpp>
 
+using namespace eosio;
 using namespace eosio::testing;
 
 extern "C" void vm_manager_init();
@@ -61,13 +62,62 @@ void init_console() {
    PyRun_SimpleString("import initeos;initeos.init_wallet()");
 }
 
+class mytester : public base_tester {
+public:
+   mytester(bool push_genesis = true, db_read_mode read_mode = db_read_mode::SPECULATIVE ) {
+      printf("+++++tempdir.path(): %s \n", tempdir.path().string().c_str());
+      cfg.blocks_dir      = tempdir.path() / config::default_blocks_dir_name;
+      cfg.state_dir  = tempdir.path() / config::default_state_dir_name;
+      cfg.state_size = 1024*1024*100;
+      cfg.state_guard_size = 0;
+      cfg.reversible_cache_size = 1024*1024*100;
+      cfg.reversible_guard_size = 0;
+      cfg.contracts_console = true;
+      cfg.read_mode = read_mode;
+
+      cfg.genesis.initial_timestamp = fc::time_point::from_iso_string("2020-01-01T00:00:00.000");
+      cfg.genesis.initial_key = get_public_key( config::system_account_name, "active" );
+
+      for(int i = 0; i < boost::unit_test::framework::master_test_suite().argc; ++i) {
+         if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--binaryen"))
+            cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
+         else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wavm"))
+            cfg.wasm_runtime = chain::wasm_interface::vm_type::wavm;
+         else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wabt"))
+            cfg.wasm_runtime = chain::wasm_interface::vm_type::wabt;
+         else
+            cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
+      }
+
+      open();
+
+      if (push_genesis)
+         push_genesis_block();
+   }
+
+   mytester(controller::config config) {
+      init(config);
+   }
+
+   signed_block_ptr produce_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0/*skip_missed_block_penalty*/ )override {
+      return _produce_block(skip_time, false, skip_flag);
+   }
+
+   signed_block_ptr produce_empty_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0/*skip_missed_block_penalty*/ )override {
+      control->abort_block();
+      return _produce_block(skip_time, true, skip_flag);
+   }
+
+   bool validate() { return true; }
+};
+
 bool is_unittest_mode() {
    return true;
 }
 
 void init_wallet();
 
-tester* main_tester = nullptr;
+mytester* main_tester = nullptr;
 static int produce_block_start() {
    return 1;
 }
@@ -90,7 +140,7 @@ int main(int argc, char** argv) {
 
    appbase::app().initialize<>(argc, argv);
    init_console();
-   main_tester = new tester();
+   main_tester = new mytester();
 
    eos_api::get().produce_block_start = produce_block_start;
    eos_api::get().produce_block_end = produce_block_end;
