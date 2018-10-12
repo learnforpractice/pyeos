@@ -29,10 +29,16 @@ def play():
 
 def apply(receiver, code, action):
     if action == N('sayhello'):
-        sayHello()
+        from eosio.code import helloo
+        print(dir(helloo))
+        helloo.sayHello()
     elif action == N('setcode'):
         data = read_action()
         code_account, code_name, code_type = struct.unpack('QQB', data[:17])
         src_code = eoslib.unpack_bytes(data[17:])
+        print('+++++++++++++setcode:', len(src_code))
         eoslib.set_code_ext(code_account, 1, code_name, src_code)
+        
+    elif action == N('import'):
+        from eosio.code import hello
 

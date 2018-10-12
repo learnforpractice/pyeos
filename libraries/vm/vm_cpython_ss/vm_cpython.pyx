@@ -135,21 +135,25 @@ cdef extern object load_module_from_db(uint64_t account, uint64_t code_name):
     cdef size_t code_size = 0;
     cdef string _bytecodes;
 
-    if code_name in py_imported_modules:
-        return py_imported_modules[code_name]
+    if not account in py_imported_modules:
+        py_imported_modules[account] = {}
+    else:
+        if code_name in py_imported_modules[account]:
+            return py_imported_modules[account][code_name]
 
     bytecodes = get_vm_api()[0].load_code_ext(account, code_name, &code_size)
     if code_size == 0:
         return None
 
     _bytecodes = string(bytecodes, code_size)
-
+    print('+++code_name:', code_name, code_size)
+#    print(_bytecodes)
     try:
         name = eoslib.n2s(code_name)
         co = vm_load_codeobject(name, _bytecodes)
         module = type(eoslib)(name)
         exec(co, module.__dict__)
-        py_imported_modules[code_name] = module
+        py_imported_modules[account][code_name] = module
         return module
     except:
         pass
@@ -204,7 +208,8 @@ cdef extern int cpython_clearcode(uint64_t account): # with gil:
 
 cdef extern int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action) except -1: # with gil:
     cdef string code
-
+    global py_imported_modules
+    
     set_current_account(receiver)
     mod = None
     if receiver in py_modules:
@@ -246,12 +251,7 @@ cdef extern int cpython_apply(unsigned long long receiver, unsigned long long ac
 
     del module
 
-    key = None
-    while len(py_imported_modules) > 0:
-        for _key in py_imported_modules:
-            key = _key
-            break
-        del py_imported_modules[_key]
+    py_imported_modules = {}
 
     _tracemalloc.stop()
     Py_SetRecursionLimit(limit)

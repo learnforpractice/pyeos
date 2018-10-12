@@ -179,12 +179,21 @@ const char* load_code_ext(uint64_t account, uint64_t code_name, size_t* code_siz
    uint64_t table_id = account;
    uint64_t id = code_name;
 
+#if 0
+   int itr = db_find_i64(code, scope, table_id, id);
+   if (itr >= 0) {
+      return db_get_i64_exex(itr, code_size);
+   } else {
+      return NULL;
+   }
+#else
    int itr = db_api_find_i64(code, scope, table_id, id);
    if (itr <0) {
       *code_size = 0;
       return nullptr;
    }
    return db_api_get_i64_exex( itr, code_size );
+#endif
 }
 
 bool check_code_auth(uint64_t account, uint64_t code_account, uint64_t code_name) {

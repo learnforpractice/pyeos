@@ -12,6 +12,7 @@ import eosapi
 import initeos
 import unittest
 import traceback
+import marshal
 
 from eosapi import N, mp_compile, pack_bytes, pack_setabi, push_transactions
 from common import prepare, producer
@@ -22,10 +23,27 @@ def init(func):
         func(*args, **kwargs)
     return func_wrapper
 
+aa = b'''
+def sayHello():
+    print('hello, worlddddddddddddd')
+'''
+
 @init
 def test():
-    args = {'account':'hello', 'code_name':'hello', 'code_type':1, 'code': b'hello,world'.hex()}
-    r, cost = eosapi.push_action('eosio.code','setcode', args, {'hello':'active'})
+#    co = compile(aa, 'helloo', 'exec')
+#    co = marshal.dumps(co)
+    args = {'account':'eosio.code', 'code_name':'helloo', 'code_type':1, 'code': aa.hex()}
+#    args = {'account':'eosio.code', 'code_name':'helloo', 'code_type':1, 'code': ''}
+    r, cost = eosapi.push_action('eosio.code','setcode', args, {'eosio.code':'active'})
+    print('cost time:', cost)
+
+    args = {'account':'eosio.code', 'code_name':'eosio.code', 'code_type':1, 'code': aa.hex()}
+    r, cost = eosapi.push_action('eosio.code','setcode', args, {'eosio.code':'active'})
+    print('cost time:', cost)
+
+@init
+def test_import():
+    r, cost = eosapi.push_action('eosio.code','sayhello', b'hello,world', {'hello':'active'})
     print('cost time:', cost)
 
 @init
