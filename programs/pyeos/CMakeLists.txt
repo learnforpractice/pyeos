@@ -79,6 +79,7 @@ add_library(pyeos-shared interface/json.cpp interface/eosapi_.cpp
     wrap/rodb.wrap.cpp
     wrap/debug.wrap.cpp
     wrap/net.wrap.cpp
+    pytest/debug_context.cpp
 #    ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/wallet_manager.cpp
     )
 

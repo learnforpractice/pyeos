@@ -306,7 +306,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             PyObject* result;
             variant v;
             uint64_t cost = get_microseconds();
-#if 1
+#if 0
             std::shared_ptr<packed_transaction> ppt(new packed_transaction(trx, compression));
             result = push_transaction_async_(ppt);
 #else

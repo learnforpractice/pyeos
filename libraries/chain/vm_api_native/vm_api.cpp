@@ -156,7 +156,7 @@ int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* 
    int result_size = 0;
    const char* compiled_code;
 
-   require_auth(account);
+   get_vm_api()->require_auth(account);
 
    if (vm_type == VM_TYPE_PY) {
       compiled_code = get_vm_api()->vm_cpython_compile(name(account).to_string().c_str(), src_code, code_size, &result_size);
@@ -456,10 +456,15 @@ extern "C" void vm_manager_init() {
    s_results.reserve(256);
 }
 
+static int vm_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
+   return vm_manager::get().apply( type, receiver, account, act);
+}
+
 static bool s_init = false;
 extern "C" void vm_api_init() {
    if (!s_init){
       s_init = true;
+      _vm_api.vm_apply = vm_apply;
       _vm_api.read_action_data = read_action_data;
       _vm_api.action_data_size = action_data_size;
       _vm_api.require_recipient = require_recipient;

@@ -277,6 +277,8 @@ struct vm_api {
    uint64_t (*ethaddr2n)(const char* address, int size);
    void (*n2ethaddr)(uint64_t n, char* address, int size);
 
+   int (*vm_apply)(int type, uint64_t receiver, uint64_t account, uint64_t act);
+
    int (*is_contracts_console_enabled)();
    char reserved[sizeof(char*)*128]; //for forward compatibility
 };
