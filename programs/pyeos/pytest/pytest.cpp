@@ -142,7 +142,10 @@ static int (*vm_run_script)(const char* str);
 
 static int vm_run_script_(const char* str) {
    debug_context::get().ctx->current_context = debug_context::get().ctx;
-   vm_run_script(str);
+   int ret = vm_run_script(str);
+   vmdlog("vm_run_script returned\n");
+   debug_context::get().ctx->current_context = nullptr;
+   return ret;
 }
 
 int main(int argc, char** argv) {
@@ -165,11 +168,18 @@ int main(int argc, char** argv) {
    vm_run_script = get_vm_api()->vm_run_script;
    get_vm_api()->vm_run_script = vm_run_script_; //("print('hello,world')");
    try {
+      get_vm_api()->vm_run_script("print('hello,world')");
+   } catch (...) {
+      vmdlog("+++%s\n", fc::exception::current_exception->to_detail_string().c_str());
+   }
+
+   vmdlog("++++%p \n", fc::exception::current_exception);
+
+   try {
       main_tester->create_account(N(newacc));
 //      auto b = main_tester.produce_block();
    } FC_LOG_AND_DROP();
 
-   PyRun_SimpleString("print('hello,world')");
    PyRun_SimpleString("import initeos");
    PyRun_SimpleString("initeos.start_console()");
 

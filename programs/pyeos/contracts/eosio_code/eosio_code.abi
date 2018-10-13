@@ -15,6 +15,22 @@
         {"name":"code_type",  "type":"uint8"},
         {"name":"code",       "type":"bytes"},
      ],
+   },{
+     "name": "auth",
+     "base": "",
+     "fields": [
+        {"name":"code_owner",    "type":"name"}
+        {"name":"code_name",     "type":"name"},
+        {"name":"account",       "type":"name"},
+     ],
+   },{
+     "name": "unauth",
+     "base": "",
+     "fields": [
+        {"name":"code_owner",    "type":"name"}
+        {"name":"code_name",     "type":"name"},
+        {"name":"account",       "type":"name"},
+     ],
    }
   ],
   "actions": [{
@@ -23,6 +39,12 @@
     },{
       "name": "setcode",
       "type": "setcode"
+    },{
+      "name": "auth",
+      "type": "auth"
+    },{
+      "name": "unauth",
+      "type": "unauth"
     }
   ]
 }

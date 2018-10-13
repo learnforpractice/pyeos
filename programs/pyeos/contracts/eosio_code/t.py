@@ -36,8 +36,18 @@ def test():
 
 @init
 def test_import():
+    args = {'code_owner':'hello', 'code_name':'sayhello', 'account':'eosio.code'}
+    r, cost = eosapi.push_action('eosio.code','auth', args, {'hello':'active'})
+
     r, cost = eosapi.push_action('eosio.code','sayhello', b'hello,world', {'hello':'active'})
     print('cost time:', cost)
+    return
+    args = {'code_owner':'hello', 'code_name':'sayhello', 'account':'eosio.code'}
+    r, cost = eosapi.push_action('eosio.code','unauth', args, {'hello':'active'})
+
+    r, cost = eosapi.push_action('eosio.code','sayhello', b'hello,worldd', {'hello':'active'})
+    print('cost time:', cost)
+
 
 @init
 def test2(count=100):
