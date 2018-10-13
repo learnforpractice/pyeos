@@ -29,8 +29,8 @@ def play():
 
 def apply(receiver, code, action):
     if action == N('sayhello'):
-        from eosio.code import hellooo
-        hellooo.sayHello()
+        from hello import sayhello
+        sayhello.sayHello('mike')
     elif action == N('setcode'):
         data = read_action()
         code_account, code_name, code_type = struct.unpack('QQB', data[:17])

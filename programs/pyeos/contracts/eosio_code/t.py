@@ -19,26 +19,19 @@ from common import prepare, producer
 
 def init(func):
     def func_wrapper(*args, **kwargs):
-        prepare('eosio.code', 'eosio.code.py', 'eosio.code.abi', __file__)
+        prepare('eosio.code', 'eosio_code.py', 'eosio_code.abi', __file__)
         func(*args, **kwargs)
     return func_wrapper
 
 aa = b'''
-def sayHello():
-    print('hello, worlddddddddddddd')
+def sayHello(name):
+    print('hello', name)
 '''
 
 @init
 def test():
-#    co = compile(aa, 'helloo', 'exec')
-#    co = marshal.dumps(co)
-    args = {'account':'eosio.code', 'code_name':'helloo', 'code_type':1, 'code': aa.hex()}
-#    args = {'account':'eosio.code', 'code_name':'helloo', 'code_type':1, 'code': ''}
-    r, cost = eosapi.push_action('eosio.code','setcode', args, {'eosio.code':'active'})
-    print('cost time:', cost)
-
-    args = {'account':'eosio.code', 'code_name':'eosio.code', 'code_type':1, 'code': aa.hex()}
-    r, cost = eosapi.push_action('eosio.code','setcode', args, {'eosio.code':'active'})
+    args = {'account':'hello', 'code_name':'sayhello', 'code_type':1, 'code': aa.hex()}
+    r, cost = eosapi.push_action('eosio.code','setcode', args, {'hello':'active'})
     print('cost time:', cost)
 
 @init
@@ -60,10 +53,11 @@ def test2(count=100):
 def test3(count=100):
     actions = []
     for i in range(count):
-        act = ['hello', 'sayhello', b'hello,world%d'%(i,), {'eosio.code':'active'}]
+        act = ['eosio.code', 'sayhello', b'hello,world%d'%(i,), {'eosio.code':'active'}]
         actions.append([act])
     rr, cost = eosapi.push_transactions(actions, True)
-    print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
+    if cost:
+        print('total cost time:%.3f s, cost per action: %.3f ms, transaction per second: %.3f'%(cost/1e6, cost/count/1000, 1*1e6/(cost/count)))
 
 @init
 def test_setcode1():
