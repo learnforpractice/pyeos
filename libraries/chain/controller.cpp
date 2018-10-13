@@ -1405,6 +1405,7 @@ authorization_manager&         controller::get_mutable_authorization_manager()
 controller::controller( const controller::config& cfg )
 :my( new controller_impl( cfg, *this ) )
 {
+   dlog("++++cfg.state_dir ${n}", ("n", cfg.state_dir));
    chain_api_init(this, &my->conf);
 }
 
