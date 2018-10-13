@@ -36,6 +36,8 @@
 #include <eosio/chain/db_api.h>
 #include <eosio/chain/options.hpp>
 
+#include <eosiolib_native/vm_api.hpp>
+
 using namespace eosio::chain;
 #include <appbase/platform.hpp>
 #include <dlfcn.h>
@@ -149,7 +151,14 @@ void set_code(uint64_t user_account, int vm_type, const char* code, int code_siz
 
 bool check_code_auth(uint64_t account, uint64_t code_account, uint64_t code_name) {
    //TODO check authorization of code
-   return true;
+   if (account == code_account) {
+      return true;
+   }
+   auto itr = db_find_i64(N(eosio.code), code_account, account, code_name);
+   if (itr >= 0) {
+      return true;
+   }
+   return false;
 }
 
 int set_code_ext(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size) {
@@ -447,6 +456,9 @@ int is_contracts_console_enabled() {
 static struct vm_api _vm_api = {
 };
 
+static struct vm_api_cpp _vm_api_cpp = {
+};
+
 extern "C" void vm_manager_init() {
    //action.cpp
    vm_register_api(&_vm_api);
@@ -457,8 +469,20 @@ extern "C" void vm_manager_init() {
 }
 
 static int vm_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
-   return vm_manager::get().apply( type, receiver, account, act);
+   try {
+      return vm_manager::get().apply( type, receiver, account, act);
+   } FC_LOG_AND_DROP();
+   return 0;
 }
+
+int64_t get_current_exception(string& what) {
+   if (!fc::exception::current_exception) {
+      return 0;
+   }
+   what = fc::exception::current_exception->to_detail_string();
+   return fc::exception::current_exception->code();
+}
+
 
 static bool s_init = false;
 extern "C" void vm_api_init() {
@@ -705,6 +729,9 @@ extern "C" void vm_api_init() {
       _vm_api.is_contracts_console_enabled = is_contracts_console_enabled;
    }
    vm_register_api(&_vm_api);
+
+   _vm_api_cpp.get_current_exception = get_current_exception;
+   vm_register_api_cpp(&_vm_api_cpp);
 }
 
 extern "C" void vm_api_init_ex() {

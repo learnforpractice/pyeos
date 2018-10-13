@@ -6,6 +6,10 @@ from libcpp cimport bool
 import db
 import struct
 
+cdef extern from "exception_converter.hpp":
+    pass
+
+
 cdef extern from "<stdint.h>":
     ctypedef unsigned int       unsigned_int
     ctypedef unsigned short     uint16_t
@@ -59,13 +63,6 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
         uint64_t    actor
         uint64_t permission
     
-    int db_idx_double_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t& secondary, uint64_t primary )
-    int db_idx_double_lowerbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_upperbound( uint64_t code, uint64_t scope, uint64_t table,  uint64_t& secondary, uint64_t& primary )
-    int db_idx_double_end( uint64_t code, uint64_t scope, uint64_t table )
-    int db_idx_double_next( int iterator, uint64_t& primary  )
-    int db_idx_double_previous( int iterator, uint64_t& primary )
 
     void pack_bytes_(string& _in, string& out);
     void unpack_bytes_(string& _in, string& out);
@@ -74,8 +71,8 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
     int call_get_args_(string& args);
 
     uint64_t call_(uint64_t account, uint64_t func);
-    int send_inline_(action& act);
-    int send_deferred_(uint128_t* id, uint64_t payer, vector[action] actions, int expiration, int delay_sec, int max_ram_usage, bool replace_existing)
+    int send_inline_(action& act)  except +
+    int send_deferred_(uint128_t* id, uint64_t payer, vector[action] actions, int expiration, int delay_sec, int max_ram_usage, bool replace_existing)  except +
 
 
     cdef cppclass checksum256:
@@ -89,66 +86,66 @@ cdef extern from "eoslib_.hpp": # namespace "eosio::chain":
 
     cdef cppclass vm_api:
 #action.h
-        uint32_t (*read_action_data)( void* msg, uint32_t len );
-        uint32_t (*action_data_size)();
-        void (*require_recipient)( uint64_t name );
-        void (*require_auth)( uint64_t name );
-        bool (*has_auth)( uint64_t name );
-        void (*require_auth2)( uint64_t name, uint64_t permission );
-        bool (*is_account)( uint64_t name );
-        void (*send_inline)(char *serialized_action, size_t size);
-        void (*send_context_free_inline)(const char *serialized_action, size_t size);
-        uint64_t  (*publication_time)();
-        uint64_t (*current_receiver)();
+        uint32_t (*read_action_data)( void* msg, uint32_t len ) except +;
+        uint32_t (*action_data_size)()  except +
+        void (*require_recipient)( uint64_t name )  except +
+        void (*require_auth)( uint64_t name )  except +
+        bool (*has_auth)( uint64_t name )  except +
+        void (*require_auth2)( uint64_t name, uint64_t permission )  except +
+        bool (*is_account)( uint64_t name )  except +
+        void (*send_inline)(char *serialized_action, size_t size)  except +
+        void (*send_context_free_inline)(const char *serialized_action, size_t size)  except +
+        uint64_t  (*publication_time)()  except +
+        uint64_t (*current_receiver)()  except +
 #chain.h
-        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
+        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen )  except +
 
 
-        void (*assert_sha256)( const char* data, uint32_t length, const checksum256* hash );
-        void (*assert_sha1)( const char* data, uint32_t length, const checksum160* hash );
-        void (*assert_sha512)( const char* data, uint32_t length, const checksum512* hash );
-        void (*assert_ripemd160)( const char* data, uint32_t length, const checksum160* hash );
-        void (*sha256)( const char* data, uint32_t length, checksum256* hash );
-        void (*sha1)( const char* data, uint32_t length, checksum160* hash );
-        void (*sha512)( const char* data, uint32_t length, checksum512* hash );
-        void (*ripemd160)( const char* data, uint32_t length, checksum160* hash );
-        int (*recover_key)( const checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
-        void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen );
+        void (*assert_sha256)( const char* data, uint32_t length, const checksum256* hash )  except +
+        void (*assert_sha1)( const char* data, uint32_t length, const checksum160* hash )  except +
+        void (*assert_sha512)( const char* data, uint32_t length, const checksum512* hash )  except +
+        void (*assert_ripemd160)( const char* data, uint32_t length, const checksum160* hash )  except +
+        void (*sha256)( const char* data, uint32_t length, checksum256* hash )  except +
+        void (*sha1)( const char* data, uint32_t length, checksum160* hash )  except +
+        void (*sha512)( const char* data, uint32_t length, checksum512* hash )  except +
+        void (*ripemd160)( const char* data, uint32_t length, checksum160* hash )  except +
+        int (*recover_key)( const checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen )  except +
+        void (*assert_recover_key)( const checksum256* digest, const char* sig, size_t siglen, const char* pub, size_t publen )  except +
 
 
-        void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing);
-        int (*cancel_deferred)(const uint128_t* sender_id);
+        void (*send_deferred)(const uint128_t* sender_id, uint64_t payer, const char *serialized_transaction, size_t size, uint32_t replace_existing)  except +
+        int (*cancel_deferred)(const uint128_t* sender_id)  except +
 
-        bool (*is_code_activated)( uint64_t name );
-        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen );
+        bool (*is_code_activated)( uint64_t name )  except +
+        uint32_t (*get_active_producers)( uint64_t* producers, uint32_t datalen )  except +
 
-        int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount)
-        int (*transfer_inline)(uint64_t to, uint64_t _account, uint64_t _symbol);
+        int (*get_balance)(uint64_t _account, uint64_t _symbol, int64_t* amount) except +
+        int (*transfer_inline)(uint64_t to, uint64_t _account, uint64_t _symbol) except +
 
-        int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission );
-        int64_t (*get_account_creation_time)( uint64_t account );
+        int64_t (*get_permission_last_used)( uint64_t account, uint64_t permission )  except +
+        int64_t (*get_account_creation_time)( uint64_t account )  except +
 
-        void (*set_resource_limits)( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
-        void (*get_resource_limits)( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight );
-        int64_t (*set_proposed_producers)( char *producer_data, uint32_t producer_data_size );
-        bool (*is_privileged)( uint64_t account );
-        void (*set_privileged)( uint64_t account, bool is_priv );
-        void (*set_blockchain_parameters_packed)(char* data, uint32_t datalen);
-        uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen);
-        void (*activate_feature)( int64_t f );
+        void (*set_resource_limits)( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight )  except +
+        void (*get_resource_limits)( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight )  except +
+        int64_t (*set_proposed_producers)( char *producer_data, uint32_t producer_data_size )  except +
+        bool (*is_privileged)( uint64_t account )  except +
+        void (*set_privileged)( uint64_t account, bool is_priv )  except +
+        void (*set_blockchain_parameters_packed)(char* data, uint32_t datalen) except +
+        uint32_t (*get_blockchain_parameters_packed)(char* data, uint32_t datalen) except +
+        void (*activate_feature)( int64_t f ) except +
 
-        uint64_t (*string_to_uint64)(const char* str);
-        int32_t (*uint64_to_string)(uint64_t n, char* out, int size);
+        uint64_t (*string_to_uint64)(const char* str) except +
+        int32_t (*uint64_to_string)(uint64_t n, char* out, int size) except +
 
-        void (*eosio_abort)();
-        void (*eosio_assert)( uint32_t test, const char* msg );
-        void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len );
-        void (*eosio_assert_code)( uint32_t test, uint64_t code );
-        void (*eosio_exit)( int32_t code );
-        uint64_t  (*current_time)();
-        uint32_t  (*now)();
+        void (*eosio_abort)() except +
+        void (*eosio_assert)( uint32_t test, const char* msg ) except +
+        void (*eosio_assert_message)( uint32_t test, const char* msg, uint32_t msg_len ) except +
+        void (*eosio_assert_code)( uint32_t test, uint64_t code ) except +
+        void (*eosio_exit)( int32_t code ) except +
+        uint64_t  (*current_time)() except +
+        uint32_t  (*now)() except +
 
-        int (*set_code_ext)(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size);
+        int (*set_code_ext)(uint64_t account, int vm_type, uint64_t code_name, const char* src_code, size_t code_size) except +
 
 
     vm_api& api()

@@ -301,6 +301,7 @@ typedef int (*fn_unload)(uint64_t account);
 void vm_init(struct vm_api* api);
 void vm_deinit(void);
 void vm_register_api(struct vm_api* api);
+struct vm_api* get_vm_api(void);
 
 int vm_setcode(uint64_t account);
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act);
@@ -311,7 +312,6 @@ int vm_preload(uint64_t account);
 int vm_load(uint64_t account);
 int vm_unload(uint64_t account);
 
-struct vm_api* get_vm_api(void);
 
 uint64_t wasm_call(const char* act, uint64_t* args, int argc);
 

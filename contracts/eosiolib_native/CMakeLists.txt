@@ -17,6 +17,8 @@ math/scalbn.cpp
 
 double.hpp
 
+vm_api.cpp
+
 ../eosiolib/types.cpp
 ) #exchange_state.cpp
 
