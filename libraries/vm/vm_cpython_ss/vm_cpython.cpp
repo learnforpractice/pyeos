@@ -25,6 +25,8 @@ PyObject* PyInit__tracemalloc(void);
 PyThreadState* Py_NewInterpreterEx(void);
 }
 
+static PyThreadState* mainstate = nullptr;
+
 int cpython_setcode(uint64_t account, string& code);
 int cpython_clearcode(uint64_t account);
 
@@ -84,9 +86,17 @@ extern "C" void debug_print(const char* str, int len) {
 }
 
 
+extern "C" void swith_to_mainstate() {
+   PyThreadState_Swap(mainstate);
+}
 
 int vm_run_script(const char* str) {
-   return PyRun_SimpleString(str);
+   PyThreadState_Swap(mainstate);
+//   PyEval_RestoreThread(mainstate);
+//   PyEval_ReleaseThread(mainstate);
+   PyRun_SimpleString(str);
+   PyRun_InteractiveLoop(stdin, "<stdin>");
+   return 1;
 }
 
 extern "C" int PyImport_ImportFrozenModuleObjectEx(const struct _frozen *p);
@@ -121,6 +131,7 @@ void vm_init(struct vm_api* api) {
    PyImport_AppendInittab("readline", PyInit_readline);
 
    Py_InitializeEx(0);
+   mainstate = PyThreadState_Get();
 
 //   PyInit_eoslib();
 //   PyInit_db();
@@ -155,7 +166,6 @@ struct sandbox {
 
 static std::map<uint64_t, std::unique_ptr<sandbox>> s_sandbox_map;
 static uint64_t s_current_account = 0;
-
 PyObject* load_module_from_db(uint64_t account, uint64_t code_name);
 int vm_apply_no_throw(uint64_t receiver, uint64_t account, uint64_t act);
 int error_handler(string& error);
@@ -168,11 +178,12 @@ extern "C" PyObject* vm_cpython_load_module(const char* account_name, const char
    }
 
    auto itr2 = itr->second->modules.find(module_name);
-   if (itr2 == itr->second->modules.end()) {
-      uint64_t _module_name = get_vm_api()->string_to_uint64(module_name);
-      return load_module_from_db(_account_name, _module_name);//load module from code ext
+   if (itr2 != itr->second->modules.end()) {
+      Py_INCREF(itr2->second);
+      return itr2->second;
    }
-   return itr2->second;
+   uint64_t _module_name = get_vm_api()->string_to_uint64(module_name);
+   return load_module_from_db(_account_name, _module_name);//load module from code ext
 }
 
 extern "C" PyObject* vm_cpython_load_module_from_current_account(const char* module_name) {
@@ -224,6 +235,7 @@ void prepare_env(uint64_t account) {
    } else {
       PyThreadState_Swap(itr->second->state);
    }
+//   PyThreadState_Swap(mainstate);
 }
 
 int vm_setcode(uint64_t account) {

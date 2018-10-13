@@ -3,6 +3,8 @@
 #include <eosiolib_native/vm_api.h>
 #include <eosio/chain/eos_api.hpp>
 
+#include "debug_context.hpp"
+
 using namespace eosio;
 using namespace eosio::testing;
 
@@ -132,6 +134,17 @@ static int produce_block() {
    return 1;
 }
 
+void require_auth( uint64_t name ) {
+
+}
+
+static int (*vm_run_script)(const char* str);
+
+static int vm_run_script_(const char* str) {
+   debug_context::get().ctx->current_context = debug_context::get().ctx;
+   vm_run_script(str);
+}
+
 int main(int argc, char** argv) {
    init_wallet();
 
@@ -142,10 +155,15 @@ int main(int argc, char** argv) {
    init_console();
    main_tester = new mytester();
 
+
    eos_api::get().produce_block_start = produce_block_start;
    eos_api::get().produce_block_end = produce_block_end;
    eos_api::get().produce_block = produce_block;
 
+   get_vm_api()->require_auth = require_auth;
+
+   vm_run_script = get_vm_api()->vm_run_script;
+   get_vm_api()->vm_run_script = vm_run_script_; //("print('hello,world')");
    try {
       main_tester->create_account(N(newacc));
 //      auto b = main_tester.produce_block();

@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 //      if(!app().initialize_ex(g_argc, g_argv, "chain_plugin", "http_plugin", "net_plugin", "producer_plugin")) {
    try {
       try {
-         if(!app().initialize<chain_plugin, http_plugin, net_plugin, history_plugin, producer_plugin>(g_argc, g_argv)) {
+         if(!app().initialize<chain_api_plugin, http_plugin, net_plugin, history_plugin, producer_plugin>(g_argc, g_argv)) {
             return -1;
          }
       } FC_LOG_AND_RETHROW();
