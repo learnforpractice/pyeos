@@ -3,6 +3,8 @@
 #include <eosiolib_native/vm_api.h>
 #include <eosio/chain/eos_api.hpp>
 
+#include <fc/io/fstream.hpp>
+
 #include "debug_context.hpp"
 
 using namespace eosio;
@@ -149,6 +151,7 @@ static int vm_run_script_(const char* str) {
 }
 
 int main(int argc, char** argv) {
+
    init_wallet();
 
    get_vm_api()->is_unittest_mode = is_unittest_mode;
@@ -167,13 +170,13 @@ int main(int argc, char** argv) {
 
    vm_run_script = get_vm_api()->vm_run_script;
    get_vm_api()->vm_run_script = vm_run_script_; //("print('hello,world')");
-   try {
-      get_vm_api()->vm_run_script("print('hello,world')");
-   } catch (...) {
-      vmdlog("+++%s\n", fc::exception::current_exception->to_detail_string().c_str());
-   }
 
-   vmdlog("++++%p \n", fc::exception::current_exception);
+   if (appbase::app().has_option("script")) {
+      string content;
+      string script = appbase::app().get_option("script");
+      fc::read_file_contents(script, content);
+      get_vm_api()->vm_run_script(content.c_str());
+   }
 
    try {
       main_tester->create_account(N(newacc));
