@@ -6,7 +6,7 @@
 
 #include <eosio/chain/abi_serializer.hpp>
 #include <eosio/chain/account_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/snapshot.hpp>
 
 namespace chainbase {
    class database;
@@ -90,7 +90,8 @@ namespace eosio { namespace chain {
          controller( const config& cfg );
          ~controller();
 
-         void startup();
+         void add_indices();
+         void startup( const snapshot_reader_ptr& snapshot = nullptr );
 
          void set_action_object(const account_name& receiver, const action& act);
          const action_object& get_action_object() const;
@@ -151,14 +152,13 @@ namespace eosio { namespace chain {
           */
          void push_confirmation( const header_confirmation& c );
 
-         virtual chainbase::database& db()const;
+         const chainbase::database& db()const;
 
-         fork_database& fork_db()const;
+         const fork_database& fork_db()const;
 
          const account_object&                 get_account( account_name n )const;
-         virtual const global_property_object&         get_global_properties()const;
-         virtual const dynamic_global_property_object& get_dynamic_global_properties()const;
-         const permission_object&              get_permission( const permission_level& level )const;
+         const global_property_object&         get_global_properties()const;
+         const dynamic_global_property_object& get_dynamic_global_properties()const;
          const resource_limits_manager&        get_resource_limits_manager()const;
          resource_limits_manager&              get_mutable_resource_limits_manager();
          const authorization_manager&          get_authorization_manager()const;
@@ -208,6 +208,9 @@ namespace eosio { namespace chain {
          block_state_ptr fetch_block_state_by_id( block_id_type id )const;
 
          virtual block_id_type get_block_id_for_num( uint32_t block_num )const;
+
+         sha256 calculate_integrity_hash()const;
+         void write_snapshot( const snapshot_writer_ptr& snapshot )const;
 
          void check_contract_list( account_name code )const;
          void check_action_list( account_name code, action_name action )const;
@@ -291,6 +294,10 @@ namespace eosio { namespace chain {
          }
 
       private:
+         friend class apply_context;
+         friend class transaction_context;
+
+         chainbase::database& mutable_db()const;
 
          std::unique_ptr<controller_impl> my;
 

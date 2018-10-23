@@ -48,6 +48,7 @@ add_library( eosio_chain_static
               apply_context.cpp
               abi_serializer.cpp
               asset.cpp
+              snapshot.cpp
 
 #             webassembly/wavm.cpp
 #             webassembly/binaryen.cpp

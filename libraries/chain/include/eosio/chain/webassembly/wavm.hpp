@@ -2,6 +2,7 @@
 
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/webassembly/runtime_interface.hpp>
+#include <eosio/chain/apply_context.hpp>
 #include <softfloat.hpp>
 #include "Runtime/Runtime.h"
 #include "IR/Types.h"
@@ -19,6 +20,8 @@ class wavm_runtime : public eosio::chain::wasm_runtime_interface {
       wavm_runtime();
       ~wavm_runtime();
       std::unique_ptr<wasm_instantiated_module_interface> instantiate_module(const char* code_bytes, size_t code_size, std::vector<uint8_t> initial_memory) override;
+
+      void immediately_exit_currently_running_module() override;
 
       struct runtime_guard {
          runtime_guard();
@@ -381,7 +384,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<array_ptr<T>, size_t, Inputs...>, 
       const auto length = size_t(size);
       T* base = array_ptr_impl<T>(ctx, (U32)ptr, length);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-//         wlog( "misaligned array of const values" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned array of const values" );
          std::vector<std::remove_const_t<T> > copy(length > 0 ? length : 1);
          T* copy_ptr = &copy[0];
          memcpy( (void*)copy_ptr, (void*)base, length * sizeof(T) );
@@ -396,7 +400,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<array_ptr<T>, size_t, Inputs...>, 
       const auto length = size_t(size);
       T* base = array_ptr_impl<T>(ctx, (U32)ptr, length);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-//         wlog( "misaligned array of values" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned array of values" );
          std::vector<std::remove_const_t<T> > copy(length > 0 ? length : 1);
          T* copy_ptr = &copy[0];
          memcpy( (void*)copy_ptr, (void*)base, length * sizeof(T) );
@@ -507,7 +512,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T *, Inputs...>, std::tuple<Transl
    static auto translate_one(running_instance_context& ctx, Inputs... rest, Translated... translated, I32 ptr) -> std::enable_if_t<std::is_const<U>::value, Ret> {
       T* base = array_ptr_impl<T>(ctx, (U32)ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-//         wlog( "misaligned const pointer" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned const pointer" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
          memcpy( (void*)copy_ptr, (void*)base, sizeof(T) );
@@ -520,7 +526,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T *, Inputs...>, std::tuple<Transl
    static auto translate_one(running_instance_context& ctx, Inputs... rest, Translated... translated, I32 ptr) -> std::enable_if_t<!std::is_const<U>::value, Ret> {
       T* base = array_ptr_impl<T>(ctx, (U32)ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-//         wlog( "misaligned pointer" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned pointer" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
          memcpy( (void*)copy_ptr, (void*)base, sizeof(T) );
@@ -586,7 +593,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T &, Inputs...>, std::tuple<Transl
          Runtime::causeException(Exception::Cause::accessViolation);
       T &base = *(T*)(getMemoryBaseAddress(mem)+(U32)ptr);
       if ( reinterpret_cast<uintptr_t>(&base) % alignof(T) != 0 ) {
-//         wlog( "misaligned const reference" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned const reference" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
          memcpy( (void*)copy_ptr, (void*)&base, sizeof(T) );
@@ -604,7 +612,8 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T &, Inputs...>, std::tuple<Transl
          Runtime::causeException(Exception::Cause::accessViolation);
       T &base = *(T*)(getMemoryBaseAddress(mem)+(U32)ptr);
       if ( reinterpret_cast<uintptr_t>(&base) % alignof(T) != 0 ) {
-//         wlog( "misaligned reference" );
+         if(ctx.apply_ctx->control.contracts_console())
+            wlog( "misaligned reference" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
          memcpy( (void*)copy_ptr, (void*)&base, sizeof(T) );

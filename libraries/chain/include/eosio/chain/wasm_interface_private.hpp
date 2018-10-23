@@ -1,7 +1,7 @@
 #pragma once
 
 #include <eosio/chain/exceptions.hpp>
-#include "wasm_interface.hpp"
+#include <eosio/chain/wasm_interface.hpp>
 
 #if defined(_WAVM)
    #include <eosio/chain/webassembly/wavm.hpp>

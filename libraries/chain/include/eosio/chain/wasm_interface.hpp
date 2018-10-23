@@ -52,7 +52,6 @@ namespace eosio { namespace chain {
       public:
          enum class vm_type {
             wavm,
-            binaryen,
             wabt
          };
          static wasm_interface& get();
@@ -68,6 +67,9 @@ namespace eosio { namespace chain {
          int preload(uint64_t account);
          int unload(uint64_t account);
 
+         //Immediately exits currently running wasm. UB is called when no wasm running
+         void exit();
+
       private:
          wasm_interface(vm_type vm);
          unique_ptr<struct wasm_interface_impl> my;
@@ -80,4 +82,4 @@ namespace eosio{ namespace chain {
    std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime);
 }}
 
-FC_REFLECT_ENUM( eosio::chain::wasm_interface::vm_type, (wavm)(binaryen)(wabt) )
+FC_REFLECT_ENUM( eosio::chain::wasm_interface::vm_type, (wavm)(wabt) )

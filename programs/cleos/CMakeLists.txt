@@ -38,10 +38,12 @@ target_include_directories(${CLI_CLIENT_EXECUTABLE_NAME}-static PUBLIC ${Intl_IN
 
 target_link_libraries( ${CLI_CLIENT_EXECUTABLE_NAME}-static
                        PRIVATE appbase chain_api_plugin producer_plugin chain_plugin http_plugin eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} ${Intl_LIBRARIES} )
+                    
 
 target_link_libraries( ${CLI_CLIENT_EXECUTABLE_NAME}
                        PRIVATE  ${CLI_CLIENT_EXECUTABLE_NAME}-static)
 
+copy_bin( ${CLI_CLIENT_EXECUTABLE_NAME} )
 install( TARGETS
    ${CLI_CLIENT_EXECUTABLE_NAME}
 
