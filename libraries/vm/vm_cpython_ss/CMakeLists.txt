@@ -28,11 +28,12 @@ add_library(vm_cpython_ss SHARED
             ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib.wrap.cpp
             ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/db.wrap.cpp
             ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib_.cpp
+            ${CMAKE_SOURCE_DIR}/libraries/fc/src/crypto/xxhash.c
             )
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss fc)
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native)
 #target_compile_options(vm_cpython_ss PUBLIC -DCYTHON_PEP489_MULTI_PHASE_INIT=0)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}

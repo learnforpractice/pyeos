@@ -180,9 +180,11 @@ static fc::variant determine_required_keys(const signed_transaction& trx) {
 
 bool gen_transaction(signed_transaction& trx, bool sign, int32_t extra_kcpu = 1000, packed_transaction::compression_type compression = packed_transaction::none) {
    auto info = get_info();
-
-   trx.expiration = info.head_block_time + tx_expiration;
-//   trx.expiration = fc::time_point::now() + tx_expiration;
+   if (get_vm_api()->has_option("manual-gen-block")) {
+      trx.expiration = fc::time_point::now() + tx_expiration;
+   } else {
+      trx.expiration = info.head_block_time + tx_expiration;
+   }
 
    trx.set_reference_block(info.head_block_id);
 
