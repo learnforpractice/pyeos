@@ -23,7 +23,7 @@ namespace eosio {
 } /// namespace eosio
 
 #include "vm_api.h"
-static struct vm_api* s_api;
+static struct vm_api* s_api = nullptr;
 void vm_register_api(struct vm_api* api) {
    if (!api) {
       throw std::runtime_error("vm_api pointer can not be NULL!");

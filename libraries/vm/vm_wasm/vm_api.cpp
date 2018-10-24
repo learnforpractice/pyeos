@@ -2,6 +2,7 @@
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
 #include <fc/io/raw.hpp>
+#include <fc/uint128.hpp>
 
 #include <softfloat.hpp>
 #include <compiler_builtins.hpp>
@@ -1658,8 +1659,6 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    in >> s;
    if (s == "wavm")
       runtime = eosio::chain::wasm_interface::vm_type::wavm;
-   else if (s == "binaryen")
-      runtime = eosio::chain::wasm_interface::vm_type::binaryen;
    else if (s == "wabt")
       runtime = eosio::chain::wasm_interface::vm_type::wabt;
    else
