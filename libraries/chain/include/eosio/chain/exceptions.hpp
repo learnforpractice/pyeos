@@ -548,4 +548,7 @@ namespace eosio { namespace chain {
                                  3240000, "Snapshot exception" )
       FC_DECLARE_DERIVED_EXCEPTION( snapshot_validation_exception,   snapshot_exception,
                                     3240001, "Snapshot Validation Exception" )
+
+   FC_DECLARE_EXCEPTION( abi_generation_exception, 999999, "Unable to generate abi" )
+
 } } // eosio::chain
