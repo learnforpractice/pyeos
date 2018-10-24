@@ -31,14 +31,18 @@ void get_code(uint64_t account, string& code) {
    code = string(_code, size);
 }
 
+
+void init_vm_cpython() {
+   PyImport_AppendInittab("vm_cpython", PyInit_vm_cpython);
+   PyImport_AppendInittab("db", PyInit_db);
+   PyImport_AppendInittab("eoslib", PyInit_eoslib);
+}
+
 void vm_init(struct vm_api* api) {
    api->vm_cpython_compile = vm_cpython_compile;
    s_api = api;
-   Py_InitializeEx(0);
-
-   PyInit_db();
-   PyInit_eoslib();
-   PyInit_vm_cpython();
+   //for PEP489_MULTI_PHASE_INIT compatibility
+   init_vm_cpython();
 }
 
 void vm_deinit() {

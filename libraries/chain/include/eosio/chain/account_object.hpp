@@ -13,7 +13,7 @@
 namespace eosio { namespace chain {
 
    class account_object : public chainbase::object<account_object_type, account_object> {
-      OBJECT_CTOR(account_object,(code)(abi)(config))
+      OBJECT_CTOR(account_object,(code)(abi))
 
       id_type              id;
       account_name         name;

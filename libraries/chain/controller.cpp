@@ -52,7 +52,8 @@ using contract_database_index_set = index_set<
    index128_index,
    index256_index,
    index_double_index,
-   index_long_double_index
+   index_long_double_index,
+   key256_value_index
 >;
 
 class maybe_session {
@@ -198,7 +199,6 @@ struct controller_impl {
    SET_APP_HANDLER( eosio, eosio, newaccount );
    SET_APP_HANDLER( eosio, eosio, setcode );
    SET_APP_HANDLER( eosio, eosio, setabi );
-   SET_APP_HANDLER( eosio, eosio, setconfig );
    SET_APP_HANDLER( eosio, eosio, updateauth );
    SET_APP_HANDLER( eosio, eosio, deleteauth );
    SET_APP_HANDLER( eosio, eosio, linkauth );
@@ -2101,29 +2101,6 @@ void controller::validate_tapos( const transaction& trx )const { try {
               "Transaction's reference block did not match. Is this transaction from a different fork?",
               ("tapos_summary", tapos_block_summary));
 } FC_CAPTURE_AND_RETHROW() }
-
-const action_object& controller::get_action_object() const{
-   return db().get<action_object>();
-}
-
-void controller::set_action_object(const account_name& receiver, const action& act) {
-   const action_object& _act_obj = get_action_object();
-   try {
-      db().modify(_act_obj, [&](action_object& act_obj) {
-         act_obj.receiver = receiver;
-         act_obj.account = act.account;
-         act_obj.name = act.name;
-
-//         act_obj.authorization.resize(0);
-         act_obj.authorization.resize(act.authorization.size());
-         memcpy(act_obj.authorization.data(), act.authorization.data(), act.authorization.size());
-
-//         act_obj.data.resize(0);
-         act_obj.data.resize(act.data.size());
-         memcpy(act_obj.data.data(), act.data.data(), act.data.size());
-      });
-   } FC_LOG_AND_DROP();
-}
 
 void controller::validate_db_available_size() const {
    const auto free = db().get_segment_manager()->get_free_memory();

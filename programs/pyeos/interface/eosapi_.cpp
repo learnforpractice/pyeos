@@ -306,7 +306,7 @@ PyObject* push_transactions_(vector<vector<chain::action>>& vv, bool sign, uint6
             PyObject* result;
             variant v;
             uint64_t cost = get_microseconds();
-#if 0
+#if 1
             std::shared_ptr<packed_transaction> ppt(new packed_transaction(trx, compression));
             result = push_transaction_async_(ppt);
 #else
@@ -477,7 +477,7 @@ PyObject* get_public_key_(string& wif_key) {
 }
 
 void modify_permission( const permission_object& permission, const authority& auth ) {
-   chain_controller().db().modify( permission, [&](permission_object& po) {
+   ((chainbase::database*)(&chain_controller().db()))->modify( permission, [&](permission_object& po) {
       po.auth = auth;
       po.last_updated = fc::time_point::now();
    });
@@ -506,7 +506,7 @@ bool set_proposed_producers_(string& producer, string& public_key) {
    sch.producers = std::move(producers);
 
    const auto& gpo = chain_controller().get_global_properties();
-   chain_controller().db().modify( gpo, [&]( auto& gp ) {
+   ((chainbase::database*)(&chain_controller().db()))->modify( gpo, [&]( auto& gp ) {
       gp.proposed_schedule_block_num = 12149;
       gp.proposed_schedule = std::move(sch);
    });
@@ -776,14 +776,14 @@ bool is_replay_() {
    return get_vm_api()->is_replay();
 }
 
-void pack_bytes_(string& in, string& out) {
+void fc_pack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> o = fc::raw::pack<string>(raw);
    fc::raw::pack<std::vector<char>>(o);
    out = string(o.begin(), o.end());
 }
 
-void unpack_bytes_(string& in, string& out) {
+void fc_unpack_bytes_(string& in, string& out) {
    string raw(in.c_str(),in.length());
    std::vector<char> v(raw.begin(), raw.end());
    out = fc::raw::unpack<string>(v);

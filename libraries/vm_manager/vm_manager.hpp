@@ -39,7 +39,6 @@ class vm_manager
 public:
    static vm_manager& get();
    void set_vm_api(struct vm_api* _api);
-   struct vm_api* get_vm_api();
 
    int setcode(int type, uint64_t account);
    int apply(int type, uint64_t receiver, uint64_t account, uint64_t act);
@@ -52,8 +51,9 @@ public:
    int load_vm_from_ram(int vm_type, uint64_t vm_name);
    int load_vm(int vm_type);
    int load_vm_wavm();
+   int load_vm_cpython();
 
-   bool init(struct vm_api* api);
+   bool init();
 
    void *get_eth_vm_api();
 

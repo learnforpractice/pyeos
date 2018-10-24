@@ -12,7 +12,6 @@
 #include <fc/log/logger.hpp>
 
 #include <softfloat.hpp>
-#include <eosiolib_native/vm_api.h>
 
 #include <eosio/chain/db_api.hpp>
 #include "thrift/blockingconcurrentqueue.h"
@@ -20,6 +19,7 @@
 #include "thrift/RpcService.h"
 
 #include <vm_manager.hpp>
+#include <eosiolib_native/vm_api.h>
 
 using namespace eosio::chain;
 

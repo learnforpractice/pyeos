@@ -21,7 +21,6 @@ PyObject* PyInit_sys2(void);
 PyObject* PyInit_readline(void);
 
 PyObject* PyInit__tracemalloc(void);
-
 PyThreadState* Py_NewInterpreterEx(void);
 }
 
@@ -32,6 +31,7 @@ int cpython_clearcode(uint64_t account);
 
 int cpython_apply(unsigned long long receiver, unsigned long long account, unsigned long long action);
 int init_function_whitelist();
+int error_handler(string& error);
 
 void get_code(uint64_t account, string& code) {
    size_t size;
@@ -213,29 +213,47 @@ void prepare_env(uint64_t account) {
       name = PyUnicode_FromString("_tracemalloc");
       _PyImport_SetModule(name, module);
 
-      module = PyInit_inspector();
-      name = PyUnicode_FromString("inspector");
+      module = PyInit_db();
+      if (module == NULL) {
+         goto error;
+      }
+      name = PyUnicode_FromString("db");
       _PyImport_SetModule(name, module);
-
-      module = PyInit_vm_cpython();
-      name = PyUnicode_FromString("vm_cpython");
-      _PyImport_SetModule(name, module);
+      s->modules["db"] = module;
 
       module = PyInit_eoslib();
+      if (module == NULL) {
+         goto error;
+      }
       name = PyUnicode_FromString("eoslib");
       _PyImport_SetModule(name, module);
       s->modules["eoslib"] = module;
 
-      module = PyInit_db();
-      name = PyUnicode_FromString("db");
+      module = PyInit_inspector();
+      if (module == NULL) {
+         goto error;
+      }
+      name = PyUnicode_FromString("inspector");
       _PyImport_SetModule(name, module);
-      s->modules["db"] = module;
+
+      module = PyInit_vm_cpython();
+      if (module == NULL) {
+         goto error;
+      }
+      name = PyUnicode_FromString("vm_cpython");
+      _PyImport_SetModule(name, module);
 
       s_sandbox_map[account] = std::move(s);
    } else {
       PyThreadState_Swap(itr->second->state);
    }
+   return;
+error:
+   string error;
+   error_handler(error);
+   vmdlog("+++++++%s \n", error.c_str());
 //   PyThreadState_Swap(mainstate);
+   return;
 }
 
 int vm_setcode(uint64_t account) {

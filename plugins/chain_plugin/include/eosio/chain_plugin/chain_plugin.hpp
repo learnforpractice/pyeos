@@ -656,6 +656,8 @@ public:
    // Only call this after plugin_initialize()!
    const controller& chain() const;
 
+   chain::chain_id_type get_chain_id()const;
+
    virtual bool is_replay() {
       return _replay;
    }

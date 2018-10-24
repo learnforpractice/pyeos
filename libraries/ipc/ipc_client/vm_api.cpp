@@ -124,10 +124,6 @@ int run_mode() // 0 for server, 1 for client
 static struct vm_api _vm_api = {
 };
 
-struct vm_api* get_vm_api() {
-   return &_vm_api;
-}
-
 void vm_manager_init(int vm_type) {
    vm_register_api(&_vm_api);
    vm_manager::get().set_vm_api(&_vm_api);
@@ -140,8 +136,8 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    in >> s;
    if (s == "wavm")
       runtime = eosio::chain::wasm_interface::vm_type::wavm;
-   else if (s == "binaryen")
-      runtime = eosio::chain::wasm_interface::vm_type::binaryen;
+   else if (s == "wabt")
+      runtime = eosio::chain::wasm_interface::vm_type::wabt;
    else
       in.setstate(std::ios_base::failbit);
    return in;

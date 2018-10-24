@@ -1,5 +1,5 @@
-#include <eosio/chain/chain_api.hpp>
 #include <eosio/chain/controller.hpp>
+#include <eosio/chain/chain_api.hpp>
 
 using namespace fc;
 

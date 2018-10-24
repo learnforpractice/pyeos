@@ -464,10 +464,15 @@ static struct vm_api_cpp _vm_api_cpp = {
 extern "C" void vm_manager_init() {
    //action.cpp
    vm_register_api(&_vm_api);
-   vm_manager::get().init(&_vm_api);
+   vm_manager::get().init();
 
    s_args.reserve(256);
    s_results.reserve(256);
+}
+
+extern "C" void vm_manager_init_python() {
+   //action.cpp
+   vm_manager::get().load_vm_cpython();
 }
 
 static int vm_apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
@@ -770,8 +775,6 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
    in >> s;
    if (s == "wavm")
       runtime = eosio::chain::wasm_interface::vm_type::wavm;
-   else if (s == "binaryen")
-      runtime = eosio::chain::wasm_interface::vm_type::binaryen;
    else if (s == "wabt")
       runtime = eosio::chain::wasm_interface::vm_type::wabt;
    else

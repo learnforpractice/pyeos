@@ -24,11 +24,16 @@ add_library(vm_cpython_ss SHARED
             vm_cpython.wrap.cpp
             opcode.cc
             test.wrap.cpp
-            vm_cpython.cpp)
+            vm_cpython.cpp
+            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib.wrap.cpp
+            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/db.wrap.cpp
+            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib_.cpp
+            )
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss vmapi4python)
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss fc)
+#target_compile_options(vm_cpython_ss PUBLIC -DCYTHON_PEP489_MULTI_PHASE_INIT=0)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
 #   PRIVATE ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include
@@ -43,6 +48,7 @@ target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
     PUBLIC ${CMAKE_SOURCE_DIR}/externals/python/Include
     PUBLIC ${CMAKE_SOURCE_DIR}/externals/python
 
+    PRIVATE ${CMAKE_SOURCE_DIR}/libraries/fc/include
     PRIVATE ${CMAKE_BINARY_DIR}/libraries/fc/include
 #    PRIVATE ${CMAKE_BINARY_DIR}/libraries/chain/include
     PRIVATE ${CMAKE_SOURCE_DIR}/contracts

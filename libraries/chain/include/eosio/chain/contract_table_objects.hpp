@@ -199,6 +199,7 @@ namespace eosio { namespace chain {
    };
 
    DECLARE_TABLE_ID_TAG(key_value_object, by_scope_primary)
+   DECLARE_TABLE_ID_TAG(key256_value_object, by_scope_primary)
    DECLARE_TABLE_ID_TAG(index64_object, by_primary)
    DECLARE_TABLE_ID_TAG(index128_object, by_primary)
    DECLARE_TABLE_ID_TAG(index256_object, by_primary)
@@ -274,6 +275,7 @@ CHAINBASE_SET_INDEX_TYPE(eosio::chain::index_long_double_object, eosio::chain::i
 
 FC_REFLECT(eosio::chain::table_id_object, (code)(scope)(table)(payer)(count) )
 FC_REFLECT(eosio::chain::key_value_object, (primary_key)(payer)(value) )
+FC_REFLECT(eosio::chain::key256_value_object, (primary_key)(payer)(value) )
 
 #define REFLECT_SECONDARY(type)\
   FC_REFLECT(type, (primary_key)(payer)(secondary_key) )

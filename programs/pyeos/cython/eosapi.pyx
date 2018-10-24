@@ -76,8 +76,8 @@ cdef extern from "eosapi_.hpp":
 
     bool is_replay_()
 
-    void pack_bytes_(string& _in, string& out)
-    void unpack_bytes_(string& _in, string& out)
+    void fc_pack_bytes_(string& _in, string& out)
+    void fc_unpack_bytes_(string& _in, string& out)
 
     void get_active_producers_(vector[string]& producers)
 
@@ -501,7 +501,7 @@ def pack_bytes(string& _in):
         bytes: Packed data.
     '''
     cdef string out
-    pack_bytes_(_in, out)
+    fc_pack_bytes_(_in, out)
     return <bytes>out
 
 def unpack_bytes(string& _in):
@@ -515,7 +515,7 @@ def unpack_bytes(string& _in):
     '''
 
     cdef string out
-    unpack_bytes_(_in, out)
+    fc_unpack_bytes_(_in, out)
     return <bytes>out
 
 def pack_setabi(string& abiPath, account):

@@ -93,9 +93,6 @@ namespace eosio { namespace chain {
          void add_indices();
          void startup( const snapshot_reader_ptr& snapshot = nullptr );
 
-         void set_action_object(const account_name& receiver, const action& act);
-         const action_object& get_action_object() const;
-
          /**
           * Starts a new pending block session upon which new transactions can
           * be pushed.

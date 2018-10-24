@@ -96,8 +96,8 @@ void wasm2wast_(string& wasm, string& result);
 
 bool is_replay_();
 
-void pack_bytes_(string& in, string& out);
-void unpack_bytes_(string& in, string& out);
+void fc_pack_bytes_(string& in, string& out);
+void fc_unpack_bytes_(string& in, string& out);
 
 void fc_pack_setabi_(string& abiPath, uint64_t account, string& out);
 void fc_pack_setconfig_(string& abiPath, uint64_t account, string& out);

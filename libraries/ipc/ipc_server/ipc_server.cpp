@@ -10,13 +10,15 @@
 #include <fc/log/logger.hpp>
 
 #include <softfloat.hpp>
-#include <eosiolib_native/vm_api.h>
 
 #include <eosio/chain/db_api.hpp>
 #include "thrift/blockingconcurrentqueue.h"
 #include "thrift/readerwriterqueue.h"
 #include "thrift/RpcService.h"
 #include <mutex>
+
+#include <eosiolib_native/vm_api.h>
+#include <eosiolib/db.h>
 
 using namespace eosio::chain;
 

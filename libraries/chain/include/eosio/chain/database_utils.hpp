@@ -122,12 +122,12 @@ namespace fc {
 
    inline
    void to_variant( const float128_t& f, variant& v ) {
-      v = variant(*reinterpret_cast<const uint128_t*>(&f));
+      v = variant(*reinterpret_cast<const eosio::chain::uint128_t*>(&f));
    }
 
    inline
    void from_variant( const variant& v, float128_t& f ) {
-      from_variant(v, *reinterpret_cast<uint128_t*>(&f));
+      from_variant(v, *reinterpret_cast<eosio::chain::uint128_t*>(&f));
    }
 
    inline

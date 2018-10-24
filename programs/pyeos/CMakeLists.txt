@@ -83,6 +83,8 @@ add_library(pyeos-shared interface/json.cpp interface/eosapi_.cpp
 #    ${CMAKE_SOURCE_DIR}/plugins/wallet_plugin/wallet_manager.cpp
     )
 
+target_compile_options(pyeos-shared PUBLIC -DCYTHON_PEP489_MULTI_PHASE_INIT=0)
+
 if( APPLE )
 target_link_libraries( pyeos-shared eosio_chain appbase softfloat db_api eos_api
     eos_utilities fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} 

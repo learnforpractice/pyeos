@@ -1,10 +1,10 @@
-#include "native_interface.hpp"
-
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/db_api.hpp>
 
 #include <fc/ext_string.h>
 #include <dlfcn.h>
+
+#include "native_interface.hpp"
 
 using namespace fc;
 

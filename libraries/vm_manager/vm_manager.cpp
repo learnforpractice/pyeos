@@ -21,6 +21,8 @@
 #include <dlfcn.h>
 #include <eosiolib/system.h>
 
+#include <eosiolib_native/vm_api.h>
+
 using namespace eosio;
 using namespace eosio::chain;
 namespace bio = boost::iostreams;
@@ -134,8 +136,8 @@ static uint64_t vm_names[] = {
 };
 
 static const char* vm_libs_path[] = {
-//   "../libs/libvm_wasm_wabt" DYLIB_SUFFIX,
-   "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
+   "../libs/libvm_wasm_wabt" DYLIB_SUFFIX,
+//   "../libs/libvm_wasm_binaryen" DYLIB_SUFFIX,
    "../libs/libvm_cpython_ss" DYLIB_SUFFIX,
    "../libs/libvm_eth2" DYLIB_SUFFIX,
    "../libs/libvm_wasm_wavm-0" DYLIB_SUFFIX,
@@ -175,7 +177,7 @@ private:
    uint64_t start;
 };
 
-bool vm_manager::init(struct vm_api* api) {
+bool vm_manager::init() {
    static bool init = false;
    if (init) {
       return true;
@@ -183,13 +185,15 @@ bool vm_manager::init(struct vm_api* api) {
 
    init = true;
 
-   this->api = api;
+//   this->api = api;
 
    for (int i=0;i<3;i++) {
+#if 0
       if (load_vm_from_ram(i, vm_names[i])) {
          continue;
       }
-      load_vm_from_path(i, vm_libs_path[i]);
+#endif
+       load_vm_from_path(i, vm_libs_path[i]);
    }
 
    load_vm_wavm();
@@ -220,12 +224,19 @@ bool vm_manager::init(struct vm_api* api) {
    return true;
 }
 
+int vm_manager::load_vm_cpython() {
+   return load_vm_from_path(VM_TYPE_CPYTHON_PRIVILEGED, vm_cpython_lib);
+}
+
 int vm_manager::load_vm_wavm() {
    int default_wavm_index = 3;
-   if (!load_vm_from_ram(default_wavm_index, vm_names[default_wavm_index])) {
+#if 0
+    if (!load_vm_from_ram(default_wavm_index, vm_names[default_wavm_index])) {
       load_vm_from_path(default_wavm_index, vm_libs_path[default_wavm_index]);
    }
-
+#else
+    load_vm_from_path(default_wavm_index, vm_libs_path[default_wavm_index]);
+#endif
    char _path[128];
    const char* _format = "../libs/libvm_wasm_wavm-%d" DYLIB_SUFFIX;
 
@@ -328,12 +339,16 @@ void vm_manager::on_boost_account(uint64_t account) {
 
 vm_manager::vm_manager() {
 //   init();
-   this->api = nullptr;
+   this->api = get_vm_api();
    trusted_accounts[N(eosio)] = N(eosio);
    trusted_accounts[N(eosio.token)] = N(eosio.token);
 }
 
 int vm_manager::load_vm_from_path(int vm_type, const char* vm_path) {
+   if (vm_map.find(vm_type) != vm_map.end()) {
+      return 1;
+   }
+
    uint64_t start = get_microseconds();
 
    void *handle = dlopen(vm_path, RTLD_LAZY | RTLD_LOCAL);
@@ -516,10 +531,6 @@ bool vm_manager::is_trusted_account(uint64_t account) {
    }
    return false;
 
-}
-
-struct vm_api* vm_manager::get_vm_api() {
-   return this->api;
 }
 
 int vm_manager::setcode(int vm_type, uint64_t account) {

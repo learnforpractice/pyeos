@@ -96,15 +96,9 @@ void apply_context::exec_one( action_trace& trace )
                control.check_contract_list( receiver );
                control.check_action_list( act.account, act.name );
             }
-         try {
-              if (a.vm_type == 0 && wasm_apply_debug(receiver.value, act.account.value, act.name.value)) {
-//
-              } else {
+            try {
                  vm_manager::get().apply(a.vm_type, receiver.value, act.account.value, act.name.value);
-              }
-//            control.get_wasm_interface().apply(a.code_version, a.code, *this);
-         } catch ( const wasm_exit& ){}
-
+            } catch ( const wasm_exit& ){}
          }
       } FC_RETHROW_EXCEPTIONS( warn, "pending console output: ${console}", ("console", _pending_console_output.str()) )
    } catch( fc::exception& e ) {

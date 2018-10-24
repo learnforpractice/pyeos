@@ -58,6 +58,10 @@ extern "C" {
    PyObject* PyInit__struct();
    PyObject* PyInit_pyobject();
 
+   PyObject* PyInit_vm_cpython();
+   PyObject* PyInit_db();
+   PyObject* PyInit_eoslib();
+
    //vm_manager.cpp
    void vm_deinit_all();
    void vm_api_init();
@@ -68,19 +72,27 @@ bool is_init_finished() {
    return init_finished;
 }
 
-
 void init_console() {
+   PyImport_AppendInittab("pyobject", PyInit_pyobject);
+   PyImport_AppendInittab("wallet", PyInit_wallet);
+   PyImport_AppendInittab("eosapi", PyInit_eosapi);
+   PyImport_AppendInittab("net", PyInit_net);
+   PyImport_AppendInittab("rodb", PyInit_rodb);
+   PyImport_AppendInittab("debug", PyInit_debug);
+
    Py_InitializeEx(0);
    PyEval_InitThreads();
 
-   PyInit_pyobject();
-   PyInit_wallet();
-   PyInit_eosapi();
-   PyInit_net();
+   PyImport_ImportModule("pyobject");
+   PyImport_ImportModule("wallet");
+   PyImport_ImportModule("eosapi");
+   PyImport_ImportModule("net");
+   PyImport_ImportModule("rodb");
+   PyImport_ImportModule("debug");
 
-   PyInit_rodb();
-   PyInit_debug();
-//   PyInit_python_contract();
+   PyImport_ImportModule("vm_cpython");
+   PyImport_ImportModule("db");
+   PyImport_ImportModule("eoslib");
 
    PyRun_SimpleString(
        "import sys;"
@@ -91,6 +103,10 @@ void init_console() {
    PyRun_SimpleString("import wallet");
    PyRun_SimpleString("import eosapi;");
    PyRun_SimpleString("import debug;");
+   PyRun_SimpleString("import vm_cpython;");
+   PyRun_SimpleString("import db;");
+   PyRun_SimpleString("import eoslib;");
+
    PyRun_SimpleString("from imp import reload;");
    PyRun_SimpleString("import initeos;initeos.preinit()");
 }
@@ -118,6 +134,7 @@ void start_eos() {
 void cleos_init();
 void init_wallet();
 void init_producer();
+extern "C" void vm_manager_init_python();
 
 int main(int argc, char** argv) {
 
@@ -127,6 +144,9 @@ int main(int argc, char** argv) {
    init_wallet();
    init_producer();
    cleos_init();
+   vm_api_init();
+
+   vm_manager_init_python();
 
    app().set_version(eosio::nodeos::config::version);
    app().register_plugin<history_plugin>();
