@@ -3,13 +3,15 @@
 #include <eosio/chain/webassembly/common.hpp>
 #include <eosio/chain/webassembly/runtime_interface.hpp>
 #include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/apply_context.hpp>
+//#include <eosio/chain/apply_context.hpp>
 #include <softfloat_types.h>
 
 //wabt includes
 #include <src/binary-reader.h>
 #include <src/common.h>
 #include <src/interp.h>
+
+#include <eosiolib_native/vm_api.h>
 
 namespace eosio { namespace chain { namespace webassembly { namespace wabt_runtime {
 
@@ -372,7 +374,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<array_ptr<T>, size_t, Inputs...>> 
       size_t length = args.at((uint32_t)offset).get_i32();
       T* base = array_ptr_impl<T>(vars, ptr, length);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned array of const values" );
          std::vector<std::remove_const_t<T> > copy(length > 0 ? length : 1);
          T* copy_ptr = &copy[0];
@@ -389,7 +391,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<array_ptr<T>, size_t, Inputs...>> 
       size_t length = args.at((uint32_t)offset).get_i32();
       T* base = array_ptr_impl<T>(vars, ptr, length);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned array of values" );
          std::vector<std::remove_const_t<T> > copy(length > 0 ? length : 1);
          T* copy_ptr = &copy[0];
@@ -503,7 +505,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T *, Inputs...>> {
       uint32_t ptr = args.at((uint32_t)offset).get_i32();
       T* base = array_ptr_impl<T>(vars, ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned const pointer" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
@@ -518,7 +520,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T *, Inputs...>> {
       uint32_t ptr = args.at((uint32_t)offset).get_i32();
       T* base = array_ptr_impl<T>(vars, ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned pointer" );
          T copy;
          memcpy( (void*)&copy, (void*)base, sizeof(T) );
@@ -608,7 +610,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T &, Inputs...>> {
       EOS_ASSERT(ptr != 0, binaryen_exception, "references cannot be created for null pointers");
       T* base = array_ptr_impl<T>(vars, ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned const reference" );
          std::remove_const_t<T> copy;
          T* copy_ptr = &copy;
@@ -625,7 +627,7 @@ struct intrinsic_invoker_impl<Ret, std::tuple<T &, Inputs...>> {
       EOS_ASSERT(ptr != 0, binaryen_exception, "references cannot be created for null pointers");
       T* base = array_ptr_impl<T>(vars, ptr, 1);
       if ( reinterpret_cast<uintptr_t>(base) % alignof(T) != 0 ) {
-         if(vars.ctx.control.contracts_console())
+         if(get_vm_api()->contracts_console())
             wlog( "misaligned reference" );
          T copy;
          memcpy( (void*)&copy, (void*)base, sizeof(T) );

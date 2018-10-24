@@ -1,8 +1,8 @@
+//#include <eosio/chain/apply_context.hpp>
+#include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/webassembly/wavm.hpp>
 #include <eosio/chain/wasm_eosio_constraints.hpp>
 #include <eosio/chain/wasm_eosio_injection.hpp>
-#include <eosio/chain/apply_context.hpp>
-#include <eosio/chain/exceptions.hpp>
 
 #include "IR/Module.h"
 #include "Platform/Platform.h"
@@ -16,6 +16,7 @@
 
 using namespace IR;
 using namespace Runtime;
+using namespace eosio::chain;
 
 namespace eosio { namespace chain { namespace webassembly { namespace wavm {
 
@@ -29,23 +30,24 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
          _module(std::move(module))
       {}
 
-      void apply(apply_context& context) override {
-         vector<Value> args = {Value(uint64_t(context.receiver)),
-	                       Value(uint64_t(context.act.account)),
-                               Value(uint64_t(context.act.name))};
-
-         call("apply", args, context);
+      void apply(uint64_t receiver, uint64_t account, uint64_t act) override {
+         vector<Value> args = {
+               Value(receiver),
+	            Value(account),
+               Value(act)
+         };
+         call("apply", args);
       }
 
-      uint64_t call(const string &entry_point, const vector <uint64_t> & _args, apply_context &context) override {
+      uint64_t call(const string &entry_point, const vector <uint64_t> & _args) override {
          vector<Value> args;
          for(auto& arg: _args) {
             args.push_back(Value(uint64_t(arg)));
          }
-         return call(entry_point, args, context);
+         return call(entry_point, args);
       }
    private:
-      uint64_t call(const string &entry_point, const vector <Value> &args, apply_context &context) {
+      uint64_t call(const string &entry_point, const vector <Value> &args) {
          try {
             FunctionInstance* call = asFunctionNullable(getInstanceExport(_instance,entry_point));
             if( !call )
@@ -66,7 +68,7 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
             }
 
             the_running_instance_context.memory = default_mem;
-            the_running_instance_context.apply_ctx = &context;
+//            the_running_instance_context.apply_ctx = &context;
 
             resetGlobalInstances(_instance);
             runInstanceStartFunc(_instance);
@@ -78,6 +80,7 @@ class wavm_instantiated_module : public wasm_instantiated_module_interface {
                          ("cause", string(describeExceptionCause(e.cause)))
                          ("callstack", e.callStack));
          } FC_CAPTURE_AND_RETHROW()
+         return 0;
       }
 
 

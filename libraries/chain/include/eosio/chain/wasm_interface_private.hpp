@@ -5,8 +5,6 @@
 
 #if defined(_WAVM)
    #include <eosio/chain/webassembly/wavm.hpp>
-#elif defined(_BINARYEN)
-   #include <eosio/chain/webassembly/binaryen.hpp>
 #elif defined(_WABT)
    #include <eosio/chain/webassembly/wabt.hpp>
 #else

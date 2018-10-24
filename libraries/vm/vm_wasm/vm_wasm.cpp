@@ -39,10 +39,6 @@ void vm_deinit() {
    printf("vm_wasm vm_deinit\n");
 }
 
-struct vm_api* get_vm_api() {
-   return &s_api;
-}
-
 int vm_setcode(uint64_t account) {
    size_t size = 0;
    const char* code = get_vm_api()->get_code(account, &size);

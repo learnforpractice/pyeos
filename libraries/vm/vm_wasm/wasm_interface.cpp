@@ -19,7 +19,7 @@ namespace eosio { namespace chain {
    wasm_interface& wasm_interface::get() {
       static wasm_interface* instance = nullptr;
       if (!instance) {
-         instance = new wasm_interface(wasm_interface::vm_type::binaryen);
+         instance = new wasm_interface(wasm_interface::vm_type::wabt);
       }
       return *instance;
    }

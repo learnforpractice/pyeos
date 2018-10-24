@@ -30,21 +30,9 @@ endif (APPLE)
 
 #set(LINK_FLAGS "${LINK_FLAGS} -export-symbols-regex '^vm_*'")
 
-
-add_library(vm_wasm_binaryen SHARED 
-           vm_wasm.cpp 
-           binaryen.cpp
-           ${COMMON_SOURCES})
-
-target_compile_options(vm_wasm_binaryen PRIVATE -D_BINARYEN)
-target_link_libraries(vm_wasm_binaryen  PRIVATE wavm-shared binaryen softfloat builtins fc)
-
-target_include_directories(vm_wasm_binaryen PRIVATE ${HEADERS})
-
-
 add_library(vm_wasm_wavm STATIC
 #           vm_wasm.cpp 
-           wavm.cpp
+           ${CMAKE_SOURCE_DIR}/libraries/chain/webassembly/wavm.cpp
            ${COMMON_SOURCES}) 
 
 target_compile_options(vm_wasm_wavm     PRIVATE   -D_WAVM)
@@ -54,7 +42,7 @@ target_include_directories(vm_wasm_wavm PRIVATE ${HEADERS})
 
 add_library(vm_wasm_wabt SHARED
            vm_wasm.cpp
-           wabt.cpp
+           ${CMAKE_SOURCE_DIR}/libraries/chain/webassembly/wabt.cpp
            ${COMMON_SOURCES})
 
 target_compile_options(vm_wasm_wabt PRIVATE -D_WABT)
@@ -67,7 +55,6 @@ target_include_directories(vm_wasm_wabt PRIVATE ${HEADERS}
 
 
 set_target_properties(vm_wasm_wavm  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
-set_target_properties(vm_wasm_binaryen  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 set_target_properties(vm_wasm_wabt  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
 
