@@ -33,6 +33,8 @@ add_library(vm_cpython_ss SHARED
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
+add_dependencies(vm_cpython_ss vmapi4python)
+
 target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native)
 #target_compile_options(vm_cpython_ss PUBLIC -DCYTHON_PEP489_MULTI_PHASE_INIT=0)
 
