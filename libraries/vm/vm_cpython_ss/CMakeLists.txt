@@ -25,17 +25,15 @@ add_library(vm_cpython_ss SHARED
             opcode.cc
             test.wrap.cpp
             vm_cpython.cpp
-            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib.wrap.cpp
-            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/db.wrap.cpp
+#            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib.wrap.cpp
+#            ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/db.wrap.cpp
             ${CMAKE_SOURCE_DIR}/libraries/vm/libvmapi4python/eoslib_.cpp
             ${CMAKE_SOURCE_DIR}/libraries/fc/src/crypto/xxhash.c
             )
 
 set_target_properties(vm_cpython_ss  PROPERTIES LINK_FLAGS "${LINK_FLAGS}")
 
-add_dependencies(vm_cpython_ss vmapi4python)
-
-target_link_libraries(vm_cpython_ss PRIVATE python3-ss eosiolib_native)
+target_link_libraries(vm_cpython_ss PRIVATE python3-ss vmapi4python eosiolib_native)
 #target_compile_options(vm_cpython_ss PUBLIC -DCYTHON_PEP489_MULTI_PHASE_INIT=0)
 
 target_include_directories(vm_cpython_ss PRIVATE ${Boost_INCLUDE_DIR}
