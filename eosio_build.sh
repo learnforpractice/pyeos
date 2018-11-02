@@ -204,7 +204,7 @@
             FILE="${SOURCE_DIR}/scripts/eosio_build_ubuntu.sh"
             CXX_COMPILER=/usr/bin/clang++-4.0
             C_COMPILER=/usr/bin/clang-4.0
-            CMAKE_TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=${PWD}/cmake/polly/clang-fpic.cmake"
+            CMAKE_TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=${PWD}/cmake/polly/clang-4-fpic.cmake"
             MONGOD_CONF=${HOME}/opt/mongodb/mongod.conf
             export PATH=${HOME}/opt/mongodb/bin:$PATH
          ;;
