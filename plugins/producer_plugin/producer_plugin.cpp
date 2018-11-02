@@ -1542,7 +1542,7 @@ int producer_plugin::produce_block_start() {
       return producer_plugin_impl::start_block_result::succeeded == _start_block_result;
 //      ilog("block_production_loop return: ${n}",("n",(int)ret));
    } else {
-      ilog("not in manual generate block mode.");
+//      ilog("not in manual generate block mode.");
       return 0;
    }
 }
@@ -1555,7 +1555,7 @@ int producer_plugin::produce_block_end() {
 
    _produce_block_start = false;
    if (!my->_manual_gen_block) {
-      ilog("not in manual generate block mode.");
+//      ilog("not in manual generate block mode.");
       return 0;
    }
 
