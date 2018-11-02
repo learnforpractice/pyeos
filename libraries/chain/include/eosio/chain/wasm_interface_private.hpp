@@ -56,8 +56,6 @@ namespace eosio { namespace chain {
       wasm_interface_impl(wasm_interface::vm_type vm) {
 #if defined(_WAVM)
          runtime_interface = std::make_unique<webassembly::wavm::wavm_runtime>();
-#elif defined(_BINARYEN)
-         runtime_interface = std::make_unique<webassembly::binaryen::binaryen_runtime>();
 #elif defined(_WABT)
          runtime_interface = std::make_unique<webassembly::wabt_runtime::wabt_runtime>();
 #else
@@ -91,13 +89,13 @@ namespace eosio { namespace chain {
          char code_id[8*4];
 
          {
-            std::lock_guard<std::mutex> lock(m);
-
             code = get_code( receiver, &size );
             get_code_id(receiver, code_id, sizeof(code_id));
             if (size <= 0) {
                EOS_ASSERT(false, asset_type_exception, "code size should not be zero");
             }
+
+            std::lock_guard<std::mutex> lock(m);
 
             auto it = instantiation_cache.find(receiver);
             if (it != instantiation_cache.end()) {
@@ -115,14 +113,24 @@ namespace eosio { namespace chain {
          if (!preload) {
             pause_billing_timer();
          }
+#ifdef _WAVM
+         unload_module(receiver);
+         load_module_async(receiver, code, size);
+         {
+            std::lock_guard<std::mutex> lock(m);
+            return instantiation_cache.end()->second;
+         }
+#elif defined(_WABT)
          return load_module(receiver, code, size);
+#endif
       }
 
 
-       void load_module_async(uint64_t receiver, const char* code, size_t size) {
-          load_module(receiver, code, size);
-          //send a transaction to indicate that module is loaded by BP.
-       }
+      void load_module_async(uint64_t receiver, const char* code, size_t size) {
+         boost::thread t( [receiver, &code, size, this]() {
+            load_module(receiver, code, size);
+         } );
+      }
 
       std::unique_ptr<wasm_instantiated_module_interface>& load_module(uint64_t receiver, const char* code, size_t size) {
          IR::Module module;
@@ -149,6 +157,7 @@ namespace eosio { namespace chain {
          } catch(const IR::ValidationException& e) {
             EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
          }
+
          {
             std::lock_guard<std::mutex> lock(m);
             instantiation_cache[receiver] = runtime_interface->instantiate_module((const char*)bytes.data(), bytes.size(), parse_initial_memory(module));

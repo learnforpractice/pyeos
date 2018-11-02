@@ -347,6 +347,8 @@ int get_option(const char* option, char *result, int size);
 #define  VM_TYPE_JAVA                     12
 #define  VM_TYPE_WABT                     13
 
+#define VM_MODULE_NOT_FOUND                        1000
+
 #ifdef __cplusplus
 }
 #endif

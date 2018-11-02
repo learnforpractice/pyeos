@@ -576,6 +576,7 @@ int vm_manager::setcode(int vm_type, uint64_t account) {
 }
 
 int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t act) {
+#if 0
    if (is_trusted_account(account)) {
 
    } else {
@@ -584,6 +585,7 @@ int vm_manager::apply(int type, uint64_t receiver, uint64_t account, uint64_t ac
          type = VM_TYPE_IPC;
       }
    }
+#endif
    return local_apply(type, receiver, account, act);
 }
 
@@ -605,6 +607,11 @@ int vm_manager::local_apply(int vm_type, uint64_t receiver, uint64_t account, ui
             }
          }
       }
+#if 0
+      if (receiver == N(eosio.token) || receiver == N(eosio)) {
+         vm_type = VM_TYPE_WAVM;
+      }
+#endif
       if (vm_runtime == 0) {
          vm_type = VM_TYPE_WAVM;
       } else if (vm_runtime == 1) {
@@ -619,7 +626,12 @@ int vm_manager::local_apply(int vm_type, uint64_t receiver, uint64_t account, ui
    if (itr == vm_map.end()) {
       return 0;
    }
-   itr->second->apply(receiver, account, act);
+   int ret = itr->second->apply(receiver, account, act);
+   if (VM_MODULE_NOT_FOUND == ret) {
+      if (VM_TYPE_WAVM == vm_type) {
+         vm_map[VM_TYPE_WABT]->apply(receiver, account, act);
+      }
+   }
    return 1;
 }
 

@@ -64,19 +64,28 @@ namespace eosio { namespace chain {
       }
       validate(code, size);
 
-//      my->get_instantiated_module(account);
+      my->get_instantiated_module(account);
       return 0;
    }
 
    uint64_t wasm_interface::call(string& func, vector<uint64_t>& args) {
-      return my->get_instantiated_module()->call(func, args);
+      try {
+         uint64_t receiver = get_vm_api()->current_receiver();
+         auto& module = my->get_instantiated_module(receiver);
+         if (!module.get()) {
+            return VM_MODULE_NOT_FOUND;
+         }
+         module->call(func, args);
+      } catch ( const wasm_exit& ){
+      }
+      return 1;
    }
 
    int wasm_interface::apply( uint64_t receiver, uint64_t account, uint64_t act ) {
       try {
          auto& module = my->get_instantiated_module(receiver);
          if (!module.get()) {
-            return 0;
+            return VM_MODULE_NOT_FOUND;
          }
          module->apply(receiver, account, act);
       } catch ( const wasm_exit& ){
