@@ -341,9 +341,6 @@ def publish_system_contracts(accounts_map):
 #                    r = eosapi.push_action('eosio.token', 'transfer', msg, {'eosio':'active'})
 
 def init():
-    if eosapi.is_replay():
-        return
-
     src_dir = os.path.dirname(os.path.abspath(__file__))
     create_system_accounts()
     publish_system_contracts({'eosio.token':'eosio.token'})
