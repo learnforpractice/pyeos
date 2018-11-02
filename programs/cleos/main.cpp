@@ -2400,7 +2400,7 @@ int eos_main( int argc, char** argv ) {
             send_actions(std::move(actions), 10000, packed_transaction::zlib);
          }
       } else {
-         std::cout << "Skipping set code because the new code is the same as the existing code" << std::endl;
+         std::cerr << localized("Skipping set code because the new code is the same as the existing code") << std::endl;
       }
    };
 
@@ -2449,7 +2449,7 @@ int eos_main( int argc, char** argv ) {
             send_actions(std::move(actions), 10000, packed_transaction::zlib);
          }
       } else {
-         std::cout << "Skipping set abi because the new abi is the same as the existing abi" << std::endl;
+         std::cerr << localized("Skipping set abi because the new abi is the same as the existing abi") << std::endl;
       }
    };
 

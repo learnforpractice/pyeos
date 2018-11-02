@@ -59,6 +59,14 @@ elseif ("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local")
 endif()
 
 
+if (UNIX)
+   if (APPLE)
+      if (LLVM_DIR STREQUAL "" OR NOT LLVM_DIR)
+         set(LLVM_DIR "/usr/local/Cellar/llvm@4/4.0.1/lib/cmake/llvm")
+      endif()
+   endif()
+endif()
+
 include( GNUInstallDirs )
 include( VersionMacros )
 include( SetupTargetMacros )
@@ -72,7 +80,7 @@ set( CXX_STANDARD_REQUIRED ON)
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 4)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 set( CLI_CLIENT_EXECUTABLE_NAME cleos )
 set( NODE_EXECUTABLE_NAME nodeos )
