@@ -114,11 +114,15 @@ namespace eosio { namespace chain {
             pause_billing_timer();
          }
 #ifdef _WAVM
-         unload_module(receiver);
-         load_module_async(receiver, code, size);
-         {
-            std::lock_guard<std::mutex> lock(m);
-            return instantiation_cache.end()->second;
+         if (preload) {
+            return load_module(receiver, code, size);
+         } else {
+            unload_module(receiver);
+            load_module_async(receiver, code, size);
+            {
+               std::lock_guard<std::mutex> lock(m);
+               return instantiation_cache.end()->second;
+            }
          }
 #elif defined(_WABT)
          return load_module(receiver, code, size);
@@ -127,8 +131,9 @@ namespace eosio { namespace chain {
 
 
       void load_module_async(uint64_t receiver, const char* code, size_t size) {
-         boost::thread t( [receiver, &code, size, this]() {
-            load_module(receiver, code, size);
+         vector<char> _code(code, code+size);
+         boost::thread t( [receiver, _code, this]() {
+            load_module(receiver, _code.data(), _code.size());
          } );
       }
 
