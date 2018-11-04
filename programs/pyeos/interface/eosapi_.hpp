@@ -137,4 +137,6 @@ extern "C" {
 	int get_option(const char* option, char *result, int size);
 }
 
+void producer_pause_();
+void producer_resume_();
 

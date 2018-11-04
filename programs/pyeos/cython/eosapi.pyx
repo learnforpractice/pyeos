@@ -133,6 +133,9 @@ cdef extern from "eosapi_.hpp":
     void transaction_listen_();
     void transaction_disconnect_();
 
+    void producer_pause_();
+    void producer_resume_();
+
 cdef extern from "<eosiolib_native/vm_api.h>":
     cdef cppclass vm_api:
         int (*sha3)(const char* data, int size, char* result, int size2)
@@ -306,9 +309,13 @@ def create_account2(creator, account, owner_key, active_key):
         actions.append(act)
 
     r =  push_actions(actions)
+    return r
+
+    '''
     if r['except']:
         raise Exception(JsonStruct(r))
     return True
+    '''
 
 def create_account3(creator, account, owner_key, active_key, net, cpu, ram):
     actions = []
@@ -783,7 +790,7 @@ def set_contract(account, src_file, abi_file, vmtype=1, sign=True):
     setabi = ['eosio', 'setabi', setabi, {account:'active'}]
     actions.append(setabi)
 
-    ret = push_transactions([actions], sign, compress = True)
+    ret, cost = push_transactions([actions], sign, compress = True)
     if ret:
         ret = ret[0]
         if 'except' in ret and ret['except']:
@@ -896,3 +903,9 @@ def get_active_producers():
 
 def mp_compile(src):
     raise Exception("not implemented!")
+
+def producer_pause():
+    producer_pause_()
+
+def producer_resume():
+    producer_resume_();

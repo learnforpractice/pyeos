@@ -436,6 +436,13 @@ static int produce_block() {
    return 0;
 }
 
+void producer_pause_() {
+   get_producer_plugin().pause();
+}
+
+void producer_resume_() {
+   get_producer_plugin().resume();
+}
 
 int produce_block_() {
    return produce_block();
