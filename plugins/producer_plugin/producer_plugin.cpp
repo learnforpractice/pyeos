@@ -373,7 +373,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
                         ("txid", trx->id())
                         ("why",response.get<fc::exception_ptr>()->what()));
                } else {
-                  elog("[TRX_TRACE] Speculative execution is REJECTING tx: ${txid} : ${why} ",
+                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is REJECTING tx: ${txid} : ${why} ",
                           ("txid", trx->id())
                           ("why",response.get<fc::exception_ptr>()->what()));
                }
@@ -385,7 +385,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
                           ("prod", chain.pending_block_state()->header.producer)
                           ("txid", trx->id()));
                } else {
-                  elog("[TRX_TRACE] Speculative execution is ACCEPTING tx: ${txid}",
+                  fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is ACCEPTING tx: ${txid}",
                           ("txid", trx->id()));
                }
             }
@@ -420,7 +420,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
                              ("prod", chain.pending_block_state()->header.producer)
                              ("txid", trx->id()));
                   } else {
-                     elog("[TRX_TRACE] Speculative execution COULD NOT FIT tx: ${txid} RETRYING",
+                     fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution COULD NOT FIT tx: ${txid} RETRYING",
                              ("txid", trx->id()));
                   }
                } else {
@@ -1125,7 +1125,7 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool 
                        ("prod", chain.pending_block_state()->header.producer)
                        ("txid", txid));
             } else {
-               elog("[TRX_TRACE] Speculative execution is EXPIRING PERSISTED tx: ${txid}",
+               fc_dlog(_trx_trace_log, "[TRX_TRACE] Speculative execution is EXPIRING PERSISTED tx: ${txid}",
                        ("txid", txid));
             }
 

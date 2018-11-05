@@ -433,8 +433,8 @@ def cleanup_peers():
 
 cp = connect_to_peers
 cup = cleanup_peers
-pbs = produce_block_start
-pbe = produce_block_end
+#pbs = produce_block_start
+#pbe = produce_block_end
 
 original_sigint_handler = signal.getsignal(signal.SIGINT)
 
