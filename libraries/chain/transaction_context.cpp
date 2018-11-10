@@ -439,7 +439,7 @@ namespace bacc = boost::accumulators;
          return;
       auto now = fc::time_point::now();
       if( BOOST_UNLIKELY( now > _deadline ) ) {
-         // edump((now-start)(now-pseudo_start));
+          edump((now-start)(now-pseudo_start));
          if( explicit_billed_cpu_time || deadline_exception_code == deadline_exception::code_value ) {
             EOS_THROW( deadline_exception, "deadline exceeded", ("now", now)("deadline", _deadline)("start", start) );
          } else if( deadline_exception_code == block_cpu_usage_exceeded::code_value ) {

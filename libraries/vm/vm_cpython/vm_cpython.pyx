@@ -40,7 +40,7 @@ def _load_module(account, code):
         logging.exception(e)
     return None
 
-cdef extern void cpython_compile(string& name, string& code, string& result) with gil:
+cdef extern void cpython_compile(string& name, string& code, string& result):
     cdef string _result
     try:
         co = compile(code, name, 'exec')
@@ -67,7 +67,7 @@ def debug_apply(receiver, account, action):
         logging.exception(e)
     return 0
 
-cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action) with gil:
+cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action):
 #    if debug.get_debug_contract() == receiver:
 #        return debug_apply(receiver, account, action)
     try:
@@ -85,7 +85,7 @@ cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t acti
         logging.exception(e)
     return 0
 
-cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:
+cdef extern int cpython_call(uint64_t receiver, uint64_t func):
     try:
         if receiver in py_modules:
             mod = py_modules[receiver]

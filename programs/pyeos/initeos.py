@@ -23,6 +23,7 @@ sys.path.insert(0, tests)
 
 libs = os.path.join(os.path.dirname(__file__), 'libs')
 sys.path.insert(0, libs)
+sys.path.append('.')
 
 from console import PyEosConsole
 
@@ -446,6 +447,7 @@ def wd():
     debug.wasm_enable_native_contract(0)
 
 pid = os.getpid()
+print('+++pid', pid)
 
 def start_console():
     print("start console...")

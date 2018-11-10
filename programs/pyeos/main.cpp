@@ -138,6 +138,8 @@ extern "C" void vm_manager_init_python();
 
 int main(int argc, char** argv) {
 
+   setenv("PYTHONHOME","../../externals/python/dist",1);
+   setenv("PYTHONPATH","../../externals/python/dist/lib",1);
    g_argc = argc;
    g_argv = argv;
 

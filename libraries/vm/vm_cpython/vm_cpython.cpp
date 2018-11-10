@@ -54,19 +54,19 @@ int vm_setcode(uint64_t account) {
    get_code(account, code);
 
    #ifdef WITH_THREAD
-   PyGILState_STATE save = PyGILState_Ensure();
+//   PyGILState_STATE save = PyGILState_Ensure();
    #endif
    int ret;
    try {
       ret = cpython_setcode(account, code);
    } catch (...) {
       #ifdef WITH_THREAD
-      PyGILState_Release(save);
+//      PyGILState_Release(save);
       #endif
       throw;
    }
    #ifdef WITH_THREAD
-   PyGILState_Release(save);
+//   PyGILState_Release(save);
    #endif
    return ret;
 
@@ -74,19 +74,19 @@ int vm_setcode(uint64_t account) {
 
 int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    #ifdef WITH_THREAD
-   PyGILState_STATE save = PyGILState_Ensure();
+   //PyGILState_STATE save = PyGILState_Ensure();
    #endif
    int ret;
    try {
       ret = cpython_apply(receiver, account, act);
    } catch (...) {
       #ifdef WITH_THREAD
-      PyGILState_Release(save);
+      //PyGILState_Release(save);
       #endif
       throw;
    }
    #ifdef WITH_THREAD
-   PyGILState_Release(save);
+   //PyGILState_Release(save);
    #endif
    return ret;
 }
