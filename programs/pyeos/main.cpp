@@ -135,6 +135,7 @@ void cleos_init();
 void init_wallet();
 void init_producer();
 extern "C" void vm_manager_init_python();
+void cleos_set_http_url(std::string& s);
 
 int main(int argc, char** argv) {
 
@@ -178,6 +179,11 @@ int main(int argc, char** argv) {
       return 0;
    }
 
+   if (app().has_option("http-server-address")) {
+      string s = app().get_option("http-server-address");
+      s = "http://" + s;
+      cleos_set_http_url(s);
+   }
    std::unique_lock<std::mutex> lk(cv_m);
 
    Py_BEGIN_ALLOW_THREADS

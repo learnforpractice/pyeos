@@ -192,6 +192,10 @@ vector<string> tx_permission;
 
 eosio::client::http::http_context context;
 
+void cleos_set_http_url(std::string& _url) {
+   url = _url;
+}
+
 void add_standard_transaction_options(CLI::App* cmd, string default_permission = "") {
    CLI::callback_t parse_expiration = [](CLI::results_t res) -> bool {
       double value_s;
