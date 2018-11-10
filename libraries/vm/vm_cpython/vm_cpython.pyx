@@ -40,7 +40,7 @@ def _load_module(account, code):
         logging.exception(e)
     return None
 
-cdef extern void cpython_compile(string& name, string& code, string& result):
+cdef extern void cpython_compile(string& name, string& code, string& result) with gil:
     cdef string _result
     try:
         co = compile(code, name, 'exec')
@@ -48,7 +48,7 @@ cdef extern void cpython_compile(string& name, string& code, string& result):
     except:
         pass
 
-cdef extern int cpython_setcode(uint64_t account, string& code):
+cdef extern int cpython_setcode(uint64_t account, string& code) with gil:
     if not code.size():
         if account in py_modules:
             del py_modules[account]
@@ -67,7 +67,7 @@ def debug_apply(receiver, account, action):
         logging.exception(e)
     return 0
 
-cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action):
+cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t action) with gil:
 #    if debug.get_debug_contract() == receiver:
 #        return debug_apply(receiver, account, action)
     try:
@@ -85,7 +85,7 @@ cdef extern int cpython_apply(uint64_t receiver, uint64_t account, uint64_t acti
         logging.exception(e)
     return 0
 
-cdef extern int cpython_call(uint64_t receiver, uint64_t func):
+cdef extern int cpython_call(uint64_t receiver, uint64_t func) with gil:
     try:
         if receiver in py_modules:
             mod = py_modules[receiver]
@@ -101,6 +101,4 @@ cdef extern int cpython_call(uint64_t receiver, uint64_t func):
     except Exception as e:
         logging.exception(e)
     return 0
-
-
 

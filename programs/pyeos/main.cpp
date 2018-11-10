@@ -179,8 +179,11 @@ int main(int argc, char** argv) {
    }
 
    std::unique_lock<std::mutex> lk(cv_m);
+
+   Py_BEGIN_ALLOW_THREADS
    boost::thread t(start_eos);
    cv.wait(lk);
+   Py_END_ALLOW_THREADS
 
    wlog("running console...");
    if (app().interactive_mode()) {
