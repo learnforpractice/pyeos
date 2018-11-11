@@ -202,7 +202,10 @@ int main(int argc, char** argv) {
       appbase::app().quit();
    }
 
+   Py_BEGIN_ALLOW_THREADS
    cv.wait(lk, [](){return shutdown_finished;});
+   Py_END_ALLOW_THREADS
+
    wlog("exiting...");
    vm_deinit_all();
    py_exit();
