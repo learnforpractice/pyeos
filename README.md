@@ -98,7 +98,7 @@ wallet password: PW5JWE5g6RZ7Fyr2kmCphDqZo4uivdeGpUpndgFZ52rsduhtf9PRJ
 
 Since it's for testing only, password will save to data-dir/data.pkl, So next time you start pyeos for testing, pyeos will unlock wallet for you.
 
-Also PyEos will import three private key to the wallet, which is useful for testing.
+Also PyEos will import three private keys to the wallet, which is useful for testing.
 
 ```
 '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
@@ -106,7 +106,7 @@ Also PyEos will import three private key to the wallet, which is useful for test
 '5JbDP55GXN7MLcNYKCnJtfKi9aD2HvHAdY7g8m67zFTAFkY1uBB'
 ```
 
-Keep in mind that these private key should never be used in real account, otherwise you may lose all of your crypto property in the account.
+Keep in mind that these private keys should never be used in real account, otherwise you may lose all of your crypto property in the account.
 
 Beside that, PyEos will create four important accounts for you:
 

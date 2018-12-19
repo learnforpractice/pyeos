@@ -13,6 +13,9 @@ import _tracemalloc
 #import vm
 import inspector
 
+import gc
+gc.disable()
+
 cdef extern from "<stdint.h>":
     ctypedef unsigned long long uint64_t
 
